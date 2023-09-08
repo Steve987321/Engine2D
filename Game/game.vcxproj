@@ -125,14 +125,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\game_core\default_scripts\Object.h" />
-    <ClInclude Include="src\game_core\ScriptBase.h" />
     <ClInclude Include="src\game_core\GameBase.h" />
     <ClInclude Include="src\pch.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\game_core\default_scripts\Object.cpp" />
-    <ClCompile Include="src\game_core\ScriptBase.cpp" />
     <ClCompile Include="src\game_core\GameBase.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

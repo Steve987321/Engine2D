@@ -21,24 +21,12 @@
     <ClInclude Include="src\game_core\GameBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\game_core\ScriptBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\game_core\default_scripts\Object.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\game_core\GameBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game_core\ScriptBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\game_core\default_scripts\Object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

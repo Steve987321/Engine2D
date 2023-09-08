@@ -27,11 +27,20 @@ namespace Toad
 
 		sf::Time GetDeltaTime() const;
 
+		Scene& GetScene();
+		void SetScene(const Scene& scene);
+
 		void StartGameSession();
 
 		void SetGameScripts();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
+
+	private:
+		bool InitWindow();
+		void EventHandler();
+		void Render();
+		void CleanUp();
 
 	private:
 		sf::Time m_deltaTime;
@@ -41,22 +50,12 @@ namespace Toad
 		FENGINE_UI m_renderUI = nullptr;
 		ImGuiIO* m_io = nullptr;
 
+		Scene m_currentScene;
+
 	private:
 		std::atomic_bool m_isRunning = false;
 
 		inline static Engine* s_Instance = nullptr;
 		inline static Logger s_LoggerInstance;
-
-	private:
-		bool init_window();
-		void event_handler();
-		void render();
-		void clean_up();
 	};
 }
-
-
-#define log_Ok(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LOK, msg, __VA_ARGS__) 
-#define log_Debug(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LDEBUG, msg, __VA_ARGS__)
-#define log_Error(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LERROR, msg, __VA_ARGS__) 
-#define log_Warn(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LWARNING, msg, __VA_ARGS__) 

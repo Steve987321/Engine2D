@@ -84,6 +84,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)src\;$(SolutionDir)vendor\SFML-2.5.1\include;$(SolutionDir)vendor;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,6 +101,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir)src\;$(SolutionDir)vendor\SFML-2.5.1\include;$(SolutionDir)vendor;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,12 +131,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\imgui_impl\imgui-SFML.cpp" />
-    <ClCompile Include="src\imgui_impl\imgui.cpp" />
-    <ClCompile Include="src\imgui_impl\imgui_demo.cpp" />
-    <ClCompile Include="src\imgui_impl\imgui_draw.cpp" />
-    <ClCompile Include="src\imgui_impl\imgui_tables.cpp" />
-    <ClCompile Include="src\imgui_impl\imgui_widgets.cpp" />
+    <ClCompile Include="src\engine\default_scripts\Movement.cpp" />
+    <ClCompile Include="src\engine\default_scripts\Script.cpp" />
+    <ClCompile Include="src\engine\object_default\Sprite.cpp" />
+    <ClCompile Include="src\engine\components_default\IComponent.cpp" />
+    <ClCompile Include="src\engine\systems\Scene.cpp" />
+    <ClCompile Include="src\engine\systems\SpriteSystem.cpp" />
+    <ClCompile Include="src\imgui_impl\imgui-SFML.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\imgui_impl\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\imgui_impl\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\imgui_impl\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\imgui_impl\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\imgui_impl\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\engine\Helpers.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">Use</PrecompiledHeader>
@@ -152,8 +184,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\object_default\Object.h" />
+    <ClInclude Include="src\engine\default_scripts\Movement.h" />
+    <ClInclude Include="src\engine\default_scripts\Script.h" />
+    <ClInclude Include="src\engine\object_default\Sprite.h" />
+    <ClInclude Include="src\engine\components_default\IComponent.h" />
     <ClInclude Include="src\engine\Helpers.h" />
     <ClInclude Include="src\EngineMeta.h" />
+    <ClInclude Include="src\engine\systems\Scene.h" />
+    <ClInclude Include="src\engine\systems\SpriteSystem.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\engine\Logger.h" />
     <ClInclude Include="src\engine\Engine.h" />

@@ -4,7 +4,7 @@
 
 #include <EngineCore.h>
 
-#include "default_scripts/Object.h"
+#include "engine/default_scripts/Script.h"
 
 #ifdef GAME_IS_EXPORT
 #define GAME_API __declspec(dllexport)
@@ -21,8 +21,7 @@ public:
 private:
 	sf::ContextSettings m_settings;
 
-	std::vector<ScriptBase> m_scripts;
-	std::vector<Object> m_instances;
+	std::vector<Toad::Script> m_instances;
 
 };
 

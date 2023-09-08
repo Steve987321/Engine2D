@@ -1,5 +1,4 @@
 #include "pch.h"
-#include "ScriptBase.h"
 #include "GameBase.h"
 
 // Game Base implementation

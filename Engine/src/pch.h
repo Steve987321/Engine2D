@@ -12,6 +12,8 @@
 #endif
 
 #include <vector>
+#include <set>
+#include <unordered_map>
 #include <shared_mutex>
 #include <thread>
 #include <functional>

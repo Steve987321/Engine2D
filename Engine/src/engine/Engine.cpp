@@ -21,7 +21,7 @@ bool Engine::Init()
 {
 	log_Debug("Initializing Engine");
 
-	if (!init_window()) return false;
+	if (!InitWindow()) return false;
 
 	m_isRunning = true;
 
@@ -39,16 +39,19 @@ void Engine::Run()
 		ImGui::SFML::Update(m_window, m_deltaTime);
 
 		// handle events 
-		event_handler();
+		EventHandler();
+
+		// game scripts
+		m_currentScene.Update();
 
 		// render the window and contents
-		render();
+		Render();
 	}
 
-	clean_up();
+	CleanUp();
 }
 
-bool Engine::init_window()
+bool Engine::InitWindow()
 {
 #ifdef TOAD_EDITOR
 	m_window.create(sf::VideoMode(600, 600), "Engine 2D", sf::Style::Titlebar | sf::Style::Close);
@@ -65,7 +68,7 @@ bool Engine::init_window()
 #endif
 }
 
-void Engine::event_handler()
+void Engine::EventHandler()
 {
 	sf::Event e;
 	while (m_window.pollEvent(e))
@@ -87,7 +90,7 @@ void Engine::event_handler()
 	}
 }
 
-void Engine::render()
+void Engine::Render()
 {
 #ifdef TOAD_EDITOR
 	// show ui
@@ -96,12 +99,10 @@ void Engine::render()
 	m_window.clear(sf::Color::Black); // window bg
 
 	//--------------------draw------------------------//
-
 #ifdef TOAD_EDITOR
 // imgui
 	ImGui::SFML::Render(m_window);
 #endif
-
 	//--------------------draw------------------------//
 
 	m_window.display();
@@ -127,6 +128,16 @@ sf::Time Engine::GetDeltaTime() const
 	return m_deltaTime;
 }
 
+Scene& Engine::GetScene()
+{
+	return m_currentScene;
+}
+
+void Engine::SetScene(const Scene& scene)
+{
+	m_currentScene = scene;
+}
+
 void Engine::StartGameSession()
 {
 }
@@ -140,7 +151,7 @@ void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 	m_renderUI = p_ui;
 }
 
-void Engine::clean_up()
+void Engine::CleanUp()
 {
 	log_Debug("clean up");
 
