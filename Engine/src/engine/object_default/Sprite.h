@@ -5,12 +5,12 @@
 namespace Toad
 {
 
-class Sprite : public Object
+class ENGINE_API Sprite : public Object
 {
 public:
 	friend struct SpriteSystem;
 
-	Sprite();
+	explicit Sprite(std::string_view name);
 	~Sprite() override;
 
 	sf::Sprite& GetSprite();

@@ -18,8 +18,9 @@ namespace Toad
 		Engine();
 		~Engine();
 
-		bool Init();
+		bool Init(const sf::ContextSettings& settings);
 
+		// Engine main loop
 		void Run();
 
 		// get the window position
@@ -27,17 +28,20 @@ namespace Toad
 
 		sf::Time GetDeltaTime() const;
 
+		sf::RenderWindow& GetWindow();
+
 		Scene& GetScene();
 		void SetScene(const Scene& scene);
 
 		void StartGameSession();
+		void StopGameSession();
 
 		void SetGameScripts();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
 	private:
-		bool InitWindow();
+		bool InitWindow(const sf::ContextSettings& settings);
 		void EventHandler();
 		void Render();
 		void CleanUp();
@@ -51,6 +55,8 @@ namespace Toad
 		ImGuiIO* m_io = nullptr;
 
 		Scene m_currentScene;
+
+		bool m_beginPlay = false, m_beginPlayPrev = false;
 
 	private:
 		std::atomic_bool m_isRunning = false;

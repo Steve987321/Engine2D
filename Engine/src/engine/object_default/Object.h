@@ -12,11 +12,15 @@ namespace Toad
 /// An Object is the base class for different type of game objects
 ///	And holds scripts.
 ///
-class Object
+class ENGINE_API Object
 {
 public:
-	Object() = default;
+	explicit Object(std::string_view name) : name(name) {}
+	Object() : name("Object") {}
+
 	virtual ~Object() {}
+
+	std::string name;
 
 	virtual void Start()
 	{}
@@ -74,7 +78,6 @@ public:
 protected:
 	// attached scripts 
 	std::vector< Script > m_scripts {};
-
 };
 
 }

@@ -67,6 +67,17 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
 
+		std::queue<Toad::Object> removeObjQueue{};
+		for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objectsMap)
+		{
+			
+		}
+
+		while (!removeObjQueue.empty())
+		{
+			Toad::Engine::Get().GetScene().AddToScene()
+		}
+
 		ImGui::End();
 	}
 }

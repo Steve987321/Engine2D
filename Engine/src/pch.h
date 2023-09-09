@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <set>
+#include <queue>
 #include <unordered_map>
 #include <shared_mutex>
 #include <thread>

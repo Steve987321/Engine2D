@@ -5,7 +5,5 @@
 
 namespace Toad
 {
-	void Movement::OnUpdate()
-	{
-	}
+	
 }

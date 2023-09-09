@@ -42,9 +42,6 @@
     <ClCompile Include="src\imgui_impl\imgui-SFML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\components_default\IComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\object_default\Sprite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -402,9 +399,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\EngineMeta.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\components_default\IComponent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\object_default\Sprite.h">

@@ -13,15 +13,17 @@ namespace Toad
 Engine::Engine()
 {
 	s_Instance = this;
+
+	m_currentScene = Scene();
 }
 
 Engine::~Engine() = default;
 
-bool Engine::Init()
+bool Engine::Init(const sf::ContextSettings& settings)
 {
 	log_Debug("Initializing Engine");
 
-	if (!InitWindow()) return false;
+	if (!InitWindow(settings)) return false;
 
 	m_isRunning = true;
 
@@ -41,8 +43,11 @@ void Engine::Run()
 		// handle events 
 		EventHandler();
 
-		// game scripts
-		m_currentScene.Update();
+		if (m_beginPlay)
+		{
+			// update scene objects
+			m_currentScene.Update(m_window);
+		}
 
 		// render the window and contents
 		Render();
@@ -51,10 +56,10 @@ void Engine::Run()
 	CleanUp();
 }
 
-bool Engine::InitWindow()
+bool Engine::InitWindow(const sf::ContextSettings& settings)
 {
 #ifdef TOAD_EDITOR
-	m_window.create(sf::VideoMode(600, 600), "Engine 2D", sf::Style::Titlebar | sf::Style::Close);
+	m_window.create(sf::VideoMode(600, 600), "Engine 2D", sf::Style::Titlebar | sf::Style::Close, settings);
 	m_window.setFramerateLimit(60);
 	bool res = ImGui::SFML::Init(m_window);
 	m_io = &ImGui::GetIO();
@@ -128,6 +133,11 @@ sf::Time Engine::GetDeltaTime() const
 	return m_deltaTime;
 }
 
+sf::RenderWindow& Engine::GetWindow()
+{
+	return m_window;
+}
+
 Scene& Engine::GetScene()
 {
 	return m_currentScene;
@@ -136,10 +146,20 @@ Scene& Engine::GetScene()
 void Engine::SetScene(const Scene& scene)
 {
 	m_currentScene = scene;
+
+	if (m_beginPlay)
+		m_currentScene.Start();
 }
 
 void Engine::StartGameSession()
 {
+	m_beginPlay = true;
+	m_currentScene.Start();
+}
+
+void Engine::StopGameSession()
+{
+	m_beginPlay = false;
 }
 
 void Engine::SetGameScripts()

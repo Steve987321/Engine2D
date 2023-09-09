@@ -20,8 +20,5 @@ public:
 
 private:
 	sf::ContextSettings m_settings;
-
-	std::vector<Toad::Script> m_instances;
-
 };
 

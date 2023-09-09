@@ -1,9 +1,8 @@
 #include "pch.h"
+#include "Script.h"
 
 #include "EngineCore.h"
 #include "EngineMeta.h"
-
-#include "Script.h"
 
 namespace Toad
 {
@@ -18,15 +17,15 @@ const std::string& Script::GetName() const
 	return m_name;
 }
 
-void Script::OnUpdate()
+void Script::OnUpdate(Object* obj)
 {
 }
 
-void Script::OnCreate()
+void Script::OnCreate(Object* obj)
 {
 }
 
-void Script::OnDestroy()
+void Script::OnDestroy(Object* obj)
 {
 }
 

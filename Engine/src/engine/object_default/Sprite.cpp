@@ -6,8 +6,9 @@
 namespace Toad
 {
 
-Sprite::Sprite()
+Sprite::Sprite(std::string_view name)
 {
+	name = name;
 	s_spriteInstances.emplace(this);
 }
 
@@ -26,7 +27,7 @@ void Sprite::Update(sf::RenderWindow& window)
 	// update attached scripts
 	for (auto& script : m_scripts)
 	{
-		script.OnUpdate();
+		script.OnUpdate(this);
 	}
 
 	// draw sfml sprite object

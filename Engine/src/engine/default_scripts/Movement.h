@@ -9,7 +9,7 @@ class Movement : Script
 {
 	//SCRIPTBASE(Movement)
 public:
-	void OnUpdate() override;
+	//void OnUpdate(Object* obj) override;
 };
 
 }

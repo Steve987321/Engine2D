@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 	engine.SetEngineUI(ui::engine_ui);
 #endif
 
-	if (!engine.Init())
+	if (!engine.Init(sf::ContextSettings()))
 		return EXIT_FAILURE;
 
 	engine.Run();
