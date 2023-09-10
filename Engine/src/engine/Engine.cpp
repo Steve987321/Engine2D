@@ -25,6 +25,8 @@ bool Engine::Init(const sf::ContextSettings& settings)
 
 	if (!InitWindow(settings)) return false;
 
+	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
+
 	m_isRunning = true;
 
 	return true;
@@ -43,11 +45,11 @@ void Engine::Run()
 		// handle events 
 		EventHandler();
 
-		if (m_beginPlay)
-		{
-			// update scene objects
-			m_currentScene.Update(m_window);
-		}
+		//if (m_beginPlay)
+		//{
+		//	// update scene objects 
+		//	m_currentScene.Update(m_window);
+		//}
 
 		// render the window and contents
 		Render();
@@ -59,7 +61,7 @@ void Engine::Run()
 bool Engine::InitWindow(const sf::ContextSettings& settings)
 {
 #ifdef TOAD_EDITOR
-	m_window.create(sf::VideoMode(600, 600), "Engine 2D", sf::Style::Titlebar | sf::Style::Close, settings);
+	m_window.create(sf::VideoMode(600, 600), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings);
 	m_window.setFramerateLimit(60);
 	bool res = ImGui::SFML::Init(m_window);
 	m_io = &ImGui::GetIO();
@@ -91,6 +93,18 @@ void Engine::EventHandler()
 			break;
 		}
 
+		case sf::Event::Resized:
+		{
+#ifdef TOAD_EDITOR
+			// update window texture size to new window size
+			m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
+			//auto view = m_window.getDefaultView();
+			//view.setSize()
+			//m_window.setView(view);
+				// shape match pixel to coords
+#endif
+		}
+
 		}
 	}
 }
@@ -98,19 +112,37 @@ void Engine::EventHandler()
 void Engine::Render()
 {
 #ifdef TOAD_EDITOR
+
 	// show ui
 	m_renderUI(m_io->Ctx);
+	m_windowTexture.clear(sf::Color::Black);
+
 #endif
+
 	m_window.clear(sf::Color::Black); // window bg
+
 
 	//--------------------draw------------------------//
 #ifdef TOAD_EDITOR
-// imgui
+
+	// Update scene which also draws the objects
+	GetScene().Update(m_windowTexture);
+	sf::RectangleShape tileTexture(sf::Vector2f(32, 32));
+	tileTexture.setFillColor(sf::Color::White);
+	tileTexture.setPosition(0, 0);
+	m_windowTexture.draw(tileTexture);
+	m_windowTexture.display();
+	// imgui
 	ImGui::SFML::Render(m_window);
+
+#else
+
+	GetScene().Update(m_window);
 #endif
 	//--------------------draw------------------------//
 
 	m_window.display();
+
 }
 
 sf::Vector2i Engine::GetWindowPos() const
@@ -136,6 +168,11 @@ sf::Time Engine::GetDeltaTime() const
 sf::RenderWindow& Engine::GetWindow()
 {
 	return m_window;
+}
+
+sf::RenderTexture& Engine::GetWindowTexture()
+{
+	return m_windowTexture;
 }
 
 Scene& Engine::GetScene()

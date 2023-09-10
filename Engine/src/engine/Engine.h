@@ -30,6 +30,8 @@ namespace Toad
 
 		sf::RenderWindow& GetWindow();
 
+		sf::RenderTexture& GetWindowTexture();
+
 		Scene& GetScene();
 		void SetScene(const Scene& scene);
 
@@ -50,6 +52,8 @@ namespace Toad
 		sf::Time m_deltaTime;
 		sf::RenderWindow m_window;
 		sf::Clock m_deltaClock;
+
+		sf::RenderTexture m_windowTexture;
 
 		FENGINE_UI m_renderUI = nullptr;
 		ImGuiIO* m_io = nullptr;

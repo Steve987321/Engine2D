@@ -4,6 +4,8 @@
 
 #include "engine/default_scripts/Script.h"
 
+#include <set>
+
 namespace Toad
 {
 	class Script;
@@ -26,6 +28,10 @@ public:
 	{}
 
 	virtual void Update(sf::RenderWindow& window)
+	{}
+
+	// For imgui, only when using the editor
+	virtual void Update(sf::RenderTexture& texture)
 	{}
 
 	template <class T>
@@ -73,6 +79,11 @@ public:
 			}
 		}
 		
+	}
+
+	const std::vector<Script>& GetScripts() const
+	{
+		return m_scripts;
 	}
 
 protected:

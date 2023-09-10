@@ -6,15 +6,13 @@
 namespace Toad
 {
 
-Sprite::Sprite(std::string_view name)
+Sprite::Sprite(std::string_view obj_name)
 {
-	name = name;
-	s_spriteInstances.emplace(this);
+	name = obj_name;
 }
 
 Sprite::~Sprite()
 {
-	s_spriteInstances.erase(this);
 }
 
 sf::Sprite& Sprite::GetSprite()
@@ -34,4 +32,15 @@ void Sprite::Update(sf::RenderWindow& window)
 	window.draw(m_sprite);
 }
 
+void Sprite::Update(sf::RenderTexture& texture)
+{
+	// update attached scripts
+	for (auto& script : m_scripts)
+	{
+		script.OnUpdate(this);
+	}
+
+	// draw sfml sprite object
+	texture.draw(m_sprite);
+}
 }

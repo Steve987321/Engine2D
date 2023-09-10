@@ -3,6 +3,10 @@
 #include "Engine/Engine.h"
 #include "ui.h"
 
+#include "imgui/imgui-SFML.h"
+
+#include <queue>
+
 void ui::decorations()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
@@ -55,29 +59,116 @@ void ui::engine_ui(ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
 
-	decorations();
+	constexpr auto dock_window_flags =
+		ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking |
+		ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiButtonFlags_NoNavFocus;
 
-	std::call_once(flag, []()
-		{
-			ImGui::SetNextWindowSize(ImVec2(340, 100));
-			ImGui::SetNextWindowPos(ImVec2(0, 0));
-		});
+	ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size);
+	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
 
-	ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
+	ImGui::DockSpace(ImGui::GetID("DockSpace"));
+	ImGui::End();
+
+	ImGui::Begin("Settings", nullptr);
 	{
 		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
 
-		std::queue<Toad::Object> removeObjQueue{};
-		for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objectsMap)
+		ImGui::End();
+	}
+
+	static std::shared_ptr<Toad::Object> selected_obj = nullptr;
+	static std::shared_ptr<Toad::Sprite> selected_sprite = nullptr;
+
+	ImGui::Begin("Scene", nullptr);
+	{
+		std::queue<std::string> removeObjQueue{};
+
+		if (ImGui::Button("Add Sprite"))
 		{
-			
+			Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
+		}
+		if (ImGui::Button("Add Circle"))
+		{
+			Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"));
+		}
+
+		for (auto& [name, obj] : Toad::Engine::Get().GetScene().objectsMap)
+		{
+			if (ImGui::Selectable(name.c_str(), selected_obj != nullptr && selected_obj->name == name))
+			{
+				selected_obj = obj;
+			}
 		}
 
 		while (!removeObjQueue.empty())
 		{
-			Toad::Engine::Get().GetScene().AddToScene()
+			Toad::Engine::Get().GetScene().RemoveFromScene(removeObjQueue.front());
+			removeObjQueue.pop();
 		}
 
+		ImGui::End();
+	}
+
+	ImGui::Begin("Inspector", nullptr);
+	{
+		if (selected_obj != nullptr)
+		{
+			ImGui::Text(selected_obj->name.c_str());
+			for (const auto& script : selected_obj->GetScripts())
+			{
+				ImGui::Selectable(script.GetName().c_str());
+			}
+			auto spriteObj = dynamic_cast< Toad::Sprite* >(selected_obj.get());
+			auto circleObj = dynamic_cast< Toad::Circle* >(selected_obj.get());
+			if (spriteObj != nullptr)
+			{
+				auto& sprite = spriteObj->GetSprite();
+				
+				auto pos = sprite.getPosition();
+
+				if (ImGui::DragFloat("X", &pos.x))
+					sprite.setPosition(pos);
+				if (ImGui::DragFloat("Y", &pos.y))
+					sprite.setPosition(pos);
+
+				auto colorU32 = ImGui::ColorConvertU32ToFloat4(sprite.getColor().toInteger());
+				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
+				if (ImGui::ColorEdit4("color", col))
+					sprite.setColor(sf::Color(ImGui::ColorConvertFloat4ToU32({col[0], col[1], col[2], col[3]})));
+			}
+			else if (circleObj != nullptr)
+			{
+				auto& circle = circleObj->GetCircle();
+
+				auto pos = circle.getPosition();
+
+				if (ImGui::DragFloat("X", &pos.x))
+					circle.setPosition(pos);
+				if (ImGui::DragFloat("Y", &pos.y))
+					circle.setPosition(pos);
+
+				auto colorU32 = ImGui::ColorConvertU32ToFloat4(circle.getFillColor().toInteger());
+				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
+				if (ImGui::ColorEdit4("color", col))
+					circle.setFillColor(sf::Color(ImGui::ColorConvertFloat4ToU32({ col[0], col[1], col[2], col[3] })));
+
+				auto circleRadius = circle.getRadius();
+				if (ImGui::DragFloat("radius", &circleRadius))
+					circle.setRadius(circleRadius);
+			}
+		}
+
+		ImGui::End();
+	}
+
+	ImGui::Begin("Viewport", nullptr);
+	{
+		const auto& window_texture = Toad::Engine::Get().GetWindowTexture();
+
+		ImGui::Image(sf::Sprite(window_texture.getTexture()), {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y}, sf::Color::Black);
+		
 		ImGui::End();
 	}
 }

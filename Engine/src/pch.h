@@ -2,7 +2,9 @@
 
 #include <iostream>
 
+#include <cassert>
 #include <sstream>
+#include <type_traits>
 
 #ifdef _WIN32
 #define NOMINMAX

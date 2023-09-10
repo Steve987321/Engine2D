@@ -6,6 +6,8 @@ namespace Toad
 {
 
 class Object;
+class Sprite;
+class Circle;
 
 struct ENGINE_API Scene
 {
@@ -15,19 +17,37 @@ struct ENGINE_API Scene
 
 	// objects in scene
 	//std::vector<Object> objects;
-	std::unordered_map < std::string, Object > objectsMap;
+	std::unordered_map < std::string, std::shared_ptr<Object> > objectsMap;
 
 	void Start();
 	void Update(sf::RenderWindow& window);
+	void Update(sf::RenderTexture& window);
 
 	///
 	/// @returns
 	///	A pointer to the newly added object
+	///	Also checks if name of object is already here
 	///
-	///	@note
-	///	The old object shouldn't be used anymore
-	///
-	Object* AddToScene(const Object& obj);
+	template <class T>
+	Object* AddToScene(T&& object)
+	{
+		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Object class");
+
+		std::string objName = object.name;
+		if (objectsMap.contains(objName))
+		{
+			objName += " (" + std::to_string(objectsMap.count(objName)) + ')';
+			while (objectsMap.contains(objName))
+			{
+				objName += " (" + std::to_string(objectsMap.count(objName)) + ')';
+			}
+		}
+
+		object.name = objName;
+		objectsMap.insert({ objName, std::make_shared<T>(object) });
+		return objectsMap[objName].get();
+
+	}
 
 	///
 	/// @returns

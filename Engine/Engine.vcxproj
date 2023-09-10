@@ -131,11 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\object_default\Circle.cpp" />
     <ClCompile Include="src\engine\default_scripts\Movement.cpp" />
     <ClCompile Include="src\engine\default_scripts\Script.cpp" />
     <ClCompile Include="src\engine\object_default\Sprite.cpp" />
     <ClCompile Include="src\engine\systems\Scene.cpp" />
-    <ClCompile Include="src\engine\systems\SpriteSystem.cpp" />
     <ClCompile Include="src\imgui_impl\imgui-SFML.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -183,6 +183,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\object_default\Circle.h" />
     <ClInclude Include="src\engine\object_default\Object.h" />
     <ClInclude Include="src\engine\default_scripts\Movement.h" />
     <ClInclude Include="src\engine\default_scripts\Script.h" />
@@ -190,7 +191,6 @@
     <ClInclude Include="src\engine\Helpers.h" />
     <ClInclude Include="src\EngineMeta.h" />
     <ClInclude Include="src\engine\systems\Scene.h" />
-    <ClInclude Include="src\engine\systems\SpriteSystem.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\engine\Logger.h" />
     <ClInclude Include="src\engine\Engine.h" />
