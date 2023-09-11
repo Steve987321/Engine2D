@@ -19,19 +19,27 @@ struct ENGINE_API Scene
 	//std::vector<Object> objects;
 	std::unordered_map < std::string, std::shared_ptr<Object> > objectsMap;
 
+	///
+	/// Is called when switching to this scene.
+	///
 	void Start();
+
+	///
+	/// Update the object instances in this scene.
+	///	Draws the drawable objects to the window and calls update on the scripts.
+	///
 	void Update(sf::RenderWindow& window);
 	void Update(sf::RenderTexture& window);
 
 	///
 	/// @returns
-	///	A pointer to the newly added object
-	///	Also checks if name of object is already here
+	///	A pointer to the newly added object.
+	///	Also checks if name of object is already here.
 	///
 	template <class T>
 	Object* AddToScene(T&& object)
 	{
-		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Object class");
+		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
 		std::string objName = object.name;
 		if (objectsMap.contains(objName))

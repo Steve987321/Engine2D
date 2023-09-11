@@ -111,38 +111,29 @@ void Engine::EventHandler()
 
 void Engine::Render()
 {
-#ifdef TOAD_EDITOR
-
-	// show ui
-	m_renderUI(m_io->Ctx);
-	m_windowTexture.clear(sf::Color::Black);
-
-#endif
-
 	m_window.clear(sf::Color::Black); // window bg
 
-
 	//--------------------draw------------------------//
+
 #ifdef TOAD_EDITOR
 
-	// Update scene which also draws the objects
+	m_windowTexture.clear();
+
+	// Update scene to the texture so it can display on the viewport 
 	GetScene().Update(m_windowTexture);
-	sf::RectangleShape tileTexture(sf::Vector2f(32, 32));
-	tileTexture.setFillColor(sf::Color::White);
-	tileTexture.setPosition(0, 0);
-	m_windowTexture.draw(tileTexture);
 	m_windowTexture.display();
+
 	// imgui
+	m_renderUI(m_io->Ctx);
 	ImGui::SFML::Render(m_window);
 
 #else
-
 	GetScene().Update(m_window);
 #endif
+
 	//--------------------draw------------------------//
 
 	m_window.display();
-
 }
 
 sf::Vector2i Engine::GetWindowPos() const

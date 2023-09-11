@@ -165,9 +165,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGui::Begin("Viewport", nullptr);
 	{
-		const auto& window_texture = Toad::Engine::Get().GetWindowTexture();
+		auto& window_texture = Toad::Engine::Get().GetWindowTexture();
 
-		ImGui::Image(sf::Sprite(window_texture.getTexture()), {ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y}, sf::Color::Black);
+		ImGui::Image(window_texture, {1920, 1080}, sf::Color::White);
 		
 		ImGui::End();
 	}
