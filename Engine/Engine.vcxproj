@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\systems\Scene.cpp" />
     <ClCompile Include="src\imgui_impl\imgui-SFML.cpp" />
     <ClCompile Include="src\imgui_impl\imgui.cpp" />
     <ClCompile Include="src\imgui_impl\imgui_demo.cpp" />
@@ -152,6 +153,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\default_scripts\Movement.h" />
+    <ClInclude Include="src\engine\default_scripts\Script.h" />
     <ClInclude Include="src\engine\Helpers.h" />
     <ClInclude Include="src\EngineMeta.h" />
     <ClInclude Include="src\pch.h" />
