@@ -2,7 +2,7 @@
 
 #include <EngineCore.h>
 
-#define SCRIPTBASE(T) NULL
+#define SCRIPT_CONSTRUCT(T) NULL
 
 namespace Toad
 {
@@ -19,7 +19,7 @@ public:
 	virtual void OnCreate(Object* obj);
 	virtual void OnDestroy(Object* obj);
 
-private:
+protected:
 	std::string m_name;
 };
 
