@@ -23,7 +23,7 @@ sf::Sprite& Sprite::GetSprite()
 void Sprite::Update(sf::RenderWindow& window)
 {
 	// update attached scripts
-	for (auto& script : m_scripts)
+	for (auto& script : m_attached_scripts)
 	{
 		script.OnUpdate(this);
 	}
@@ -35,7 +35,7 @@ void Sprite::Update(sf::RenderWindow& window)
 void Sprite::Update(sf::RenderTexture& texture)
 {
 	// update attached scripts
-	for (auto& script : m_scripts)
+	for (auto& script : m_attached_scripts)
 	{
 		script.OnUpdate(this);
 	}

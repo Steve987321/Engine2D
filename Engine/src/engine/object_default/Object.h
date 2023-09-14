@@ -37,9 +37,9 @@ public:
 	template <class T>
 	T* GetScript()
 	{
-		for (int i = 0; i < m_scripts.size(); i++)
+		for (int i = 0; i < m_attached_scripts.size(); i++)
 		{
-			auto script = &m_scripts[i];
+			auto script = &m_attached_scripts[i];
 
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
@@ -51,9 +51,9 @@ public:
 	template <class T>
 	void AddScript()
 	{
-		for (int i = 0; i < m_scripts.size(); i++)
+		for (int i = 0; i < m_attached_scripts.size(); i++)
 		{
-			auto script = &m_scripts[i];
+			auto script = &m_attached_scripts[i];
 
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
@@ -63,32 +63,32 @@ public:
 			}
 		}
 
-		m_scripts.emplace(T());
+		m_attached_scripts.emplace(T());
 	}
 
 	template <class T>
 	void RemoveScript()
 	{
-		for (int i = 0 ; i < m_scripts.size(); i++)
+		for (int i = 0 ; i < m_attached_scripts.size(); i++)
 		{
-			auto& script = m_scripts[i];
+			auto& script = m_attached_scripts[i];
 			if (dynamic_cast<T*>(script) != nullptr)
 			{
-				m_scripts.erase(m_scripts.begin() + i);
+				m_attached_scripts.erase(m_attached_scripts.begin() + i);
 				return;
 			}
 		}
 		
 	}
 
-	const std::vector<Script>& GetScripts() const
+	const std::vector<Script>& GetAttachedScripts() const
 	{
-		return m_scripts;
+		return m_attached_scripts;
 	}
 
 protected:
 	// attached scripts 
-	std::vector< Script > m_scripts {};
+	std::vector< Script > m_attached_scripts {};
 };
 
 }
