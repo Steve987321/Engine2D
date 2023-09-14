@@ -116,7 +116,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (selected_obj != nullptr)
 		{
 			ImGui::Text(selected_obj->name.c_str());
-			for (const auto& script : selected_obj->GetScripts())
+			for (const auto& script : selected_obj->GetAttachedScripts())
 			{
 				ImGui::Selectable(script.GetName().c_str());
 			}
