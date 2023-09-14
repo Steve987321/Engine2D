@@ -18,7 +18,6 @@ void GameBase::RegisterScripts()
 {
 	GetRegisteredScripts().clear();
 
-	Register(std::make_shared<TestScript>("TestScript"));
 	SCRIPT_REGISTER(TestScript);
 }
 
