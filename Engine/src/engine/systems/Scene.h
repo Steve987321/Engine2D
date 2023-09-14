@@ -44,10 +44,11 @@ struct ENGINE_API Scene
 		std::string objName = object.name;
 		if (objectsMap.contains(objName))
 		{
-			objName += " (" + std::to_string(objectsMap.count(objName)) + ')';
+			auto count = objectsMap.count(objName);
+			objName += " (" + std::to_string(count) + ')';
 			while (objectsMap.contains(objName))
 			{
-				objName += " (" + std::to_string(objectsMap.count(objName)) + ')';
+				objName = object.name + " (" + std::to_string(++count) + ')';
 			}
 		}
 
