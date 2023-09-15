@@ -6,11 +6,7 @@
 
 #include "engine/default_scripts/Script.h"
 
-#ifdef GAME_IS_EXPORT
 #define GAME_API __declspec(dllexport)
-#else
-#define GAME_API __declspec(dllimport)
-#endif
 
 #define SCRIPT_CONSTRUCT(T)				 \
 T(std::string_view name) : Script(name)	 \
@@ -18,25 +14,20 @@ T(std::string_view name) : Script(name)	 \
 	m_name = name;						 \
 }
 
-#define SCRIPT_REGISTER(T) Register(std::make_shared<T>(#T))
+#define SCRIPT_REGISTER(T) register_script(std::make_shared<T>(#T))
 
 namespace Toad
 {
 
-class GAME_API GameBase
+extern "C"
 {
-public:
-	GameBase();
-	virtual ~GameBase();
+	typedef void (register_scripts_t)();
+	typedef void (register_script_t)();
+	typedef std::vector<std::shared_ptr<Script>>& (get_registered_scripts_t)();
 
-	void RegisterScripts();
-	static std::vector<std::shared_ptr<Script>>& GetRegisteredScripts();
-
-protected:
-	sf::ContextSettings m_settings;
-
-private:
-	void Register(std::shared_ptr<Script> instance);
-};
+	GAME_API void register_scripts();
+	GAME_API void register_script(const std::shared_ptr<Script>& instance);
+	GAME_API std::vector<std::shared_ptr<Script>>& get_registered_scripts();
+}
 
 }

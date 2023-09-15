@@ -6,30 +6,21 @@
 namespace Toad
 {
 
-GameBase::GameBase()
+void register_scripts()
 {
-}
-
-GameBase::~GameBase()
-{
-}
-
-void GameBase::RegisterScripts()
-{
-	GetRegisteredScripts().clear();
-
+	get_registered_scripts().clear();
 	SCRIPT_REGISTER(TestScript);
 }
 
-std::vector<std::shared_ptr<Script>>& GameBase::GetRegisteredScripts()
+void register_script(const std::shared_ptr<Script>& instance)
+{
+	get_registered_scripts().emplace_back(instance);
+}
+
+std::vector<std::shared_ptr<Script>>& get_registered_scripts()
 {
 	static std::vector<std::shared_ptr<Script>> scripts{};
 	return scripts;
-}
-
-void GameBase::Register(std::shared_ptr<Script> instance)
-{
-	GetRegisteredScripts().emplace_back(instance);
 }
 
 }
