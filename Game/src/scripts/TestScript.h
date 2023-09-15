@@ -1,5 +1,6 @@
 #pragma once
-class TestScript : public Toad::Script
+
+class GAME_API TestScript : public Toad::Script
 {
 public:
 	SCRIPT_CONSTRUCT(TestScript)
