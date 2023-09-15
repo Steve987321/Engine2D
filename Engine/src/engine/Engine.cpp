@@ -4,6 +4,8 @@
 
 #include "engine.h"
 
+#include "Game/src/game_core/GameBase.h"
+
 #include <imgui/imgui.h>
 #include <imgui/imgui-SFML.h>
 
@@ -22,6 +24,8 @@ Engine::~Engine() = default;
 bool Engine::Init(const sf::ContextSettings& settings)
 {
 	log_Debug("Initializing Engine");
+
+	LoadGameScripts();
 
 	if (!InitWindow(settings)) return false;
 
@@ -190,9 +194,21 @@ void Engine::StopGameSession()
 	m_beginPlay = false;
 }
 
-void Engine::SetGameScripts()
+void Engine::LoadGameScripts()
 {
-}
+	auto dll = LoadLibrary(L"Game.dll");
+	if (!dll)
+		return;
+	auto registerScripts = reinterpret_cast<register_scripts_t*>(GetProcAddress(dll, "register_scripts"));
+	registerScripts();
+
+	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(GetProcAddress(dll, "get_registered_scripts"));
+	for (const auto& script : getScripts())
+	{
+		log_Debug(script->GetName().c_str());
+	}
+}	
+
 
 void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 {
