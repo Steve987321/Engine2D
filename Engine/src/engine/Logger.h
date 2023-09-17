@@ -2,89 +2,167 @@
 
 #include "EngineCore.h"
 
+#include <fstream>
+
+#ifdef ERROR
+#undef ERROR
+#endif
+
+static bool create_log_file = false;
+
 namespace Toad
 {
 
-class ENGINE_API Logger
+///
+/// Handles logs and console window
+///
+class ENGINE_API Logger final
 {
 public:
-	inline enum class log_type
+	Logger();
+	~Logger();
+
+public:
+	enum class CONSOLE_COLOR : WORD
 	{
-		LOK = 10,	    // green
-		LERROR = 12,	// red
-		LDEBUG = 9,		// blue
-		LWARNING = 14	// yellow
+		GREY = 8,
+		WHITE = 15,
+		RED = 12,
+		GREEN = 10,
+		BLUE = 9,
+		YELLOW = 14,
+		MAGENTA = 13,
 	};
 
-	Logger() 
+	enum class LOG_TYPE : WORD
 	{
-		m_hOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+		DEBUG = static_cast<WORD>(CONSOLE_COLOR::BLUE),
+		ERROR = static_cast<WORD>(CONSOLE_COLOR::RED),
+		WARNING = static_cast<WORD>(CONSOLE_COLOR::YELLOW),
+		EXCEPTION = static_cast<WORD>(CONSOLE_COLOR::MAGENTA)
+	};
+
+	std::unordered_map<LOG_TYPE, const char*> logTypeAsStr
+	{
+	{LOG_TYPE::DEBUG, "DEBUG"},
+	{LOG_TYPE::ERROR, "ERROR"},
+	{LOG_TYPE::EXCEPTION, "EXCEPTION"},
+	{LOG_TYPE::WARNING, "WARNING"},
+	};
+
+public:
+	/// Closes console and log file 
+	void DisposeLogger();
+
+public:
+	template <typename ... Args>
+	void LogDebug(const char* frmt, Args... args)
+	{
+		Log(frmt, LOG_TYPE::DEBUG, args...);
 	}
 
-	template <typename ... args> 
-	void Print(log_type type, args... Args)
+	template <typename ... Args>
+	void LogWarning(const char* frmt, Args... args)
 	{
-		std::lock_guard lock(m_mutex);
+		Log(frmt, LOG_TYPE::WARNING, args...);
+	}
 
-		SetConsoleTextAttribute(m_hOutput, (WORD)type);
+	template <typename ... Args>
+	void LogError(const char* frmt, Args... args)
+	{
+		Log(frmt, LOG_TYPE::ERROR, args...);
+	}
 
-		const char* logtypec;
-		std::string time = get_time();
-
-		switch (type)
-		{
-		case log_type::LDEBUG:
-			logtypec = "[#]";
-			break;
-		case log_type::LERROR:
-			logtypec = "[-]";
-			break;
-		case log_type::LOK:
-			logtypec = "[+]";
-			break;
-		case log_type::LWARNING:
-			logtypec = "[!]";
-			break;
-		default:
-			logtypec = "[?]";
-			break;
-
-		}
-
-		std::cout << logtypec << ' ';
-
-		SetConsoleTextAttribute(m_hOutput, 8); // white
-
-		std::cout << time << ' ';
-
-		if (type != log_type::LDEBUG) SetConsoleTextAttribute(m_hOutput, 15);
-
-		printf(Args..., Args...);
-		std::cout << std::endl;
+	template <typename ... Args>
+	void LogException(const char* frmt, Args... args)
+	{
+		Log(frmt, LOG_TYPE::EXCEPTION, args...);
 	}
 
 private:
-	std::mutex m_mutex;
-	HANDLE m_hOutput;
+	/// Returns the current time or date based on the format as a string
+	static std::string getDateStr(const std::string_view format);
 
-	std::string get_time() const
+	/// Returns the directory location to the Documents folder 
+	static std::string getDocumentsFolder();
+
+	/// Writes to created log file
+	void logToFile(const std::string_view str);
+
+private:
+	/// Formats a string using std::vformat given a string and format arguments and returns it.
+	///
+	///	brackets '{}' are used for formatting
+	template <typename ... Args>
+	std::string formatStr(const std::string_view format, Args&& ... args)
 	{
-		std::ostringstream ss;
-		std::string time;
-
-		auto t = std::time(NULL);
-		tm newtime;
-		localtime_s(&newtime, &t);
-
-		ss << std::put_time(&newtime, "%H:%M:%S");
-		return ss.str();
+		try
+		{
+			return std::vformat(format, std::make_format_args(args...));
+		}
+		catch (std::format_error& e)
+		{
+			LogException("Invalid formatting on string with '{}' | {}", std::string(format).c_str(), e.what());
+			return "";
+		}
 	}
+
+	/// Outputs string to console 
+	template<typename ... Args>
+	void Print(const std::string_view str, LOG_TYPE log_type)
+	{
+		std::cout << '[';
+
+		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(log_type));
+		std::cout << logTypeAsStr[log_type];
+
+		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		std::cout << "] [";
+
+		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::GREY));
+		std::cout << getDateStr("%H:%M:%S");
+
+		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		std::cout << "] ";
+
+		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::GREY));
+		std::cout << str << std::endl;
+
+		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+	}
+
+	/// Logs formatted string to console and log file
+	///
+	///	@param frmt Formatted string that gets formatted with the arguments using '{}'
+	///	@param log_type Type of log that affects console colors and beginning message of output
+	/// @param args Arguments that fit with the formatted string
+	template<typename ... Args>
+	void Log(const std::string_view frmt, LOG_TYPE log_type, Args&& ... args)
+	{
+		std::lock_guard lock(m_mutex);
+
+		auto formattedStr = formatStr(frmt, args...);
+
+		if (create_log_file)
+			logToFile(getDateStr("[%T]") + ' ' + formattedStr);
+
+		Print(formattedStr, log_type);
+	}
+
+private:
+	HANDLE m_hstdout{};
+
+	std::mutex m_mutex{};
+	std::mutex m_closeMutex{};
+
+	std::atomic_bool m_isConsoleClosed = false;
+
+	std::ofstream m_logFile{};
 };
 
 }
 
 
-#define log_Ok(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LOK, msg, __VA_ARGS__) 
-#define log_Debug(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LDEBUG, msg, __VA_ARGS__)
-#define log_Error(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LERROR, msg, __VA_ARGS__) 
-#define log_Warn(msg, ...) Toad::Engine::GetLogger().Print(Toad::Logger::log_type::LWARNING, msg, __VA_ARGS__) 
+#define log_Debug(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
+#define log_Error(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 
+#define log_Warn(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, __VA_ARGS__) 
