@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EngineCore.h>
+#include <ranges>
 
 #include "engine/default_scripts/Script.h"
 
@@ -37,58 +38,56 @@ public:
 	template <class T>
 	T* GetScript()
 	{
-		for (int i = 0; i < m_attached_scripts.size(); i++)
+		for (const auto& script : m_attached_scripts | std::views::values)
 		{
-			auto script = &m_attached_scripts[i];
-
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
 				return res;
 		}
+
 		return nullptr;
 	}
 
-	template <class T>
-	void AddScript()
+	// faster than removing by script type
+	bool RemoveScript(std::string_view script_name)
 	{
-		for (int i = 0; i < m_attached_scripts.size(); i++)
+		auto it = m_attached_scripts.find(script_name.data());
+		if (it != m_attached_scripts.end())
 		{
-			auto script = &m_attached_scripts[i];
+			m_attached_scripts.erase(it);
+			return true;
+		}
 
+		return false;
+	}
+
+	// slower than removing by script string name
+	template <class T>
+	bool RemoveScript()
+	{
+		for (const auto& script : m_attached_scripts | std::views::values)
+		{
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
-			{
-				//assert("Current object already has that type of script attached" && 0);
-				return;
-			}
+				return res;
 		}
 
-		m_attached_scripts.emplace(T());
+		return nullptr;
 	}
 
-	template <class T>
-	void RemoveScript()
+	void AddScript(Script* script)
 	{
-		for (int i = 0 ; i < m_attached_scripts.size(); i++)
-		{
-			auto& script = m_attached_scripts[i];
-			if (dynamic_cast<T*>(script) != nullptr)
-			{
-				m_attached_scripts.erase(m_attached_scripts.begin() + i);
-				return;
-			}
-		}
-		
+		m_attached_scripts[script->GetName()] = script;
 	}
 
-	const std::vector<Script>& GetAttachedScripts() const
+	const std::unordered_map<std::string, Script* >& GetAttachedScripts() const
 	{
 		return m_attached_scripts;
 	}
 
 protected:
 	// attached scripts 
-	std::vector< Script > m_attached_scripts {};
+	std::unordered_map<std::string, Script* > m_attached_scripts {};
 };
 
 }

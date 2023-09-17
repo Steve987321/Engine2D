@@ -40,6 +40,7 @@ namespace Toad
 
 		// load game.dll 
 		void LoadGameScripts();
+		std::vector<std::shared_ptr<Script>>& GetGameScripts();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
@@ -61,7 +62,8 @@ namespace Toad
 
 		Scene m_currentScene = {};
 
-		std::vector<Script> m_gameScripts = {};
+		// instances of all game scripts
+		std::vector<std::shared_ptr<Script>> m_gameScripts = {};
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
 

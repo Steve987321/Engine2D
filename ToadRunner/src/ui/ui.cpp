@@ -83,7 +83,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGui::Begin("Scene", nullptr);
 	{
-		std::queue<std::string> removeObjQueue{};
+		std::queue<std::string> remove_obj_queue{};
 
 		if (ImGui::Button("Add Sprite"))
 		{
@@ -102,10 +102,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		while (!removeObjQueue.empty())
+		while (!remove_obj_queue.empty())
 		{
-			Toad::Engine::Get().GetScene().RemoveFromScene(removeObjQueue.front());
-			removeObjQueue.pop();
+			Toad::Engine::Get().GetScene().RemoveFromScene(remove_obj_queue.front());
+			remove_obj_queue.pop();
 		}
 
 		ImGui::End();
@@ -115,17 +115,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		if (selected_obj != nullptr)
 		{
+			auto attached_scripts = selected_obj->GetAttachedScripts();
+
 			ImGui::Text(selected_obj->name.c_str());
-			for (const auto& script : selected_obj->GetAttachedScripts())
+
+			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj.get());
+			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj.get());
+
+			// show sprite properties
+			if (sprite_obj != nullptr)
 			{
-				ImGui::Selectable(script.GetName().c_str());
-			}
-			auto spriteObj = dynamic_cast< Toad::Sprite* >(selected_obj.get());
-			auto circleObj = dynamic_cast< Toad::Circle* >(selected_obj.get());
-			if (spriteObj != nullptr)
-			{
-				auto& sprite = spriteObj->GetSprite();
-				
+				auto& sprite = sprite_obj->GetSprite();
+
 				auto pos = sprite.getPosition();
 
 				if (ImGui::DragFloat("X", &pos.x))
@@ -136,11 +137,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 				auto colorU32 = ImGui::ColorConvertU32ToFloat4(sprite.getColor().toInteger());
 				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
 				if (ImGui::ColorEdit4("color", col))
-					sprite.setColor(sf::Color(ImGui::ColorConvertFloat4ToU32({col[0], col[1], col[2], col[3]})));
+					sprite.setColor(sf::Color(ImGui::ColorConvertFloat4ToU32({ col[0], col[1], col[2], col[3] })));
 			}
-			else if (circleObj != nullptr)
+
+			// show circle properties
+			else if (circle_obj != nullptr)
 			{
-				auto& circle = circleObj->GetCircle();
+				auto& circle = circle_obj->GetCircle();
 
 				auto pos = circle.getPosition();
 
@@ -157,6 +160,59 @@ void ui::engine_ui(ImGuiContext* ctx)
 				auto circleRadius = circle.getRadius();
 				if (ImGui::DragFloat("radius", &circleRadius))
 					circle.setRadius(circleRadius);
+			}
+
+			static std::string selected_script_name;
+
+			if (ImGui::TreeNode("Scripts"))
+			{
+				// show attached scripts
+				for (auto& [name, script] : attached_scripts)
+				{
+					// script properties
+					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
+					{
+						// TODO: reflection
+						// script.properties 
+
+						ImGui::TreePop();
+					}
+
+					// right clicking on script causes popup with extra options
+					if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
+					{
+						selected_script_name = name;
+						ImGui::OpenPopup(("SCRIPT " + selected_script_name).c_str());
+					}
+				}
+
+				ImGui::TreePop();
+			}
+
+			ImGui::OpenPopupOnItemClick("script add popup");
+
+			if (ImGui::BeginPopup(("SCRIPT " + selected_script_name).c_str()))
+			{
+				// show options for this script
+				if (ImGui::Button("Remove"))
+				{
+					selected_obj->RemoveScript(selected_script_name.c_str());
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (ImGui::BeginPopup("script add popup"))
+			{
+				for (auto& script : Toad::Engine::Get().GetGameScripts())
+				{
+					if (ImGui::Button(script->GetName().c_str()))
+					{
+						selected_obj->AddScript(script.get());
+					}
+				}
+
+				ImGui::EndPopup();
 			}
 		}
 

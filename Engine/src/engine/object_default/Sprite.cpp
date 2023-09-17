@@ -23,9 +23,9 @@ sf::Sprite& Sprite::GetSprite()
 void Sprite::Update(sf::RenderWindow& window)
 {
 	// update attached scripts
-	for (auto& script : m_attached_scripts)
+	for (auto& script : m_attached_scripts | std::views::values)
 	{
-		script.OnUpdate(this);
+		script->OnUpdate(this);
 	}
 
 	// draw sfml sprite object
@@ -35,12 +35,13 @@ void Sprite::Update(sf::RenderWindow& window)
 void Sprite::Update(sf::RenderTexture& texture)
 {
 	// update attached scripts
-	for (auto& script : m_attached_scripts)
+	for (auto& script : m_attached_scripts | std::views::values)
 	{
-		script.OnUpdate(this);
+		script->OnUpdate(this);
 	}
 
 	// draw sfml sprite object
 	texture.draw(m_sprite);
 }
+
 }

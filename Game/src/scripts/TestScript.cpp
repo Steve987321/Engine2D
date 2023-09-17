@@ -2,11 +2,13 @@
 #include "game_core/GameBase.h"
 #include "TestScript.h"
 
+#include "engine/object_default/Object.h"
+
 using namespace Toad;
 
 void TestScript::OnUpdate(Object* obj)
 {
 	Script::OnUpdate(obj);
 
-	std::cout << "this is a test\n";
+	obj->name = "Test Script is doing this";
 }

@@ -64,7 +64,7 @@ void Engine::Run()
 bool Engine::InitWindow(const sf::ContextSettings& settings)
 {
 #ifdef TOAD_EDITOR
-	m_window.create(sf::VideoMode(600, 600), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings);
+	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings);
 	m_window.setFramerateLimit(60);
 	bool res = ImGui::SFML::Init(m_window);
 	m_io = &ImGui::GetIO();
@@ -197,7 +197,11 @@ void Engine::LoadGameScripts()
 {
 	auto dll = LoadLibrary(L"Game.dll");
 	if (!dll)
+	{
+		LOGERROR("Couldn't find game dll file, {}", "Game.dll");
 		return;
+	}
+
 	auto registerScripts = reinterpret_cast<register_scripts_t*>(GetProcAddress(dll, "register_scripts"));
 	registerScripts();
 
@@ -205,11 +209,16 @@ void Engine::LoadGameScripts()
 
 	for (const auto& script : getScripts())
 	{
-		LOGDEBUG(script->GetName().c_str());
-		m_gameScripts.emplace_back(*script);
-	}
-}	
+		LOGDEBUG("Load game script: {}", script->GetName().c_str());
 
+		m_gameScripts.emplace_back(script);
+	}
+}
+
+std::vector<std::shared_ptr<Script>>& Engine::GetGameScripts()
+{
+	return m_gameScripts;
+}
 
 void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 {

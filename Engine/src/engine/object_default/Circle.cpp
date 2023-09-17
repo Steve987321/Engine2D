@@ -18,9 +18,9 @@ namespace Toad
 	void Circle::Update(sf::RenderWindow& window)
 	{
 		// update attached scripts
-		for (auto& script : m_attached_scripts)
+		for (auto script : m_attached_scripts | std::views::values)
 		{
-			script.OnUpdate(this);
+			script->OnUpdate(this);
 		}
 
 		// draw sfml circleshape object
@@ -30,9 +30,9 @@ namespace Toad
 	void Circle::Update(sf::RenderTexture& texture)
 	{
 		// update attached scripts
-		for (auto& script : m_attached_scripts)
+		for (auto script : m_attached_scripts | std::views::values)
 		{
-			script.OnUpdate(this);
+			script->OnUpdate(this);
 		}
 
 		// draw sfml circleshape object
