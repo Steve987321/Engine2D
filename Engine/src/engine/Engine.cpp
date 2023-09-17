@@ -43,17 +43,16 @@ void Engine::Run()
 		// update deltatime
 		m_deltaTime = m_deltaClock.restart();
 
+#ifdef TOAD_EDITOR
 		// update imgui sfml
 		ImGui::SFML::Update(m_window, m_deltaTime);
+		m_currentScene.Update(m_windowTexture);
+#else
+		m_currentScene.Update(m_window);
+#endif
 
 		// handle events 
 		EventHandler();
-
-		//if (m_beginPlay)
-		//{
-		//	// update scene objects 
-		//	m_currentScene.Update(m_window);
-		//}
 
 		// render the window and contents
 		Render();

@@ -38,6 +38,7 @@ namespace Toad
 		void StartGameSession();
 		void StopGameSession();
 
+		// load game.dll 
 		static void LoadGameScripts();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
