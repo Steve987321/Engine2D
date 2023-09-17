@@ -9,6 +9,7 @@ namespace Toad
 void register_scripts()
 {
 	get_registered_scripts().clear();
+
 	SCRIPT_REGISTER(TestScript);
 }
 

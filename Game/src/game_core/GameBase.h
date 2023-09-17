@@ -21,6 +21,7 @@ namespace Toad
 
 extern "C"
 {
+	// functions signatures
 	typedef void (register_scripts_t)();
 	typedef void (register_script_t)();
 	typedef std::vector<std::shared_ptr<Script>>& (get_registered_scripts_t)();

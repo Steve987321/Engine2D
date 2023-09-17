@@ -39,7 +39,7 @@ namespace Toad
 		void StopGameSession();
 
 		// load game.dll 
-		static void LoadGameScripts();
+		void LoadGameScripts();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
@@ -59,7 +59,9 @@ namespace Toad
 		FENGINE_UI m_renderUI = nullptr;
 		ImGuiIO* m_io = nullptr;
 
-		Scene m_currentScene;
+		Scene m_currentScene = {};
+
+		std::vector<Script> m_gameScripts = {};
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
 

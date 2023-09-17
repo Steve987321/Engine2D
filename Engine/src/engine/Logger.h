@@ -81,13 +81,13 @@ public:
 
 private:
 	/// Returns the current time or date based on the format as a string
-	static std::string getDateStr(const std::string_view format);
+	static std::string GetDateStr(const std::string_view format);
 
 	/// Returns the directory location to the Documents folder 
-	static std::string getDocumentsFolder();
+	static std::string GetDocumentsFolder();
 
 	/// Writes to created log file
-	void logToFile(const std::string_view str);
+	void LogToFile(const std::string_view str);
 
 private:
 	/// Formats a string using std::vformat given a string and format arguments and returns it.
@@ -113,22 +113,22 @@ private:
 	{
 		std::cout << '[';
 
-		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(log_type));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(log_type));
 		std::cout << logTypeAsStr[log_type];
 
-		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::WHITE));
 		std::cout << "] [";
 
-		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::GREY));
-		std::cout << getDateStr("%H:%M:%S");
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::GREY));
+		std::cout << GetDateStr("%H:%M:%S");
 
-		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::WHITE));
 		std::cout << "] ";
 
-		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::GREY));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::GREY));
 		std::cout << str << std::endl;
 
-		SetConsoleTextAttribute(m_hstdout, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::WHITE));
 	}
 
 	/// Logs formatted string to console and log file
@@ -144,13 +144,13 @@ private:
 		auto formattedStr = formatStr(frmt, args...);
 
 		if (create_log_file)
-			logToFile(getDateStr("[%T]") + ' ' + formattedStr);
+			LogToFile(GetDateStr("[%T]") + ' ' + formattedStr);
 
 		Print(formattedStr, log_type);
 	}
 
 private:
-	HANDLE m_hstdout{};
+	HANDLE m_stdoutHandle{};
 
 	std::mutex m_mutex{};
 	std::mutex m_closeMutex{};
@@ -163,6 +163,6 @@ private:
 }
 
 
-#define log_Debug(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
-#define log_Error(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 
-#define log_Warn(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, __VA_ARGS__) 
+#define LOGDEBUG(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
+#define LOGERROR(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 
+#define LOGWARN(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, __VA_ARGS__) 

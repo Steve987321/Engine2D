@@ -9,16 +9,16 @@ namespace Toad
 	{
 		AllocConsole();
 
-		m_hstdout = GetStdHandle(STD_OUTPUT_HANDLE);
+		m_stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 		if (create_log_file)
 		{
 			// create log file in the documents folder
 			std::string logFileName = "Toad.log";
-			m_logFile.open(getDocumentsFolder() + "\\" + logFileName, std::fstream::out);
+			m_logFile.open(GetDocumentsFolder() + "\\" + logFileName, std::fstream::out);
 
 			// log the date in the beginning
-			logToFile(getDateStr("%Y %d %b \n"));
+			LogToFile(GetDateStr("%Y %d %b \n"));
 		}
 	}
 
@@ -37,15 +37,15 @@ namespace Toad
 		if (m_isConsoleClosed) 
 			return;
 
-		CloseHandle(m_hstdout);
-		m_hstdout = nullptr;
+		CloseHandle(m_stdoutHandle);
+		m_stdoutHandle = nullptr;
 
 		FreeConsole();
 
 		m_isConsoleClosed = true;
 	}
 
-	std::string Logger::getDateStr(const std::string_view format)
+	std::string Logger::GetDateStr(const std::string_view format)
 	{
 		std::ostringstream ss;
 		std::string time;
@@ -59,7 +59,7 @@ namespace Toad
 		return ss.str();
 	}
 
-	std::string Logger::getDocumentsFolder()
+	std::string Logger::GetDocumentsFolder()
 	{
 		CHAR documents[MAX_PATH];
 		HRESULT res = SHGetFolderPathA(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, documents);
@@ -67,10 +67,11 @@ namespace Toad
 		{
 			return documents;
 		}
+
 		return "";
 	}
 
-	void Logger::logToFile(const std::string_view str)
+	void Logger::LogToFile(const std::string_view str)
 	{
 		m_logFile << str << std::endl;
 	}

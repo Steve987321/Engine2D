@@ -23,7 +23,7 @@ Engine::~Engine() = default;
 
 bool Engine::Init(const sf::ContextSettings& settings)
 {
-	log_Debug("Initializing Engine");
+	LOGDEBUG("Initializing Engine");
 
 	LoadGameScripts();
 
@@ -91,7 +91,7 @@ void Engine::EventHandler()
 
 		case sf::Event::Closed:
 		{
-			log_Ok("closing window");
+			LOGDEBUG("closing window");
 			m_window.close();
 			break;
 		}
@@ -202,9 +202,11 @@ void Engine::LoadGameScripts()
 	registerScripts();
 
 	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(GetProcAddress(dll, "get_registered_scripts"));
+
 	for (const auto& script : getScripts())
 	{
-		log_Debug(script->GetName().c_str());
+		LOGDEBUG(script->GetName().c_str());
+		m_gameScripts.emplace_back(*script);
 	}
 }	
 
@@ -216,14 +218,14 @@ void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 
 void Engine::CleanUp()
 {
-	log_Debug("clean up");
+	LOGDEBUG("clean up");
 
 	this->m_isRunning = false;
 
-	log_Debug("shutting down imgui");
+	LOGDEBUG("shutting down imgui");
 	ImGui::SFML::Shutdown();
 
-	log_Debug("closing window");
+	LOGDEBUG("closing window");
 	m_window.close();
 }
 

@@ -7,4 +7,6 @@ using namespace Toad;
 void TestScript::OnUpdate(Object* obj)
 {
 	Script::OnUpdate(obj);
+
+	std::cout << "this is a test\n";
 }
