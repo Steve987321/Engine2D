@@ -18,7 +18,7 @@
     <ClInclude Include="src\pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\game_core\GameBase.h">
+    <ClInclude Include="src\game_core\ScriptRegister.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\scripts\TestScript.h">
@@ -29,7 +29,7 @@
     <ClCompile Include="src\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\game_core\GameBase.cpp">
+    <ClCompile Include="src\game_core\ScriptRegister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\scripts\TestScript.cpp">

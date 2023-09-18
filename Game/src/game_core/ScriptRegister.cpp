@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "GameBase.h"
+#include "ScriptRegister.h"
 
 #include "scripts/TestScript.h"
 
