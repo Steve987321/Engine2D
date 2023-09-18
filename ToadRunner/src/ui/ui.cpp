@@ -163,8 +163,27 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 			static std::string selected_script_name;
+			static bool j = false;
 
-			if (ImGui::TreeNode("Scripts"))
+			bool script_node_open = ImGui::TreeNode("Scripts");
+			if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
+			{
+				ImGui::OpenPopup("SCRIPT ADD");
+			}
+			if (ImGui::BeginPopup("SCRIPT ADD"))
+			{
+				for (auto& script : Toad::Engine::Get().GetGameScripts())
+				{
+					if (ImGui::Button(script->GetName().c_str()))
+					{
+						selected_obj->AddScript(script.get());
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (script_node_open)
 			{
 				// show attached scripts
 				for (auto& [name, script] : attached_scripts)
@@ -181,38 +200,26 @@ void ui::engine_ui(ImGuiContext* ctx)
 					// right clicking on script causes popup with extra options
 					if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
 					{
+						j = true;
 						selected_script_name = name;
-						ImGui::OpenPopup(("SCRIPT " + selected_script_name).c_str());
+						ImGui::OpenPopup("SCRIPT SETTINGS");
 					}
 				}
+
+				if (ImGui::BeginPopup("SCRIPT SETTINGS"))
+				{
+					// show options for this script
+					if (ImGui::Button("Remove"))
+					{
+						selected_obj->RemoveScript(selected_script_name.c_str());
+					}
+
+					ImGui::EndPopup();
+				}
+				else
+					j = false;
 
 				ImGui::TreePop();
-			}
-
-			ImGui::OpenPopupOnItemClick("script add popup");
-
-			if (ImGui::BeginPopup(("SCRIPT " + selected_script_name).c_str()))
-			{
-				// show options for this script
-				if (ImGui::Button("Remove"))
-				{
-					selected_obj->RemoveScript(selected_script_name.c_str());
-				}
-
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginPopup("script add popup"))
-			{
-				for (auto& script : Toad::Engine::Get().GetGameScripts())
-				{
-					if (ImGui::Button(script->GetName().c_str()))
-					{
-						selected_obj->AddScript(script.get());
-					}
-				}
-
-				ImGui::EndPopup();
 			}
 		}
 
