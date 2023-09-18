@@ -163,7 +163,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 			static std::string selected_script_name;
-			static bool j = false;
 
 			bool script_node_open = ImGui::TreeNode("Scripts");
 			if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
@@ -200,7 +199,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 					// right clicking on script causes popup with extra options
 					if (ImGui::IsMouseReleased(1) && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByPopup))
 					{
-						j = true;
 						selected_script_name = name;
 						ImGui::OpenPopup("SCRIPT SETTINGS");
 					}
@@ -216,8 +214,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					ImGui::EndPopup();
 				}
-				else
-					j = false;
 
 				ImGui::TreePop();
 			}
