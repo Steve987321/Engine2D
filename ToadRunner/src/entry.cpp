@@ -2,7 +2,7 @@
 #include <EngineCore.h>
 
 #include <engine/Engine.h>
-#include <Game/src/game_core/GameBase.h>
+#include <Game/src/game_core/ScriptRegister.h>
 
 #include "ui/ui.h"
 

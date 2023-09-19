@@ -29,4 +29,13 @@ void Script::OnDestroy(Object* obj)
 {
 }
 
+void Script::ExposeVars()
+{
+}
+
+Reflection& Script::GetReflection()
+{
+	return m_reflection;
+}
+
 }

@@ -8,12 +8,6 @@
 
 #define GAME_API __declspec(dllexport)
 
-#define SCRIPT_CONSTRUCT(T)				 \
-T(std::string_view name) : Script(name)	 \
-{										 \
-	m_name = name;						 \
-}
-
 #define SCRIPT_REGISTER(T) register_script(std::make_shared<T>(#T))
 
 namespace Toad

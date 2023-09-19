@@ -190,8 +190,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 					// script properties
 					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
 					{
-						// TODO: reflection
-						// script.properties 
+						for (auto& [name, var] : script->GetReflection().Get().b)
+						{
+							ImGui::Checkbox(name.c_str(), var);
+						}
 
 						ImGui::TreePop();
 					}

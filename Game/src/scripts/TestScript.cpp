@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "game_core/GameBase.h"
+#include "game_core/ScriptRegister.h"
 #include "TestScript.h"
 
 #include "Engine/Engine.h"
@@ -13,9 +13,17 @@ void TestScript::OnUpdate(Object* obj)
 	auto circle = dynamic_cast<Circle*>(obj);
 	if (circle != nullptr)
 	{
-		static sf::Clock clock;
+		circle->GetCircle().setFillColor(sf::Color::Blue);
+		//static sf::Clock clock;
 		
-		LOGDEBUG("TestScript: {}", clock.getElapsedTime().asMilliseconds());
+		//LOGDEBUG("TestScript: {}", clock.getElapsedTime().asMilliseconds());
 	}
 	obj->name = "Test Script is doing this";
+}
+
+void TestScript::ExposeVars()
+{
+	Script::ExposeVars();
+
+	EXPOSE_VAR(variable1);
 }

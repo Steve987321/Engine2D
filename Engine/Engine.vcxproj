@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\engine\systems\Reflection.cpp" />
     <ClCompile Include="src\engine\Logger.cpp" />
     <ClCompile Include="src\engine\object_default\Circle.cpp" />
     <ClCompile Include="src\engine\default_scripts\Movement.cpp" />
@@ -184,6 +185,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\systems\Reflection.h" />
     <ClInclude Include="src\engine\object_default\Circle.h" />
     <ClInclude Include="src\engine\object_default\Object.h" />
     <ClInclude Include="src\engine\default_scripts\Movement.h" />
