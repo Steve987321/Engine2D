@@ -152,14 +152,19 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (ImGui::DragFloat("Y", &pos.y))
 					circle.setPosition(pos);
 
-				auto colorU32 = ImGui::ColorConvertU32ToFloat4(circle.getFillColor().toInteger());
-				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
-				if (ImGui::ColorEdit4("color", col))
-					circle.setFillColor(sf::Color(ImGui::ColorConvertFloat4ToU32({ col[0], col[1], col[2], col[3] })));
+				auto circle_col = circle.getFillColor();
+				float col[4] = {
+					circle_col.r / 255.f,
+					circle_col.g / 255.f,
+					circle_col.b / 255.f,
+					circle_col.a / 255.f
+				};
+				if (ImGui::ColorEdit4("fill color", col))
+					circle.setFillColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
 
-				auto circleRadius = circle.getRadius();
-				if (ImGui::DragFloat("radius", &circleRadius))
-					circle.setRadius(circleRadius);
+				auto circle_radius = circle.getRadius();
+				if (ImGui::DragFloat("radius", &circle_radius))
+					circle.setRadius(circle_radius);
 			}
 
 			static std::string selected_script_name;
