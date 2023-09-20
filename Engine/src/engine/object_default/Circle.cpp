@@ -17,6 +17,14 @@ namespace Toad
 		return m_circle;
 	}
 
+	void Circle::Start()
+	{
+		for (auto script : m_attached_scripts | std::views::values)
+		{
+			script->OnStart(this);
+		}
+	}
+
 	void Circle::Render(sf::RenderWindow& window)
 	{
 		// draw sfml circleshape object

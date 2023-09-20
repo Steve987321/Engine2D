@@ -13,6 +13,7 @@ namespace Toad
 		sf::CircleShape& GetCircle();
 
 	private:
+		void Start() override;
 		void Render(sf::RenderWindow& window) override;
 		void Render(sf::RenderTexture& texture) override;
 		void Update() override;
