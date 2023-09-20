@@ -210,9 +210,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 					// script properties
 					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
 					{
-						for (auto& [name, var] : script->GetReflection().Get().b)
+						auto script_vars = script->GetReflection().Get();
+
+						for (auto& [name, var] : script_vars.b)
 						{
 							ImGui::Checkbox(name.c_str(), var);
+						}
+						for (auto& [name, var] : script_vars.flt)
+						{
+							ImGui::DragFloat(name.c_str(), var);
 						}
 
 						ImGui::TreePop();
@@ -244,13 +250,32 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-	ImGui::Begin("Viewport", nullptr);
+	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 	{
 		auto& window_texture = Toad::Engine::Get().GetWindowTexture();
 
-		ImGui::Image(window_texture, {1920, 1080}, sf::Color::White);
+		auto content_size = ImGui::GetContentRegionAvail();
 
-		ImGui::SetCursorPos({ 20, 20 });
+		// resize but keep aspect ratio
+		constexpr float ar = 16.f / 9.f;
+		float image_width = content_size.x;
+		float image_height = content_size.x / ar;
+
+		if (image_height > content_size.y)
+		{
+			image_height = content_size.y;
+			image_width = content_size.y * ar;
+		}
+
+		// we want texture in the center 
+		ImGui::SetCursorPos({
+			(content_size.x - image_width) * 0.5f,
+			(content_size.y - image_height) * 0.5f
+		});
+
+		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
+
+		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		ImGui::BeginChild("Viewport Options", {50, 100}, true);
 		{
 			if (!Toad::Engine::Get().GameStateIsPlaying())
