@@ -20,7 +20,7 @@ sf::Sprite& Sprite::GetSprite()
 	return m_sprite;
 }
 
-void Sprite::Update(sf::RenderWindow& window)
+void Sprite::Render(sf::RenderWindow& window)
 {
 	// update attached scripts
 	for (auto& script : m_attached_scripts | std::views::values)
@@ -32,16 +32,19 @@ void Sprite::Update(sf::RenderWindow& window)
 	window.draw(m_sprite);
 }
 
-void Sprite::Update(sf::RenderTexture& texture)
+void Sprite::Render(sf::RenderTexture& texture)
+{
+	// draw sfml sprite object
+	texture.draw(m_sprite);
+}
+
+void Sprite::Update()
 {
 	// update attached scripts
-	for (auto& script : m_attached_scripts | std::views::values)
+	for (auto script : m_attached_scripts | std::views::values)
 	{
 		script->OnUpdate(this);
 	}
-
-	// draw sfml sprite object
-	texture.draw(m_sprite);
 }
 
 }

@@ -69,6 +69,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
+	if (ImGui::BeginMenuBar())
+	{
+
+		ImGui::EndMenuBar();
+	}
 	ImGui::End();
 
 	ImGui::Begin("Settings", nullptr);
@@ -234,6 +239,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 		auto& window_texture = Toad::Engine::Get().GetWindowTexture();
 
 		ImGui::Image(window_texture, {1920, 1080}, sf::Color::White);
+
+		ImGui::SetCursorPos({ 20, 20 });
+		ImGui::BeginChild("Viewport Options", {50, 100}, true);
+		{
+			if (!Toad::Engine::Get().GameStateIsPlaying())
+			{
+				if (ImGui::Button("Play"))
+					Toad::Engine::Get().StartGameSession();
+			}
+			else
+			{
+				if (ImGui::Button("Stop"))
+					Toad::Engine::Get().StopGameSession();
+			}
+			ImGui::EndChild();
+		}
 		
 		ImGui::End();
 	}

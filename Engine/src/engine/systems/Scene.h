@@ -26,10 +26,14 @@ struct ENGINE_API Scene
 
 	///
 	/// Update the object instances in this scene.
-	///	Draws the drawable objects to the window and calls update on the scripts.
 	///
-	void Update(sf::RenderWindow& window);
-	void Update(sf::RenderTexture& window);
+	void Update();
+
+	///
+	///	Draws the drawable objects to the window or texture
+	///
+	void Render(sf::RenderWindow& window);
+	void Render(sf::RenderTexture& texture);
 
 	///
 	/// @returns

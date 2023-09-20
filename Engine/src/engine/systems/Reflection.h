@@ -4,7 +4,6 @@
 // variables need to be static for them to be allowed to be 'exposed'
 
 // this will be used for the editor
-// editor uses imgui and uses pointers so we do that here to
 
 // bool, int8, int16, int32, int64, uint32, uint64, float, string
 

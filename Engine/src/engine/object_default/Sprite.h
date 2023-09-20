@@ -14,8 +14,9 @@ public:
 	sf::Sprite& GetSprite();
 
 private:
-	void Update(sf::RenderWindow& window) override;
-	void Update(sf::RenderTexture& texture) override;
+	void Render(sf::RenderWindow& window) override;
+	void Render(sf::RenderTexture& texture) override;
+	void Update() override;
 
 	sf::Sprite m_sprite;
 };

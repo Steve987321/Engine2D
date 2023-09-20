@@ -18,21 +18,30 @@ void Scene::Start()
 	}
 }
 
-void Scene::Update(sf::RenderWindow& window)
+void Scene::Update()
 {
 	for (auto& obj : objectsMap | std::views::values)
 	{
-		obj->Update(window);
+		obj->Update();
 	}
 }
 
-void Scene::Update(sf::RenderTexture& window)
+void Scene::Render(sf::RenderTexture& texture)
 {
 	for (auto& obj : objectsMap | std::views::values)
 	{
-		obj->Update(window);
+		obj->Render(texture);
 	}
 }
+
+void Scene::Render(sf::RenderWindow& window)
+{
+	for (auto& obj : objectsMap | std::views::values)
+	{
+		obj->Render(window);
+	}
+}
+
 
 Object* Scene::GetSceneObject(std::string_view obj_name)
 {

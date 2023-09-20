@@ -15,27 +15,24 @@ namespace Toad
 		return m_circle;
 	}
 
-	void Circle::Update(sf::RenderWindow& window)
+	void Circle::Render(sf::RenderWindow& window)
 	{
-		// update attached scripts
-		for (auto script : m_attached_scripts | std::views::values)
-		{
-			script->OnUpdate(this);
-		}
-
 		// draw sfml circleshape object
 		window.draw(m_circle);
 	}
 
-	void Circle::Update(sf::RenderTexture& texture)
+	void Circle::Render(sf::RenderTexture& texture)
+	{
+		// draw sfml circleshape object
+		texture.draw(m_circle);
+	}
+
+	void Circle::Update()
 	{
 		// update attached scripts
 		for (auto script : m_attached_scripts | std::views::values)
 		{
 			script->OnUpdate(this);
 		}
-
-		// draw sfml circleshape object
-		texture.draw(m_circle);
 	}
 }

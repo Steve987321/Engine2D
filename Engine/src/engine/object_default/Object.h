@@ -20,7 +20,7 @@ class ENGINE_API Object
 public:
 	explicit Object(std::string_view name) : name(name) {}
 	Object() : name("Object") {}
-
+	
 	virtual ~Object() {}
 
 	std::string name;
@@ -28,11 +28,14 @@ public:
 	virtual void Start()
 	{}
 
-	virtual void Update(sf::RenderWindow& window)
+	virtual void Render(sf::RenderWindow& window)
 	{}
 
 	// For imgui, only when using the editor
-	virtual void Update(sf::RenderTexture& texture)
+	virtual void Render(sf::RenderTexture& texture)
+	{}
+
+	virtual void Update()
 	{}
 
 	template <class T>

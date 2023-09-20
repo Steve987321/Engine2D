@@ -46,7 +46,10 @@ void Engine::Run()
 #ifdef TOAD_EDITOR
 		// update imgui sfml
 		ImGui::SFML::Update(m_window, m_deltaTime);
-		m_currentScene.Update(m_windowTexture);
+
+		// update objects 
+		if (m_beginPlay)
+			m_currentScene.Update();
 #else
 		m_currentScene.Update(m_window);
 #endif
@@ -69,6 +72,7 @@ bool Engine::InitWindow(const sf::ContextSettings& settings)
 	bool res = ImGui::SFML::Init(m_window);
 	m_io = &ImGui::GetIO();
 	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	return res;
 #else
 	// TODO: CHENGE DEEZZ
@@ -123,7 +127,7 @@ void Engine::Render()
 	m_windowTexture.clear();
 
 	// Update scene to the texture so it can display on the viewport 
-	GetScene().Update(m_windowTexture);
+	GetScene().Render(m_windowTexture);
 	m_windowTexture.display();
 
 	// imgui
@@ -180,6 +184,11 @@ void Engine::SetScene(const Scene& scene)
 
 	if (m_beginPlay)
 		m_currentScene.Start();
+}
+
+bool Engine::GameStateIsPlaying() const
+{
+	return m_beginPlay;
 }
 
 void Engine::StartGameSession()

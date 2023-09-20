@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 
 using namespace Toad;
+using namespace sf;
 
 void TestScript::OnUpdate(Object* obj)
 {
@@ -13,12 +14,11 @@ void TestScript::OnUpdate(Object* obj)
 	auto circle = dynamic_cast<Circle*>(obj);
 	if (circle != nullptr)
 	{
-		circle->GetCircle().setFillColor(sf::Color::Blue);
+		circle->GetCircle().setFillColor(Color::Blue);
 		//static sf::Clock clock;
 		
 		//LOGDEBUG("TestScript: {}", clock.getElapsedTime().asMilliseconds());
 	}
-	obj->name = "Test Script is doing this";
 }
 
 void TestScript::ExposeVars()
