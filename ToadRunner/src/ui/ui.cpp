@@ -184,14 +184,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 				for (auto& [name, script] : Toad::Engine::Get().GetGameScriptsRegister())
 				{
 					if (!script)
-						ImGui::TextColored({ 1,0,0,1 }, "Script %s is null", name);
-					else
+						continue;
+					
+					if (ImGui::Button(name.c_str()))
 					{
-						if (ImGui::Button(name.c_str()))
-						{
-							selected_obj->AddScript(script.get());
-						}
+						selected_obj->AddScript(script.get());
 					}
+					
 				}
 
 				ImGui::EndPopup();
@@ -202,6 +201,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 				// show attached scripts
 				for (auto& [name, script] : attached_scripts)
 				{
+					if (!script)
+					{
+						ImGui::TextColored({ 1,1,0,1 }, "Script %s is null", name);
+						continue;
+					}
+
 					// script properties
 					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
 					{
