@@ -6,6 +6,8 @@ namespace Toad
 	Circle::Circle(std::string_view obj_name)
 	{
 		name = obj_name;
+
+		m_circle.setRadius(10);
 	}
 
 	Circle::~Circle() = default;
