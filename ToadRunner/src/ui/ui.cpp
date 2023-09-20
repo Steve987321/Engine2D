@@ -181,11 +181,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			if (ImGui::BeginPopup("SCRIPT ADD"))
 			{
-				for (auto& script : Toad::Engine::Get().GetGameScripts())
+				for (auto& [name, script] : Toad::Engine::Get().GetGameScriptsRegister())
 				{
-					if (ImGui::Button(script->GetName().c_str()))
+					if (!script)
+						ImGui::TextColored({ 1,0,0,1 }, "Script %s is null", name);
+					else
 					{
-						selected_obj->AddScript(script.get());
+						if (ImGui::Button(name.c_str()))
+						{
+							selected_obj->AddScript(script.get());
+						}
 					}
 				}
 

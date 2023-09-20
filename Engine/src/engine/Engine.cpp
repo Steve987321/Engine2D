@@ -216,15 +216,29 @@ void Engine::LoadGameScripts()
 
 	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(GetProcAddress(dll, "get_registered_scripts"));
 
+	// null previous scripts
+	for (auto& script : m_gameScripts | std::views::values)
+	{
+		script = nullptr;
+	}
+
 	for (const auto& script : getScripts())
 	{
 		LOGDEBUG("Load game script: {}", script->GetName().c_str());
 
-		m_gameScripts.emplace_back(script);
+		m_gameScripts[script->GetName()] = script;
 	}
+
+#ifdef _DEBUG
+	for (const auto& [name, script]: m_gameScripts)
+	{
+		if (!script)
+			LOGWARN("Script {} is now null", name.c_str());
+	}
+#endif
 }
 
-std::vector<std::shared_ptr<Script>>& Engine::GetGameScripts()
+std::unordered_map<std::string, std::shared_ptr<Script>> & Engine::GetGameScriptsRegister()
 {
 	return m_gameScripts;
 }

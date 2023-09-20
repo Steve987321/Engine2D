@@ -41,7 +41,8 @@ namespace Toad
 
 		// load game.dll 
 		void LoadGameScripts();
-		std::vector<std::shared_ptr<Script>>& GetGameScripts();
+		// returns a map of scripts with script name as key, some script could be nullptr
+		std::unordered_map<std::string, std::shared_ptr<Script>>& GetGameScriptsRegister();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
@@ -64,7 +65,7 @@ namespace Toad
 		Scene m_currentScene = {};
 
 		// instances of all game scripts
-		std::vector<std::shared_ptr<Script>> m_gameScripts = {};
+		std::unordered_map<std::string, std::shared_ptr<Script>> m_gameScripts = {};
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
 
