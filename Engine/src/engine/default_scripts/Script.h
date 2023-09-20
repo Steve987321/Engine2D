@@ -33,10 +33,12 @@ public:
 	const std::string& GetName() const;
 
 	virtual void OnUpdate(Object* obj);
-	virtual void OnCreate(Object* obj);
+	virtual void OnStart(Object* obj);
 	virtual void OnDestroy(Object* obj);
 
 	virtual void ExposeVars();
+
+	virtual std::shared_ptr<Script> Clone() = 0;
 
 	Reflection& GetReflection();
 	

@@ -7,11 +7,13 @@
 using namespace Toad;
 using namespace sf;
 
-void TestScript::OnCreate(Object* obj)
+void TestScript::OnStart(Object* obj)
 {
-	Script::OnCreate(obj);
-
-
+	Script::OnStart(obj);
+	
+	LOGDEBUG("{} {}", sizeof *this, sizeof Toad::Script);
+	velx = start_direction_X;
+	vely = start_direction_Y;
 }
 
 void TestScript::OnUpdate(Object* obj)
@@ -25,13 +27,8 @@ void TestScript::OnUpdate(Object* obj)
 
 		auto win_size = Engine::Get().GetWindow().getSize();
 		auto dt = Engine::Get().GetDeltaTime().asMilliseconds() / 1000.f;
-		
-		static Vec2f vel = {
-			start_direction_X * dt,
-			start_direction_Y * dt
-		};
 
-		c.move(vel * speed_mult);
+		c.move(Vec2f{velx * dt, vely * dt} * speed_mult);
 
 		const auto change_c_col = [&c]
 		{
@@ -47,28 +44,28 @@ void TestScript::OnUpdate(Object* obj)
 
 		
 		if (c_bounds.left < 0)
-			if (vel.x < 0)
+			if (velx < 0)
 			{
 				change_c_col();
-				vel.x *= -1;
+				velx *= -1;
 			}
 		if (c_bounds.left + c_bounds.width > win_size.x)
-			if (vel.x > 0)
+			if (velx > 0)
 			{
 				change_c_col();
-				vel.x *= -1;
+				velx *= -1;
 			}
 		if (c_bounds.top < 0)
-			if (vel.y < 0)
+			if (vely < 0)
 			{
 				change_c_col();
-				vel.y *= -1;
+				vely *= -1;
 			}
 		if (c_bounds.top + c_bounds.height > win_size.y)
-			if (vel.y > 0)
+			if (vely > 0)
 			{
 				change_c_col();
-				vel.y *= -1;
+				vely *= -1;
 			}
 
 		//static sf::Clock clock;

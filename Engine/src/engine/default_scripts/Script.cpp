@@ -21,7 +21,7 @@ void Script::OnUpdate(Object* obj)
 {
 }
 
-void Script::OnCreate(Object* obj)
+void Script::OnStart(Object* obj)
 {
 }
 
