@@ -11,7 +11,6 @@ void TestScript::OnStart(Object* obj)
 {
 	Script::OnStart(obj);
 	
-	LOGDEBUG("{} {}", sizeof *this, sizeof Toad::Script);
 	velx = start_direction_X;
 	vely = start_direction_Y;
 }
@@ -78,7 +77,6 @@ void TestScript::ExposeVars()
 {
 	Script::ExposeVars();
 
-	EXPOSE_VAR(variable1);
 	EXPOSE_VAR(start_direction_X);
 	EXPOSE_VAR(start_direction_Y);
 	EXPOSE_VAR(speed_mult);

@@ -72,25 +72,28 @@ public:
 		{
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
-				return res;
+			{
+				m_attached_scripts.erase(script->GetName());
+				return true;
+			}
 		}
 
-		return nullptr;
+		return false;
 	}
 
-	void AddScript(Script* script)
+	void AddScript(std::shared_ptr<Script> script)
 	{
 		m_attached_scripts[script->GetName()] = script;
 	}
 
-	const std::unordered_map<std::string, Script* >& GetAttachedScripts() const
+	const std::unordered_map<std::string, std::shared_ptr<Script> >& GetAttachedScripts() const
 	{
 		return m_attached_scripts;
 	}
 
 protected:
 	// attached scripts 
-	std::unordered_map<std::string, Script* > m_attached_scripts {};
+	std::unordered_map<std::string, std::shared_ptr<Script> > m_attached_scripts {};
 };
 
 }

@@ -12,7 +12,7 @@ namespace Toad
 
 void Scene::Start()
 {
-	for (auto& obj : objectsMap | std::views::values)
+	for (auto& obj : objects_map | std::views::values)
 	{
 		obj->Start();
 	}
@@ -20,7 +20,7 @@ void Scene::Start()
 
 void Scene::Update()
 {
-	for (auto& obj : objectsMap | std::views::values)
+	for (auto& obj : objects_map | std::views::values)
 	{
 		obj->Update();
 	}
@@ -28,7 +28,7 @@ void Scene::Update()
 
 void Scene::Render(sf::RenderTexture& texture)
 {
-	for (auto& obj : objectsMap | std::views::values)
+	for (auto& obj : objects_map | std::views::values)
 	{
 		obj->Render(texture);
 	}
@@ -36,7 +36,7 @@ void Scene::Render(sf::RenderTexture& texture)
 
 void Scene::Render(sf::RenderWindow& window)
 {
-	for (auto& obj : objectsMap | std::views::values)
+	for (auto& obj : objects_map | std::views::values)
 	{
 		obj->Render(window);
 	}
@@ -45,18 +45,18 @@ void Scene::Render(sf::RenderWindow& window)
 
 Object* Scene::GetSceneObject(std::string_view obj_name)
 {
-	if (objectsMap.contains(obj_name.data()))
+	if (objects_map.contains(obj_name.data()))
 	{
-		return objectsMap[obj_name.data()].get();
+		return objects_map[obj_name.data()].get();
 	}
 	return nullptr;
 }
 
 bool Scene::RemoveFromScene(std::string_view obj_name)
 {
-	if (objectsMap.contains(obj_name.data()))
+	if (objects_map.contains(obj_name.data()))
 	{
-		objectsMap.erase(obj_name.data());
+		objects_map.erase(obj_name.data());
 		return true;
 	}
 	

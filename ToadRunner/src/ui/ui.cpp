@@ -80,6 +80,23 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
 
+		if (ImGui::TreeNode("all attached scripts"))
+		{
+			for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+			{
+				ImGui::Text("name %s %p", name.c_str(), obj.get());
+				for (const auto& [namescript, script] : obj->GetAttachedScripts())
+				{
+					ImGui::Text("script %s %p", namescript.c_str(), script);
+					for (const auto& [varname, pvar] : script->GetReflection().vars.b)
+					{
+						ImGui::Text("bool %s %p", varname.c_str(), pvar);
+					}
+				}
+			}
+
+			ImGui::TreePop();
+		}
 		ImGui::End();
 	}
 
@@ -99,7 +116,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"));
 		}
 
-		for (auto& [name, obj] : Toad::Engine::Get().GetScene().objectsMap)
+		for (auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
 		{
 			if (ImGui::Selectable(name.c_str(), selected_obj != nullptr && selected_obj->name == name))
 			{
@@ -188,9 +205,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					if (ImGui::Button(name.c_str()))
 					{
-						selected_obj->AddScript(script.get());
-					}
-					
+						selected_obj->AddScript(script->Clone());
+					}					
 				}
 
 				ImGui::EndPopup();
@@ -210,15 +226,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 					// script properties
 					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
 					{
+						ImGui::SameLine();
+						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script);
+
 						auto script_vars = script->GetReflection().Get();
 
 						for (auto& [name, var] : script_vars.b)
 						{
 							ImGui::Checkbox(name.c_str(), var);
+							ImGui::SameLine();
+							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
 						}
 						for (auto& [name, var] : script_vars.flt)
 						{
 							ImGui::DragFloat(name.c_str(), var);
+							ImGui::SameLine();
+							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
 						}
 
 						ImGui::TreePop();
@@ -276,7 +299,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
-		ImGui::BeginChild("Viewport Options", {50, 100}, true);
+		if (ImGui::TreeNode("Viewport Options"))
 		{
 			if (!Toad::Engine::Get().GameStateIsPlaying())
 			{
@@ -288,7 +311,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (ImGui::Button("Stop"))
 					Toad::Engine::Get().StopGameSession();
 			}
-			ImGui::EndChild();
+
+			ImGui::TreePop();
 		}
 		
 		ImGui::End();

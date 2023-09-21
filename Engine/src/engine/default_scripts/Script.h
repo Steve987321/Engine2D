@@ -12,14 +12,18 @@
 #define EXPOSE_VAR(T) 0
 #endif
 
-#define SCRIPT_CONSTRUCT(T)				\
-T(std::string_view name) : Script(name)	\
-{										\
-	m_name = name;						\
-	ExposeVars();						\
+#define SCRIPT_CONSTRUCT(T)											\
+T(std::string_view name) : Script(name)								\
+{																	\
+	m_name = name;													\
+	ExposeVars();													\
+}																	\
+std::shared_ptr<Script> Clone() override							\
+{																	\
+	auto pScript = new T(*this);									\
+	pScript->ExposeVars();											\
+	return std::shared_ptr<Script>(dynamic_cast<Script*>(pScript));	\
 }
-
-#define EXPOSABLE static inline 
 
 namespace Toad
 {

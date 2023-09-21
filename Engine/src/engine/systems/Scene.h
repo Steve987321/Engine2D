@@ -17,7 +17,7 @@ struct ENGINE_API Scene
 
 	// objects in scene
 	//std::vector<Object> objects;
-	std::unordered_map < std::string, std::shared_ptr<Object> > objectsMap;
+	std::unordered_map < std::string, std::shared_ptr<Object> > objects_map;
 
 	///
 	/// Is called when switching to this scene.
@@ -46,19 +46,19 @@ struct ENGINE_API Scene
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
 		std::string objName = object.name;
-		if (objectsMap.contains(objName))
+		if (objects_map.contains(objName))
 		{
-			auto count = objectsMap.count(objName);
+			auto count = objects_map.count(objName);
 			objName += " (" + std::to_string(count) + ')';
-			while (objectsMap.contains(objName))
+			while (objects_map.contains(objName))
 			{
 				objName = object.name + " (" + std::to_string(++count) + ')';
 			}
 		}
 
 		object.name = objName;
-		objectsMap.insert({ objName, std::make_shared<T>(object) });
-		return objectsMap[objName].get();
+		objects_map.insert({ objName, std::make_shared<T>(object) });
+		return objects_map[objName].get();
 
 	}
 
