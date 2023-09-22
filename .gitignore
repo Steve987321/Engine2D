@@ -1,5 +1,4 @@
 .vs/
-bin/
 bin-intermediate/
 bin-inter/
 *.ini
@@ -21,7 +20,7 @@ bin-inter/
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
+# *.dll
 
 # Fortran module files
 *.mod
@@ -34,6 +33,6 @@ bin-inter/
 *.lib
 
 # Executables
-*.exe
+# *.exe
 *.out
 *.app
