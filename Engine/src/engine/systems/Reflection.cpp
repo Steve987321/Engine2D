@@ -29,16 +29,6 @@ void Reflection::Add(std::string_view name, std::int32_t* val)
 	vars.i32[name.data()] = val;
 }
 
-void Reflection::Add(std::string_view name, std::uint32_t* val)
-{
-	vars.u32[name.data()] = val;
-}
-
-void Reflection::Add(std::string_view name, std::uint64_t* val)
-{
-	vars.u64[name.data()] = val;
-}
-
 void Reflection::Add(std::string_view name, float* val)
 {
 	vars.flt[name.data()] = val;

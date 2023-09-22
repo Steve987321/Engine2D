@@ -6,6 +6,7 @@
 #include "imgui/imgui-SFML.h"
 
 #include <queue>
+#include <limits>
 
 void ui::decorations()
 {
@@ -229,8 +230,25 @@ void ui::engine_ui(ImGuiContext* ctx)
 						ImGui::SameLine();
 						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script);
 
+						constexpr int i8_min = std::numeric_limits<int8_t>::min();
+						constexpr int i8_max = std::numeric_limits<int8_t>::max();
+						constexpr int i16_min = std::numeric_limits<int16_t>::min();
+						constexpr int i16_max = std::numeric_limits<int16_t>::max();
+
 						auto script_vars = script->GetReflection().Get();
 
+						for (auto& [name, var] : script_vars.str)
+						{
+							char buf[100];
+							std::strncpy(buf, var->c_str(), sizeof buf);
+
+							if (ImGui::InputText(name.c_str(), buf, sizeof buf))
+							{
+								*var = buf;
+							}
+							ImGui::SameLine();
+							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+						}
 						for (auto& [name, var] : script_vars.b)
 						{
 							ImGui::Checkbox(name.c_str(), var);
@@ -240,6 +258,24 @@ void ui::engine_ui(ImGuiContext* ctx)
 						for (auto& [name, var] : script_vars.flt)
 						{
 							ImGui::DragFloat(name.c_str(), var);
+							ImGui::SameLine();
+							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+						}
+						for (auto& [name, var] : script_vars.i8)
+						{
+							ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i8_min, i8_max);
+							ImGui::SameLine();
+							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+						}
+						for (auto& [name, var] : script_vars.i16)
+						{
+							ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i16_min, i16_max);
+							ImGui::SameLine();
+							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+						}
+						for (auto& [name, var] : script_vars.i32)
+						{
+							ImGui::DragInt(name.c_str(), var);
 							ImGui::SameLine();
 							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
 						}
