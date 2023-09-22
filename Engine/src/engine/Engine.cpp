@@ -7,7 +7,7 @@
 #include "Game/src/game_core/ScriptRegister.h"
 
 #include <imgui/imgui.h>
-#include <imgui/imgui-SFML.h>
+#include <imgui-SFML.h>
 
 namespace Toad
 {

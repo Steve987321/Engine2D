@@ -3,10 +3,11 @@
 #include "Engine/Engine.h"
 #include "ui.h"
 
-#include "imgui/imgui-SFML.h"
+#include "imgui-SFML.h"
 
 #include <queue>
 #include <limits>
+#include <string>
 
 void ui::decorations()
 {
@@ -240,7 +241,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						for (auto& [name, var] : script_vars.str)
 						{
 							char buf[100];
-							std::strncpy(buf, var->c_str(), sizeof buf);
+							strncpy_s(buf, var->c_str(), sizeof buf);
 
 							if (ImGui::InputText(name.c_str(), buf, sizeof buf))
 							{
