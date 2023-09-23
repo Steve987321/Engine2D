@@ -30,6 +30,8 @@ project "Engine"
         "vendor/SFML-2.5.1/include"
     }
 
+    cppdialect "C++20"
+
     filter "system:windows"
         cppdialect "C++20"
         staticruntime "On"
@@ -75,11 +77,6 @@ project "Game"
     }
 
     includedirs {
-        "%{prj.name}/src",
-        "vendor",
-        "vendor/sfml-imgui",
-        "vendor/SFML-2.5.1/include"
-
         "Engine/src",
         "vendor",
         "%{prj.name}/src",
@@ -89,6 +86,8 @@ project "Game"
     links {
         "Engine"
     }
+
+    cppdialect "C++20"
 
     filter "system:windows"
         cppdialect "C++20"
@@ -136,11 +135,6 @@ project "ToadRunner"
     }
 
     includedirs {
-        "%{prj.name}/src",
-        "vendor",
-        "vendor/sfml-imgui",
-        "vendor/SFML-2.5.1/include"
-
         "Engine/src",
         "vendor",
         "%{prj.name}/src",
@@ -151,6 +145,8 @@ project "ToadRunner"
         "Engine",
         "Game"
     }
+
+    cppdialect "C++20"
 
     filter "system:windows"
         cppdialect "C++20"
