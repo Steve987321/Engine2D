@@ -3,6 +3,7 @@
 #include "EngineCore.h"
 
 #include <fstream>
+#include <format>
 
 #ifdef ERROR
 #undef ERROR
@@ -23,7 +24,7 @@ public:
 	~Logger();
 
 public:
-	enum class CONSOLE_COLOR : WORD
+	enum class CONSOLE_COLOR : unsigned short
 	{
 		GREY = 8,
 		WHITE = 15,
@@ -34,12 +35,12 @@ public:
 		MAGENTA = 13,
 	};
 
-	enum class LOG_TYPE : WORD
+	enum class LOG_TYPE : unsigned short
 	{
-		DEBUG = static_cast<WORD>(CONSOLE_COLOR::BLUE),
-		ERROR = static_cast<WORD>(CONSOLE_COLOR::RED),
-		WARNING = static_cast<WORD>(CONSOLE_COLOR::YELLOW),
-		EXCEPTION = static_cast<WORD>(CONSOLE_COLOR::MAGENTA)
+		DEBUG = static_cast<unsigned short>(CONSOLE_COLOR::BLUE),
+		ERROR = static_cast<unsigned short>(CONSOLE_COLOR::RED),
+		WARNING = static_cast<unsigned short>(CONSOLE_COLOR::YELLOW),
+		EXCEPTION = static_cast<unsigned short>(CONSOLE_COLOR::MAGENTA)
 	};
 
 	std::unordered_map<LOG_TYPE, const char*> logTypeAsStr
@@ -90,45 +91,66 @@ private:
 	void LogToFile(const std::string_view str);
 
 private:
+
+	template<typename ... Args>
+	std::string string_format( const std::string format, Args ... args )
+	{
+		int size_s = std::snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+		if( size_s <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+		auto size = static_cast<size_t>( size_s );
+		std::unique_ptr<char[]> buf( new char[ size ] );
+		std::snprintf( buf.get(), size, format.c_str(), args ... );
+		return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+	}
+
 	/// Formats a string using std::vformat given a string and format arguments and returns it.
 	///
 	///	brackets '{}' are used for formatting
 	template <typename ... Args>
 	std::string formatStr(const std::string_view format, Args&& ... args)
 	{
+#ifndef _WIN32
+			return string_format(format.data(), args...);
+#else
 		try
 		{
-			return std::vformat(format, std::make_format_args(args...));
+			
+			return vformat(format, std::make_format_args(args...));
 		}
 		catch (std::format_error& e)
 		{
 			LogException("Invalid formatting on string with '{}' | {}", std::string(format).c_str(), e.what());
 			return "";
 		}
+#endif
 	}
 
 	/// Outputs string to console 
 	template<typename ... Args>
 	void Print(const std::string_view str, LOG_TYPE log_type)
 	{
+#ifdef _WIN32
 		std::cout << '[';
 
-		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(log_type));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(log_type));
 		std::cout << logTypeAsStr[log_type];
 
-		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
 		std::cout << "] [";
 
-		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::GREY));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::GREY));
 		std::cout << GetDateStr("%H:%M:%S");
 
-		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
 		std::cout << "] ";
 
-		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::GREY));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::GREY));
 		std::cout << str << std::endl;
 
-		SetConsoleTextAttribute(m_stdoutHandle, static_cast<WORD>(CONSOLE_COLOR::WHITE));
+		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
+#else
+		std::cout << '[' << logTypeAsStr[log_type] << "] [" << GetDateStr("%H:%M:%S") << "] " << str << std::endl;
+#endif
 	}
 
 	/// Logs formatted string to console and log file
@@ -150,7 +172,9 @@ private:
 	}
 
 private:
+#ifdef _WIN32
 	HANDLE m_stdoutHandle{};
+#endif
 
 	std::mutex m_mutex{};
 	std::mutex m_closeMutex{};
@@ -163,6 +187,9 @@ private:
 }
 
 
-#define LOGDEBUG(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
-#define LOGERROR(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 
-#define LOGWARN(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, __VA_ARGS__) 
+#define LOGDEBUGF(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
+#define LOGERRORF(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 
+#define LOGWARNF(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, __VA_ARGS__) 
+#define LOGDEBUG(msg) Toad::Engine::GetLogger().LogDebug(msg, nullptr)
+#define LOGERROR(msg) Toad::Engine::GetLogger().LogError(msg, nullptr) 
+#define LOGWARN(msg) Toad::Engine::GetLogger().LogWarning(msg, nullptr) 

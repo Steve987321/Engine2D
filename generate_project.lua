@@ -25,6 +25,7 @@ project "Engine"
 
     includedirs {
         "%{prj.name}/src",
+        "../",
         "vendor",
         "vendor/sfml-imgui",
         "vendor/SFML-2.5.1/include"

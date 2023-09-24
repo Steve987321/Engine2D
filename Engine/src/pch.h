@@ -10,7 +10,7 @@
 #define NOMINMAX
 #include <Windows.h>
 #else
-#error "Only windows is supported for now"
+// #error "Only windows is supported for now"
 #endif
 
 #include <vector>
@@ -20,6 +20,7 @@
 #include <shared_mutex>
 #include <thread>
 #include <functional>
+#include <format>
 
 #include <random>
 #include <cmath>
