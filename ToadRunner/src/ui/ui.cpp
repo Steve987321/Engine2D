@@ -82,6 +82,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
 
+		if (ImGui::Button("Save scene"))
+		{
+			static char scene_path[MAX_PATH] = "";
+			ImGui::InputText("path", scene_path, MAX_PATH);
+			Toad::SaveScene(Toad::Engine::Get().GetScene(), scene_path);
+		}
+
 		if (ImGui::TreeNode("all attached scripts"))
 		{
 			for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)

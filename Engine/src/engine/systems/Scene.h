@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EngineCore.h>
+#include <filesystem>
 
 namespace Toad
 {
@@ -11,26 +12,28 @@ class Circle;
 
 struct ENGINE_API Scene
 {
-	Scene() = default;
+	Scene() : name("unnamed_scene") {}
 
+	Scene(Scene& other) = delete;
+
+	// scene name
 	const char* name;
 
-	// objects in scene
-	//std::vector<Object> objects;
+	// holds object instances in the scene
 	std::unordered_map < std::string, std::shared_ptr<Object> > objects_map;
 
 	///
-	/// Is called when switching to this scene.
+	/// Is called once when switching to or starting this scene.
 	///
 	void Start();
 
 	///
-	/// Update the object instances in this scene.
+	/// Calls Update on all object instances in this scene.
 	///
 	void Update();
 
 	///
-	///	Draws the drawable objects to the window or texture
+	///	Calls Render on all object instances in this scene.
 	///
 	void Render(sf::RenderWindow& window);
 	void Render(sf::RenderTexture& texture);
@@ -64,15 +67,22 @@ struct ENGINE_API Scene
 
 	///
 	/// @returns
-	///	whether an object has been removed with the given name
+	///	Whether an object has been removed with the given name.
 	///
 	bool RemoveFromScene(std::string_view obj_name);
 
 	///
 	/// @returns 
-	/// A pointer to object if found nullptr if no objects were found
+	/// A pointer to object if found nullptr if no objects were found.
 	///
 	Object* GetSceneObject(std::string_view obj_name);
 };
+
+ENGINE_API Scene LoadScene(std::string_view path);
+ENGINE_API Scene LoadScene(const std::filesystem::path& path);
+
+// for path don't specify file name only the folder to save to 
+// TODO: handle scene indexing 
+ENGINE_API void SaveScene(const Scene& scene, std::string_view path);
 
 }
