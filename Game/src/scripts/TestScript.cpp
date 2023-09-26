@@ -19,7 +19,8 @@ void TestScript::OnUpdate(Object* obj)
 {
 	Script::OnUpdate(obj);
 
-	auto circle = dynamic_cast<Circle*>(obj);
+	// sick dvd logo screen hitting script for circle objects 
+	auto circle = dynamic_cast<Circle*>(obj); // TODO: thi s is shit 
 	if (circle != nullptr)
 	{
 		auto& c = circle->GetCircle();
@@ -38,9 +39,6 @@ void TestScript::OnUpdate(Object* obj)
 		};
 
 		auto c_bounds = c.getGlobalBounds();
-		/*LOGDEBUG("c_bounds: left: {}, top: {}, widht: {}, height: {}",
-			c_bounds.left, c_bounds.top, c_bounds.width, c_bounds.height);*/
-
 		
 		if (c_bounds.left < 0)
 			if (velx < 0)
@@ -66,10 +64,6 @@ void TestScript::OnUpdate(Object* obj)
 				change_c_col();
 				vely *= -1;
 			}
-
-		//static sf::Clock clock;
-		
-		//LOGDEBUG("TestScript: {}", clock.getElapsedTime().asMilliseconds());
 	}
 }
 

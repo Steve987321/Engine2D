@@ -14,8 +14,6 @@ struct ENGINE_API Scene
 {
 	Scene() : name("unnamed_scene") {}
 
-	Scene(Scene& other) = delete;
-
 	// scene name
 	const char* name;
 

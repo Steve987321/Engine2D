@@ -1,6 +1,6 @@
 #pragma once
 
-// Base of game which holds important data about the made game 
+// Functions for the engine to read to get access to the game scripts and to register scripts
 
 #include <EngineCore.h>
 

@@ -7,6 +7,8 @@
 #include "engine/object_default/Sprite.h"
 #include "engine/object_default/Circle.h"
 
+#include "Engine/Engine.h"
+
 #include "nlohmann/json.hpp"
 #include <fstream>
 
@@ -70,7 +72,54 @@ using json = nlohmann::json;
 
 Scene LoadScene(std::string_view path)
 {
-	return Scene();
+	std::ifstream in(path.data());
+
+	json data;
+	if (in.is_open())
+	{
+		try
+		{
+			data = json::parse(in);
+			in.close();
+		}
+		catch (json::parse_error& e)
+		{
+			LOGERROR("JSON parse error at {} {}", e.byte, e.what());
+			in.close();
+			return {};
+		}
+	}
+
+	Scene scene;
+
+	if (data.contains("objects"))
+	{
+		auto objects = data["objects"];
+		for (const auto& circle : objects["circles"].items())
+		{
+			Circle newcircle(circle.key());
+			auto& c = newcircle.GetCircle();
+
+			for (const auto& c_data : circle.value().items())
+			{
+				for (const auto& properties : c_data.value()["circle_properties"].items())
+				{
+					auto x = properties.value()["posx"].get<float>();
+					auto y = properties.value()["posy"].get<float>();
+					c.setPosition({ x, y });
+				}
+		
+				for (const auto& script : c_data.value()["scripts"].items())
+				{
+					Engine::Get().GetGameScriptsRegister();
+					script.key
+				}
+
+				
+			}
+		}
+	}
+	return scene;
 }
 
 Scene LoadScene(const std::filesystem::path& path)
@@ -149,6 +198,7 @@ void SaveScene(const Scene& scene, std::string_view path)
 
 			auto c_data = json::object();
 			auto c_circle_properties = json::object();
+
 			c_circle_properties["posx"] = c.getPosition().x;
 			c_circle_properties["posy"] = c.getPosition().y;
 			c_circle_properties["col"] = c.getFillColor().toInteger();
