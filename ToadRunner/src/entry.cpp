@@ -16,7 +16,8 @@ int main(int argc, char** argv)
 
 	if (!engine.Init(sf::ContextSettings()))
 		return EXIT_FAILURE;
-
+	
+	ImGui::SetCurrentContext(engine.GetImGuiContext());
 	LOGDEBUG("starting main loop");
 	engine.Run();
 

@@ -35,6 +35,8 @@ namespace Toad
 		Scene& GetScene();
 		void SetScene(const Scene& scene);
 
+		ImGuiContext* GetImGuiContext();
+
 		bool GameStateIsPlaying() const;
 		void StartGameSession();
 		void StopGameSession();

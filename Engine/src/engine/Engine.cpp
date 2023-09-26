@@ -64,7 +64,6 @@ void Engine::Run()
 
 		// handle events 
 		EventHandler();
-
 		// render the window and contents
 		Render();
 	}
@@ -78,13 +77,19 @@ bool Engine::InitWindow(const sf::ContextSettings& settings)
 	LOGDEBUG("Loading editor window");
 	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings);
 	m_window.setFramerateLimit(60);
-	bool res = ImGui::SFML::Init(m_window);
+	bool res = ImGui::SFML::Init(m_window, false);
 	LOGDEBUGF("ImGui SFML Init result: %d", res);
 	m_io = &ImGui::GetIO();
 	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	// m_io->Fonts->Clear();
+	m_io->Fonts->AddFontDefault();
+	// m_io->Fonts->Build();
+	ImGui::SFML::UpdateFontTexture();
+
 	return res;
-#else
+#else	
 	// TODO: CHENGE DEEZZ
 	LOGDEBUG("Loading window");
 	m_window.create(sf::VideoMode(600, 600), "Game", sf::Style::Titlebar | sf::Style::Close);
@@ -142,13 +147,12 @@ void Engine::Render()
 	m_windowTexture.display();
 
 	// imgui
-	m_renderUI(m_io->Ctx);
+	m_renderUI(ImGui::GetCurrentContext());
 	ImGui::SFML::Render(m_window);
 
 #else
 	GetScene().Update();
 #endif
-
 	//--------------------draw------------------------//
 
 	m_window.display();
@@ -195,6 +199,11 @@ void Engine::SetScene(const Scene& scene)
 
 	if (m_beginPlay)
 		m_currentScene.Start();
+}
+
+ImGuiContext* Engine::GetImGuiContext()
+{
+	return ImGui::GetCurrentContext();
 }
 
 bool Engine::GameStateIsPlaying() const
