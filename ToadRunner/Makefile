@@ -64,7 +64,7 @@ else ifeq ($(config),dev)
 TARGETDIR = ../bin/Dev-macosx-x86_64/ToadRunner
 TARGET = $(TARGETDIR)/ToadRunner
 OBJDIR = ../bin-intermediate/Dev-macosx-x86_64/ToadRunner
-DEFINES += -D_DEBUG -D_CONSOLE -D_TOAD_EDITOR
+DEFINES += -D_DEBUG -D_CONSOLE -DTOAD_EDITOR
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g -std=c++20
 LIBS += ../bin/Dev-macosx-x86_64/Engine/libEngine.dylib ../bin/Dev-macosx-x86_64/Game/libGame.dylib -framework OpenGL -L/opt/homebrew/Cellar/sfml/2.6.0/lib -lsfml-graphics -lsfml-system -lsfml-window

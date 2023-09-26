@@ -18,6 +18,7 @@ int main(int argc, char** argv)
 		return EXIT_FAILURE;
 	
 	ImGui::SetCurrentContext(engine.GetImGuiContext());
+	
 	LOGDEBUG("starting main loop");
 	engine.Run();
 
