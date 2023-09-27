@@ -229,7 +229,6 @@ void SaveScene(const Scene& scene, std::string_view path)
 	}
 	else if (out.fail())
 	{
-		std::cout << "sssssSSSSSSEEUUUUWWWWWW\n";
 		throw "bitchass";
 	}
 }
