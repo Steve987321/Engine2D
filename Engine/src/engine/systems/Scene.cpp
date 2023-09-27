@@ -112,7 +112,7 @@ Scene LoadScene(std::string_view path)
 				for (const auto& script : c_data.value()["scripts"].items())
 				{
 					Engine::Get().GetGameScriptsRegister();
-					script.key
+					// script.key
 				}
 
 				

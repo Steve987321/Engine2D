@@ -18,3 +18,8 @@
 #define ENGINE_API 
 #endif
 #endif
+
+#ifdef __APPLE__
+#include <sys/syslimits.h>
+#define MAX_PATH PATH_MAX
+#endif

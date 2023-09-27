@@ -27,7 +27,7 @@ endif
 ifeq ($(origin AR), default)
   AR = ar
 endif
-INCLUDES += -Isrc -I../vendor -I../vendor/sfml-imgui -I../vendor/imgui -I/opt/homebrew/Cellar/sfml/2.6.0/include
+INCLUDES += -Isrc -I../vendor -I../vendor/sfml-imgui -I../vendor/imgui -I/opt/homebrew/Cellar/sfml/2.6.0/include -I../vendor/json/include
 FORCE_INCLUDE +=
 ALL_CPPFLAGS += $(CPPFLAGS) -MD -MP $(DEFINES) $(INCLUDES)
 ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
