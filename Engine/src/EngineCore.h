@@ -19,6 +19,10 @@
 #endif
 #endif
 
+#ifdef _MSC_VER
+#pragma warning (disable: 4996)     // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
+#endif
+
 #ifdef __APPLE__
 #include <sys/syslimits.h>
 #define MAX_PATH PATH_MAX

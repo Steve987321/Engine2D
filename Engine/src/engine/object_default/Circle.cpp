@@ -40,7 +40,7 @@ namespace Toad
 	void Circle::Update()
 	{
 		// update attached scripts
-		for (auto script : m_attached_scripts | std::views::values)
+		for (const auto& script : m_attached_scripts | std::views::values)
 		{
 			script->OnUpdate(this);
 		}

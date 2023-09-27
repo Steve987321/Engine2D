@@ -60,17 +60,17 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediate\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(SolutionDir)vendor\SFML-2.5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)vendor\SFML-2.6.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediate\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(SolutionDir)vendor\SFML-2.5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)vendor\SFML-2.6.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediate\$(Platform)\$(Configuration)\</IntDir>
-    <LibraryPath>$(SolutionDir)vendor\SFML-2.5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)vendor\SFML-2.6.0\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -81,7 +81,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)vendor\SFML-2.5.1\include;$(SolutionDir)vendor\;$(ProjectDir)src;$(ProjectDir)src\scripts</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)vendor\SFML-2.6.0\include;$(SolutionDir)vendor\;$(ProjectDir)src;$(ProjectDir)src\scripts</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -99,7 +99,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)vendor\SFML-2.5.1\include;$(SolutionDir)vendor\;$(ProjectDir)src;$(ProjectDir)src\scripts</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)vendor\SFML-2.6.0\include;$(SolutionDir)vendor\;$(ProjectDir)src;$(ProjectDir)src\scripts</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -119,7 +119,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)vendor\SFML-2.5.1\include;$(SolutionDir)vendor\;$(ProjectDir)src;$(ProjectDir)src\scripts</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir)vendor\SFML-2.6.0\include;$(SolutionDir)vendor\;$(ProjectDir)src;$(ProjectDir)src\scripts</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

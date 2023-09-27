@@ -249,7 +249,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 						{
 							char buf[100];
 							strncpy(buf, var->c_str(), sizeof buf);
-
 							if (ImGui::InputText(name.c_str(), buf, sizeof buf))
 							{
 								*var = buf;

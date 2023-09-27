@@ -58,17 +58,17 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(SolutionDir)vendor\SFML-2.5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)vendor\SFML-2.6.0\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">
-    <LibraryPath>$(SolutionDir)vendor\SFML-2.5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)vendor\SFML-2.6.0\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>$(SolutionDir)vendor\SFML-2.5.1\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)vendor\SFML-2.6.0\lib;$(LibraryPath)</LibraryPath>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)bin-intermediate\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -81,7 +81,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir);$(SolutionDir)vendor;$(SolutionDir)vendor\sfml-imgui;$(SolutionDir)vendor\SFML-2.5.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir);$(SolutionDir)vendor;$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\sfml-imgui;$(SolutionDir)vendor\SFML-2.6.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -98,7 +98,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir);$(SolutionDir)vendor;$(SolutionDir)vendor\sfml-imgui;$(SolutionDir)vendor\SFML-2.5.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir);$(SolutionDir)vendor;$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\sfml-imgui;$(SolutionDir)vendor\SFML-2.6.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,7 +117,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir);$(SolutionDir)vendor;$(SolutionDir)vendor\sfml-imgui;$(SolutionDir)vendor\SFML-2.5.1\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Engine\src;$(SolutionDir);$(SolutionDir)vendor;$(SolutionDir)vendor\imgui;$(SolutionDir)vendor\sfml-imgui;$(SolutionDir)vendor\SFML-2.6.0\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
