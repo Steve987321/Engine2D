@@ -2,7 +2,7 @@
 #include <EngineCore.h>
 
 #include <engine/Engine.h>
-#include <Game/src/game_core/ScriptRegister.h>
+#include "../Game/src/game_core/ScriptRegister.h"
 
 #include "ui/ui.h"
 
@@ -16,7 +16,10 @@ int main(int argc, char** argv)
 
 	if (!engine.Init(sf::ContextSettings()))
 		return EXIT_FAILURE;
-
+	
+	ImGui::SetCurrentContext(engine.GetImGuiContext());
+	
+	LOGDEBUG("starting main loop");
 	engine.Run();
 
 	return EXIT_SUCCESS;

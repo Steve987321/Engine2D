@@ -4,7 +4,11 @@
 
 #include "engine.h"
 
-#include "Game/src/game_core/ScriptRegister.h"
+#include "../Game/src/game_core/ScriptRegister.h"
+
+#ifdef __APPLE__
+#include <dlfcn.h>
+#endif
 
 #include <imgui/imgui.h>
 #include <imgui-SFML.h>
@@ -27,9 +31,13 @@ bool Engine::Init(const sf::ContextSettings& settings)
 
 	LoadGameScripts();
 
-	if (!InitWindow(settings)) return false;
+	if (!InitWindow(settings))
+		return false;
 
+#ifdef TOAD_EDITOR
+	LOGDEBUG("Creating window texture for viewport");
 	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
+#endif
 
 	m_isRunning = true;
 
@@ -51,12 +59,11 @@ void Engine::Run()
 		if (m_beginPlay)
 			m_currentScene.Update();
 #else
-		m_currentScene.Update(m_window);
+		m_currentScene.Update();
 #endif
 
 		// handle events 
 		EventHandler();
-
 		// render the window and contents
 		Render();
 	}
@@ -67,15 +74,24 @@ void Engine::Run()
 bool Engine::InitWindow(const sf::ContextSettings& settings)
 {
 #ifdef TOAD_EDITOR
+	LOGDEBUG("Loading editor window");
 	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings);
 	m_window.setFramerateLimit(60);
-	bool res = ImGui::SFML::Init(m_window);
+	bool res = ImGui::SFML::Init(m_window, false);
+	LOGDEBUGF("ImGui SFML Init result: %d", res);
 	m_io = &ImGui::GetIO();
 	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	// m_io->Fonts->Clear();
+	m_io->Fonts->AddFontDefault();
+	// m_io->Fonts->Build();
+	ImGui::SFML::UpdateFontTexture();
+
 	return res;
-#else
+#else	
 	// TODO: CHENGE DEEZZ
+	LOGDEBUG("Loading window");
 	m_window.create(sf::VideoMode(600, 600), "Game", sf::Style::Titlebar | sf::Style::Close);
 	m_window.setFramerateLimit(60);
 	return true;
@@ -131,13 +147,12 @@ void Engine::Render()
 	m_windowTexture.display();
 
 	// imgui
-	m_renderUI(m_io->Ctx);
+	m_renderUI(ImGui::GetCurrentContext());
 	ImGui::SFML::Render(m_window);
 
 #else
-	GetScene().Update(m_window);
+	GetScene().Update();
 #endif
-
 	//--------------------draw------------------------//
 
 	m_window.display();
@@ -186,6 +201,11 @@ void Engine::SetScene(const Scene& scene)
 		m_currentScene.Start();
 }
 
+ImGuiContext* Engine::GetImGuiContext()
+{
+	return ImGui::GetCurrentContext();
+}
+
 bool Engine::GameStateIsPlaying() const
 {
 	return m_beginPlay;
@@ -204,6 +224,7 @@ void Engine::StopGameSession()
 
 void Engine::LoadGameScripts()
 {
+#ifdef _WIN32
 	auto dll = LoadLibrary(L"Game.dll");
 	if (!dll)
 	{
@@ -224,16 +245,53 @@ void Engine::LoadGameScripts()
 
 	for (const auto& script : getScripts())
 	{
-		LOGDEBUG("Load game script: {}", script->GetName().c_str());
+		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
 
 		m_gameScripts[script->GetName()] = script;
 	}
+#else
+	LOGDEBUG("getting game lib");
+	auto dll = dlopen("libGame.dylib", RTLD_LAZY);
+	if (dll == nullptr)
+	{
+		LOGERROR("dll is nullptr");
+		std::cout << dlerror() <<std::endl;
+		// LOGERRORF("Couldn't find game library file, %s", "../Game.dylib");
+		// LOGERROR(dlerror());
+		return;
+	}
+	LOGERROR("found dll");
+
+	auto registerScripts = reinterpret_cast<register_scripts_t*>(dlsym(dll, "register_scripts"));
+	LOGDEBUGF("registerScripts: %p", registerScripts);
+	if (!registerScripts)
+		return;
+	registerScripts();
+
+	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(dlsym(dll, "get_registered_scripts"));
+	LOGDEBUGF("registerScripts: %p", getScripts);
+	if (getScripts == nullptr)
+		return;
+
+	// null previous scripts
+	for (auto& script : m_gameScripts | std::views::values)
+	{
+		script = nullptr;
+	}
+
+	for (const auto& script : getScripts())
+	{
+		LOGDEBUGF("Load game script: %s", script->GetName().c_str());
+
+		m_gameScripts[script->GetName()] = script;
+	}
+#endif
 
 #ifdef _DEBUG
 	for (const auto& [name, script]: m_gameScripts)
 	{
 		if (!script)
-			LOGWARN("Script {} is now null", name.c_str());
+			LOGWARNF("Script {} is now null", name.c_str());
 	}
 #endif
 }

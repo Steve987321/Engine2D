@@ -720,7 +720,7 @@ void Update(const sf::Vector2i& mousePos, const sf::Vector2f& displaySize, sf::T
         updateJoystickButtonState(io);
         updateJoystickDPadState(io);
         updateJoystickAxisState(io);
-    }
+    }   
 
     ImGui::NewFrame();
 }

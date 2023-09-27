@@ -96,7 +96,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::Text("name %s %p", name.c_str(), obj.get());
 				for (const auto& [namescript, script] : obj->GetAttachedScripts())
 				{
-					ImGui::Text("script %s %p", namescript.c_str(), script);
+					ImGui::Text("script %s %p", namescript.c_str(), script.get());
 					for (const auto& [varname, pvar] : script->GetReflection().vars.b)
 					{
 						ImGui::Text("bool %s %p", varname.c_str(), pvar);
@@ -228,7 +228,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					if (!script)
 					{
-						ImGui::TextColored({ 1,1,0,1 }, "Script %s is null", name);
+						ImGui::TextColored({ 1,1,0,1 }, "Script %s is null", name.c_str());
 						continue;
 					}
 
@@ -236,7 +236,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
 					{
 						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script);
+						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script.get());
 
 						constexpr int i8_min = std::numeric_limits<int8_t>::min();
 						constexpr int i8_max = std::numeric_limits<int8_t>::max();
@@ -248,7 +248,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						for (auto& [name, var] : script_vars.str)
 						{
 							char buf[100];
-							strncpy_s(buf, var->c_str(), sizeof buf);
+							strncpy(buf, var->c_str(), sizeof buf);
 
 							if (ImGui::InputText(name.c_str(), buf, sizeof buf))
 							{
