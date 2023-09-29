@@ -10,7 +10,7 @@ namespace Toad
 	Logger::Logger()
 	{
 		#ifdef _WIN32
-		AllocConsole();
+		// AllocConsole(); _CONSOLE is already defined
 
 		m_stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 

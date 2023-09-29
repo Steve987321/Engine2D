@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EngineCore.h"
+#include "FormatStr.h"
 
 #include <fstream>
 #include <format>
@@ -91,40 +92,6 @@ private:
 	void LogToFile(const std::string_view str);
 
 private:
-
-	template<typename ... Args>
-	std::string string_format( const std::string format, Args ... args )
-	{
-		int size_s = std::snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
-		if( size_s <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
-		auto size = static_cast<size_t>( size_s );
-		std::unique_ptr<char[]> buf( new char[ size ] );
-		std::snprintf( buf.get(), size, format.c_str(), args ... );
-		return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
-	}
-
-	/// Formats a string using std::vformat given a string and format arguments and returns it.
-	///
-	///	brackets '{}' are used for formatting
-	template <typename ... Args>
-	std::string formatStr(const std::string_view format, Args&& ... args)
-	{
-#ifndef _WIN32
-			return string_format(format.data(), args...);
-#else
-		try
-		{
-			
-			return vformat(format, std::make_format_args(args...));
-		}
-		catch (std::format_error& e)
-		{
-			LogException("Invalid formatting on string with '{}' | {}", std::string(format).c_str(), e.what());
-			return "";
-		}
-#endif
-	}
-
 	/// Outputs string to console 
 	template<typename ... Args>
 	void Print(const std::string_view str, LOG_TYPE log_type)
@@ -163,7 +130,7 @@ private:
 	{
 		std::lock_guard lock(m_mutex);
 
-		auto formattedStr = formatStr(frmt, args...);
+		auto formattedStr = format_str(frmt, args...);
 
 		if (create_log_file)
 			LogToFile(GetDateStr("[%T]") + ' ' + formattedStr);

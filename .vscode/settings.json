@@ -2,6 +2,8 @@
     "C_Cpp.errorSquiggles": "disabled",
     "C_Cpp.dimInactiveRegions": false,
     "files.associations": {
-        "ios": "cpp"
+        "ios": "cpp",
+        "fstream": "cpp",
+        "locale": "cpp"
     }
 }
