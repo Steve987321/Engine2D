@@ -77,7 +77,6 @@ struct ENGINE_API Scene
 };
 
 ENGINE_API Scene LoadScene(std::string_view path);
-ENGINE_API Scene LoadScene(const std::filesystem::path& path);
 
 // for path don't specify file name only the folder to save to 
 // TODO: handle scene indexing 

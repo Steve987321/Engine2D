@@ -84,7 +84,7 @@ Scene LoadScene(std::string_view path)
 		}
 		catch (json::parse_error& e)
 		{
-			LOGERROR("JSON parse error at {} {}", e.byte, e.what());
+			LOGERRORF("JSON parse error at {} {}", e.byte, e.what());
 			in.close();
 			return {};
 		}
@@ -111,8 +111,17 @@ Scene LoadScene(std::string_view path)
 		
 				for (const auto& script : c_data.value()["scripts"].items())
 				{
-					Engine::Get().GetGameScriptsRegister();
-					// script.key
+					auto gscripts = Engine::Get().GetGameScriptsRegister();
+					if (auto it = gscripts.find(script.key()); it != gscripts.end())
+					{
+						newcircle.AddScript(it->second->Clone());
+						auto new_attached_script = newcircle.GetScript(it->first);
+						auto vars = new_attached_script->GetReflection().Get();
+						for (const auto& script_vars : script.value().items())
+						{
+							LOGDEBUGF("script_vars iteration: key: {} value: {}", script_vars.key(), script_vars.value());
+						}
+					}
 				}
 
 				
@@ -120,11 +129,6 @@ Scene LoadScene(std::string_view path)
 		}
 	}
 	return scene;
-}
-
-Scene LoadScene(const std::filesystem::path& path)
-{
-	return Scene();
 }
 
 void SaveScene(const Scene& scene, std::string_view path)

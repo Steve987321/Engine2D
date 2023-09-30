@@ -19,7 +19,7 @@ namespace Toad
 
         (args_as_str.push_back(stringify(args)),...);
 
-        int curr_arr_index = 0;
+        int curr_args_as_str_index = 0;
         bool get_index = false;
         std::string index_str = "";
         std::string result = "";
@@ -32,34 +32,39 @@ namespace Toad
                 index_str.clear();
                 continue;
             }
+
             if (get_index && c != '}')
             {
                 index_str += c;
             }
             else if (get_index && c == '}')
             {
-                get_index = false;
-
-                if (index_str.empty())
-                {
-                    if (curr_arr_index + 1 > args_as_str.size())
-                    {
-                        result += "{}";
-                        continue;
-                    }
-                }
-
                 try
                 {
+                    if (index_str.empty())
+                    {
+                        if (curr_args_as_str_index + 1 > args_as_str.size())
+                        {
+                            result += "{}";
+                            continue;
+                        }
+
+                        result += args_as_str[curr_args_as_str_index++];
+                        continue;
+                    }
                     int index = std::stoi(index_str);
-                    if (index >= args_as_str.size()) // bru
+                    if (index >= args_as_str.size())  // bru
                     {
                         result += "{INVALID}";
                         continue;
                     }
                     result += args_as_str[index];
                 }
-                catch (std::exception& e)
+                catch (std::out_of_range& e)
+                {
+                    std::cout << "Error formatting: " << e.what() << std::endl;
+                }
+                catch (std::invalid_argument& e)
                 {
                     std::string args;
                     for (const auto& s : args_as_str)
