@@ -186,6 +186,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\engine\FormatStr.h" />
     <ClInclude Include="src\engine\systems\Input.h" />
     <ClInclude Include="src\engine\systems\Reflection.h" />
     <ClInclude Include="src\engine\object_default\Circle.h" />

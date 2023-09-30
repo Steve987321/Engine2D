@@ -434,6 +434,9 @@
     <ClInclude Include="src\engine\systems\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\engine\FormatStr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="vendor\SFML-2.5.1\include\SFML\Audio\SoundFileFactory.inl">

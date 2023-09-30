@@ -5,7 +5,7 @@
 namespace Toad
 {
     template<typename T>
-    ENGINE_API std::string stringify(T&& val)
+    std::string stringify(T&& val)
     {
         std::stringstream ss;
         ss << val;
@@ -13,7 +13,7 @@ namespace Toad
     }
 
     template <typename ...TArgs>
-    ENGINE_API std::string format_str(std::string_view format, TArgs&& ... args)
+    std::string format_str(std::string_view format, TArgs&& ... args)
     {
         std::vector<std::string> args_as_str = {};
 
@@ -61,7 +61,11 @@ namespace Toad
                 }
                 catch (std::exception& e)
                 {
-                    std::cout << "Error formatting: " << e.what() << std::endl;
+                    std::string args;
+                    for (const auto& s : args_as_str)
+                        args += s + ' ';
+
+                    std::cout << "Error formatting: " << format << ' ' << args << ' ' << e.what() << std::endl;
                 }
             }
             else
