@@ -51,6 +51,16 @@ public:
 		return nullptr;
 	}
 
+	std::shared_ptr<Script> GetScript(std::string_view name)
+	{
+		auto it = m_attached_scripts.find(name.data());
+		if (it != m_attached_scripts.end())
+		{
+			return it->second;
+		}
+		return nullptr;
+	}
+
 	// faster than removing by script type
 	bool RemoveScript(std::string_view script_name)
 	{
