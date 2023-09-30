@@ -1,6 +1,7 @@
 .vs/
 bin-intermediate/
 bin-inter/
+.vscode/
 *.ini
 
 
@@ -36,3 +37,8 @@ bin-inter/
 # *.exe
 *.out
 *.app
+
+# Mac
+*.DS_Store
+
+
