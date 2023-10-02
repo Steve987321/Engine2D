@@ -269,7 +269,7 @@ void Engine::LoadGameScripts()
 	registerScripts();
 
 	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(dlsym(dll, "get_registered_scripts"));
-	LOGDEBUGF("registerScripts: {}", (void*)getScripts);
+	LOGDEBUGF("getScripts: {}", (void*)getScripts);
 	if (getScripts == nullptr)
 		return;
 
