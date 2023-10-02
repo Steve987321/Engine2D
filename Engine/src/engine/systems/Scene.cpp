@@ -70,6 +70,16 @@ bool Scene::RemoveFromScene(std::string_view obj_name)
 
 using json = nlohmann::json;
 
+enum class TypesMap
+{
+	b = 0,
+	flt = 1,
+	i8 = 2,
+	i16 = 3,
+	i32 = 4,
+	str = 5
+};
+
 Scene LoadScene(std::string_view path)
 {
 	std::ifstream in(path.data());
@@ -97,37 +107,74 @@ Scene LoadScene(std::string_view path)
 		auto objects = data["objects"];
 		for (const auto& circle : objects["circles"].items())
 		{
-			Circle newcircle(circle.key());
-			auto& c = newcircle.GetCircle();
+			auto newcircle = scene.AddToScene(Circle(circle.key()));
+			auto& c = dynamic_cast<Circle*>(newcircle)->GetCircle();
 
-			for (const auto& c_data : circle.value().items())
-			{
-				for (const auto& properties : c_data.value()["circle_properties"].items())
-				{
-					auto x = properties.value()["posx"].get<float>();
-					auto y = properties.value()["posy"].get<float>();
-					c.setPosition({ x, y });
-				}
+			auto& props = circle.value()["circle_properties"];
+			auto x = props["posx"].get<float>();
+			auto y = props["posy"].get<float>();
+
+			c.setPosition({ x, y });
 		
-				for (const auto& script : c_data.value()["scripts"].items())
+			for (const auto& script : circle.value()["scripts"].items())
+			{
+				auto gscripts = Engine::Get().GetGameScriptsRegister();
+				if (auto it = gscripts.find(script.key()); it != gscripts.end())
 				{
-					auto gscripts = Engine::Get().GetGameScriptsRegister();
-					if (auto it = gscripts.find(script.key()); it != gscripts.end())
+					newcircle->AddScript(it->second->Clone());
+					auto new_attached_script = newcircle->GetScript(it->first);
+					auto& vars = new_attached_script->GetReflection().Get();
+					int i = 0;
+					for (const auto& script_vars : script.value().items())
 					{
-						newcircle.AddScript(it->second->Clone());
-						auto new_attached_script = newcircle.GetScript(it->first);
-						auto vars = new_attached_script->GetReflection().Get();
-						for (const auto& script_vars : script.value().items())
+						switch(i++)
 						{
-							LOGDEBUGF("script_vars iteration: key: {} value: {}", script_vars.key(), script_vars.value());
+						case (int)TypesMap::b:
+							for (const auto& i : script_vars.value().items())
+							{
+								*vars.b[i.key()] = i.value().get<bool>();
+							}
+							break;
+						case (int)TypesMap::flt:
+							for (const auto& i : script_vars.value().items())
+							{
+								*vars.flt[i.key()] = i.value().get<float>();
+							}
+							break;
+						case (int)TypesMap::i8:
+							for (const auto& i : script_vars.value().items())
+							{
+								*vars.i8[i.key()] = i.value().get<int8_t>();
+							}
+							break;
+						case (int)TypesMap::i16:
+							for (const auto& i : script_vars.value().items())
+							{
+								*vars.i16[i.key()] = i.value().get<int16_t>();
+							}
+							break;
+						case (int)TypesMap::i32:
+							for (const auto& i : script_vars.value().items())
+							{
+								*vars.i32[i.key()] = i.value().get<int32_t>();
+							}
+							break;
+						case (int)TypesMap::str:
+							for (const auto& s : script_vars.value().items())
+							{
+								*vars.str[s.key()] = s.value().get<std::string>();
+							}
+							break;
+						default: 
+							LOGWARNF("Unknown type for script_vars iteration: {} key: {} value: {}", i, script_vars.key(), script_vars.value());
+							break;
 						}
 					}
 				}
-
-				
 			}
 		}
 	}
+
 	return scene;
 }
 
