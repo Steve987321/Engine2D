@@ -48,9 +48,6 @@
     <ClCompile Include="src\engine\default_scripts\Script.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\default_scripts\Movement.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\engine\systems\Scene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -414,9 +411,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\default_scripts\Script.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\engine\default_scripts\Movement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\object_default\Object.h">

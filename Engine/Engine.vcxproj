@@ -135,7 +135,6 @@
     <ClCompile Include="src\engine\systems\Reflection.cpp" />
     <ClCompile Include="src\engine\Logger.cpp" />
     <ClCompile Include="src\engine\object_default\Circle.cpp" />
-    <ClCompile Include="src\engine\default_scripts\Movement.cpp" />
     <ClCompile Include="src\engine\default_scripts\Script.cpp" />
     <ClCompile Include="src\engine\object_default\Sprite.cpp" />
     <ClCompile Include="src\engine\systems\Scene.cpp" />
@@ -191,7 +190,6 @@
     <ClInclude Include="src\engine\systems\Reflection.h" />
     <ClInclude Include="src\engine\object_default\Circle.h" />
     <ClInclude Include="src\engine\object_default\Object.h" />
-    <ClInclude Include="src\engine\default_scripts\Movement.h" />
     <ClInclude Include="src\engine\default_scripts\Script.h" />
     <ClInclude Include="src\engine\object_default\Sprite.h" />
     <ClInclude Include="src\engine\Helpers.h" />
