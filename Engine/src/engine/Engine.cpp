@@ -2,7 +2,8 @@
 
 #include "EngineCore.h"
 
-#include "engine.h"
+#include "Engine.h"
+#include "Settings.h"
 
 #include "../Game/src/game_core/ScriptRegister.h"
 
@@ -225,10 +226,10 @@ void Engine::StopGameSession()
 void Engine::LoadGameScripts()
 {
 #ifdef _WIN32
-	auto dll = LoadLibrary(L"Game.dll");
+	auto dll = LoadLibrary(game_bin_path);
 	if (!dll)
 	{
-		LOGERROR("Couldn't find game dll file, {}", "Game.dll");
+		LOGERROR("Couldn't find game dll file, {}", game_bin_path);
 		return;
 	}
 
@@ -251,13 +252,10 @@ void Engine::LoadGameScripts()
 	}
 #else
 	LOGDEBUG("getting game lib");
-	auto dll = dlopen("libGame.dylib", RTLD_LAZY);
+	auto dll = dlopen(game_bin_path, RTLD_LAZY);
 	if (dll == nullptr)
 	{
-		LOGERROR("dll is nullptr");
-		std::cout << dlerror() <<std::endl;
-		// LOGERRORF("Couldn't find game library file, %s", "../Game.dylib");
-		// LOGERROR(dlerror());
+		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), game_bin_path);
 		return;
 	}
 	LOGERROR("found dll");
