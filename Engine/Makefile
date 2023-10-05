@@ -85,7 +85,6 @@ GENERATED += $(OBJDIR)/Engine.o
 GENERATED += $(OBJDIR)/Helpers.o
 GENERATED += $(OBJDIR)/Input.o
 GENERATED += $(OBJDIR)/Logger.o
-GENERATED += $(OBJDIR)/Movement.o
 GENERATED += $(OBJDIR)/Reflection.o
 GENERATED += $(OBJDIR)/Scene.o
 GENERATED += $(OBJDIR)/Script.o
@@ -102,7 +101,6 @@ OBJECTS += $(OBJDIR)/Engine.o
 OBJECTS += $(OBJDIR)/Helpers.o
 OBJECTS += $(OBJDIR)/Input.o
 OBJECTS += $(OBJDIR)/Logger.o
-OBJECTS += $(OBJDIR)/Movement.o
 OBJECTS += $(OBJDIR)/Reflection.o
 OBJECTS += $(OBJDIR)/Scene.o
 OBJECTS += $(OBJDIR)/Script.o
@@ -184,9 +182,6 @@ $(OBJDIR)/Helpers.o: src/engine/Helpers.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Logger.o: src/engine/Logger.cpp
-	@echo "$(notdir $<)"
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/Movement.o: src/engine/default_scripts/Movement.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Script.o: src/engine/default_scripts/Script.cpp
