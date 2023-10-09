@@ -21,32 +21,45 @@ namespace Toad {
     {
         for (const auto& it : recursiveIt)
         {
-            std::stringstream ss;
-            ss << it;
-
-
-            if (it.is_directory())
+            auto labelStr = it.is_directory() ? it.path().parent_path().filename().string() + '/' : it.path().filename().string();
+            auto full = it.path().string();
+            if (ImGui::Selectable(labelStr.c_str(), m_selected_file == full, ImGuiSelectableFlags_AllowDoubleClick))
             {
-                if (ImGui::TreeNode(ss.str().c_str()))
+                m_selected_file = full;
+
+                if (ImGui::IsMouseDoubleClicked(0))
                 {
-                    IterateDir(fs::directory_iterator(it));
-                    ImGui::TreePop();
-                }
-            }
-            else
-            {
-                if (ImGui::Selectable(ss.str().c_str(), m_selected_file == ss.str()))
-                {
-                    m_selected_file = ss.str();
+                    if (it.is_directory())
+                    {
+                        m_curr_path = full;
+                    }
                 }
             }
         }
     }
 
     void FileBrowser::Show() {
-        ImGui::Text(m_curr_path.c_str());
+//        ImGui::Text(m_curr_path.c_str());
 
         ImGui::SameLine();
+
+        auto folders = SplitPath(m_curr_path);
+
+        for (int i = 0; i < folders.size(); i++)
+        {
+            auto& folder = folders[i];
+
+            if (ImGui::Button((folder + '/').c_str()))
+            {
+                std::string update_path = "/";
+                for (int j = 0; j < i; j++)
+                {
+                    update_path += folders[j] + '/';
+                }
+                m_curr_path = update_path;
+            }
+            ImGui::SameLine();
+        }
         if (ImGui::Button("Back"))
         {
             for (int i = m_curr_path.length(); i > 0; i--)
@@ -64,6 +77,28 @@ namespace Toad {
 
     std::string& FileBrowser::GetSelectedFile() {
         return m_selected_file;
+    }
+
+    std::vector<std::string> FileBrowser::SplitPath(std::string_view path) {
+        std::string folder;
+        std::vector<std::string> res;
+        for (auto c : path)
+        {
+            if (c == '/') {
+                if (folder.empty())
+                    continue;
+
+                res.push_back(folder);
+                folder.clear();
+            }
+            else
+            {
+                folder += c;
+            }
+        }
+
+        res.push_back(folder);
+        return res;
     }
 
 } // Toad
