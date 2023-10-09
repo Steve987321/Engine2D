@@ -4,6 +4,7 @@
 #include "ui.h"
 
 #include "imgui-SFML.h"
+#include "FileBrowser.h"
 
 #include <queue>
 #include <limits>
@@ -360,4 +361,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 		
 		ImGui::End();
 	}
+
+    static Toad::FileBrowser fBrowser(std::filesystem::current_path().c_str());
+
+    ImGui::Begin("FileBrowser", nullptr);
+    fBrowser.Show();
+    ImGui::End();
+
 }

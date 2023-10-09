@@ -91,6 +91,7 @@ GENERATED += $(OBJDIR)/imgui_tables.o
 GENERATED += $(OBJDIR)/imgui_widgets.o
 GENERATED += $(OBJDIR)/pch.o
 GENERATED += $(OBJDIR)/ui.o
+GENERATED += $(OBJDIR)/FileBrowser.o
 OBJECTS += $(OBJDIR)/entry.o
 OBJECTS += $(OBJDIR)/imgui-SFML.o
 OBJECTS += $(OBJDIR)/imgui.o
@@ -100,6 +101,7 @@ OBJECTS += $(OBJDIR)/imgui_tables.o
 OBJECTS += $(OBJDIR)/imgui_widgets.o
 OBJECTS += $(OBJDIR)/pch.o
 OBJECTS += $(OBJDIR)/ui.o
+OBJECTS += $(OBJDIR)/FileBrowser.o
 
 # Rules
 # #############################################
@@ -188,6 +190,9 @@ $(OBJDIR)/pch.o: src/pch.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/ui.o: src/ui/ui.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/FileBrowser.o: src/ui/FileBrowser.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
