@@ -171,6 +171,10 @@ Scene LoadScene(std::string_view path)
 						}
 					}
 				}
+                else
+                {
+                    LOGWARNF("Script not found needed by scene with name: {}", script.key());
+                }
 			}
 		}
 	}
