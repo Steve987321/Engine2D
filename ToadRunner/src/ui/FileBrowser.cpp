@@ -42,23 +42,19 @@ namespace Toad {
     }
 
     void FileBrowser::Show() {
-//        ImGui::Text(m_curr_path.c_str());
-
-        ImGui::SameLine();
-
         auto folders = SplitPath(m_curr_path);
 
         for (int i = 0; i < folders.size(); i++)
         {
             auto& folder = folders[i];
 
+            if (i <= folders.size() - 1)
+                ImGui::SameLine();
+
             if (ImGui::Button((folder + '/').c_str()))
             {
                 if (i == folders.size() - 1)
-                {
-                    ImGui::SameLine();
                     break;
-                }
 
                 std::string update_path = "/";
                 for (int j = 0; j < i; j++)
@@ -69,18 +65,6 @@ namespace Toad {
                         update_path += '/';
                 }
                 m_curr_path = update_path;
-            }
-            ImGui::SameLine();
-        }
-        if (ImGui::Button("Back"))
-        {
-            for (int i = m_curr_path.length(); i > 0; i--)
-            {
-                if (m_curr_path[i] == '/' )
-                {
-                    m_curr_path = m_curr_path.substr(0, i);
-                    break;
-                }
             }
         }
 
