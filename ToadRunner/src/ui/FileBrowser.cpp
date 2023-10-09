@@ -21,7 +21,10 @@ namespace Toad {
     {
         for (const auto& it : recursiveIt)
         {
-            auto labelStr = it.is_directory() ? it.path().parent_path().filename().string() + '/' : it.path().filename().string();
+            auto labelStr = it.path().filename().string();
+            if (it.is_directory())
+                labelStr += '/';
+
             auto full = it.path().string();
             if (ImGui::Selectable(labelStr.c_str(), m_selected_file == full, ImGuiSelectableFlags_AllowDoubleClick))
             {
@@ -51,10 +54,19 @@ namespace Toad {
 
             if (ImGui::Button((folder + '/').c_str()))
             {
+                if (i == folders.size() - 1)
+                {
+                    ImGui::SameLine();
+                    break;
+                }
+
                 std::string update_path = "/";
                 for (int j = 0; j < i; j++)
                 {
-                    update_path += folders[j] + '/';
+                    update_path += folders[j];
+
+                    if (j < i - 1)
+                        update_path += '/';
                 }
                 m_curr_path = update_path;
             }
