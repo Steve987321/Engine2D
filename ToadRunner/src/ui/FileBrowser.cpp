@@ -57,11 +57,10 @@ namespace Toad {
                     break;
 
                 std::string update_path = "/";
-                for (int j = 0; j < i; j++)
+                for (int j = 0; j <= i; j++)
                 {
                     update_path += folders[j];
-
-                    if (j < i - 1)
+                    if (j < i)
                         update_path += '/';
                 }
                 m_curr_path = update_path;
