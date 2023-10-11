@@ -5,6 +5,7 @@
 
 #include "imgui-SFML.h"
 #include "FileBrowser.h"
+#include "TextEditor.h"
 
 #include <queue>
 #include <limits>
@@ -363,9 +364,24 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 
     static Toad::FileBrowser fBrowser(std::filesystem::current_path().c_str());
+    static Toad::TextEditor textEditor;
 
     ImGui::Begin("FileBrowser", nullptr);
     fBrowser.Show();
     ImGui::End();
+
+    ImGui::Begin("TextEditor");
+
+    if (!fBrowser.GetSelectedFile().ends_with(PATH_SEPARATOR))
+    {
+        textEditor.Show(fBrowser.GetSelectedFileContent());
+    }
+    else
+    {
+        ImGui::Text("Select a file");
+    }
+
+    ImGui::End();
+
 
 }

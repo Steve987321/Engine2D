@@ -25,5 +25,8 @@
 
 #ifdef __APPLE__
 #include <sys/syslimits.h>
+#define PATH_SEPARATOR '/'
 #define MAX_PATH PATH_MAX
+#else
+#define PATH_SEPARATOR "\\"
 #endif

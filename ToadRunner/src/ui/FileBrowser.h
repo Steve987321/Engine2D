@@ -12,12 +12,15 @@ namespace Toad {
         ~FileBrowser();
 
         void Show();
+        std::string& GetSelectedFileContent();
+
         std::string& GetSelectedFile();
     private:
         void IterateDir(const fs::directory_iterator& recursiveIt);
 
         std::vector<std::string> SplitPath(std::string_view path);
 
+        std::string m_selected_file_buffer;
         std::string m_curr_path;
         std::string m_selected_file;
     };

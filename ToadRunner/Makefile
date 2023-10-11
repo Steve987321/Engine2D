@@ -102,6 +102,7 @@ OBJECTS += $(OBJDIR)/imgui_widgets.o
 OBJECTS += $(OBJDIR)/pch.o
 OBJECTS += $(OBJDIR)/ui.o
 OBJECTS += $(OBJDIR)/FileBrowser.o
+OBJECTS += $(OBJDIR)/TextEditor.o
 
 # Rules
 # #############################################
@@ -193,6 +194,9 @@ $(OBJDIR)/ui.o: src/ui/ui.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/FileBrowser.o: src/ui/FileBrowser.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/TextEditor.o: src/ui/TextEditor.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 

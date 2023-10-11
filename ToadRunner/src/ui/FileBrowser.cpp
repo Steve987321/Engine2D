@@ -28,6 +28,17 @@ namespace Toad {
             auto full = it.path().string();
             if (ImGui::Selectable(labelStr.c_str(), m_selected_file == full, ImGuiSelectableFlags_AllowDoubleClick))
             {
+                // read it
+                std::ifstream f;
+                f.open(full);
+                if (f.is_open())
+                {
+                    std::stringstream ss;
+                    ss << f.rdbuf();
+                    m_selected_file_buffer = ss.str();
+                    f.close();
+                }
+
                 m_selected_file = full;
 
                 if (ImGui::IsMouseDoubleClicked(0))
@@ -68,6 +79,10 @@ namespace Toad {
         }
 
         IterateDir(fs::directory_iterator(m_curr_path));
+    }
+
+    std::string &FileBrowser::GetSelectedFileContent() {
+        return m_selected_file_buffer;
     }
 
     std::string& FileBrowser::GetSelectedFile() {

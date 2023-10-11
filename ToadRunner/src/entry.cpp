@@ -1,6 +1,5 @@
 #include "pch.h"
 #include <EngineCore.h>
-
 #include <engine/Engine.h>
 #include "../Game/src/game_core/ScriptRegister.h"
 
