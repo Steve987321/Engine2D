@@ -36,25 +36,25 @@ all: $(PROJECTS)
 Engine:
 ifneq (,$(Engine_config))
 	@echo "==== Building Engine ($(Engine_config)) ===="
-	@${MAKE} --no-print-directory -C Engine -f Makefile config=$(Engine_config)
+	@${MAKE}  -C Engine -f Makefile config=$(Engine_config)
 endif
 
 Game: Engine
 ifneq (,$(Game_config))
 	@echo "==== Building Game ($(Game_config)) ===="
-	@${MAKE} --no-print-directory -C Game -f Makefile config=$(Game_config)
+	@${MAKE}  -C Game -f Makefile config=$(Game_config)
 endif
 
 ToadRunner: Engine Game
 ifneq (,$(ToadRunner_config))
 	@echo "==== Building ToadRunner ($(ToadRunner_config)) ===="
-	@${MAKE} --no-print-directory -C ToadRunner -f Makefile config=$(ToadRunner_config)
+	@${MAKE}  -C ToadRunner -f Makefile config=$(ToadRunner_config)
 endif
 
 clean:
-	@${MAKE} --no-print-directory -C Engine -f Makefile clean
-	@${MAKE} --no-print-directory -C Game -f Makefile clean
-	@${MAKE} --no-print-directory -C ToadRunner -f Makefile clean
+	@${MAKE}  -C Engine -f Makefile clean
+	@${MAKE}  -C Game -f Makefile clean
+	@${MAKE}  -C ToadRunner -f Makefile clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
