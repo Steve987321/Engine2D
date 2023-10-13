@@ -42,12 +42,24 @@
     <ClCompile Include="src\imgui_impl\imgui-SFML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui\FileBrowser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\TextEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ui\ui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\FileBrowser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\TextEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

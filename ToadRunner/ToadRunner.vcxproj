@@ -164,10 +164,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\ui\FileBrowser.cpp" />
+    <ClCompile Include="src\ui\TextEditor.cpp" />
     <ClCompile Include="src\ui\ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\pch.h" />
+    <ClInclude Include="src\ui\FileBrowser.h" />
+    <ClInclude Include="src\ui\TextEditor.h" />
     <ClInclude Include="src\ui\ui.h" />
   </ItemGroup>
   <ItemGroup>
