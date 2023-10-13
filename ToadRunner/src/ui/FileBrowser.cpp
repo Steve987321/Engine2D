@@ -23,7 +23,7 @@ namespace Toad {
         {
             auto labelStr = it.path().filename().string();
             if (it.is_directory())
-                labelStr += '/';
+                labelStr += PATH_SEPARATOR;
 
             auto full = it.path().string();
             if (ImGui::Selectable(labelStr.c_str(), m_selected_file == full, ImGuiSelectableFlags_AllowDoubleClick))
@@ -62,17 +62,17 @@ namespace Toad {
             if (i <= folders.size() - 1)
                 ImGui::SameLine();
 
-            if (ImGui::Button((folder + '/').c_str()))
+            if (ImGui::Button((folder + PATH_SEPARATOR).c_str()))
             {
                 if (i == folders.size() - 1)
                     break;
 
-                std::string update_path = "/";
+                std::string update_path = std::to_string(PATH_SEPARATOR);
                 for (int j = 0; j <= i; j++)
                 {
                     update_path += folders[j];
                     if (j < i)
-                        update_path += '/';
+                        update_path += PATH_SEPARATOR;
                 }
                 m_curr_path = update_path;
             }
@@ -94,7 +94,7 @@ namespace Toad {
         std::vector<std::string> res;
         for (auto c : path)
         {
-            if (c == '/') {
+            if (c == PATH_SEPARATOR) {
                 if (folder.empty())
                     continue;
 
