@@ -29,7 +29,11 @@ void TestScript::OnUpdate(Object* obj)
 		auto dt = Engine::Get().GetDeltaTime().asMilliseconds() / 1000.f;
 
 		c.move(Vec2f{velx * dt, vely * dt} * speed_mult);
-
+			
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		{
+			LOGDEBUG("PRESSED JUICY BUTTON");
+		}
 		const auto change_c_col = [&c]
 		{
 			auto rand_r = rand_int(0, 255);
