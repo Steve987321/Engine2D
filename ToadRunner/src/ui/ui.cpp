@@ -363,7 +363,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-    static Toad::FileBrowser fBrowser(std::filesystem::current_path().c_str());
+    static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
     static Toad::TextEditor textEditor;
 
     ImGui::Begin("FileBrowser", nullptr);
