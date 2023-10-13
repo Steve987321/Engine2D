@@ -17,9 +17,9 @@ namespace Toad {
 
     }
 
-    void FileBrowser::IterateDir(const fs::directory_iterator& recursiveIt)
+    void FileBrowser::IterateDir(const fs::directory_iterator& dir_it)
     {
-        for (const auto& it : recursiveIt)
+        for (const auto& it : dir_it)
         {
             auto labelStr = it.path().filename().string();
             if (it.is_directory())
@@ -67,9 +67,10 @@ namespace Toad {
                 if (i == folders.size() - 1)
                     break;
 
-                std::string update_path; 
+                std::string update_path;
+#ifndef _WIN32
                 update_path += PATH_SEPARATOR;
-
+#endif
                 for (int j = 0; j <= i; j++)
                 {
                     update_path += folders[j];

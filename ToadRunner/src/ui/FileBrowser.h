@@ -16,7 +16,7 @@ namespace Toad {
 
         std::string& GetSelectedFile();
     private:
-        void IterateDir(const fs::directory_iterator& recursiveIt);
+        void IterateDir(const fs::directory_iterator& dir_it);
 
         std::vector<std::string> SplitPath(std::string_view path);
 
