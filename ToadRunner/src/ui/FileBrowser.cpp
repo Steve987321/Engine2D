@@ -67,7 +67,9 @@ namespace Toad {
                 if (i == folders.size() - 1)
                     break;
 
-                std::string update_path = std::to_string(PATH_SEPARATOR);
+                std::string update_path; 
+                update_path += PATH_SEPARATOR;
+
                 for (int j = 0; j <= i; j++)
                 {
                     update_path += folders[j];
