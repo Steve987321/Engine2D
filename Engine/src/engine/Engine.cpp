@@ -225,6 +225,12 @@ void Engine::StopGameSession()
 
 void Engine::LoadGameScripts()
 {
+	for (auto& script : m_gameScripts | std::views::values)
+	{
+		// TODO: save name and give warning about lost scripts 
+		script.reset();
+	}
+
 	if (m_currDLL)
 		FreeLibrary(m_currDLL);
 
@@ -237,10 +243,16 @@ void Engine::LoadGameScripts()
 	std::string current_game_dll = current_path + "GameCurrent.dll";
 
 	if (std::ifstream(current_game_dll).good())
-		if (remove(current_game_dll.c_str()) != 0)
+	{
+		// check if game.dll exists then don't delete 
+		if (std::ifstream(game_dll_path).good())
 		{
-			LOGERRORF("Failed to remove file {}", current_game_dll);
+			if (remove(current_game_dll.c_str()) != 0)
+			{
+				LOGERRORF("Failed to remove file {}", current_game_dll);
+			}
 		}
+	}
 
 	if (!std::ifstream(game_dll_path).good())
 	{
@@ -267,12 +279,6 @@ void Engine::LoadGameScripts()
 
 	auto registerScripts = reinterpret_cast<register_scripts_t*>(GetProcAddress(dll, "register_scripts"));
 	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(GetProcAddress(dll, "get_registered_scripts"));
-
-	// null previous scripts
-	for (auto& script : m_gameScripts | std::views::values)
-	{
-		script = nullptr;
-	}
 
 	registerScripts();
 
@@ -400,7 +406,6 @@ void Engine::GameUpdatedWatcher()
 	std::ifstream f(game_file_name);
 	if (f.is_open())
 	{
-		m_hasNewGameDLL = true;
 	}
 }
 
