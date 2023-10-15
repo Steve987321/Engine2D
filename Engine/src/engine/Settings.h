@@ -7,8 +7,8 @@
 namespace Toad
 {
     #ifdef _WIN32
-    inline wchar_t game_bin_path[MAX_PATH] = L"Game.dll";
+    inline char game_file_name[MAX_PATH] = "Game.dll";
     #elif __APPLE__
-    inline char game_bin_path[MAX_PATH] = "libGame.dylib";
+    inline char game_file_name[MAX_PATH] = "libGame.dylib";
     #endif
 }
