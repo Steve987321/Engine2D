@@ -225,17 +225,47 @@ void Engine::StopGameSession()
 
 void Engine::LoadGameScripts()
 {
+	if (m_currDLL)
+		FreeLibrary(m_currDLL);
+
+	// delete old one (if there is one) then rename new one 
+	std::string game_dll_path = game_file_name;
+
+	// TEMP 
+	std::string current_path = "D:\\VSProjects\\Engine2D\\bin\\x64\\Dev\\";
+	game_dll_path = current_path + game_dll_path;
+	std::string current_game_dll = current_path + "GameCurrent.dll";
+
+	if (std::ifstream(current_game_dll).good())
+		if (remove(current_game_dll.c_str()) != 0)
+		{
+			LOGERRORF("Failed to remove file {}", current_game_dll);
+		}
+
+	if (!std::ifstream(game_dll_path).good())
+	{
+		LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
+	}
+	else
+	{
+		if (rename(game_dll_path.c_str(), current_game_dll.c_str()) != 0)
+		{
+			LOGERRORF("Failed to remove file {}", current_game_dll);
+			return;
+		}
+	}
+
 #ifdef _WIN32
-	auto dll = LoadLibrary(game_bin_path);
+	auto dll = LoadLibraryA(current_game_dll.c_str());
 	if (!dll)
 	{
-		LOGERROR("Couldn't find game dll file, {}", game_bin_path);
+		LOGERRORF("Couldn't load game dll file, {}", current_game_dll);
 		return;
 	}
 
-	auto registerScripts = reinterpret_cast<register_scripts_t*>(GetProcAddress(dll, "register_scripts"));
-	registerScripts();
+	m_currDLL = dll;
 
+	auto registerScripts = reinterpret_cast<register_scripts_t*>(GetProcAddress(dll, "register_scripts"));
 	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(GetProcAddress(dll, "get_registered_scripts"));
 
 	// null previous scripts
@@ -244,12 +274,60 @@ void Engine::LoadGameScripts()
 		script = nullptr;
 	}
 
+	registerScripts();
+
 	for (const auto& script : getScripts())
 	{
 		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
 
 		m_gameScripts[script->GetName()] = script;
 	}
+
+	// update scripts on object if it has an old version
+	for (auto& [obj_name, obj] : m_currentScene.objects_map) 
+	{
+		for (auto& [attached_script_name, attached_script] : obj->GetAttachedScripts())
+		{
+			auto it = m_gameScripts.find(attached_script_name);
+			if (it != m_gameScripts.end())
+			{
+				// update exposed vars if they exist 
+				auto& old_reflection = attached_script->GetReflection().Get();
+				obj->RemoveScript(attached_script_name);
+				obj->AddScript(it->second->Clone());
+
+				auto& reflection = attached_script->GetReflection().Get();
+
+				for (auto& [name, v] : reflection.str)
+					for (auto& [newname, newv] : old_reflection.str)
+						if (newname == name)
+							*v = *newv;
+				for (auto& [name, v] : reflection.b)
+					for (auto& [newname, newv] : old_reflection.b)
+						if (newname == name)
+							*v = *newv;
+				for (auto& [name, v] : reflection.flt)
+					for (auto& [newname, newv] : old_reflection.flt)
+						if (newname == name)
+							*v = *newv;
+				for (auto& [name, v] : reflection.i8)
+					for (auto& [newname, newv] : old_reflection.i8)
+						if (newname == name)
+							*v = *newv;
+				for (auto& [name, v] : reflection.i16)
+					for (auto& [newname, newv] : old_reflection.i16)
+						if (newname == name)
+							*v = *newv;
+				for (auto& [name, v] : reflection.i32)
+					for (auto& [newname, newv] : old_reflection.i32)
+						if (newname == name)
+							*v = *newv;
+
+				LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj_name);
+			}
+		}
+	}
+
 #else
 	LOGDEBUG("getting game lib");
 	auto dll = dlopen(game_bin_path, RTLD_LAZY);
@@ -315,6 +393,15 @@ void Engine::CleanUp()
 
 	LOGDEBUG("closing window");
 	m_window.close();
+}
+
+void Engine::GameUpdatedWatcher()
+{
+	std::ifstream f(game_file_name);
+	if (f.is_open())
+	{
+		m_hasNewGameDLL = true;
+	}
 }
 
 }

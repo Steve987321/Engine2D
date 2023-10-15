@@ -54,6 +54,9 @@ namespace Toad
 		void Render();
 		void CleanUp();
 
+		// checks to see if a new game.dll is available 
+		void GameUpdatedWatcher();
+
 	private:
 		sf::Time m_deltaTime;
 		sf::RenderWindow m_window;
@@ -70,6 +73,8 @@ namespace Toad
 		std::unordered_map<std::string, std::shared_ptr<Script>> m_gameScripts = {};
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
+
+		HMODULE m_currDLL{};
 
 	private:
 		std::atomic_bool m_isRunning = false;
