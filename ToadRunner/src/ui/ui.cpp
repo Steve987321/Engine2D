@@ -57,8 +57,6 @@ void ui::decorations()
 	style->Colors[ImGuiCol_Header] = (ImColor)lighter_blue;
 }
 
-std::once_flag flag;
-
 void ui::engine_ui(ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
@@ -75,7 +73,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
 	if (ImGui::BeginMenuBar())
 	{
-
+		if (ImGui::BeginMenu("Engine"))
+		{
+		}
+		
+		if (ImGui::BeginMenu("Scripts"))
+		{
+			if (ImGui::MenuItem("Reload"))
+			{
+				Toad::Engine::Get().LoadGameScripts();
+			}
+			ImGui::EndMenu();
+		}
 		ImGui::EndMenuBar();
 	}
 	ImGui::End();
