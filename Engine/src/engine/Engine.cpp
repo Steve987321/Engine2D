@@ -228,19 +228,29 @@ void Engine::LoadGameScripts()
 	for (auto& script : m_gameScripts | std::views::values)
 	{
 		// TODO: save name and give warning about lost scripts 
-		script.reset();
+		script = nullptr;
+	}
+
+	std::unordered_map < std::string, ReflectVarsCopy> prev_scripts {};
+	for (auto& obj : m_currentScene.objects_map | std::views::values)
+	{
+		auto& scripts = obj->GetAttachedScripts();
+		for (auto i = scripts.begin(); i != scripts.end();)
+		{
+			ReflectVarsCopy vars;
+			i->second->GetReflection().Get().copy(vars);
+			prev_scripts[i->first] = vars;
+			obj->RemoveScript(i->first);
+			i = scripts.begin();
+		}
 	}
 
 	if (m_currDLL)
 		FreeLibrary(m_currDLL);
 
 	// delete old one (if there is one) then rename new one 
-	std::string game_dll_path = game_file_name;
-
-	// TEMP 
-	std::string current_path = "D:\\VSProjects\\Engine2D\\bin\\x64\\Dev\\";
-	game_dll_path = current_path + game_dll_path;
-	std::string current_game_dll = current_path + "GameCurrent.dll";
+	std::string game_dll_path = game_project_directory + game_file_name;
+	std::string current_game_dll = game_project_directory + "GameCurrent.dll";
 
 	if (std::ifstream(current_game_dll).good())
 	{
@@ -292,42 +302,40 @@ void Engine::LoadGameScripts()
 	// update scripts on object if it has an old version
 	for (auto& [obj_name, obj] : m_currentScene.objects_map) 
 	{
-		for (auto& [attached_script_name, attached_script] : obj->GetAttachedScripts())
+		for (auto& [attached_script_name, old_reflection_vars] : prev_scripts)
 		{
 			auto it = m_gameScripts.find(attached_script_name);
 			if (it != m_gameScripts.end())
 			{
 				// update exposed vars if they exist 
-				auto& old_reflection = attached_script->GetReflection().Get();
-				obj->RemoveScript(attached_script_name);
 				obj->AddScript(it->second->Clone());
 
-				auto& reflection = attached_script->GetReflection().Get();
+				auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection().Get();
 
-				for (auto& [name, v] : reflection.str)
-					for (auto& [newname, newv] : old_reflection.str)
+				for (auto& [name, v] : new_reflection_vars.str)
+					for (auto& [newname, newv] : old_reflection_vars.str)
 						if (newname == name)
-							*v = *newv;
-				for (auto& [name, v] : reflection.b)
-					for (auto& [newname, newv] : old_reflection.b)
+							*v = newv;
+				for (auto& [name, v] : new_reflection_vars.b)
+					for (auto& [newname, newv] : old_reflection_vars.b)
 						if (newname == name)
-							*v = *newv;
-				for (auto& [name, v] : reflection.flt)
-					for (auto& [newname, newv] : old_reflection.flt)
+							*v = newv;
+				for (auto& [name, v] : new_reflection_vars.flt)
+					for (auto& [newname, newv] : old_reflection_vars.flt)
 						if (newname == name)
-							*v = *newv;
-				for (auto& [name, v] : reflection.i8)
-					for (auto& [newname, newv] : old_reflection.i8)
+							*v = newv;
+				for (auto& [name, v] : new_reflection_vars.i8)
+					for (auto& [newname, newv] : old_reflection_vars.i8)
 						if (newname == name)
-							*v = *newv;
-				for (auto& [name, v] : reflection.i16)
-					for (auto& [newname, newv] : old_reflection.i16)
+							*v = newv;
+				for (auto& [name, v] : new_reflection_vars.i16)
+					for (auto& [newname, newv] : old_reflection_vars.i16)
 						if (newname == name)
-							*v = *newv;
-				for (auto& [name, v] : reflection.i32)
-					for (auto& [newname, newv] : old_reflection.i32)
+							*v = newv;
+				for (auto& [name, v] : new_reflection_vars.i32)
+					for (auto& [newname, newv] : old_reflection_vars.i32)
 						if (newname == name)
-							*v = *newv;
+							*v = newv;
 
 				LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj_name);
 			}
@@ -374,6 +382,10 @@ void Engine::LoadGameScripts()
 	{
 		if (!script)
 			LOGWARNF("Script {} is now null", name.c_str());
+	}
+	for (const auto& name : prev_scripts | std::views::keys)
+	{
+		LOGWARNF("Script lost: {}", name.c_str());
 	}
 #endif
 }

@@ -12,6 +12,33 @@
 namespace Toad
 {
 
+// non pointer values 
+struct ENGINE_API ReflectVarsCopy
+{
+	std::unordered_map<std::string, bool>			b = {};
+	std::unordered_map<std::string, int8_t>			i8 = {};
+	std::unordered_map<std::string, int16_t>		i16 = {};
+	std::unordered_map<std::string, int32_t>		i32 = {};
+	std::unordered_map<std::string, float>			flt = {};
+	std::unordered_map<std::string, std::string>	str = {};
+
+	void copy(ReflectVarsCopy& dst)
+	{
+		for (const auto& [n, v] : b)
+			dst.b[n] = v;
+		for (const auto& [n, v] : i8)
+			dst.i8[n] = v;
+		for (const auto& [n, v] : i16)
+			dst.i16[n] = v;
+		for (const auto& [n, v] : i32)
+			dst.i32[n] = v;
+		for (const auto& [n, v] : flt)
+			dst.flt[n] = v;
+		for (const auto& [n, v] : str)
+			dst.str[n] = v;
+	}
+};
+
 struct ENGINE_API ReflectVars
 {
 	std::unordered_map<std::string, bool*>			b = {};
@@ -20,6 +47,22 @@ struct ENGINE_API ReflectVars
 	std::unordered_map<std::string, int32_t*>		i32 = {};
 	std::unordered_map<std::string, float*>			flt = {};
 	std::unordered_map<std::string, std::string*>	str = {};
+
+	void copy(ReflectVarsCopy& dst)
+	{
+		for (const auto& [n, v] : b)
+			dst.b[n] = *v;
+		for (const auto& [n, v] : i8)
+			dst.i8[n] = *v;
+		for (const auto& [n, v] : i16)
+			dst.i16[n] = *v;
+		for (const auto& [n, v] : i32)
+			dst.i32[n] = *v;
+		for (const auto& [n, v] : flt)
+			dst.flt[n] = *v;
+		for (const auto& [n, v] : str)
+			dst.str[n] = *v;
+	}
 };
 
 struct ENGINE_API Reflection

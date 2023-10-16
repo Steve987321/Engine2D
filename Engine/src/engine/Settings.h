@@ -6,9 +6,12 @@
 
 namespace Toad
 {
+    // current active directory workspace
+    inline std::string game_project_directory = "D:\\VSProjects\\Engine2D\\bin\\x64\\Dev\\";
+
     #ifdef _WIN32
-    inline char game_file_name[MAX_PATH] = "Game.dll";
+    inline std::string game_file_name = "Game.dll";
     #elif __APPLE__
-    inline char game_file_name[MAX_PATH] = "libGame.dylib";
+    inline std::string game_file_name[MAX_PATH] = "libGame.dylib";
     #endif
 }
