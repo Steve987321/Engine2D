@@ -6,8 +6,8 @@
 
 namespace Toad
 {
-    // current active directory workspace
-    inline std::string game_project_directory = "D:\\VSProjects\\Engine2D\\bin\\x64\\Dev\\";
+    // temp: current active directory workspace
+    inline std::string game_project_directory = "D:\\VSProjects\\Engine2D\\bin\\Dev-windows-x86_64\\";
 
     #ifdef _WIN32
     inline std::string game_file_name = "Game.dll";
