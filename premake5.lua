@@ -15,8 +15,8 @@ project "Engine"
     kind "SharedLib"
     language "C++"
 
-    targetdir ("bin/" .. output_dir .. "/%{prj.name}")
-    objdir ("bin-intermediate/" .. output_dir .. "/%{prj.name}")
+    targetdir ("bin/" .. output_dir .. "/")
+    objdir ("bin-intermediate/" .. output_dir .. "/")
 
     files {
         "%{prj.name}/src/**.cpp",
@@ -25,10 +25,19 @@ project "Engine"
 
     includedirs {
         "%{prj.name}/src",
-        "../",
         "vendor",
+        "vendor/imgui",
         "vendor/sfml-imgui",
-        "vendor/SFML-2.5.1/include"
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include"
+    }
+
+    libdirs {
+        "vendor/SFML-2.6.0/lib"
+    }
+
+    links {
+        "opengl32",
     }
 
     cppdialect "C++20"
@@ -43,7 +52,14 @@ project "Engine"
             "_DEBUG",
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
-            "TOAD_EDITOR"
+           -- "TOAD_EDITOR"
+        }
+        
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
         }
         symbols "On"
     
@@ -52,6 +68,12 @@ project "Engine"
             "NDEBUG",
             "_CONSOLE",
             "ENGINE_IS_EXPORT"
+        }
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
         optimize "On"
     
@@ -62,6 +84,12 @@ project "Engine"
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
         }
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
+        }
         symbols "On"
     
 project "Game"
@@ -69,8 +97,8 @@ project "Game"
     kind "SharedLib"
     language "C++"
 
-    targetdir ("bin/" .. output_dir .. "/%{prj.name}")
-    objdir ("bin-intermediate/" .. output_dir .. "/%{prj.name}")
+    targetdir ("bin/" .. output_dir .. "/")
+    objdir ("bin-intermediate/" .. output_dir .. "/")
 
     files {
         "%{prj.name}/src/**.cpp",
@@ -80,12 +108,18 @@ project "Game"
     includedirs {
         "Engine/src",
         "vendor",
+        "vendor/SFML-2.6.0/include",
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
 
+    libdirs {
+        "vendor/SFML-2.6.0/lib"
+    }
+
     links {
-        "Engine"
+        "Engine",
+        "opengl32",
     }
 
     cppdialect "C++20"
@@ -102,6 +136,12 @@ project "Game"
             "GAME_EXPORTS",
             "_USRDLL"
         }
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
+        }
         symbols "On"
     
     filter "configurations:Release" 
@@ -110,6 +150,12 @@ project "Game"
             "_WINDOWS",
             "_USRDLL",
             "GAME_IS_EXPORT"
+        }
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
         optimize "On"
     
@@ -120,6 +166,12 @@ project "Game"
             "GAME_IS_EXPORT",
             "_USRDLL"
         }
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
+        }
         symbols "On"
 
 project "ToadRunner"
@@ -127,8 +179,8 @@ project "ToadRunner"
     kind "ConsoleApp"
     language "C++"
 
-    targetdir ("bin/" .. output_dir .. "/%{prj.name}")
-    objdir ("bin-intermediate/" .. output_dir .. "/%{prj.name}")
+    targetdir ("bin/" .. output_dir .. "/")
+    objdir ("bin-intermediate/" .. output_dir .. "/")
 
     files {
         "%{prj.name}/src/**.cpp",
@@ -136,15 +188,24 @@ project "ToadRunner"
     }
 
     includedirs {
+        "%{prj.name}/src",
+        "%{prj.name}/src/scripts",
         "Engine/src",
         "vendor",
-        "%{prj.name}/src",
-        "%{prj.name}/src/scripts"
+        "vendor/imgui",
+        "vendor/sfml-imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
+    }
+
+    libdirs {
+        "vendor/SFML-2.6.0/lib"
     }
 
     links {
         "Engine",
-        "Game"
+        "Game",
+        "opengl32",
     }
 
     cppdialect "C++20"
@@ -159,12 +220,24 @@ project "ToadRunner"
             "_DEBUG",
             "_CONSOLE",
         }
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
+        }
         symbols "On"
 
     filter "configurations:Release" 
         defines {
             "NDEBUG",
             "_CONSOLE",
+        }
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
         optimize "On"
 
@@ -173,6 +246,12 @@ project "ToadRunner"
             "_DEBUG",
             "_CONSOLE",
             "_TOAD_EDITOR"
+        }
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
         }
         symbols "On"
         

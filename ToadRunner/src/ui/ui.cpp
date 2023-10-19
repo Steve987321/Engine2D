@@ -75,6 +75,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		if (ImGui::BeginMenu("Engine"))
 		{
+
+			ImGui::EndMenu();
 		}
 		
 		if (ImGui::BeginMenu("Scripts"))
