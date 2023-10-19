@@ -52,7 +52,6 @@ project "Engine"
             "_DEBUG",
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
-           -- "TOAD_EDITOR"
         }
         
         links {
@@ -133,7 +132,6 @@ project "Game"
         defines {
             "_DEBUG",
             "_WINDOWS",
-            "GAME_EXPORTS",
             "_USRDLL"
         }
         links {
@@ -164,6 +162,7 @@ project "Game"
             "_DEBUG",
             "_WINDOWS",
             "GAME_IS_EXPORT",
+            "TOAD_EDITOR",
             "_USRDLL"
         }
         links {
@@ -245,7 +244,7 @@ project "ToadRunner"
         defines {
             "_DEBUG",
             "_CONSOLE",
-            "_TOAD_EDITOR"
+            "TOAD_EDITOR"
         }
         links {
             "sfml-system-d",
