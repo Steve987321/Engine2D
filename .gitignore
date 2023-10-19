@@ -1,9 +1,15 @@
+# Project files 
 .vs/
-bin-intermediate/
-bin-inter/
 .vscode/
 *.ini
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
 
+# Bin directories
+bin/
+bin-intermediate/
 
 # Prerequisites
 *.d
