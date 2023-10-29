@@ -1,6 +1,6 @@
 #pragma once
 
-namespace create_project {
+namespace project {
 	enum class CREATE_PROJECT_RES
 	{
 		OK,
