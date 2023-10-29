@@ -47,6 +47,8 @@ bool Engine::Init(const sf::ContextSettings& settings)
 
 void Engine::Run()
 {
+	LOGDEBUG("starting main loop");
+
 	while (m_window.isOpen())
 	{
 		// update deltatime

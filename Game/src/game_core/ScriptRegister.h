@@ -11,6 +11,7 @@
 #else
 #define GAME_API 
 #endif
+
 #define SCRIPT_REGISTER(T) register_script(std::make_shared<T>(#T))
 
 namespace Toad
