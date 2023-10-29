@@ -5,7 +5,7 @@
 #include "Engine.h"
 #include "Settings.h"
 
-#include "../Game/src/game_core/ScriptRegister.h"
+#include "game_core/ScriptRegister.h"
 
 #ifdef __APPLE__
 #include <dlfcn.h>

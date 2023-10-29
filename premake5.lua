@@ -25,6 +25,7 @@ project "Engine"
 
     includedirs {
         "%{prj.name}/src",
+        "Game/src",
         "vendor",
         "vendor/imgui",
         "vendor/sfml-imgui",
