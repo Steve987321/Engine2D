@@ -41,6 +41,8 @@ namespace Toad
             {
                 try
                 {
+                    get_index = false;
+
                     if (index_str.empty())
                     {
                         if (curr_args_as_str_index + 1 > args_as_str.size())
