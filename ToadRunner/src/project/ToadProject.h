@@ -6,9 +6,6 @@
 
 namespace project {
 
-	// active project 
-	ProjectSettings current_project{};
-
 	enum class CREATE_PROJECT_RES
 	{
 		OK,
@@ -36,6 +33,9 @@ namespace project {
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
 	};
+
+	// active project 
+	inline ProjectSettings current_project{};
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 

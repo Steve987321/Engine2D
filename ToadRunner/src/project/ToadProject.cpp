@@ -134,7 +134,7 @@ namespace project {
 		fs::copy(engine_parent_path.string() + "vendor", settings.project_path);
 
 		// open in visual studio
-		system(Toad::format_str("{}.sln", settings.name).c_str())
+		system(Toad::format_str("{}.sln", settings.name).c_str());
 	}
 
 }
