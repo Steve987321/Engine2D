@@ -7,6 +7,7 @@ workspace "Onion"
         "Release", 
         "Dev"
     }
+    startproject "ToadRunner"
     
 output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -61,6 +62,10 @@ project "Engine"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        flags { 
+            "MultiThreadedDebugDLL" 
+        }
+
         symbols "On"
     
     filter "configurations:Release" 
@@ -74,6 +79,9 @@ project "Engine"
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+        }
+        flags { 
+            "MultiThreadedDLL" 
         }
         optimize "On"
     
@@ -89,6 +97,9 @@ project "Engine"
             "sfml-window-d",
             "sfml-graphics-d",
             "sfml-audio-d",
+        }
+        flags { 
+            "MultiThreadedDebugDLL" 
         }
         symbols "On"
     
@@ -254,4 +265,3 @@ project "ToadRunner"
             "sfml-audio-d",
         }
         symbols "On"
-        
