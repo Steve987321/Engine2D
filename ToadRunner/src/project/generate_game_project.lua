@@ -81,7 +81,9 @@ project "Engine"
             "sfml-graphics",
             "sfml-audio",
         }
-     optimize "On"
+        staticruntime "on"
+        runtime "Release"
+        optimize "On"
 
     filter "configurations:Dev"
         defines{
@@ -96,6 +98,8 @@ project "Engine"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        staticruntime "off"
+        runtime "Debug"
         symbols "On"
 
 project(game_project_name)
@@ -148,6 +152,8 @@ project(game_project_name)
             "sfml-graphics",
             "sfml-audio",
         }
+        staticruntime "on"
+        runtime "Release"
         optimize "On"
 
     filter "configurations:Dev"
@@ -164,6 +170,8 @@ project(game_project_name)
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        staticruntime "off"
+        runtime "Debug"
         symbols "On"
 
 project "ToadRunner"

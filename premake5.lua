@@ -55,16 +55,14 @@ project "Engine"
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
         }
-        
         links {
             "sfml-system-d",
             "sfml-window-d",
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-        flags { 
-            "MultiThreadedDebugDLL" 
-        }
+        staticruntime "off"
+        runtime "Debug"
 
         symbols "On"
     
@@ -80,9 +78,8 @@ project "Engine"
             "sfml-graphics",
             "sfml-audio",
         }
-        flags { 
-            "MultiThreadedDLL" 
-        }
+        staticruntime "on"
+        runtime "Release"
         optimize "On"
     
     filter "configurations:Dev" 
@@ -98,9 +95,8 @@ project "Engine"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-        flags { 
-            "MultiThreadedDebugDLL" 
-        }
+        staticruntime "off"
+        runtime "Debug"
         symbols "On"
     
 project "Game"
@@ -152,6 +148,8 @@ project "Game"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        staticruntime "off"
+        runtime "Debug"
         symbols "On"
     
     filter "configurations:Release" 
@@ -167,6 +165,8 @@ project "Game"
             "sfml-graphics",
             "sfml-audio",
         }
+        staticruntime "on"
+        runtime "Release"
         optimize "On"
     
     filter "configurations:Dev" 
@@ -183,6 +183,8 @@ project "Game"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        staticruntime "off"
+        runtime "Debug"
         symbols "On"
 
 project "ToadRunner"
