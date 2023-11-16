@@ -2,6 +2,9 @@
 #include "ToadProject.h"
 
 #include "engine/FormatStr.h"
+#include "misc.h"
+
+#include "nlohmann/json.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -9,6 +12,7 @@
 namespace project {
 
 	namespace fs = std::filesystem;
+	using json = nlohmann::json;
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
 	{
@@ -208,13 +212,60 @@ namespace project {
 		{
 			return {
 				CREATE_PROJECT_RES::ERROR,
-				("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2))
+				(Toad::format_str("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2)))
 			};
 		}
 
 		// open in visual studio
-		// TODO: Opens as child ? when closing opened visual studio instance it will crash
-		system(Toad::format_str("{} && {}.sln", command1, settings.name).c_str());
+
+		if (!misc::current_editor.name.empty())
+		{
+			STARTUPINFOA si;
+			PROCESS_INFORMATION pi;
+
+			ZeroMemory(&si, sizeof(si));
+			si.cb = sizeof(si);
+			ZeroMemory(&pi, sizeof(pi));
+
+			if (!CreateProcessA(misc::current_editor.path.c_str(), 
+				(LPSTR)Toad::format_str("{}\\{}.sln", settings.project_path, settings.name).c_str(),
+				NULL, 
+				NULL,
+				FALSE,
+				0,
+				NULL,
+				NULL,
+				&si,
+				&pi))
+			{
+				return {
+				CREATE_PROJECT_RES::ERROR,
+				(Toad::format_str("Failed to create {} instance", misc::current_editor.name))
+				};
+			}
+
+			CloseHandle(pi.hProcess);
+			CloseHandle(pi.hThread);
+		}
+		else
+		{
+			return {
+				CREATE_PROJECT_RES::OK,
+				Toad::format_str("Created project {}", settings.name)
+			};
+		}
+
+		Load(settings.project_path);
+	}
+
+	LOAD_PROJECT_RES Load(const std::string_view path)
+	{
+		if (!fs::exists(path))
+		{
+			return LOAD_PROJECT_RES::DOESNT_EXIST;
+		}
+
+		// .TOADPROJECT
 	}
 
 }

@@ -26,6 +26,11 @@ namespace project {
 	};
 	DEFINE_ENUM_FLAG_OPERATORS(PROJECT_FLAGS)
 
+	enum class LOAD_PROJECT_RES
+	{
+		DOESNT_EXIST
+	};
+
 	struct ProjectSettings
 	{
 		std::string name;
@@ -39,5 +44,5 @@ namespace project {
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 
-	void Load(const std::string_view path);
+	LOAD_PROJECT_RES Load(const std::string_view path);
 }
