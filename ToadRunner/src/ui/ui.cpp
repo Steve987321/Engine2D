@@ -11,6 +11,8 @@
 #include <limits>
 #include <string>
 
+#include "project/ToadProject.h"
+
 void ui::decorations()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
@@ -69,13 +71,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size);
 	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
 
+	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
+	ImGuiID project_creation_file_popup_id = ImHashStr("CreateProject File Browse");
+
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("Engine"))
 		{
+			if (ImGui::MenuItem("Create Project"))
+			{
+				ImGui::PushOverrideID(project_creation_popup_id);
+				ImGui::OpenPopup("CreateProject");
+				ImGui::PopID();
 
+			}
 			ImGui::EndMenu();
 		}
 		
@@ -90,6 +101,55 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::EndMenuBar();
 	}
 	ImGui::End();
+
+	static project::ProjectSettings settings{};
+
+	ImGui::PushOverrideID(project_creation_popup_id);
+	// menu bar dialogs 
+	// TODO: SHIT
+	if (ImGui::BeginPopupModal("CreateProject"))
+	{		
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+
+		static char name[30]; 
+		const std::string engine_path = std::filesystem::current_path().string();
+		ImGui::TextDisabled("Engine path %s", engine_path.c_str());
+		if (ImGui::InputText("name", name, 30))
+			settings.name = name;
+
+		ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.c_str());
+
+		static Toad::FileBrowser browser(std::filesystem::current_path().string());
+
+		ImGui::BeginChild("filebrowserframe", {}, true);
+		browser.Show();
+
+		if (browser.GetSelectedFile().find(".") == std::string::npos)
+		{
+			settings.project_path = browser.GetSelectedFile();
+		}
+
+		if (!settings.name.empty() && !settings.project_path.empty() && !settings.engine_path.empty())
+		{
+			if (ImGui::Button("Create"))
+			{
+				auto result = project::Create(settings);
+
+				if (result.res != project::CREATE_PROJECT_RES::OK)
+					LOGERRORF("{} {}", result.res, result.description);
+				else
+					LOGDEBUGF("{} {}", result.res, result.description);
+
+				Toad::Engine::Get().UpdateGamePath(settings.name, settings.project_path);
+			}
+
+		}
+		ImGui::EndChild();
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
 
 	ImGui::Begin("Settings", nullptr);
 	{
