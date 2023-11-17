@@ -41,6 +41,7 @@ namespace Toad
 		void StartGameSession();
 		void StopGameSession();
 
+		void UpdateGamePath(std::string_view name, std::string_view path);
 		// load game.dll 
 		void LoadGameScripts();
 		// returns a map of scripts with script name as key, some script could be nullptr

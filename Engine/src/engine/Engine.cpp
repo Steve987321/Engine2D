@@ -225,6 +225,17 @@ void Engine::StopGameSession()
 	m_beginPlay = false;
 }
 
+void Engine::UpdateGamePath(std::string_view name, std::string_view path)
+{
+	game_project_directory = path;
+	game_file_name = name;
+
+	if (!game_project_directory.ends_with("\\"))
+	{
+		game_project_directory += "\\";
+	}
+}
+
 void Engine::LoadGameScripts()
 {
 	for (auto& script : m_gameScripts | std::views::values)
