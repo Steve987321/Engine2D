@@ -28,7 +28,15 @@ namespace project {
 
 	enum class LOAD_PROJECT_RES
 	{
-		DOESNT_EXIST
+		OK,
+		DOESNT_EXIST,
+		INVALID_PROJECT_FILE,
+	};
+	
+	struct LOAD_PROJECT_RES_INFO 
+	{
+		LOAD_PROJECT_RES res;
+		std::string description;
 	};
 
 	struct ProjectSettings
@@ -37,6 +45,15 @@ namespace project {
 		std::string project_path;
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
+
+		json to_json() const
+		{
+			json data;
+			data["name"] = name;
+			data["project_path"] = project_path;
+			data["engine_path"] = engine_path;
+			return data;
+		}
 	};
 
 	// active project 
@@ -44,5 +61,5 @@ namespace project {
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 
-	LOAD_PROJECT_RES Load(const std::string_view path);
+	LOAD_PROJECT_RES_INFO Load(const std::string_view path);
 }

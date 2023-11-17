@@ -2,7 +2,7 @@
 #include "ToadProject.h"
 
 #include "engine/FormatStr.h"
-#include "misc.h"
+#include "Misc.h"
 
 #include "nlohmann/json.hpp"
 
@@ -19,7 +19,8 @@ namespace project {
 		// verify settings paths 
 		if (!fs::is_directory(settings.project_path))
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Directory {} doesn't exist for project", settings.project_path)
 			};
@@ -28,7 +29,8 @@ namespace project {
 		if (!fs::is_empty(settings.project_path))
 		{
 			// change to warning, choose to add/overwrite directory contents
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::ERROR,
 				Toad::format_str("Project directory isn't empty {}", settings.project_path)
 			};
@@ -36,7 +38,8 @@ namespace project {
 
 		if (!fs::is_directory(settings.engine_path))
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Directory {} doesn't exist for engine path", settings.engine_path)
 			};
@@ -47,7 +50,8 @@ namespace project {
 		// get engine parent folder and verify contents
 		if (!engine_path_fs.has_parent_path())
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Invalid engine path, doesn't have parent : {}", settings.engine_path)
 			};
@@ -58,21 +62,24 @@ namespace project {
 		// check for game, runner and vendor (and engine/src/pch.h?) 
  		if (!fs::is_directory(engine_parent_path.string() + "/Game"))
 		{
-			return {
+			return
+			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Invalid engine path, doesn't have Game/ folder in parent : {}", settings.engine_path)
 			};
 		}
 		if (!fs::is_directory(engine_parent_path.string() + "/ToadRunner"))
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Invalid engine path, doesn't have ToadRunner/ folder in parent : {}", settings.engine_path)
 			};
 		}
 		if (!fs::is_directory(engine_parent_path.string() + "/Vendor"))
 		{
-			return {
+			return
+			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Invalid engine path, doesn't have Vendor/ folder in parent : {}", settings.engine_path)
 			};
@@ -82,7 +89,8 @@ namespace project {
 
 		if (!generate_game_project_lua.is_open())
 		{
-			return {
+			return 
+			{
 				   CREATE_PROJECT_RES::ERROR,
 				   ("Failed to open premake file")
 			};
@@ -98,7 +106,8 @@ namespace project {
 
 		if (!premake_lua_file)
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::ERROR,
 				("Failed to create premake file")
 			};
@@ -131,7 +140,8 @@ namespace project {
 		int res = system(Toad::format_str("{} && {}", command1, command2).c_str());
 		if (res == -1)
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::ERROR,
 				("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2))
 			};
@@ -210,9 +220,35 @@ namespace project {
 		res = system(Toad::format_str("{} && {}", command1, command2).c_str());
 		if (res == -1)
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::ERROR,
-				(Toad::format_str("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2)))
+				Toad::format_str("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2))
+			};
+		}
+
+		// project file 
+
+		json data;
+		data["name"] = settings.name;
+		data["engine_path"] = settings.engine_path;
+		data["project_path"] = settings.project_path;
+
+		std::ofstream engine_file(fs::path(settings.project_path) / (settings.name + ".TOADPROJECT"));
+
+		if (engine_file.is_open())
+		{
+			engine_file << std::setw(4) << data;
+			engine_file.close();
+		}
+
+		auto load_proj_res = Load(settings.project_path);
+		if (load_proj_res.res != LOAD_PROJECT_RES::OK)
+		{
+			return
+			{
+				CREATE_PROJECT_RES::ERROR,
+				Toad::format_str("Failed to load project, {}", load_proj_res.description)
 			};
 		}
 
@@ -238,9 +274,10 @@ namespace project {
 				&si,
 				&pi))
 			{
-				return {
-				CREATE_PROJECT_RES::ERROR,
-				(Toad::format_str("Failed to create {} instance", misc::current_editor.name))
+				return 
+				{
+					CREATE_PROJECT_RES::ERROR,
+					(Toad::format_str("Failed to create {} instance", misc::current_editor.name))
 				};
 			}
 
@@ -249,23 +286,122 @@ namespace project {
 		}
 		else
 		{
-			return {
+			return 
+			{
 				CREATE_PROJECT_RES::OK,
 				Toad::format_str("Created project {}", settings.name)
 			};
 		}
-
-		Load(settings.project_path);
 	}
 
-	LOAD_PROJECT_RES Load(const std::string_view path)
+	LOAD_PROJECT_RES_INFO Load(const std::string_view path)
 	{
+		ProjectSettings settings;
+
 		if (!fs::exists(path))
 		{
-			return LOAD_PROJECT_RES::DOESNT_EXIST;
+			return
+			{
+				 LOAD_PROJECT_RES::DOESNT_EXIST,
+				 Toad::format_str("{} doesn't exist", path)
+			};
 		}
 
-		// .TOADPROJECT
+		if (fs::is_regular_file(path))
+		{
+			if (fs::path(path).extension() != ".TOADPROJECT")
+			{
+				return
+				{
+					LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
+					Toad::format_str("{} isn't a valid project file extension", path)
+				};
+			}
+
+			std::ifstream project_file(path.data());
+
+			if (project_file.is_open())
+			{
+				json data = json::parse(project_file);
+
+				try
+				{
+					settings.name = data["name"];
+					settings.engine_path = data["engine_path"];
+					settings.project_path = data["project_path"];
+				}
+				catch(json::parse_error& e)
+				{
+					project_file.close();
+
+					return
+					{
+						LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
+						Toad::format_str("Parse error at {}, {}. While parsing {}", e.byte, e.what(), path)
+					};
+				}
+
+				project_file.close();
+			}
+		}
+
+		if (fs::is_directory(path))
+		{
+			fs::path path_to_file;
+
+			for (const auto& entry : fs::directory_iterator(path))
+			{
+				if (entry.path().extension() == ".TOADPROJECT")
+				{
+					path_to_file = entry.path();
+					break;
+				}
+			}
+
+			if (path_to_file.empty())
+			{
+				return
+				{
+					LOAD_PROJECT_RES::DOESNT_EXIST,
+					Toad::format_str("Failed to find project file in {}", path)
+				};
+			}
+
+			std::ifstream project_file(path.data());
+
+			if (project_file.is_open())
+			{
+				json data = json::parse(project_file);
+
+				try
+				{
+					settings.name = data["name"];
+					settings.engine_path = data["engine_path"];
+					settings.project_path = data["project_path"];
+				}
+				catch (json::parse_error& e)
+				{
+					project_file.close();
+
+					return
+					{
+						LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
+						Toad::format_str("Parse error at {}, {}. While parsing {}", e.byte, e.what(), path)
+					};
+				}
+
+				project_file.close();
+			}
+
+		}	
+
+		current_project = settings;
+
+		return
+		{
+			LOAD_PROJECT_RES::OK,
+			Toad::format_str("Loaded project {} successfully", settings.name)
+		};
 	}
 
 }
