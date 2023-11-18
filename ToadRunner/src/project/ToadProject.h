@@ -4,6 +4,8 @@
 #undef ERROR 
 #endif 
 
+#include "nlohmann/json.hpp"
+
 namespace project {
 
 	enum class CREATE_PROJECT_RES
@@ -13,6 +15,26 @@ namespace project {
 		INVALID_PROJECT_SETTINGS,
 		ERROR
 	};
+
+	inline std::ostream& operator<<(std::ostream& os, CREATE_PROJECT_RES& r)
+	{
+		switch(r){
+		case CREATE_PROJECT_RES::OK:
+			os << "OK";
+			break;
+		case CREATE_PROJECT_RES::PATH_NOT_EXIST: 
+			os << "PATH_NOT_EXIST";
+			break;
+		case CREATE_PROJECT_RES::INVALID_PROJECT_SETTINGS:
+			os << "INVALID_PROJECT_SETTINGS";
+			break;
+		case CREATE_PROJECT_RES::ERROR:
+			os << "ERROR";
+			break;
+		}
+
+		return os;
+	}
 
 	struct CREATE_PROJECT_RES_INFO
 	{
@@ -46,9 +68,9 @@ namespace project {
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
 
-		json to_json() const
+		nlohmann::json to_json() const
 		{
-			json data;
+			nlohmann::json data;
 			data["name"] = name;
 			data["project_path"] = project_path;
 			data["engine_path"] = engine_path;
