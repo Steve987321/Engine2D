@@ -74,6 +74,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
 	ImGuiID project_creation_file_popup_id = ImHashStr("CreateProject File Browse");
 
+	static project::ProjectSettings settings{};
+
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
 	if (ImGui::BeginMenuBar())
@@ -82,6 +84,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::MenuItem("Create Project"))
 			{
+				settings.engine_path = (std::filesystem::current_path().parent_path() / "Engine").string();
+
 				ImGui::PushOverrideID(project_creation_popup_id);
 				ImGui::OpenPopup("CreateProject");
 				ImGui::PopID();
@@ -102,50 +106,72 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 	ImGui::End();
 
-	static project::ProjectSettings settings{};
+	/// menu bar dialogs 
 
 	ImGui::PushOverrideID(project_creation_popup_id);
-	// menu bar dialogs 
-	// TODO: SHIT
 	if (ImGui::BeginPopupModal("CreateProject"))
 	{		
 		if (ImGui::Button("Cancel"))
 			ImGui::CloseCurrentPopup();
 
-		static char name[30]; 
-		const std::string engine_path = std::filesystem::current_path().string();
-		ImGui::TextDisabled("Engine path %s", engine_path.c_str());
-		if (ImGui::InputText("name", name, 30))
-			settings.name = name;
+		static bool created_project = false;
+		static project::CREATE_PROJECT_RES_INFO cpri;
 
-		ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.c_str());
-
-		static Toad::FileBrowser browser(std::filesystem::current_path().string());
-
-		ImGui::BeginChild("filebrowserframe", {}, true);
-		browser.Show();
-
-		if (browser.GetSelectedFile().find(".") == std::string::npos)
+		if (created_project)
 		{
-			settings.project_path = browser.GetSelectedFile();
-		}
-
-		if (!settings.name.empty() && !settings.project_path.empty() && !settings.engine_path.empty())
-		{
-			if (ImGui::Button("Create"))
+			if (cpri.res != project::CREATE_PROJECT_RES::OK)
 			{
-				auto result = project::Create(settings);
+				if (ImGui::Button("Close"))
+				{
+					created_project = false;
+				}
 
-				if (result.res != project::CREATE_PROJECT_RES::OK)
-					LOGERRORF("{} {}", result.res, result.description);
-				else
-					LOGDEBUGF("{} {}", result.res, result.description);
+				ImGui::TextColored({ 1,0,0,1 }, Toad::format_str("Project creation failed: {}, {}", cpri.res, cpri.description).c_str());
+			}
+			else
+			{
+				if (ImGui::Button("Close"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
 
-				Toad::Engine::Get().UpdateGamePath(settings.name, settings.project_path);
+				ImGui::Text("Project created successfully {}");
 			}
 
 		}
-		ImGui::EndChild();
+		else
+		{
+			static char name[30];
+			ImGui::TextDisabled("Engine path %s", settings.engine_path.c_str());
+			if (ImGui::InputText("name", name, 30))
+				settings.name = name;
+
+			ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.c_str());
+
+			if (ImGui::Button("Select Project Directory"))
+			{
+				auto selected = Toad::GetPathDialog(settings.engine_path);
+				settings.project_path = selected;
+			}
+
+			if (!settings.name.empty() && !settings.project_path.empty() && !settings.engine_path.empty())
+			{
+				if (ImGui::Button("Create"))
+				{
+					created_project = true;
+
+					cpri = project::Create(settings);
+
+					if (cpri.res != project::CREATE_PROJECT_RES::OK)
+						LOGERRORF("{} {}", cpri.res, cpri.description);
+					else
+						LOGDEBUGF("{} {}", cpri.res, cpri.description);
+
+					Toad::Engine::Get().UpdateGamePath(settings.name, settings.project_path);
+				}
+
+			}
+		}
 
 		ImGui::EndPopup();
 	}
@@ -453,6 +479,5 @@ void ui::engine_ui(ImGuiContext* ctx)
     }
 
     ImGui::End();
-
 
 }
