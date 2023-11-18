@@ -9,6 +9,8 @@
 
 namespace Toad {
 
+    extern int CALLBACK ProjectBrowseFolderCallback(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata);
+
     FileBrowser::FileBrowser(std::string_view starting_directory) {
         m_curr_path = starting_directory;
     }
@@ -113,5 +115,37 @@ namespace Toad {
         res.push_back(folder);
         return res;
     }
+
+    std::string GetPathDialog(std::string_view path)
+    {
+        BROWSEINFOA bi = { 0 };
+        bi.lpszTitle = "Select Project Directory";
+        bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
+        bi.lpfn = ProjectBrowseFolderCallback;
+        bi.lParam = (LPARAM)path.data();
+
+        auto item = SHBrowseForFolderA(&bi);
+
+        char selected_path[MAX_PATH]{};
+
+        if (item != NULL)
+        {
+            SHGetPathFromIDListA(item, selected_path);
+            return selected_path;
+        }
+
+        return "";
+    }
+
+    int ProjectBrowseFolderCallback(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata)
+    {
+        if (msg == BFFM_INITIALIZED)
+        {
+            LPCTSTR path = reinterpret_cast<LPCTSTR>(lpdata);
+            SendMessage(hwnd, BFFM_SETSELECTION, true, (LPARAM)path);
+        }
+        return 0;
+    }
+
 
 } // Toad

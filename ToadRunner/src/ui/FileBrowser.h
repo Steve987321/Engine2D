@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <shlobj.h>
 
 namespace Toad {
 
@@ -24,5 +25,7 @@ namespace Toad {
         std::string m_curr_path;
         std::string m_selected_file;
     };
+
+    std::string GetPathDialog(std::string_view path);
 
 } // Toad
