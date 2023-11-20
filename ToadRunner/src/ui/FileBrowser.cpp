@@ -94,6 +94,16 @@ namespace Toad {
         return m_selected_file;
     }
 
+    void FileBrowser::SetPath(std::string_view path) {
+        if (!fs::is_directory(path))
+        {   
+            LOGDEBUGF("[FileBrowser] {} isn't a valid directory", path);
+            return;
+        }
+
+        m_curr_path = path;
+    }
+
     std::vector<std::string> FileBrowser::SplitPath(std::string_view path) {
         std::string folder;
         std::vector<std::string> res;
@@ -135,6 +145,27 @@ namespace Toad {
         }
 
         return "";
+    }
+
+    std::string GetPathFile(std::string_view path, std::string_view file_types)
+    {
+        OPENFILENAMEA ofn = { 0 };
+        char selected_file[MAX_PATH]{};
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL;
+        ofn.lpstrFile = selected_file;
+        ofn.nMaxFile = MAX_PATH;
+        ofn.lpstrFilter = file_types.data();
+
+        // TODO: finish this function
+        ofn.lpstrInitialDir = fs::path(path).string().c_str();
+
+        if(!GetOpenFileNameA(&ofn))
+        {
+            return "";
+        }
+
+        return ofn.lpstrFile;
     }
 
     int ProjectBrowseFolderCallback(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata)
