@@ -72,9 +72,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::SetNextWindowPos(ImGui::GetMainViewport()->Pos);
 
 	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
-	ImGuiID project_creation_file_popup_id = ImHashStr("CreateProject File Browse");
+	ImGuiID project_load_popup_id = ImHashStr("LoadProject");
+	static bool project_load_popup_select = false;
 
 	static project::ProjectSettings settings{};
+	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
+	static Toad::TextEditor textEditor;
 
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
@@ -90,6 +93,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::OpenPopup("CreateProject");
 				ImGui::PopID();
 
+			}
+			if (ImGui::MenuItem("Load Project"))
+			{
+				project_load_popup_select = true;
+
+				ImGui::PushOverrideID(project_load_popup_id);
+				ImGui::OpenPopup("LoadProject");
+				ImGui::PopID();
 			}
 			ImGui::EndMenu();
 		}
@@ -163,13 +174,62 @@ void ui::engine_ui(ImGuiContext* ctx)
 					cpri = project::Create(settings);
 
 					if (cpri.res != project::CREATE_PROJECT_RES::OK)
+					{
+						fBrowser.SetPath(settings.project_path);
 						LOGERRORF("{} {}", cpri.res, cpri.description);
+					}
 					else
+					{
 						LOGDEBUGF("{} {}", cpri.res, cpri.description);
+					}
 
 					Toad::Engine::Get().UpdateGamePath(settings.name, settings.project_path);
 				}
 
+			}
+		}
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	ImGui::PushOverrideID(project_load_popup_id);
+	if (ImGui::BeginPopupModal("LoadProject"))
+	{
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+
+		static project::LOAD_PROJECT_RES_INFO lri;
+		static std::string path;
+
+		if (project_load_popup_select)
+		{
+			// TODO: cache toad projects folder s
+			path = Toad::GetPathFile(std::filesystem::current_path().string(), "Toad Project (*.TOADPROJECT)\0*.TOADPROJECT\0");
+
+			if (!path.empty()){
+				lri = project::Load(path);
+
+				if (lri.res == project::LOAD_PROJECT_RES::OK)
+				{
+					fBrowser.SetPath(std::filesystem::path(path).parent_path().string());
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			else
+			{
+				lri.description = "Selected file is empty";
+			}
+
+			project_load_popup_select = false;
+		}
+		else
+		{
+			ImGui::TextColored({ 1,0,0,1 }, "Failed to load project, %s", lri.description.empty() ? "?" : lri.description.c_str());
+			ImGui::Text("path %s", path.c_str());
+			if (ImGui::Button("Select Project"))
+			{
+				project_load_popup_select = true;
 			}
 		}
 
@@ -459,9 +519,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		
 		ImGui::End();
 	}
-
-    static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
-    static Toad::TextEditor textEditor;
 
     ImGui::Begin("FileBrowser", nullptr);
     fBrowser.Show();
