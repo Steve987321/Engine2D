@@ -15,7 +15,10 @@ struct ENGINE_API Scene
 	Scene() : name("unnamed_scene") {}
 
 	// scene name
-	const char* name;
+	std::string name;
+
+	// scene path
+	std::string path;
 
 	// holds object instances in the scene
 	std::unordered_map < std::string, std::shared_ptr<Object> > objects_map;
