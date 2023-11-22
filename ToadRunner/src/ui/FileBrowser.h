@@ -18,6 +18,9 @@ namespace Toad {
         std::string& GetSelectedFile();
 
         void SetPath(std::string_view path);
+        const std::string& GetPath() const;
+
+        bool IsDoubleClicked();
     private:
         void IterateDir(const fs::directory_iterator& dir_it);
 
@@ -26,6 +29,8 @@ namespace Toad {
         std::string m_selected_file_buffer;
         std::string m_curr_path;
         std::string m_selected_file;
+
+        bool m_is_double_clicked = false;
     };
 
     std::string GetPathDialog(std::string_view path);

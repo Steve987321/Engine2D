@@ -78,7 +78,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static project::ProjectSettings settings{};
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
 	static Toad::TextEditor textEditor;
-
+	
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
 	if (ImGui::BeginMenuBar())
@@ -111,6 +111,29 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				Toad::Engine::Get().LoadGameScripts();
 			}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Scene"))
+		{
+			auto& scene = Toad::Engine::Get().GetScene();
+
+			if (scene.objects_map.empty())
+			{
+				ImGui::BeginDisabled();
+			}
+			if (ImGui::MenuItem("Save"))
+			{
+				if (!scene.objects_map.empty())
+				{
+					Toad::SaveScene(scene, fBrowser.GetPath());
+				}
+			}
+			if (scene.objects_map.empty())
+			{
+				ImGui::EndDisabled();
+			}
+
 			ImGui::EndMenu();
 		}
 		ImGui::EndMenuBar();
@@ -342,7 +365,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (ImGui::DragFloat("Y", &pos.y))
 					circle.setPosition(pos);
 
-				auto circle_col = circle.getFillColor();
+				const auto& circle_col = circle.getFillColor();
 				float col[4] = {
 					circle_col.r / 255.f,
 					circle_col.g / 255.f,
@@ -522,6 +545,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 
     ImGui::Begin("FileBrowser", nullptr);
     fBrowser.Show();
+
+	if (fBrowser.IsDoubleClicked())
+	{
+		auto file = std::filesystem::path(fBrowser.GetSelectedFile());
+		if (file.has_extension())
+		{
+			auto ext = file.extension().string();
+
+			if (ext == ".TSCENE")
+			{
+				Toad::Engine::Get().SetScene(Toad::LoadScene(file.string()));
+			}
+		}
+	}
+
     ImGui::End();
 
     ImGui::Begin("TextEditor");

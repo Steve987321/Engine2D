@@ -49,12 +49,15 @@ namespace Toad {
                     {
                         m_curr_path = full;
                     }
+                    m_is_double_clicked = true;
                 }
             }
         }
     }
 
     void FileBrowser::Show() {
+        m_is_double_clicked = false;
+
         auto folders = SplitPath(m_curr_path);
 
         for (int i = 0; i < folders.size(); i++)
@@ -102,6 +105,16 @@ namespace Toad {
         }
 
         m_curr_path = path;
+    }
+
+    const std::string& FileBrowser::GetPath() const
+    {
+        return m_curr_path;
+    }
+
+    bool FileBrowser::IsDoubleClicked()
+    {
+        return m_is_double_clicked;
     }
 
     std::vector<std::string> FileBrowser::SplitPath(std::string_view path) {
@@ -177,6 +190,5 @@ namespace Toad {
         }
         return 0;
     }
-
 
 } // Toad
