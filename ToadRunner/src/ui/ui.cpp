@@ -233,9 +233,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (!path.empty()){
 				lri = project::Load(path);
 
+				std::string game_folder;
+
+				for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::path(path).parent_path()))
+				{
+					if (entry.is_directory() &&
+						entry.path().filename().string().find("Game") != std::string::npos)
+					{
+						game_folder = entry.path().filename().string();
+						break;
+					}
+				}
+
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
-					fBrowser.SetPath(std::filesystem::path(path).parent_path().string());
+					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "scripts").string());
 					ImGui::CloseCurrentPopup();
 				}
 			}

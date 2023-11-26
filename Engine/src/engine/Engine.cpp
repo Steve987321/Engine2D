@@ -6,6 +6,7 @@
 #include "Settings.h"
 
 #include "game_core/ScriptRegister.h"
+#include "game_core/Game.h"
 
 #ifdef __APPLE__
 #include <dlfcn.h>
@@ -26,15 +27,32 @@ Engine::Engine()
 
 Engine::~Engine() = default;
 
-bool Engine::Init(const sf::ContextSettings& settings)
+bool Engine::Init()
 {
 	LOGDEBUG("Initializing Engine");
 
 	LoadGameScripts();
 
-	if (!InitWindow(settings))
-		return false;
+	auto get_game_scenes = reinterpret_cast<get_game_scenes_t*>(GetProcAddress(m_currDLL, "get_game_scenes"));
+	auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
 
+	auto gsettings = get_game_settings();
+
+#ifndef TOAD_EDITOR	
+	auto scenes = get_game_scenes;
+	if (scenes.empty())
+	{
+		LOGERROR("No scenes in game")
+	}
+	else
+	{
+		m_currentScene = scenes[0];
+	}
+#endif
+
+	if (!InitWindow(gsettings))
+		return false;
+	 
 #ifdef TOAD_EDITOR
 	LOGDEBUG("Creating window texture for viewport");
 	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
@@ -48,6 +66,10 @@ bool Engine::Init(const sf::ContextSettings& settings)
 void Engine::Run()
 {
 	LOGDEBUG("starting main loop");
+
+#ifndef TOAD_EDITOR
+	SetScene(m_currentScene);
+#endif
 
 	while (m_window.isOpen())
 	{
@@ -74,11 +96,11 @@ void Engine::Run()
 	CleanUp();
 }
 
-bool Engine::InitWindow(const sf::ContextSettings& settings)
+bool Engine::InitWindow(const AppSettings& settings)
 {
 #ifdef TOAD_EDITOR
 	LOGDEBUG("Loading editor window");
-	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings);
+	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
 	m_window.setFramerateLimit(60);
 	bool res = ImGui::SFML::Init(m_window, false);
 	LOGDEBUGF("ImGui SFML Init result: {}", res);
@@ -94,9 +116,9 @@ bool Engine::InitWindow(const sf::ContextSettings& settings)
 	return res;
 #else	
 	// TODO: CHENGE DEEZZ
-	LOGDEBUG("Loading window");
-	m_window.create(sf::VideoMode(600, 600), "Game", sf::Style::Titlebar | sf::Style::Close);
-	m_window.setFramerateLimit(60);
+	LOGDEBUG("Creating window");
+	m_window.create(sf::VideoMode(settings.window_size.x, settings.window_size.y), settings.window_name, sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings.ctx_settings);
+	m_window.setFramerateLimit(settings.frame_limit);
 	return true;
 #endif
 }

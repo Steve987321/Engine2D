@@ -5,6 +5,8 @@
 
 #include <imgui/imgui_internal.h>
 
+struct AppSettings;
+
 namespace Toad
 {
 	class ENGINE_API Engine
@@ -18,7 +20,7 @@ namespace Toad
 		Engine();
 		~Engine();
 
-		bool Init(const sf::ContextSettings& settings);
+		bool Init();
 
 		// Engine main loop
 		void Run();
@@ -50,7 +52,7 @@ namespace Toad
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
 	private:
-		bool InitWindow(const sf::ContextSettings& settings);
+		bool InitWindow(const AppSettings& settings);
 		void EventHandler();
 		void Render();
 		void CleanUp();

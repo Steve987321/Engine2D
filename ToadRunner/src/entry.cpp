@@ -8,12 +8,12 @@
 int main(int argc, char** argv)
 {
 	Toad::Engine engine;
-
+	
 #ifdef TOAD_EDITOR
 	engine.SetEngineUI(ui::engine_ui);
 #endif
 
-	if (!engine.Init(sf::ContextSettings()))
+	if (!engine.Init())
 		return EXIT_FAILURE;
 	
 	ImGui::SetCurrentContext(engine.GetImGuiContext());
