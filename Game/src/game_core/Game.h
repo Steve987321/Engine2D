@@ -34,8 +34,10 @@ extern "C"
 {
 	// functions signatures
 	typedef std::vector<Toad::Scene> (get_game_scenes_t)();
+	typedef void (set_scenes_t)(const std::vector<Toad::Scene>&);
 	typedef AppSettings (get_game_settings_t)();
 
 	GAME_API std::vector<Toad::Scene> get_scenes();
+	GAME_API void set_scenes(const std::vector<Toad::Scene>& scenes);
 	GAME_API AppSettings get_game_settings();
 }
