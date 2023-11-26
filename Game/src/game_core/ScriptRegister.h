@@ -3,14 +3,9 @@
 // Functions for the engine to read to get access to the game scripts and to register scripts
 
 #include <EngineCore.h>
+#include "Game.h"
 
 #include "engine/default_scripts/Script.h"
-
-#ifdef _WIN32
-#define GAME_API __declspec(dllexport)
-#else
-#define GAME_API 
-#endif
 
 #define SCRIPT_REGISTER(T) register_script(std::make_shared<T>(#T))
 
