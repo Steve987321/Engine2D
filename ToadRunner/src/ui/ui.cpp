@@ -5,6 +5,7 @@
 
 #include "imgui-SFML.h"
 #include "FileBrowser.h"
+#include "GameAssetsBrowser.h"
 #include "TextEditor.h"
 
 #include <queue>
@@ -77,6 +78,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	static project::ProjectSettings settings{};
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
+	static auto asset_browser = Toad::GameAssetsBrowser(settings.project_path);
 	static Toad::TextEditor textEditor;
 	
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
@@ -194,7 +196,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					created_project = true;
 
-					cpri = project::Create(settings);
+					cpri = Create(settings);
 
 					if (cpri.res != project::CREATE_PROJECT_RES::OK)
 					{
@@ -247,6 +249,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
+					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src").string());
 					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "scripts").string());
 					ImGui::CloseCurrentPopup();
 				}
@@ -555,7 +558,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-    ImGui::Begin("FileBrowser", nullptr);
+    ImGui::Begin("File Browser", nullptr);
     fBrowser.Show();
 
 	if (fBrowser.IsDoubleClicked())
@@ -574,7 +577,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 
     ImGui::End();
 
-    ImGui::Begin("TextEditor");
+	ImGui::Begin("Game Assets");
+
+	asset_browser.Show();
+
+	ImGui::End();
+
+    ImGui::Begin("Text Editor");
 
     if (!fBrowser.GetSelectedFile().ends_with(PATH_SEPARATOR))
     {
