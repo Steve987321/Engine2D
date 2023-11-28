@@ -45,12 +45,17 @@ void list_dir_contents(const fs::path& path)
 
 void GameAssetsBrowser::Show()
 {
-	if (m_assets_path.empty())
-		return;
-
-	list_dir_contents(m_assets_path);
+	if (!m_assets_path.empty())
+		list_dir_contents(m_assets_path);
 
 	ImGui::Begin("second");
+	
+	if (m_assets_path.empty())
+	{
+		ImGui::Text("nothing to show");
+		ImGui::End();
+		return;
+	}
 
 	if (m_current_path != m_assets_path && ImGui::ArrowButton("##back", ImGuiDir_Left))
 	{
