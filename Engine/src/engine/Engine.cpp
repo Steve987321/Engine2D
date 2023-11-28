@@ -31,14 +31,24 @@ bool Engine::Init()
 {
 	LOGDEBUG("Initializing Engine");
 
+#ifndef TOAD_EDITOR
+	for (const auto& e : std::filesystem::directory_iterator(std::filesystem::current_path()))
+	{
+		if (e.path().filename().string().find("Game.dll") != std::string::npos)
+		{
+			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
+			break;
+		}
+	}
+#endif
 	LoadGameScripts();
 
-	auto get_game_scenes = reinterpret_cast<get_game_scenes_t*>(GetProcAddress(m_currDLL, "get_game_scenes"));
 	auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
 
 	auto gsettings = get_game_settings();
 
-#ifndef TOAD_EDITOR	
+#ifndef TOAD_EDITOR
+	auto get_game_scenes = reinterpret_cast<get_game_scenes_t*>(GetProcAddress(m_currDLL, "get_game_scenes"));
 	auto scenes = get_game_scenes;
 	if (scenes.empty())
 	{
@@ -247,14 +257,14 @@ void Engine::StopGameSession()
 	m_beginPlay = false;
 }
 
-void Engine::UpdateGamePath(std::string_view name, std::string_view path)
+void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
 {
-	game_project_directory = path;
-	game_file_name = name;
+	game_bin_directory = bin_path;
+	game_bin_file = game_bin_file_name;
 
-	if (!game_project_directory.ends_with("\\"))
+	if (!game_bin_directory.ends_with("\\"))
 	{
-		game_project_directory += "\\";
+		game_bin_directory += "\\";
 	}
 }
 
@@ -284,8 +294,8 @@ void Engine::LoadGameScripts()
 		FreeLibrary(m_currDLL);
 
 	// delete old one (if there is one) then rename new one 
-	std::string game_dll_path = game_project_directory + game_file_name;
-	std::string current_game_dll = game_project_directory + "GameCurrent.dll";
+	std::string game_dll_path = game_bin_directory + game_bin_file;
+	std::string current_game_dll = game_bin_directory + "GameCurrent.dll";
 
 	if (std::ifstream(current_game_dll).good())
 	{
@@ -450,7 +460,7 @@ void Engine::CleanUp()
 
 void Engine::GameUpdatedWatcher()
 {
-	std::ifstream f(game_file_name);
+	std::ifstream f(game_bin_file);
 	if (f.is_open())
 	{
 	}

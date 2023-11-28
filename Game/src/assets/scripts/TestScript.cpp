@@ -26,7 +26,7 @@ void TestScript::OnUpdate(Object* obj)
 		auto& c = circle->GetCircle();
 
 		auto win_size = Engine::Get().GetWindow().getSize();
-		auto dt = Engine::Get().GetDeltaTime().asMilliseconds() / 1000.f;
+		float dt = static_cast<float>(Engine::Get().GetDeltaTime().asMilliseconds()) / 1000.f;
 
 		c.move(Vec2f{velx * dt, vely * dt} * speed_mult);
 

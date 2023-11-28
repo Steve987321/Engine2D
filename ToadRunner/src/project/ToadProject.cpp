@@ -14,6 +14,65 @@ namespace project {
 	namespace fs = std::filesystem;
 	using json = nlohmann::json;
 
+	bool OpenSln(const ProjectSettings& settings, const misc::Editor& editor)
+	{
+		STARTUPINFOA si;
+		PROCESS_INFORMATION pi;
+
+		ZeroMemory(&si, sizeof(si));
+		si.cb = sizeof(si);
+		ZeroMemory(&pi, sizeof(pi));
+
+		if (!CreateProcessA(editor.path.string().c_str(),
+			(LPSTR)Toad::format_str("{}\\{}.sln", settings.project_path, settings.name).c_str(),
+			NULL,
+			NULL,
+			FALSE,
+			0,
+			NULL,
+			NULL,
+			&si,
+			&pi))
+		{
+			return false;
+		}
+
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		return true;
+	}
+
+	bool OpenSln(const fs::path& path, const misc::Editor& editor)
+	{
+		if (!path.has_extension() || path.extension() != ".sln")
+			return false;
+
+		STARTUPINFOA si;
+		PROCESS_INFORMATION pi;
+
+		ZeroMemory(&si, sizeof(si));
+		si.cb = sizeof(si);
+		ZeroMemory(&pi, sizeof(pi));
+
+		if (!CreateProcessA(NULL,
+			const_cast<LPSTR>((editor.path.string() + ' ' + path.string()).c_str()),
+			NULL,
+			NULL,
+			FALSE,
+			0,
+			NULL,
+			NULL,
+			&si,
+			&pi))
+		{
+			return false;
+		}
+
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+		return true;
+	}
+
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
 	{
 		// verify settings paths 
@@ -256,33 +315,21 @@ namespace project {
 
 		if (!misc::current_editor.name.empty())
 		{
-			STARTUPINFOA si;
-			PROCESS_INFORMATION pi;
-
-			ZeroMemory(&si, sizeof(si));
-			si.cb = sizeof(si);
-			ZeroMemory(&pi, sizeof(pi));
-
-			if (!CreateProcessA(misc::current_editor.path.c_str(), 
-				(LPSTR)Toad::format_str("{}\\{}.sln", settings.project_path, settings.name).c_str(),
-				NULL, 
-				NULL,
-				FALSE,
-				0,
-				NULL,
-				NULL,
-				&si,
-				&pi))
+#if 0
+			if (!OpenSln(settings))
 			{
-				return 
+				return
 				{
 					CREATE_PROJECT_RES::ERROR,
 					(Toad::format_str("Failed to create {} instance", misc::current_editor.name))
 				};
 			}
-
-			CloseHandle(pi.hProcess);
-			CloseHandle(pi.hThread);
+#endif
+			return
+			{
+				CREATE_PROJECT_RES::OK,
+				Toad::format_str("Created project {}", settings.name)
+			};
 		}
 		else
 		{
@@ -294,6 +341,7 @@ namespace project {
 		}
 	}
 
+	// sets current_project 
 	LOAD_PROJECT_RES_INFO Load(const std::string_view path)
 	{
 		ProjectSettings settings;

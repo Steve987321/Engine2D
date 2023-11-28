@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ScriptRegister.h"
 
-#include "scripts/TestScript.h"
+#include "assets/scripts/TestScript.h"
 
 namespace Toad
 {

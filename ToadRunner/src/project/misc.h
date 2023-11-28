@@ -1,10 +1,12 @@
 #pragma once
 
+#include <filesystem>
+
 namespace misc
 {
 
 struct Editor {
-	std::string path;
+	std::filesystem::path path;
 	std::string name;
 };
 

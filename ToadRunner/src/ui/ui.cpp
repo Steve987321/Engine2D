@@ -170,10 +170,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					ImGui::CloseCurrentPopup();
 				}
-
-				ImGui::Text("Project created successfully {}");
+				ImGui::Text("Project created successfully");
 			}
-
 		}
 		else
 		{
@@ -206,9 +204,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 					else
 					{
 						LOGDEBUGF("{} {}", cpri.res, cpri.description);
+						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / settings.name / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
-					Toad::Engine::Get().UpdateGamePath(settings.name, settings.project_path);
+					Toad::Engine::Get().UpdateGameBinPaths(settings.name + ".dll", settings.project_path + "bin\\Dev-windows-x86_64");
 				}
 
 			}
@@ -249,8 +248,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
-					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src").string());
-					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "scripts").string());
+					Toad::Engine::Get().UpdateGameBinPaths(project::current_project.name + "_Game.dll", project::current_project.project_path + "\\bin\\Dev-windows-x86_64");
+
+					Toad::Engine::Get().LoadGameScripts();
+
+					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
+					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder).string());
 					ImGui::CloseCurrentPopup();
 				}
 			}

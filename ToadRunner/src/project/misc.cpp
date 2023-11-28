@@ -16,13 +16,12 @@ std::vector<Editor> misc::FindEditors()
 	
 	if (fs::exists(vs2022_path))
 	{
-		available_editors.push_back({ (vs2022_path / "devenv.exe").string(), "Visual Studio 2022" });
+		available_editors.push_back({ (vs2022_path / "devenv.exe"), "Visual Studio 2022" });
 	}
 
 	// TODO: 
 
 	return available_editors;
-	
 }
 
 }

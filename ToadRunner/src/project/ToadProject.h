@@ -4,7 +4,13 @@
 #undef ERROR 
 #endif 
 
+#include "Misc.h"
 #include "nlohmann/json.hpp"
+
+namespace misc
+{
+	struct Editor;
+}
 
 namespace project {
 
@@ -80,6 +86,9 @@ namespace project {
 
 	// active project 
 	inline ProjectSettings current_project{};
+
+	bool OpenSln(const ProjectSettings& settings, const misc::Editor& editor = misc::current_editor);
+	bool OpenSln(const std::filesystem::path& settings, const misc::Editor& editor = misc::current_editor);
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 
