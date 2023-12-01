@@ -6,6 +6,8 @@
 #include <fstream>
 #include <format>
 
+#include "Helpers.h"
+
 #ifdef ERROR
 #undef ERROR
 #endif
@@ -82,9 +84,6 @@ public:
 	}
 
 private:
-	/// Returns the current time or date based on the format as a string
-	static std::string GetDateStr(const std::string_view format);
-
 	/// Returns the directory location to the Documents folder 
 	static std::string GetDocumentsFolder();
 

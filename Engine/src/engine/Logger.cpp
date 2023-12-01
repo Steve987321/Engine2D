@@ -50,24 +50,6 @@ namespace Toad
 		m_isConsoleClosed = true;
 	}
 
-	std::string Logger::GetDateStr(const std::string_view format)
-	{
-		std::ostringstream ss;
-		std::string time;
-
-		auto t = std::time(nullptr);
-		tm newtime{};
-
-#ifdef _WIN32
-		localtime_s(&newtime, &t);
-#else
-		localtime_r(&t, &newtime);
-#endif
-
-		ss << std::put_time(&newtime, format.data());
-		return ss.str();
-	}
-
 	std::string Logger::GetDocumentsFolder()
 	{
 #ifdef _WIN32

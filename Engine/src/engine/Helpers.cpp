@@ -20,4 +20,22 @@ namespace Toad
 		std::uniform_real_distribution<float> dis(min, max);
 		return dis(gen);
 	}
+
+	std::string GetDateStr(std::string_view format)
+	{
+		std::ostringstream ss;
+		std::string time;
+
+		auto t = std::time(nullptr);
+		tm newtime{};
+
+#ifdef _WIN32
+		localtime_s(&newtime, &t);
+#else
+		localtime_r(&t, &newtime);
+#endif
+
+		ss << std::put_time(&newtime, format.data());
+		return ss.str();
+	}
 }
