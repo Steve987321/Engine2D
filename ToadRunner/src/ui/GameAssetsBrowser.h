@@ -13,6 +13,7 @@ namespace Toad
 
 		void Show();
 		void SetAssetPath(std::string_view path);
+		const fs::path& GetAssetPath();
 
 	private:
 		fs::path m_assets_path;

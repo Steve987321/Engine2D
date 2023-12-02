@@ -70,9 +70,9 @@ void GameAssetsBrowser::Show()
 		}
 		else
 		{
-			for (const auto& e : editors)
+			for (const auto& editor : editors)
 			{
-				if (e.name.find("Visual Studio") != std::string::npos)
+				if (editor.name.find("Visual Studio") != std::string::npos)
 				{
 					// get .sln file
 					// TODO: temp
@@ -96,9 +96,9 @@ void GameAssetsBrowser::Show()
 						break;
 					}
 
-					if (!project::OpenSln(slnpath, e))
+					if (!project::OpenSln(slnpath, editor))
 					{
-						LOGERRORF("Failed to open {} with {}", slnpath, e.name);
+						LOGERRORF("Failed to open {} with {}", slnpath, editor.name);
 					}
 					
 					break;
@@ -106,23 +106,125 @@ void GameAssetsBrowser::Show()
 			}
 		}
 	}
+
+	static bool creation_menu = false;
+	static ImVec2 creation_menu_pos;
+
+	// TODO: ENABLE WHEN RIGHT CLICK ON THIS RECT 
+	if (creation_menu)
+	{
+		ImGui::SetCursorPos(creation_menu_pos);
+		ImGui::BeginChild("Create", {}, true);
+
+		if (ImGui::Button("Directory", { 50, 0 }))
+		{
+			std::string dir_name = "new_directory";
+			while (exists(m_current_path / dir_name))
+			{
+				dir_name += "_1";
+			}
+			create_directory(m_current_path / "new_directory");
+		}
+
+		if (ImGui::Button("Scene", {50, 0} ))
+		{
+			std::string scene_name = "Scene.TSCENE";
+			while (exists(m_current_path / scene_name))
+			{
+				scene_name += "_1";
+			}
+			std::ofstream f(m_current_path / scene_name);
+			nlohmann::json da;
+			f << da;
+			f.close();
+		}
+
+		ImGui::EndChild();
+	}
+
+	static fs::path selected;
+	static bool renaming = false;
+	static char renaming_buf[100];
+
+	int i = 0;
 	for (const auto& entry: fs::directory_iterator(m_current_path))
 	{
+		i++;
+
+		if (!selected.empty())
+		{
+			// rename
+			if (!renaming && selected == entry.path() && ImGui::IsKeyPressed(ImGuiKey_F2))
+			{
+				strcpy_s(renaming_buf, entry.path().filename().string().c_str());
+				renaming = true;
+			}
+		}
+
 		if (entry.is_directory())
 		{
-			if (ImGui::Button("D", { 50,50 }))
+			ImGui::PushID(i);
+			if (ImGui::Selectable("D", selected == entry.path(), 0, { 50, 50 }))
+			{
+				selected = entry.path();
+			}
+			ImGui::PopID();
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 			{
 				m_current_path = entry.path();
 			}
-			ImGui::Text(entry.path().filename().string().c_str());
+			if (renaming && selected == entry.path())
+			{
+				ImGui::SetKeyboardFocusHere();
+
+				if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
+					renaming = false;
+				}
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				{
+					(renaming_buf, entry.path().filename().string().c_str());
+					renaming = false;
+				}
+			}
+			else
+				ImGui::Text(entry.path().filename().string().c_str());
 		}
 		else
 		{
-			if (ImGui::Button("F", {50, 50}))
+			ImGui::PushID(i);
+			if (ImGui::Selectable("F", selected == entry.path(), 0, {50, 50}))
 			{
-				
+				selected = entry.path();
 			}
-			ImGui::Text(entry.path().filename().string().c_str());
+			ImGui::PopID();
+			if (renaming && selected == entry.path())
+			{
+				ImGui::SetKeyboardFocusHere();
+
+				if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+				{
+					fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
+					renaming = false;
+				}
+				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+				{
+					strcpy_s(renaming_buf, entry.path().filename().string().c_str());
+					renaming = false;
+				}
+			}
+			else
+			{
+				ImGui::Text(entry.path().filename().string().c_str());
+			}
+
+			//LOGDEBUGF("{}", (int)(ImGui::GetWindowSize().x / 50));
+
+			//ImGui::SameLine();
+			//if (i % (int)(ImGui::GetWindowSize().x / 50) != 0)
+			//	ImGui::SetCursorPos({pos.x + 60, pos.y + 5});
 		}
 	}
 
@@ -133,6 +235,11 @@ void GameAssetsBrowser::SetAssetPath(std::string_view path)
 {
 	m_assets_path = path;
 	m_current_path = path;
+}
+
+const fs::path& GameAssetsBrowser::GetAssetPath()
+{
+	return m_assets_path;
 }
 
 }
