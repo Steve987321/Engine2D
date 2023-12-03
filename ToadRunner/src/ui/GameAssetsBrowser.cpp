@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "Engine/Engine.h"
 
 #include "GameAssetsBrowser.h"
@@ -107,44 +108,59 @@ void GameAssetsBrowser::Show()
 		}
 	}
 
-	static bool creation_menu = false;
-	static ImVec2 creation_menu_pos;
+	static fs::path selected;
+	static bool renaming = false;
+	static char renaming_buf[100];
 
-	// TODO: ENABLE WHEN RIGHT CLICK ON THIS RECT 
-	if (creation_menu)
+	if (ImGui::BeginPopup("creation menu"))
 	{
-		ImGui::SetCursorPos(creation_menu_pos);
-		ImGui::BeginChild("Create", {}, true);
+		ImGui::SeparatorText("Add");
 
-		if (ImGui::Button("Directory", { 50, 0 }))
+		if (ImGui::Button("Directory"))
 		{
 			std::string dir_name = "new_directory";
 			while (exists(m_current_path / dir_name))
 			{
 				dir_name += "_1";
 			}
-			create_directory(m_current_path / "new_directory");
+			create_directory(m_current_path / dir_name);
+
+			selected = m_current_path / dir_name;
+			strcpy_s(renaming_buf, selected.string().c_str());
+			renaming = true;
+
+			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Button("Scene", {50, 0} ))
+		if (ImGui::Button("Scene"))
 		{
 			std::string scene_name = "Scene.TSCENE";
 			while (exists(m_current_path / scene_name))
 			{
 				scene_name += "_1";
 			}
+
 			std::ofstream f(m_current_path / scene_name);
 			nlohmann::json da;
 			f << da;
 			f.close();
+
+			selected = m_current_path / scene_name;
+			strcpy_s(renaming_buf, selected.string().c_str());
+			renaming = true;
+
+			ImGui::CloseCurrentPopup();
 		}
 
-		ImGui::EndChild();
+		ImGui::EndPopup();
 	}
 
-	static fs::path selected;
-	static bool renaming = false;
-	static char renaming_buf[100];
+	else if (ImGui::BeginPopup("modify menu"))
+	{
+		ImGui::SeparatorText(selected.filename().string().c_str());
+
+		ImGui::EndPopup();
+	}
 
 	int i = 0;
 	for (const auto& entry: fs::directory_iterator(m_current_path))
@@ -169,28 +185,6 @@ void GameAssetsBrowser::Show()
 				selected = entry.path();
 			}
 			ImGui::PopID();
-
-			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
-			{
-				m_current_path = entry.path();
-			}
-			if (renaming && selected == entry.path())
-			{
-				ImGui::SetKeyboardFocusHere();
-
-				if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-				{
-					fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
-					renaming = false;
-				}
-				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-				{
-					(renaming_buf, entry.path().filename().string().c_str());
-					renaming = false;
-				}
-			}
-			else
-				ImGui::Text(entry.path().filename().string().c_str());
 		}
 		else
 		{
@@ -200,32 +194,43 @@ void GameAssetsBrowser::Show()
 				selected = entry.path();
 			}
 			ImGui::PopID();
-			if (renaming && selected == entry.path())
-			{
-				ImGui::SetKeyboardFocusHere();
-
-				if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue))
-				{
-					fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
-					renaming = false;
-				}
-				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
-				{
-					strcpy_s(renaming_buf, entry.path().filename().string().c_str());
-					renaming = false;
-				}
-			}
-			else
-			{
-				ImGui::Text(entry.path().filename().string().c_str());
-			}
-
-			//LOGDEBUGF("{}", (int)(ImGui::GetWindowSize().x / 50));
-
-			//ImGui::SameLine();
-			//if (i % (int)(ImGui::GetWindowSize().x / 50) != 0)
-			//	ImGui::SetCursorPos({pos.x + 60, pos.y + 5});
 		}
+
+		// options
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())
+		{
+			selected = entry.path();
+			ImGui::OpenPopup("modify menu");
+		}
+		if (renaming && selected == entry.path())
+		{
+			ImGui::SetKeyboardFocusHere();
+
+			if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
+				renaming = false;
+			}
+			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+			{
+				strcpy_s(renaming_buf, entry.path().filename().string().c_str());
+				renaming = false;
+			}
+		}
+		else
+		{
+			ImGui::Text(entry.path().filename().string().c_str());
+		}
+	}
+
+	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
+		{
+			if (!ImGui::IsPopupOpen("modify menu"))
+				ImGui::OpenPopup("creation menu");
+		}
+
 	}
 
 	ImGui::End();
