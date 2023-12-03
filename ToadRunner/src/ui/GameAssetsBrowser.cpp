@@ -159,17 +159,21 @@ void GameAssetsBrowser::Show()
 	else if (ImGui::BeginPopup("modify menu"))
 	{
 		ImGui::SeparatorText(selected.filename().string().c_str());
-	
-		if (ImGui::MenuItem("Copy"))
+
+		// TODO: Copy Cut Paste & Shortcuts
+		if (ImGui::MenuItem("Copy", "CTRL+C"))
 		{
 
 			ImGui::CloseCurrentPopup();
 		}
-		if (ImGui::MenuItem("Cut"))
+		if (ImGui::MenuItem("Cut", "CTRL+X"))
 		{
 
 			ImGui::CloseCurrentPopup();
 		}
+
+		// Paste
+
 		if (ImGui::MenuItem("Delete"))
 		{
 			fs::remove(selected);
@@ -202,6 +206,11 @@ void GameAssetsBrowser::Show()
 				selected = entry.path();
 			}
 			ImGui::PopID();
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+			{
+				m_current_path = entry.path();
+			}
 		}
 		else
 		{
