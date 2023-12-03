@@ -112,11 +112,12 @@ void GameAssetsBrowser::Show()
 	static bool renaming = false;
 	static char renaming_buf[100];
 
+	// pop ups 
 	if (ImGui::BeginPopup("creation menu"))
 	{
 		ImGui::SeparatorText("Add");
 
-		if (ImGui::Button("Directory"))
+		if (ImGui::MenuItem("Directory"))
 		{
 			std::string dir_name = "new_directory";
 			while (exists(m_current_path / dir_name))
@@ -132,7 +133,7 @@ void GameAssetsBrowser::Show()
 			ImGui::CloseCurrentPopup();
 		}
 
-		if (ImGui::Button("Scene"))
+		if (ImGui::MenuItem("Scene"))
 		{
 			std::string scene_name = "Scene.TSCENE";
 			while (exists(m_current_path / scene_name))
@@ -158,6 +159,22 @@ void GameAssetsBrowser::Show()
 	else if (ImGui::BeginPopup("modify menu"))
 	{
 		ImGui::SeparatorText(selected.filename().string().c_str());
+	
+		if (ImGui::MenuItem("Copy"))
+		{
+
+			ImGui::CloseCurrentPopup();
+		}
+		if (ImGui::MenuItem("Cut"))
+		{
+
+			ImGui::CloseCurrentPopup();
+		}
+		if (ImGui::MenuItem("Delete"))
+		{
+			fs::remove(selected);
+			ImGui::CloseCurrentPopup();
+		}
 
 		ImGui::EndPopup();
 	}
