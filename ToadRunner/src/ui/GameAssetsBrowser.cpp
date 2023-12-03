@@ -127,7 +127,7 @@ void GameAssetsBrowser::Show()
 			create_directory(m_current_path / dir_name);
 
 			selected = m_current_path / dir_name;
-			strcpy_s(renaming_buf, selected.string().c_str());
+			strcpy_s(renaming_buf, selected.filename().string().c_str());
 			renaming = true;
 
 			ImGui::CloseCurrentPopup();
@@ -147,7 +147,7 @@ void GameAssetsBrowser::Show()
 			f.close();
 
 			selected = m_current_path / scene_name;
-			strcpy_s(renaming_buf, selected.string().c_str());
+			strcpy_s(renaming_buf, selected.filename().string().c_str());
 			renaming = true;
 
 			ImGui::CloseCurrentPopup();
