@@ -10,6 +10,14 @@
 
 namespace Toad
 {
+	bool ignore_rename_warning = false;
+
+
+int rename_input_callback(ImGuiInputTextCallback* data)
+{
+	ignore_rename_warning = false;
+	return 0;
+}
 
 GameAssetsBrowser::GameAssetsBrowser(std::string_view asset_path)
 {
@@ -112,7 +120,34 @@ void GameAssetsBrowser::Show()
 	static bool renaming = false;
 	static char renaming_buf[100];
 
-	// pop ups 
+	static bool focus_on_popup_once = false;
+
+	// pop ups
+	if (ImGui::BeginPopupModal("replace file warning"))
+	{
+		if (!focus_on_popup_once)
+			ImGui::SetKeyboardFocusHere(-1);
+
+		// re-rename
+		ImGui::Text("This file already exists, do you wish to override this file?");
+		ImGui::Separator();
+		if (ImGui::Button("Yes"))
+		{
+			fs::rename(selected, selected.parent_path() / renaming_buf);
+			renaming = false;
+			ignore_rename_warning = false;
+			ImGui::CloseCurrentPopup();
+		}
+		if (ImGui::Button("No"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::EndPopup();
+	}
+
+	focus_on_popup_once = ImGui::IsPopupOpen("replace file warning");
+
 	if (ImGui::BeginPopup("creation menu"))
 	{
 		ImGui::SeparatorText("Add");
@@ -127,7 +162,9 @@ void GameAssetsBrowser::Show()
 			create_directory(m_current_path / dir_name);
 
 			selected = m_current_path / dir_name;
+
 			strcpy_s(renaming_buf, selected.filename().string().c_str());
+			ignore_rename_warning = true;
 			renaming = true;
 
 			ImGui::CloseCurrentPopup();
@@ -149,6 +186,7 @@ void GameAssetsBrowser::Show()
 			selected = m_current_path / scene_name;
 			strcpy_s(renaming_buf, selected.filename().string().c_str());
 			renaming = true;
+			ignore_rename_warning = true;
 
 			ImGui::CloseCurrentPopup();
 		}
@@ -230,12 +268,20 @@ void GameAssetsBrowser::Show()
 		}
 		if (renaming && selected == entry.path())
 		{
-			ImGui::SetKeyboardFocusHere();
+			if (!ImGui::IsPopupOpen("replace file warning"))
+				ImGui::SetKeyboardFocusHere();
 
-			if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue))
+			if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, reinterpret_cast<ImGuiInputTextCallback>(rename_input_callback)))
 			{
-				fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
-				renaming = false;
+				if (!ignore_rename_warning && exists(entry.path().parent_path() / renaming_buf))
+				{
+					ImGui::OpenPopup("replace file warning");
+				}
+				else
+				{
+					fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
+					renaming = false;
+				}
 			}
 			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 			{
