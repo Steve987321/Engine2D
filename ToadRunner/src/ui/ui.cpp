@@ -80,7 +80,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
 	static auto asset_browser = Toad::GameAssetsBrowser(settings.project_path);
 	static Toad::TextEditor textEditor;
-	
+
+	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
+
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
 	if (ImGui::BeginMenuBar())
@@ -282,11 +284,74 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
 
-		if (ImGui::Button("Save scene"))
+		if (ImGui::TreeNode("game scenes order"))
 		{
-			static char scene_path[MAX_PATH] = "";
-			ImGui::InputText("path", scene_path, MAX_PATH);
-			Toad::SaveScene(Toad::Engine::Get().GetScene(), scene_path);
+			static std::vector<std::filesystem::path> scenes;
+
+			HelpMarker("only searches for scene files in asset folder");
+			static bool refresh = true;
+			//Toad::Engine::Get().UpdateGameScenes()
+			if (ImGui::Button("refresh"))
+			{
+				refresh = true;
+				scenes.clear();
+			}
+
+
+			auto asset_path = asset_browser.GetAssetPath();
+			if (!exists(asset_path))
+			{
+				ImGui::TextColored({ 1,0,0,1 }, "Can't find asset folder in %s", asset_path.string().c_str());
+			}
+			else
+			{
+				if (refresh)
+				{
+					for (const auto& entry : std::filesystem::recursive_directory_iterator(asset_path))
+					{
+						if (entry.path().has_extension() && entry.path().extension() == ".TSCENE")
+							scenes.push_back(entry);
+					}
+
+					refresh = false;
+				}
+			}
+
+			ImGui::Indent();
+			int move_to = -1, move_from = -1;
+
+			for (int i = 0; i < scenes.size(); i++)
+			{
+				ImGui::Selectable(Toad::format_str("[{}] {}", i, scenes[i].filename().string()).c_str());
+
+				ImGuiDragDropFlags src_flags = 0;
+				src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
+				src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+				src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
+				if (ImGui::BeginDragDropSource(src_flags))
+				{
+					ImGui::SetDragDropPayload("dnd scene order", &i, sizeof(int));
+					ImGui::EndDragDropSource();
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					ImGuiDragDropFlags target_flags = 0;
+					target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;
+					target_flags |= ImGuiDragDropFlags_AcceptNoDrawDefaultRect; // Don't display the yellow rectangle
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("dnd scene order", target_flags))
+					{
+						move_from = *(const int*)payload->Data;
+						move_to = i;
+						std::swap(scenes[move_from], scenes[move_to]);
+						ImGui::SetDragDropPayload("dnd scene order", &move_to, sizeof(int));
+					}
+					ImGui::EndDragDropTarget();
+				}
+			}				
+
+			ImGui::Unindent();
+			ImGui::TreePop();
 		}
 
 		if (ImGui::TreeNode("all attached scripts"))
@@ -314,6 +379,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGui::Begin("Scene", nullptr);
 	{
+		ImGui::SeparatorText(Toad::Engine::Get().GetScene().name.c_str());
+
 		std::queue<std::string> remove_obj_queue{};
 
 		if (ImGui::Button("Add Sprite"))
@@ -599,4 +666,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 
     ImGui::End();
 
+}
+
+void ui::HelpMarker(const char* desc)
+{
+	ImGui::TextDisabled("(?)");
+	if (ImGui::IsItemHovered()) {
+		ImGui::BeginTooltip();
+		ImGui::PushTextWrapPos(450.0f);
+		ImGui::TextUnformatted(desc);
+		ImGui::PopTextWrapPos();
+		ImGui::EndTooltip();
+	}
 }

@@ -6,4 +6,6 @@ namespace ui
 	void decorations();
 
 	void engine_ui(ImGuiContext* ctx);
+
+	void HelpMarker(const char* desc);
 }
