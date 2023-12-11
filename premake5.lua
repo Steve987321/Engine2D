@@ -7,6 +7,7 @@ workspace "Onion"
         "Release", 
         "Dev"
     }
+
     startproject "ToadRunner"
     
 output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
@@ -15,6 +16,9 @@ project "Engine"
     location "Engine"
     kind "SharedLib"
     language "C++"
+
+    pchheader "%{prj.name}/src/pch.h"
+    pchsource "%{prj.name}/src/pch.cpp"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -43,6 +47,9 @@ project "Engine"
     }
 
     cppdialect "C++20"
+
+    filter "files:Engine/src/imgui_impl/**.cpp"
+        flags {"NoPCH"}
 
     filter "system:windows"
         cppdialect "C++20"
@@ -103,6 +110,9 @@ project "Game"
     location "Game"
     kind "SharedLib"
     language "C++"
+
+    pchheader "%{prj.name}/src/pch.h"
+    pchsource "%{prj.name}/src/pch.cpp"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -192,6 +202,9 @@ project "ToadRunner"
     kind "ConsoleApp"
     language "C++"
 
+    pchheader "%{prj.name}/src/pch.h"
+    pchsource "%{prj.name}/src/pch.cpp"
+
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
 
@@ -222,6 +235,9 @@ project "ToadRunner"
     }
 
     cppdialect "C++20"
+
+    filter "files:ToadRunner/src/imgui_impl/**.cpp"
+        flags {"NoPCH"}
 
     filter "system:windows"
         cppdialect "C++20"
