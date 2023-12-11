@@ -17,9 +17,6 @@ project "Engine"
     kind "SharedLib"
     language "C++"
 
-    pchheader "%{prj.name}/src/pch.h"
-    pchsource "%{prj.name}/src/pch.cpp"
-
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
 
@@ -48,12 +45,15 @@ project "Engine"
 
     cppdialect "C++20"
 
+    pchheader "pch.h"
+    pchsource "%{prj.name}/src/pch.cpp"
+
     filter "files:Engine/src/imgui_impl/**.cpp"
         flags {"NoPCH"}
 
     filter "system:windows"
         cppdialect "C++20"
-        staticruntime "On"
+        staticruntime "Off"
         systemversion "latest"
 
     filter "configurations:Debug" 
@@ -68,9 +68,7 @@ project "Engine"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-        staticruntime "off"
         runtime "Debug"
-
         symbols "On"
     
     filter "configurations:Release" 
@@ -85,7 +83,6 @@ project "Engine"
             "sfml-graphics",
             "sfml-audio",
         }
-        staticruntime "on"
         runtime "Release"
         optimize "On"
     
@@ -102,7 +99,6 @@ project "Engine"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-        staticruntime "off"
         runtime "Debug"
         symbols "On"
     
@@ -110,9 +106,6 @@ project "Game"
     location "Game"
     kind "SharedLib"
     language "C++"
-
-    pchheader "%{prj.name}/src/pch.h"
-    pchsource "%{prj.name}/src/pch.cpp"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -141,9 +134,12 @@ project "Game"
 
     cppdialect "C++20"
 
+    pchheader "pch.h"
+    pchsource "%{prj.name}/src/pch.cpp"
+
     filter "system:windows"
         cppdialect "C++20"
-        staticruntime "On"
+        staticruntime "off"
         systemversion "latest"
 
     filter "configurations:Debug" 
@@ -158,7 +154,6 @@ project "Game"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-        staticruntime "off"
         runtime "Debug"
         symbols "On"
     
@@ -175,7 +170,6 @@ project "Game"
             "sfml-graphics",
             "sfml-audio",
         }
-        staticruntime "on"
         runtime "Release"
         optimize "On"
     
@@ -193,7 +187,6 @@ project "Game"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-        staticruntime "off"
         runtime "Debug"
         symbols "On"
 
@@ -201,9 +194,6 @@ project "ToadRunner"
     location "ToadRunner"
     kind "ConsoleApp"
     language "C++"
-
-    pchheader "%{prj.name}/src/pch.h"
-    pchsource "%{prj.name}/src/pch.cpp"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -236,12 +226,15 @@ project "ToadRunner"
 
     cppdialect "C++20"
 
+    pchheader "pch.h"
+    pchsource "%{prj.name}/src/pch.cpp"
+
     filter "files:ToadRunner/src/imgui_impl/**.cpp"
         flags {"NoPCH"}
 
     filter "system:windows"
         cppdialect "C++20"
-        staticruntime "On"
+        staticruntime "Off"
         systemversion "latest"
 
     filter "configurations:Debug" 
@@ -255,6 +248,7 @@ project "ToadRunner"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        runtime "Debug"
         symbols "On"
 
     filter "configurations:Release" 
@@ -282,4 +276,5 @@ project "ToadRunner"
             "sfml-graphics-d",
             "sfml-audio-d",
         }
+        runtime "Debug"
         symbols "On"
