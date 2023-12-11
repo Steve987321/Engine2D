@@ -21,6 +21,7 @@
 #include <thread>
 #include <functional>
 #include <format>
+#include <filesystem>
 
 #include <random>
 #include <cmath>
