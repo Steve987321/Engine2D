@@ -204,7 +204,6 @@ project "ToadRunner"
 
     links{
         "Engine",
-        "Game1_Game",
         "opengl32",
     }
 
