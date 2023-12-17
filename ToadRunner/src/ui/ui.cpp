@@ -12,6 +12,7 @@
 #include <limits>
 #include <string>
 
+#include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
 
 void ui::engine_ui(ImGuiContext* ctx)
@@ -28,6 +29,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
 	ImGuiID project_load_popup_id = ImHashStr("LoadProject");
+	ImGuiID project_package_popup_id = ImHashStr("PackageProject");
 	static bool project_load_popup_select = false;
 
 	static project::ProjectSettings settings{};
@@ -60,6 +62,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::OpenPopup("LoadProject");
 				ImGui::PopID();
 			}
+			ImGui::BeginDisabled(project::current_project.name.empty());
+			if (ImGui::MenuItem("Package"))
+			{
+				ImGui::PushOverrideID(project_package_popup_id);
+				ImGui::OpenPopup("PackageProject");
+				ImGui::PopID();
+			}
+			ImGui::EndDisabled();
 			ImGui::EndMenu();
 		}
 		
@@ -140,7 +150,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ImGui::Button("Select Project Directory"))
 			{
-				auto selected = Toad::GetPathDialog(settings.engine_path);
+				auto selected = Toad::GetPathDialog("Select project directory", settings.engine_path);
 				settings.project_path = selected;
 			}
 
@@ -229,6 +239,58 @@ void ui::engine_ui(ImGuiContext* ctx)
 				project_load_popup_select = true;
 			}
 		}
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	ImGui::PushOverrideID(project_package_popup_id);
+	if (ImGui::BeginPopupModal("PackageProject"))
+	{
+
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		static std::string output_path;
+
+		ImGui::Text("selected path: %s", output_path.c_str());
+		if (ImGui::Button("Select output directory"))
+		{			
+			output_path = Toad::GetPathDialog("select output directory", std::filesystem::current_path().string());
+		}
+
+		ImGui::BeginDisabled(output_path.empty());
+		if (ImGui::Button("Create"))
+		{
+			static Toad::Package package;
+			std::filesystem::path proj_file;
+			for (const auto& entry : std::filesystem::directory_iterator(project::current_project.project_path))
+			{
+				if (entry.path().has_extension() && entry.path().extension() == ".TOADPROJECT")
+				{
+					proj_file = entry.path();
+					break;
+				}
+			}
+
+			if (misc::current_editor.path.empty())
+			{
+				// TODO :
+				auto editors = misc::FindEditors();
+				if (editors.empty())
+				{
+					LOGERROR("No editors found .... ");
+				}
+				else
+				{
+					misc::current_editor = editors[0];
+				}
+			}
+
+			package.CreatePackage(proj_file, output_path, misc::current_editor.path);
+		}
+		ImGui::EndDisabled();
 
 		ImGui::EndPopup();
 	}
@@ -593,7 +655,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ext == ".TSCENE")
 			{
-				Toad::Engine::Get().SetScene(Toad::LoadScene(file.string()));
+				Toad::Engine::Get().SetScene(Toad::LoadScene(file));
 			}
 		}
 	}
