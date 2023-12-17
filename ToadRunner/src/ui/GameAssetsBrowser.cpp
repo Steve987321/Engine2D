@@ -109,7 +109,9 @@ void GameAssetsBrowser::Show()
 					{
 						LOGERRORF("Failed to open {} with {}", slnpath, editor.name);
 					}
-					
+
+					misc::current_editor = editor;
+
 					break;
 				}
 			}
@@ -172,11 +174,14 @@ void GameAssetsBrowser::Show()
 
 		if (ImGui::MenuItem("Scene"))
 		{
-			std::string scene_name = "Scene.TSCENE";
-			while (exists(m_current_path / scene_name))
+			std::string scene_name = "Scene";
+			std::string file_ext = ".TSCENE";
+			while (exists(m_current_path / (scene_name + file_ext)))
 			{
 				scene_name += "_1";
 			}
+
+			scene_name += file_ext;
 
 			std::ofstream f(m_current_path / scene_name);
 			nlohmann::json da;
