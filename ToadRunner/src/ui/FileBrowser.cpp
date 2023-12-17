@@ -58,18 +58,18 @@ namespace Toad {
     void FileBrowser::Show() {
         m_is_double_clicked = false;
 
-        auto folders = SplitPath(m_curr_path);
+        auto folders_in_path = SplitPath(m_curr_path);
 
-        for (int i = 0; i < folders.size(); i++)
+        for (int i = 0; i < folders_in_path.size(); i++)
         {
-            auto& folder = folders[i];
+            auto& folder = folders_in_path[i];
 
-            if (i <= folders.size() - 1)
+            if (i <= folders_in_path.size() - 1)
                 ImGui::SameLine();
 
             if (ImGui::Button((folder + PATH_SEPARATOR).c_str()))
             {
-                if (i == folders.size() - 1)
+                if (i == folders_in_path.size() - 1)
                     break;
 
                 std::string update_path;
@@ -78,7 +78,7 @@ namespace Toad {
 #endif
                 for (int j = 0; j <= i; j++)
                 {
-                    update_path += folders[j];
+                    update_path += folders_in_path[j];
                     if (j < i)
                         update_path += PATH_SEPARATOR;
                 }
@@ -139,10 +139,10 @@ namespace Toad {
         return res;
     }
 
-    std::string GetPathDialog(std::string_view path)
+    std::string GetPathDialog(std::string_view title, std::string_view path)
     {
         BROWSEINFOA bi = { 0 };
-        bi.lpszTitle = "Select Project Directory";
+        bi.lpszTitle = title.data();
         bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
         bi.lpfn = ProjectBrowseFolderCallback;
         bi.lParam = (LPARAM)path.data();

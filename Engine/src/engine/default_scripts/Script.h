@@ -6,11 +6,7 @@
 
 #include <functional>
 
-#ifdef _DEBUG
 #define EXPOSE_VAR(T) m_reflection.Add(#T, &(T))
-#else
-#define EXPOSE_VAR(T) 0
-#endif
 
 #define SCRIPT_CONSTRUCT(T)											\
 T(std::string_view name) : Script(name)								\
