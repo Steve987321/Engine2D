@@ -79,10 +79,11 @@ struct ENGINE_API Scene
 	Object* GetSceneObject(std::string_view obj_name);
 };
 
-ENGINE_API Scene LoadScene(std::string_view path);
+	// to make sure scripts are added and loaded to objects make sure to update script registry before calling this function
+ENGINE_API Scene LoadScene(const std::filesystem::path& path);
 
 // for path don't specify file name only the folder to save to 
 // TODO: handle scene indexing 
-ENGINE_API void SaveScene(const Scene& scene, std::string_view path);
+ENGINE_API void SaveScene(const Scene& scene, const std::filesystem::path& path);
 
 }

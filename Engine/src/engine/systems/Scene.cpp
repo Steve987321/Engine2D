@@ -47,7 +47,6 @@ void Scene::Render(sf::RenderWindow& window)
 	}
 }
 
-
 Object* Scene::GetSceneObject(std::string_view obj_name)
 {
 	if (objects_map.contains(obj_name.data()))
@@ -80,9 +79,9 @@ enum class TypesMap
 	str = 5
 };
 
-Scene LoadScene(std::string_view path)
+Scene LoadScene(const std::filesystem::path& path)
 {
-	std::ifstream in(path.data());
+	std::ifstream in(path);
 
 	json data;
 	if (in.is_open())
@@ -101,6 +100,7 @@ Scene LoadScene(std::string_view path)
 	}
 
 	Scene scene;
+	scene.name = path.filename().string();
 
 	if (data.contains("objects"))
 	{
@@ -119,6 +119,10 @@ Scene LoadScene(std::string_view path)
 			for (const auto& script : circle.value()["scripts"].items())
 			{
 				auto gscripts = Engine::Get().GetGameScriptsRegister();
+				if (gscripts.empty())
+				{
+					LOGWARN("Scripts register is empty");
+				}
 				if (auto it = gscripts.find(script.key()); it != gscripts.end())
 				{
 					newcircle->AddScript(it->second->Clone());
@@ -130,39 +134,39 @@ Scene LoadScene(std::string_view path)
 						switch(i++)
 						{
 						case (int)TypesMap::b:
-							for (const auto& i : script_vars.value().items())
+							for (const auto& j : script_vars.value().items())
 							{
-								*vars.b[i.key()] = i.value().get<bool>();
+								*vars.b[j.key()] = j.value().get<bool>();
 							}
 							break;
 						case (int)TypesMap::flt:
-							for (const auto& i : script_vars.value().items())
+							for (const auto& j : script_vars.value().items())
 							{
-								*vars.flt[i.key()] = i.value().get<float>();
+								*vars.flt[j.key()] = j.value().get<float>();
 							}
 							break;
 						case (int)TypesMap::i8:
-							for (const auto& i : script_vars.value().items())
+							for (const auto& j : script_vars.value().items())
 							{
-								*vars.i8[i.key()] = i.value().get<int8_t>();
+								*vars.i8[j.key()] = j.value().get<int8_t>();
 							}
 							break;
 						case (int)TypesMap::i16:
-							for (const auto& i : script_vars.value().items())
+							for (const auto& j : script_vars.value().items())
 							{
-								*vars.i16[i.key()] = i.value().get<int16_t>();
+								*vars.i16[j.key()] = j.value().get<int16_t>();
 							}
 							break;
 						case (int)TypesMap::i32:
-							for (const auto& i : script_vars.value().items())
+							for (const auto& j : script_vars.value().items())
 							{
-								*vars.i32[i.key()] = i.value().get<int32_t>();
+								*vars.i32[j.key()] = j.value().get<int32_t>();
 							}
 							break;
 						case (int)TypesMap::str:
-							for (const auto& s : script_vars.value().items())
+							for (const auto& j : script_vars.value().items())
 							{
-								*vars.str[s.key()] = s.value().get<std::string>();
+								*vars.str[j.key()] = j.value().get<std::string>();
 							}
 							break;
 						default: 
@@ -182,7 +186,7 @@ Scene LoadScene(std::string_view path)
 	return scene;
 }
 
-void SaveScene(const Scene& scene, std::string_view path)
+void SaveScene(const Scene& scene, const std::filesystem::path& path)
 {
 	json data; 
 
@@ -271,12 +275,12 @@ void SaveScene(const Scene& scene, std::string_view path)
 
 	data["objects"] = objects;
 
-	auto dir = std::string(path);
+	std::string dir = path.string();
 	if (dir.find("\\") != std::string::npos && !dir.ends_with("\\"))
 		dir += "\\";
 	auto full = dir + scene.name + ".TSCENE";
-	std::ofstream out(full);
 
+	std::ofstream out(full);
 	if (out.is_open())
 	{
 		out << data;
