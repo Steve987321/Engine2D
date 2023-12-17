@@ -14,34 +14,6 @@ namespace project {
 	namespace fs = std::filesystem;
 	using json = nlohmann::json;
 
-	bool OpenSln(const ProjectSettings& settings, const misc::Editor& editor)
-	{
-		STARTUPINFOA si;
-		PROCESS_INFORMATION pi;
-
-		ZeroMemory(&si, sizeof(si));
-		si.cb = sizeof(si);
-		ZeroMemory(&pi, sizeof(pi));
-
-		if (!CreateProcessA(editor.path.string().c_str(),
-			(LPSTR)Toad::format_str("{}\\{}.sln", settings.project_path, settings.name).c_str(),
-			NULL,
-			NULL,
-			FALSE,
-			0,
-			NULL,
-			NULL,
-			&si,
-			&pi))
-		{
-			return false;
-		}
-
-		CloseHandle(pi.hProcess);
-		CloseHandle(pi.hThread);
-		return true;
-	}
-
 	bool OpenSln(const fs::path& path, const misc::Editor& editor)
 	{
 		if (!path.has_extension() || path.extension() != ".sln")
@@ -370,10 +342,10 @@ namespace project {
 
 			if (project_file.is_open())
 			{
-				json data = json::parse(project_file);
-
 				try
 				{
+					json data = json::parse(project_file);
+
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
 					settings.project_path = data["project_path"];

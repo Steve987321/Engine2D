@@ -31,6 +31,14 @@ bool Engine::Init()
 {
 	LOGDEBUG("Initializing Engine");
 
+	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
+	{
+		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == ".dll")
+		{
+			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
+		}
+	}
+
 	LoadGameScripts();
 
 #ifndef TOAD_EDITOR
