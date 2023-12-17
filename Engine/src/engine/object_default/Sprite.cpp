@@ -9,6 +9,9 @@ namespace Toad
 Sprite::Sprite(std::string_view obj_name)
 {
 	name = obj_name;
+	auto default_tex = sf::Texture();
+	default_tex.create(10, 10);
+	m_sprite = sf::Sprite(default_tex);
 }
 
 Sprite::~Sprite()
