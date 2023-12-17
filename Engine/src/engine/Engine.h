@@ -71,6 +71,7 @@ namespace Toad
 		ImGuiIO* m_io = nullptr;
 
 		Scene m_currentScene = {};
+		std::vector<Scene> m_scenes = {};
 
 		// instances of all game scripts
 		std::unordered_map<std::string, std::shared_ptr<Script>> m_gameScripts = {};

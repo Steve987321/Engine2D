@@ -31,34 +31,51 @@ bool Engine::Init()
 {
 	LOGDEBUG("Initializing Engine");
 
+	LoadGameScripts();
+
 #ifndef TOAD_EDITOR
-	for (const auto& e : std::filesystem::directory_iterator(std::filesystem::current_path()))
+	std::vector<Scene> found_scenes;
+
+	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
 	{
-		if (e.path().filename().string().find("Game.dll") != std::string::npos)
+		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == ".dll")
 		{
 			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
-			break;
+		}
+
+		if (e.path().has_extension() && e.path().extension() == ".TSCENE")
+		{
+			Scene s = LoadScene(e.path());
+
+			std::string lower;
+			for (char c : s.name)
+			{
+				lower += std::tolower(c);
+			}
+
+			if (lower.find("start") != std::string::npos)
+			{
+				m_currentScene = s;
+			}
+
+			if (!s.objects_map.empty())
+			{
+				found_scenes.push_back(s);
+			}
 		}
 	}
+
+	m_scenes.reserve(found_scenes.size());
+	for (const Scene& s : found_scenes)
+	{
+		m_scenes.push_back(s);
+	}
+
 #endif
-	LoadGameScripts();
 
 	auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
 
 	auto gsettings = get_game_settings();
-
-#ifndef TOAD_EDITOR
-	auto get_game_scenes = reinterpret_cast<get_game_scenes_t*>(GetProcAddress(m_currDLL, "get_game_scenes"));
-	auto scenes = get_game_scenes;
-	if (scenes.empty())
-	{
-		LOGERROR("No scenes in game")
-	}
-	else
-	{
-		m_currentScene = scenes[0];
-	}
-#endif
 
 	if (!InitWindow(gsettings))
 		return false;
@@ -75,8 +92,6 @@ bool Engine::Init()
 
 void Engine::Run()
 {
-	LOGDEBUG("starting main loop");
-
 #ifndef TOAD_EDITOR
 	SetScene(m_currentScene);
 #endif
@@ -127,7 +142,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 #else	
 	// TODO: CHENGE DEEZZ
 	LOGDEBUG("Creating window");
-	m_window.create(sf::VideoMode(settings.window_size.x, settings.window_size.y), settings.window_name, sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings.ctx_settings);
+	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings.ctx_settings);
 	m_window.setFramerateLimit(settings.frame_limit);
 	return true;
 #endif
@@ -186,7 +201,7 @@ void Engine::Render()
 	ImGui::SFML::Render(m_window);
 
 #else
-	GetScene().Update();
+	GetScene().Render(m_window);
 #endif
 	//--------------------draw------------------------//
 
