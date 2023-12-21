@@ -1,5 +1,6 @@
 #include "pch.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "Engine/Engine.h"
 #include "ui.h"
 
@@ -34,8 +35,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	static project::ProjectSettings settings{};
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
-	static auto asset_browser = Toad::GameAssetsBrowser(settings.project_path);
+	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
+
+	static std::shared_ptr<Toad::Object> selected_obj = nullptr;
+	static std::shared_ptr<Toad::Sprite> selected_sprite = nullptr;
+
 
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
@@ -108,7 +113,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 	ImGui::End();
 
-	/// menu bar dialogs 
+	/// menu bar popup dialogs 
 
 	ImGui::PushOverrideID(project_creation_popup_id);
 	if (ImGui::BeginPopupModal("CreateProject"))
@@ -247,7 +252,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::PushOverrideID(project_package_popup_id);
 	if (ImGui::BeginPopupModal("PackageProject"))
 	{
-
 		if (ImGui::Button("Close"))
 		{
 			ImGui::CloseCurrentPopup();
@@ -389,23 +393,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-	static std::shared_ptr<Toad::Object> selected_obj = nullptr;
-	static std::shared_ptr<Toad::Sprite> selected_sprite = nullptr;
-
+	// SCENE/HIERARCHY
 	ImGui::Begin("Scene", nullptr);
 	{
 		ImGui::SeparatorText(Toad::Engine::Get().GetScene().name.c_str());
-
-		std::queue<std::string> remove_obj_queue{};
-
-		if (ImGui::Button("Add Sprite"))
-		{
-			Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
-		}
-		if (ImGui::Button("Add Circle"))
-		{
-			Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"));
-		}
+		bool ignore_mouse_click = false;
+		std::string remove_str;
 
 		for (auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
 		{
@@ -413,16 +406,69 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				selected_obj = obj;
 			}
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				selected_obj = obj;
+				if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+				{
+					ImGui::OpenPopup("SceneModifyPopup");
+					ignore_mouse_click = true;
+				}
+			}
 		}
 
-		while (!remove_obj_queue.empty())
+		if (!ignore_mouse_click && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		{
-			Toad::Engine::Get().GetScene().RemoveFromScene(remove_obj_queue.front());
-			remove_obj_queue.pop();
+			if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
+			{
+				if (!ImGui::IsPopupOpen("ScenePopup"))
+				{
+					ImGui::OpenPopup("ScenePopup");
+				}
+			}
+		}
+
+		if (ImGui::BeginPopup("ScenePopup"))
+		{
+			if (ImGui::BeginMenu("Create"))
+			{
+				if (ImGui::MenuItem("Circle"))
+				{
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"));
+				}
+				if (ImGui::MenuItem("Sprite"))
+				{
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
+				}
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		if (ImGui::BeginPopup("SceneModifyPopup"))
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				if (selected_obj != nullptr)
+				{
+					remove_str = selected_obj->name;
+				}
+			}
+
+			ImGui::EndPopup();
+		}
+
+		if (!remove_str.empty())
+		{
+			Toad::Engine::Get().GetScene().RemoveFromScene(remove_str);
+			remove_str.clear();
 		}
 
 		ImGui::End();
 	}
+
 
 	ImGui::Begin("Inspector", nullptr);
 	{
