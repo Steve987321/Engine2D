@@ -52,6 +52,18 @@ namespace Toad {
                     m_is_double_clicked = true;
                 }
             }
+
+            // TODO : accept  drag and drop from game asset browser 
+            if (it.is_directory() && ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+                {
+                    fs::path src = *(std::string*)payload->Data;
+                    std::error_code e;
+                    fs::rename(src, it.path() / src.filename(), e);
+                    LOGDEBUGF("error code message: {} {}", e.message(), e.value());
+                }
+            }
         }
     }
 

@@ -236,6 +236,13 @@ void GameAssetsBrowser::Show()
 		ImGui::EndPopup();
 	}
 
+
+	if (is_dragging_file && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+	{
+		is_dragging_file = false;
+	}
+
+
 	int i = 0;
 	for (const auto& entry: fs::directory_iterator(m_current_path))
 	{
@@ -289,11 +296,6 @@ void GameAssetsBrowser::Show()
 			ImGui::Text(fs::path(*buf).filename().string().c_str());
 			ImGui::EndTooltip();
 			ImGui::EndDragDropSource();
-		}
-
-		if (is_dragging_file && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
-		{
-			is_dragging_file = false;
 		}
 
 		if (entry.is_directory() && ImGui::BeginDragDropTarget())
