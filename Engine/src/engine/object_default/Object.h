@@ -1,11 +1,9 @@
 #pragma once
 
 #include <EngineCore.h>
-#include <ranges>
 
+#include "nlohmann/json.hpp"
 #include "engine/default_scripts/Script.h"
-
-#include <set>
 
 namespace Toad
 {
