@@ -66,10 +66,20 @@ void GameAssetsBrowser::Show()
 		return;
 	}
 
-	if (m_current_path != m_assets_path && ImGui::ArrowButton("##back", ImGuiDir_Left))
+	static bool is_dragging_file = false;
+
+	if (is_dragging_file)
 	{
-		m_current_path = m_current_path.parent_path();
+
 	}
+	else
+	{
+		if (m_current_path != m_assets_path && ImGui::ArrowButton("##back", ImGuiDir_Left))
+		{
+			m_current_path = m_current_path.parent_path();
+		}
+	}
+	
 	if (ImGui::Button("Open .sln"))
 	{
 		auto editors = misc::FindEditors();
@@ -264,6 +274,41 @@ void GameAssetsBrowser::Show()
 			}
 			ImGui::PopID();
 		}
+
+
+		ImGuiDragDropFlags src_flags = 0;
+		src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
+		src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+		//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
+		if (ImGui::BeginDragDropSource(src_flags))
+		{
+			auto buf = new std::string(entry.path().string());
+			is_dragging_file = true;
+			ImGui::SetDragDropPayload("move file", buf, entry.path().string().length());
+			ImGui::BeginTooltip();
+			ImGui::Text(fs::path(*buf).filename().string().c_str());
+			ImGui::EndTooltip();
+			ImGui::EndDragDropSource();
+		}
+
+		if (is_dragging_file && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			is_dragging_file = false;
+		}
+
+		if (entry.is_directory() && ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+			{
+				fs::path src = *(std::string*)payload->Data;
+				std::error_code e;
+				fs::rename(src, entry.path() / src.filename(), e);
+				LOGDEBUGF("error code message: {} {}", e.message(), e.value());
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
 
 		// options
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())
