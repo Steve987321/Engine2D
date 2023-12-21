@@ -4,8 +4,6 @@
 
 namespace Toad
 {
-	using json = nlohmann::json;
-
 	class ENGINE_API Circle : public Object
 	{
 	public:

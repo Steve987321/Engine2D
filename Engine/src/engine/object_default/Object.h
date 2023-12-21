@@ -9,6 +9,8 @@ namespace Toad
 {
 	class Script;
 
+	using json = nlohmann::json;
+
 ///
 /// An Object is the base class for different type of game objects
 ///	And holds scripts.
