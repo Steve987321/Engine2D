@@ -119,6 +119,7 @@ project(game_project_name)
         engine_path .. "/src",
         "vendor",
         "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
