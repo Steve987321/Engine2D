@@ -12,6 +12,9 @@ public:
 	~Sprite() override;
 
 	sf::Sprite& GetSprite();
+	std::filesystem::path& GetTextureSourcePath();
+
+	json Serialize();
 
 private:
 	void Render(sf::RenderWindow& window) override;
@@ -19,6 +22,7 @@ private:
 	void Update() override;
 
 	sf::Sprite m_sprite;
+	std::filesystem::path m_texture_source_path;
 };
 
 }

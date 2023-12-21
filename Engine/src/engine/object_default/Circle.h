@@ -4,6 +4,8 @@
 
 namespace Toad
 {
+	using json = nlohmann::json;
+
 	class ENGINE_API Circle : public Object
 	{
 	public:
@@ -12,6 +14,10 @@ namespace Toad
 
 		sf::CircleShape& GetCircle();
 
+		std::filesystem::path& GetTextureSourcePath();
+
+		json Serialize();
+
 	private:
 		void Start() override;
 		void Render(sf::RenderWindow& window) override;
@@ -19,6 +25,7 @@ namespace Toad
 		void Update() override;
 
 		sf::CircleShape m_circle;
+		std::filesystem::path m_texture_source_path;
 	};
 }
 
