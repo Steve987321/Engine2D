@@ -5,6 +5,7 @@
 #include "engine/Types.h"
 
 #include "engine/systems/Scene.h"
+#include "engine/systems/ResourceManager.h"
 
 #include "engine/object_default/Sprite.h"
 #include "engine/object_default/Circle.h"

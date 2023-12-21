@@ -246,6 +246,11 @@ sf::RenderTexture& Engine::GetWindowTexture()
 	return m_windowTexture;
 }
 
+ResourceManager& Engine::GetResourceManager()
+{
+	return m_resourceManager;
+}
+
 Scene& Engine::GetScene()
 {
 	return m_currentScene;

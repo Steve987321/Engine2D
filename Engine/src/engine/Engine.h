@@ -34,6 +34,8 @@ namespace Toad
 
 		sf::RenderTexture& GetWindowTexture();
 
+		ResourceManager& GetResourceManager();
+
 		Scene& GetScene();
 		void SetScene(const Scene& scene);
 
@@ -72,6 +74,8 @@ namespace Toad
 
 		Scene m_currentScene = {};
 		std::vector<Scene> m_scenes = {};
+
+		ResourceManager m_resourceManager;
 
 		// instances of all game scripts
 		std::unordered_map<std::string, std::shared_ptr<Script>> m_gameScripts = {};
