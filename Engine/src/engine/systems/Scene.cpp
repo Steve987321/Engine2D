@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Scene.h"
 
-#include <ranges>
-
 #include "engine/object_default/Object.h"
 #include "engine/object_default/Sprite.h"
 #include "engine/object_default/Circle.h"
@@ -10,10 +8,11 @@
 #include "Engine/Engine.h"
 
 #include "nlohmann/json.hpp"
-#include <fstream>
 
 namespace Toad
 {
+
+using json = nlohmann::json;
 
 void Scene::Start()
 {
@@ -67,8 +66,6 @@ bool Scene::RemoveFromScene(std::string_view obj_name)
 	return false;
 }
 
-using json = nlohmann::json;
-
 enum class TypesMap
 {
 	b = 0,
@@ -78,6 +75,161 @@ enum class TypesMap
 	i32 = 4,
 	str = 5
 };
+
+
+sf::Texture GetTexFromPath(const std::filesystem::path& path)
+{
+	sf::Texture tex;
+	if (!tex.loadFromFile(path.string()))
+	{
+		LOGERRORF("Failed to load texture asset: {}", path);
+		return {};
+	}
+	return tex;
+}
+
+sf::IntRect GetRectFromJSON(json obj)
+{
+	return sf::IntRect{
+		obj["left"].get<int>(),
+		obj["top"].get<int>(),
+		obj["width"].get<int>(),
+		obj["heigth"].get<int>(),
+	};
+}
+
+template <typename T> 
+void LoadSceneObjects(json objects, Scene& scene)
+{
+	for (const auto& object : objects.items())
+	{
+		auto& props = object.value()["properties"];
+		auto x = props["posx"].get<float>();
+		auto y = props["posy"].get<float>();
+
+		auto newobj = scene.AddToScene(T(object.key()));
+		Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
+		Circle* circleobj = dynamic_cast<Circle*>(newobj);
+
+		if (circleobj != nullptr)
+		{
+			auto& circle = circleobj->GetCircle();
+
+			// props 
+			sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
+			sf::Color outline_col = sf::Color(props["outline_col"].get<int>());
+			sf::Vector2f scale = { props["scalex"].get<float>(), props["scaley"].get<float>() };
+			float radius = props["radius"].get<float>();
+			bool has_texture = props["has_texture"].get<bool>();
+
+			if (has_texture)
+			{
+				sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+				sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
+				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(tex);
+
+				circle.setTexture(new_tex);
+				circle.setTextureRect(tex_rect);
+			}
+			circle.setFillColor(fill_col);
+			circle.setOutlineColor(outline_col);
+			circle.setScale(scale);
+			circle.setRadius(radius);
+			circle.setPosition({ x, y });
+		}
+		else if (spriteobj != nullptr)
+		{
+			auto& sprite = spriteobj->GetSprite();
+
+			// props
+			sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
+			sf::Vector2f scale = sf::Vector2f{ props["scalex"].get<float>(), props["scaley"].get<float>() };
+			
+			float rotation = props["rotation"].get<float>();
+			bool has_texture = props["has_texture"].get<bool>();
+
+			if (has_texture)
+			{
+				sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+				sf::IntRect texrect = GetRectFromJSON(props["texture_rect"]);
+				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(tex);
+				sprite.setTexture(*new_tex);
+				sprite.setTextureRect(texrect);
+			}
+
+			sprite.setPosition({ x, y });
+			sprite.setColor(fill_col);
+			sprite.setRotation(rotation);
+			sprite.setColor(fill_col);
+			sprite.setScale(scale);
+		}
+
+		for (const auto& script : object.value()["scripts"].items())
+		{
+			auto gscripts = Engine::Get().GetGameScriptsRegister();
+			if (gscripts.empty())
+			{
+				LOGWARN("Scripts register is empty");
+			}
+			if (auto it = gscripts.find(script.key()); it != gscripts.end())
+			{
+				newobj->AddScript(it->second->Clone());
+				auto new_attached_script = newobj->GetScript(it->first);
+				auto& vars = new_attached_script->GetReflection().Get();
+				int i = 0;
+				for (const auto& script_vars : script.value().items())
+				{
+					switch (i++)
+					{
+					case (int)TypesMap::b:
+						for (const auto& j : script_vars.value().items())
+						{
+							*vars.b[j.key()] = j.value().get<bool>();
+						}
+						break;
+					case (int)TypesMap::flt:
+						for (const auto& j : script_vars.value().items())
+						{
+							*vars.flt[j.key()] = j.value().get<float>();
+						}
+						break;
+					case (int)TypesMap::i8:
+						for (const auto& j : script_vars.value().items())
+						{
+							*vars.i8[j.key()] = j.value().get<int8_t>();
+						}
+						break;
+					case (int)TypesMap::i16:
+						for (const auto& j : script_vars.value().items())
+						{
+							*vars.i16[j.key()] = j.value().get<int16_t>();
+						}
+						break;
+					case (int)TypesMap::i32:
+						for (const auto& j : script_vars.value().items())
+						{
+							*vars.i32[j.key()] = j.value().get<int32_t>();
+						}
+						break;
+					case (int)TypesMap::str:
+						for (const auto& j : script_vars.value().items())
+						{
+							*vars.str[j.key()] = j.value().get<std::string>();
+						}
+						break;
+					default:
+						LOGWARNF("Unknown type for script_vars iteration: {} key: {} value: {}", i, script_vars.key(), script_vars.value());
+						break;
+					}
+				}
+			}
+			else
+			{
+				LOGWARNF("Script not found needed by scene with name: {}", script.key());
+			}
+		}
+	}
+}
 
 Scene LoadScene(const std::filesystem::path& path)
 {
@@ -105,82 +257,8 @@ Scene LoadScene(const std::filesystem::path& path)
 	if (data.contains("objects"))
 	{
 		auto objects = data["objects"];
-		for (const auto& circle : objects["circles"].items())
-		{
-			auto newcircle = scene.AddToScene(Circle(circle.key()));
-			auto& c = dynamic_cast<Circle*>(newcircle)->GetCircle();
-
-			auto& props = circle.value()["circle_properties"];
-			auto x = props["posx"].get<float>();
-			auto y = props["posy"].get<float>();
-
-			c.setPosition({ x, y });
-		
-			for (const auto& script : circle.value()["scripts"].items())
-			{
-				auto gscripts = Engine::Get().GetGameScriptsRegister();
-				if (gscripts.empty())
-				{
-					LOGWARN("Scripts register is empty");
-				}
-				if (auto it = gscripts.find(script.key()); it != gscripts.end())
-				{
-					newcircle->AddScript(it->second->Clone());
-					auto new_attached_script = newcircle->GetScript(it->first);
-					auto& vars = new_attached_script->GetReflection().Get();
-					int i = 0;
-					for (const auto& script_vars : script.value().items())
-					{
-						switch(i++)
-						{
-						case (int)TypesMap::b:
-							for (const auto& j : script_vars.value().items())
-							{
-								*vars.b[j.key()] = j.value().get<bool>();
-							}
-							break;
-						case (int)TypesMap::flt:
-							for (const auto& j : script_vars.value().items())
-							{
-								*vars.flt[j.key()] = j.value().get<float>();
-							}
-							break;
-						case (int)TypesMap::i8:
-							for (const auto& j : script_vars.value().items())
-							{
-								*vars.i8[j.key()] = j.value().get<int8_t>();
-							}
-							break;
-						case (int)TypesMap::i16:
-							for (const auto& j : script_vars.value().items())
-							{
-								*vars.i16[j.key()] = j.value().get<int16_t>();
-							}
-							break;
-						case (int)TypesMap::i32:
-							for (const auto& j : script_vars.value().items())
-							{
-								*vars.i32[j.key()] = j.value().get<int32_t>();
-							}
-							break;
-						case (int)TypesMap::str:
-							for (const auto& j : script_vars.value().items())
-							{
-								*vars.str[j.key()] = j.value().get<std::string>();
-							}
-							break;
-						default: 
-							LOGWARNF("Unknown type for script_vars iteration: {} key: {} value: {}", i, script_vars.key(), script_vars.value());
-							break;
-						}
-					}
-				}
-                else
-                {
-                    LOGWARNF("Script not found needed by scene with name: {}", script.key());
-                }
-			}
-		}
+		LoadSceneObjects<Circle>(objects["circles"], scene);
+		LoadSceneObjects<Sprite>(objects["sprites"], scene);
 	}
 
 	return scene;
@@ -191,85 +269,26 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 	json data; 
 
 	// object types
-	auto objects = json::object(); // all 
-	auto circles = json::object();
+	json objects; // all 
+	json circles;
+	json sprites;
 
 	for (const auto& [name, object] : scene.objects_map)
 	{
-		// global
-		auto attached_scripts = json::object();
-		for (auto& it : object->GetAttachedScripts())
-		{
-			const auto& reflection_vars = it.second->GetReflection().Get();
-			const auto& bs = reflection_vars.b;
-			const auto& flts = reflection_vars.flt;
-			const auto& i8s = reflection_vars.i8;
-			const auto& i16s = reflection_vars.i16;
-			const auto& i32s = reflection_vars.i32;
-			const auto& strs = reflection_vars.str;
-
-			auto bs_data = json::object();
-			for (const auto& [name, val] : bs)
-			{
-				bs_data[name] = *val;
-			}
-			auto flts_data = json::object();
-			for (const auto& [name, val] : flts)
-			{
-				flts_data[name] = *val;
-			}
-			auto i8s_data = json::object();
-			for (const auto& [name, val] : i8s)
-			{
-				i8s_data[name] = *val;
-			}
-			auto i16s_data = json::object();
-			for (const auto& [name, val] : i16s)
-			{
-				i16s_data[name] = *val;
-			}
-			auto i32s_data = json::object();
-			for (const auto& [name, val] : i32s)
-			{
-				i32s_data[name] = *val;
-			}
-			auto strs_data = json::object();
-			for (const auto& [name, val] : strs)
-			{
-				strs_data[name] = *val;
-			}
-			attached_scripts[it.first] =
-			{
-				bs_data,
-				flts_data,
-				i8s_data,
-				i16s_data,
-				i32s_data,
-				strs_data
-			};
-		}
-
-		// circles
 		Circle* circle = dynamic_cast<Circle*>(object.get());
+		Sprite* sprite = dynamic_cast<Sprite*>(object.get());
+
 		if (circle != nullptr)
 		{
-			auto& c = circle->GetCircle();
-
-			auto c_data = json::object();
-			auto c_circle_properties = json::object();
-
-			c_circle_properties["posx"] = c.getPosition().x;
-			c_circle_properties["posy"] = c.getPosition().y;
-			c_circle_properties["col"] = c.getFillColor().toInteger();
-			c_circle_properties["radius"] = c.getRadius();
-
-			c_data["circle_properties"] = c_circle_properties;
-			c_data["scripts"] = attached_scripts;
-
-			circles[name] = c_data;
+			circles[name] = circle->Serialize();
+		}
+		else if (sprite != nullptr)
+		{
+			sprites[name] = sprite->Serialize();
 		}
 
 		objects["circles"] = circles;
+		objects["sprites"] = sprites;
 		//objects["..."] = ...
 	}
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <EngineCore.h>
-#include <filesystem>
 
 namespace Toad
 {
