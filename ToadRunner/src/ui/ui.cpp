@@ -16,6 +16,8 @@
 #include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
 
+using json = nlohmann::json;
+
 void ui::engine_ui(ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
@@ -40,6 +42,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	static std::shared_ptr<Toad::Object> selected_obj = nullptr;
 	static std::shared_ptr<Toad::Sprite> selected_sprite = nullptr;
+
+	static std::string clipboard_data;
 
 
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
@@ -400,21 +404,106 @@ void ui::engine_ui(ImGuiContext* ctx)
 		bool ignore_mouse_click = false;
 		std::string remove_str;
 
+		if (ImGui::IsWindowFocused())
+		{
+			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+			{
+				if (ImGui::IsKeyPressed(ImGuiKey_V))
+				{
+					if (!clipboard_data.empty())
+					{
+
+					}
+				}
+				else if (ImGui::IsKeyPressed(ImGuiKey_C))
+				{
+					clipboard_data;
+				}
+			}
+		}
+
+		static std::set<std::string> object_selected = {};
+		int index = 0;
+		static size_t prev_cursor_index = 0;
+		static size_t cursor_index = 0;
+		static bool cursor_index_is_under = false;
+		static bool check_range = false;
+
 		for (auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
 		{
-			if (ImGui::Selectable(name.c_str(), selected_obj != nullptr && selected_obj->name == name))
+			index++;
+
+			if (ImGui::Selectable(name.c_str(), object_selected.contains(name) || (selected_obj != nullptr && selected_obj->name == name)))
 			{
-				selected_obj = obj;
+				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != name)
+				{
+					if (object_selected.contains(name))
+					{
+						object_selected.erase(name);
+					}
+					else
+					{
+						object_selected.insert(name);
+					}
+				}
+				else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != name)
+				{
+					check_range = true;
+					cursor_index = index;
+					cursor_index_is_under = cursor_index > prev_cursor_index;
+				}
+				else
+				{
+					prev_cursor_index = index;
+					selected_obj = obj;
+					object_selected.clear();
+				}
 			}
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
+				prev_cursor_index = index;
 				selected_obj = obj;
+				object_selected.clear();
 				if (!ImGui::IsPopupOpen("SceneModifyPopup"))
 				{
 					ImGui::OpenPopup("SceneModifyPopup");
 					ignore_mouse_click = true;
 				}
 			}
+		}
+
+		if (check_range)
+		{
+			std::vector<std::string> keys;
+			int origin = 0;
+			int j = 0;
+			for (const std::string& name : Toad::Engine::Get().GetScene().objects_map | std::views::keys)
+			{
+				j++;
+				if (name == selected_obj->name)
+				{
+					origin = j;
+					if (!cursor_index_is_under)
+					{
+						origin -= 1;
+					}
+				}
+				keys.push_back(name);
+			}
+
+			object_selected.clear();
+			for (int i = origin; cursor_index_is_under ? i < static_cast<int>(cursor_index) : i > static_cast<int>(cursor_index) - 2; cursor_index_is_under ? i++ : i--)
+			{
+				object_selected.insert(keys[i]);
+			}
+
+			check_range = false;
+		}
+
+		if (!ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		{
+			selected_obj = nullptr;
+			object_selected.clear();
 		}
 
 		if (!ignore_mouse_click && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
