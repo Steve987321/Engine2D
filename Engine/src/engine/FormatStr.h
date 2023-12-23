@@ -13,11 +13,11 @@ namespace Toad
     }
 
     template <typename ...TArgs>
-    std::string format_str(std::string_view format, TArgs&& ... args)
+    std::string format_str_ex(std::string_view format, char begin, char end, TArgs&& ... args)
     {
         std::vector<std::string> args_as_str = {};
 
-        (args_as_str.push_back(stringify(args)),...);
+        (args_as_str.push_back(stringify(args)), ...);
 
         int curr_args_as_str_index = 0;
         bool get_index = false;
@@ -26,18 +26,18 @@ namespace Toad
 
         for (const auto c : format)
         {
-            if (c == '{')
+            if (c == begin)
             {
                 get_index = true;
                 index_str.clear();
                 continue;
             }
 
-            if (get_index && c != '}')
+            if (get_index && c != end)
             {
                 index_str += c;
             }
-            else if (get_index && c == '}')
+            else if (get_index && c == end)
             {
                 try
                 {
@@ -47,7 +47,7 @@ namespace Toad
                     {
                         if (curr_args_as_str_index + 1 > args_as_str.size())
                         {
-                            result += "{}";
+                            result += begin + end;
                             continue;
                         }
 
@@ -57,7 +57,7 @@ namespace Toad
                     int index = std::stoi(index_str);
                     if (index >= args_as_str.size())  // bru
                     {
-                        result += "{INVALID}";
+                        result += begin + "INVALID" + end;
                         continue;
                     }
                     result += args_as_str[index];
@@ -81,6 +81,12 @@ namespace Toad
             }
         }
         return result;
+    }
+
+    template <typename ...TArgs>
+    std::string format_str(std::string_view format, TArgs&& ... args)
+    {
+        return format_str_ex(format, '{', '}', args...);
     }
 
 }
