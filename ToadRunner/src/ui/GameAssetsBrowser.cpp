@@ -5,13 +5,16 @@
 
 #include "GameAssetsBrowser.h"
 
-#include "project/misc.h"
+#include "project/Misc.h"
 #include "project/ToadProject.h"
+#include "project/NewScriptClass.h"
+
+#include "xml_parser/pugixml.hpp"
 
 namespace Toad
 {
-	bool ignore_rename_warning = false;
 
+bool ignore_rename_warning = false;
 
 int rename_input_callback(ImGuiInputTextCallback* data)
 {
@@ -58,7 +61,7 @@ void GameAssetsBrowser::Show()
 		list_dir_contents(m_assets_path);
 
 	ImGui::Begin("second");
-	
+
 	if (m_assets_path.empty())
 	{
 		ImGui::Text("nothing to show");
@@ -79,7 +82,7 @@ void GameAssetsBrowser::Show()
 			m_current_path = m_current_path.parent_path();
 		}
 	}
-	
+
 	if (ImGui::Button("Open .sln"))
 	{
 		auto editors = misc::FindEditors();
@@ -133,6 +136,7 @@ void GameAssetsBrowser::Show()
 	static char renaming_buf[100];
 
 	static bool focus_on_popup_once = false;
+	const ImGuiID create_cpp_script_popup = ImHashStr("create C++ script");
 
 	// pop ups
 	if (ImGui::BeginPopupModal("replace file warning"))
@@ -157,6 +161,30 @@ void GameAssetsBrowser::Show()
 
 		ImGui::EndPopup();
 	}
+
+	ImGui::PushOverrideID(create_cpp_script_popup);
+	if (ImGui::BeginPopupModal("create C++ script"))
+	{
+		static char script_name[50];
+
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::InputText("Name", script_name, sizeof(script_name));
+
+		if (ImGui::Button("Create"))
+		{
+			if (CreateCPPScript(script_name))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+		}
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
 
 	focus_on_popup_once = ImGui::IsPopupOpen("replace file warning");
 
@@ -205,6 +233,15 @@ void GameAssetsBrowser::Show()
 
 			ImGui::CloseCurrentPopup();
 		}
+		if (ImGui::MenuItem("C++ Script"))
+		{
+			if (!ImGui::IsPopupOpen("create C++ script"))
+			{
+				ImGui::PushOverrideID(create_cpp_script_popup);
+				ImGui::OpenPopup("create C++ script");
+				ImGui::PopID();
+			}
+		}
 
 		ImGui::EndPopup();
 	}
@@ -229,6 +266,13 @@ void GameAssetsBrowser::Show()
 
 		if (ImGui::MenuItem("Delete"))
 		{
+			if (selected.has_extension() && selected.extension() == ".h" || selected.extension() == ".cpp")
+			{
+				if (!ExcludeToProjectFile(selected))
+				{
+					LOGERRORF("Failed to remove {} from project", selected.filename());
+				}
+			}
 			fs::remove(selected);
 			ImGui::CloseCurrentPopup();
 		}
@@ -236,15 +280,13 @@ void GameAssetsBrowser::Show()
 		ImGui::EndPopup();
 	}
 
-
 	if (is_dragging_file && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
 	{
 		is_dragging_file = false;
 	}
 
-
 	int i = 0;
-	for (const auto& entry: fs::directory_iterator(m_current_path))
+	for (const auto& entry : fs::directory_iterator(m_current_path))
 	{
 		i++;
 
@@ -275,7 +317,7 @@ void GameAssetsBrowser::Show()
 		else
 		{
 			ImGui::PushID(i);
-			if (ImGui::Selectable("F", selected == entry.path(), 0, {50, 50}))
+			if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
 			{
 				selected = entry.path();
 			}
@@ -369,6 +411,144 @@ void GameAssetsBrowser::SetAssetPath(std::string_view path)
 const fs::path& GameAssetsBrowser::GetAssetPath()
 {
 	return m_assets_path;
+}
+
+bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
+{
+	std::string cpp_file = (m_current_path / script_name).string() + ".cpp";
+	std::string header_file = (m_current_path / script_name).string() + ".h";
+
+	std::ofstream fcpp(cpp_file);
+	if (!fcpp.is_open())
+	{
+		LOGERRORF("Failed to create file {}", cpp_file);
+		return false;
+	}
+
+	std::ofstream fh(header_file);
+
+	fcpp << format_str_ex(NewScriptCplusplus, '$', '@', script_name);
+	fh << format_str_ex(NewScriptHeader, '$', '@', script_name);
+
+	fcpp.close();
+	fh.close();
+
+	IncludeToProjectFile(cpp_file);
+	IncludeToProjectFile(header_file);
+
+	return true;
+}
+
+bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
+{
+	if (m_game_proj_file.empty())
+	{
+		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
+		{
+			if (entry.path().has_extension() && entry.path().extension() == ".vcxproj")
+			{
+				if (entry.path().filename().string().find("_Game") != std::string::npos)
+				{
+					m_game_proj_file = entry.path();
+					break;
+				}
+			}
+		}
+	}
+
+	fs::path file_relative = fs::relative(file_path_full, m_game_proj_file.parent_path());
+	bool is_header = file_relative.extension() == ".h";
+	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
+	std::string child_name = is_header ? "ClInclude" : "ClCompile";
+
+	pugi::xml_document doc;
+
+	pugi::xml_parse_result result = doc.load_file(m_game_proj_file.string().c_str());
+
+	if (!result)
+	{
+		LOGERRORF("xml parse description: {} at offset {}", result.description(), result.offset);
+		return false;
+	}
+
+
+	pugi::xml_node item_groupHeaders = doc.child("Project").select_node(xpath.c_str()).node();
+
+	if (!item_groupHeaders)
+	{
+		LOGERROR("Failed to get ItemGroup");
+		return false;
+	}
+
+	pugi::xml_node headerfile = item_groupHeaders.append_child(child_name.c_str());
+	headerfile.append_attribute("Include").set_value(std::string(file_relative.string()).c_str());
+
+	if (!doc.save_file(m_game_proj_file.string().c_str()))
+	{
+		LOGERRORF("Failed to save xml document: {}", m_game_proj_file.string().c_str());
+		return false;
+	}
+
+	return true;
+}
+
+bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
+{
+	if (m_game_proj_file.empty())
+	{
+		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
+		{
+			if (entry.path().has_extension() && entry.path().extension() == ".vcxproj")
+			{
+				if (entry.path().filename().string().find("_Game") != std::string::npos)
+				{
+					m_game_proj_file = entry.path();
+					break;
+				}
+			}
+		}
+	}
+
+	fs::path file_relative = fs::relative(file_path_full, m_game_proj_file.parent_path());
+	bool is_header = file_relative.extension() == ".h";
+
+	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
+	std::string child_name = is_header ? "ClInclude" : "ClCompile";
+
+	pugi::xml_document doc;
+
+	pugi::xml_parse_result result = doc.load_file(m_game_proj_file.string().c_str());
+
+	if (!result)
+	{
+		LOGERRORF("xml parse description: {} at offset {}", result.description(), result.offset);
+		return false;
+	}
+
+	pugi::xml_node item_groupHeaders = doc.child("Project").select_node(xpath.c_str()).node();
+
+	if (!item_groupHeaders)
+	{
+		LOGERROR("Failed to get ItemGroup");
+		return false;
+	}
+
+	for (pugi::xml_node ClInclude = item_groupHeaders.child(child_name.c_str()); ClInclude; ClInclude = ClInclude.next_sibling(child_name.c_str()))
+	{
+		if (ClInclude.attribute("Include").as_string() == file_relative.string())
+		{
+			item_groupHeaders.remove_child(ClInclude);
+			break;
+		}
+	}
+
+	if (!doc.save_file(m_game_proj_file.string().c_str()))
+	{
+		LOGERRORF("Failed to save xml document: {}", m_game_proj_file.string().c_str());
+		return false;
+	}
+
+	return true;
 }
 
 }

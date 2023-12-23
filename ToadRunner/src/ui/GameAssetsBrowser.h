@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 namespace Toad
 {
 	namespace fs = std::filesystem;
@@ -18,6 +17,11 @@ namespace Toad
 	private:
 		fs::path m_assets_path;
 		fs::path m_current_path;
+		fs::path m_game_proj_file;
+
+		bool CreateCPPScript(std::string_view script_name);
+		bool IncludeToProjectFile(const fs::path& file_path_full);
+		bool ExcludeToProjectFile(const fs::path& file_path_full);
 	};
 
 }
