@@ -268,10 +268,24 @@ void GameAssetsBrowser::Show()
 		{
 			if (selected.has_extension() && selected.extension() == ".h" || selected.extension() == ".cpp")
 			{
-				if (!ExcludeToProjectFile(selected))
+				do
 				{
-					LOGERRORF("Failed to remove {} from project", selected.filename());
-				}
+					if (!VerifyPaths())
+					{
+						LOGERROR("Failed to verify paths");
+						break;
+					}
+					if (!RemoveFromScriptRegistry(selected))
+					{
+						LOGERRORF("Failed to remove {} from project", selected.filename().replace_extension("").string());
+						break;
+					}
+					if (!ExcludeToProjectFile(selected))
+					{
+						LOGERRORF("Failed to remove {} from project", selected.filename());
+						break;
+					}
+				} while (false);
 			}
 			fs::remove(selected);
 			ImGui::CloseCurrentPopup();
@@ -433,21 +447,185 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 	fcpp.close();
 	fh.close();
 
-	IncludeToProjectFile(cpp_file);
-	IncludeToProjectFile(header_file);
+	if (!VerifyPaths())
+	{
+		LOGERROR("Failed to verify paths");
+		return false;
+	}
+	if (!AddToScriptRegistry(m_current_path / script_name))
+	{
+		LOGERRORF("Failed to add {} to script registry", script_name);
+		return false;
+	}
+	if (!IncludeToProjectFile(cpp_file))
+	{
+		LOGERRORF("Failed to add {} to project file", cpp_file);
+		return false;
+	}
+	if (!IncludeToProjectFile(header_file))
+	{
+		LOGERRORF("Failed to add {} to project file", header_file);
+		return false;
+	}
+
+	return true;
+}
+
+bool GameAssetsBrowser::AddToScriptRegistry(const fs::path& script_path) const
+{
+	std::ifstream register_file(m_game_script_register_file);
+	std::stringstream modified_register_file_content;
+	modified_register_file_content << register_file.rdbuf();
+	std::string str = modified_register_file_content.str();
+	std::string file_relative = fs::relative(script_path, m_game_vsproj_file.parent_path() / "src").string();
+	std::string script_name = fs::path(file_relative).filename().replace_extension("").string();
+
+	if (!file_relative.ends_with(".h"))
+	{
+		file_relative += ".h";
+	}
+#ifdef _WIN32
+	// replace to forward slashes
+	for (char& c : file_relative)
+	{
+		if (c == '\\')
+		{
+			c = '/';
+		}
+	}
+#endif
+
+	if (str.find(format_str("#include \"{}\"", file_relative)) == std::string::npos)
+	{
+		std::istringstream ss(str);
+		std::string line;
+		std::string last_include;
+		while (std::getline(ss, line))
+		{
+			if (size_t pos = line.find("#include"); pos != std::string::npos)
+			{
+				last_include = line;
+			}
+		}
+		if (last_include.empty())
+		{
+			LOGERRORF("Invalid file: {}", m_game_script_register_file);
+			return false;
+		}
+
+		for (size_t i = str.find(last_include); i < str.length(); i++)
+		{
+			if (str[i] == '\n')
+			{
+				str.insert(i, format_str("\n#include \"{}\"", file_relative));
+				break;
+			}
+		}
+	}
+	
+	if (str.find(format_str("SCRIPT_REGISTER({})", script_name)) != std::string::npos)
+	{
+		LOGDEBUGF("already registered {}", script_name);
+	}
+	else
+	{
+		if (size_t pos = str.find("register_scripts()");
+			pos != std::string::npos)
+		{
+			size_t last_statement_pos = std::string::npos;
+			bool valid = false;
+			for (size_t i = pos; i < str.length(); i++)
+			{
+				if (str[i] == ';')
+				{
+					last_statement_pos = i + 1;
+				}
+				else if (str[i] == '}')
+				{
+					if (last_statement_pos != std::string::npos)
+					{
+						str.insert(last_statement_pos, format_str("\n\tSCRIPT_REGISTER({});", script_name));
+						valid = true;
+						break;
+					}
+				}
+			}
+			if (!valid)
+			{
+				LOGERRORF("register_scripts() is not valid in {}", m_game_script_register_file);
+				register_file.close();
+				return false;
+			}
+		}
+		else
+		{
+			LOGERRORF("Can't find register_scripts() in {}", m_game_script_register_file);
+			register_file.close();
+			return false;
+		}
+	}
+
+	register_file.close();
+
+	std::ofstream new_register_file(m_game_script_register_file);
+	new_register_file << str;
+	new_register_file.close();
+	return true;
+}
+
+bool GameAssetsBrowser::RemoveFromScriptRegistry(const fs::path& script_path) const
+{
+	std::ifstream register_file(m_game_script_register_file);
+	std::ofstream modified_register_file(m_game_script_register_file.parent_path() / "temp.cpp");
+
+	std::string script_name = script_path.filename().replace_extension("").string();
+	std::string script_relative_path = fs::relative(script_path, m_game_vsproj_file.parent_path() / "src").replace_extension(".h").string();
+
+#ifdef _WIN32
+	for (char& c : script_relative_path)
+	{
+		if (c == '\\')
+		{
+			c = '/';
+		}
+	}
+#endif
+
+	std::string line;
+	bool removed_line = false;
+	while (std::getline(register_file, line))
+	{
+		if (line.find(format_str("SCRIPT_REGISTER({});", script_name)) != std::string::npos)
+		{
+			removed_line = true;
+			continue;
+		}
+		if (line.find(format_str("#include \"{}\"", script_relative_path)) != std::string::npos)
+		{
+			removed_line = true;
+			continue;
+		}
+		modified_register_file << line << '\n';
+	}
+
+	register_file.close();
+	modified_register_file.close();
+
+	if (!removed_line)
+	{
+		LOGDEBUG("didn't modify ScriptRegister");
+		fs::remove(m_game_script_register_file.parent_path() / "temp.cpp");
+	}
+	else
+	{
+		fs::rename(m_game_script_register_file.parent_path() / "temp.cpp", m_game_script_register_file);
+	}
 
 	return true;
 }
 
 bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 {
-	if (!VerifyPaths())
-	{
-		LOGERROR("Failed to verify paths");
-		return false;
-	}
-
-
 	fs::path file_relative = fs::relative(file_path_full, m_game_vsproj_file.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
@@ -462,7 +640,6 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 		LOGERRORF("xml parse description: {} at offset {}", result.description(), result.offset);
 		return false;
 	}
-
 
 	pugi::xml_node item_groupHeaders = doc.child("Project").select_node(xpath.c_str()).node();
 
@@ -486,12 +663,6 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 
 bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 {
-	if (!VerifyPaths())
-	{
-		LOGERROR("Failed to verify paths");
-		return false;
-	}
-
 	fs::path file_relative = fs::relative(file_path_full, m_game_vsproj_file.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 
