@@ -441,29 +441,21 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 
 bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 {
-	if (m_game_proj_file.empty())
+	if (!VerifyPaths())
 	{
-		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
-		{
-			if (entry.path().has_extension() && entry.path().extension() == ".vcxproj")
-			{
-				if (entry.path().filename().string().find("_Game") != std::string::npos)
-				{
-					m_game_proj_file = entry.path();
-					break;
-				}
-			}
-		}
+		LOGERROR("Failed to verify paths");
+		return false;
 	}
 
-	fs::path file_relative = fs::relative(file_path_full, m_game_proj_file.parent_path());
+
+	fs::path file_relative = fs::relative(file_path_full, m_game_vsproj_file.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
 	std::string child_name = is_header ? "ClInclude" : "ClCompile";
 
 	pugi::xml_document doc;
 
-	pugi::xml_parse_result result = doc.load_file(m_game_proj_file.string().c_str());
+	pugi::xml_parse_result result = doc.load_file(m_game_vsproj_file.string().c_str());
 
 	if (!result)
 	{
@@ -483,9 +475,9 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 	pugi::xml_node headerfile = item_groupHeaders.append_child(child_name.c_str());
 	headerfile.append_attribute("Include").set_value(std::string(file_relative.string()).c_str());
 
-	if (!doc.save_file(m_game_proj_file.string().c_str()))
+	if (!doc.save_file(m_game_vsproj_file.string().c_str()))
 	{
-		LOGERRORF("Failed to save xml document: {}", m_game_proj_file.string().c_str());
+		LOGERRORF("Failed to save xml document: {}", m_game_vsproj_file.string().c_str());
 		return false;
 	}
 
@@ -494,22 +486,13 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 
 bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 {
-	if (m_game_proj_file.empty())
+	if (!VerifyPaths())
 	{
-		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
-		{
-			if (entry.path().has_extension() && entry.path().extension() == ".vcxproj")
-			{
-				if (entry.path().filename().string().find("_Game") != std::string::npos)
-				{
-					m_game_proj_file = entry.path();
-					break;
-				}
-			}
-		}
+		LOGERROR("Failed to verify paths");
+		return false;
 	}
 
-	fs::path file_relative = fs::relative(file_path_full, m_game_proj_file.parent_path());
+	fs::path file_relative = fs::relative(file_path_full, m_game_vsproj_file.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 
 	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
@@ -517,7 +500,7 @@ bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 
 	pugi::xml_document doc;
 
-	pugi::xml_parse_result result = doc.load_file(m_game_proj_file.string().c_str());
+	pugi::xml_parse_result result = doc.load_file(m_game_vsproj_file.string().c_str());
 
 	if (!result)
 	{
@@ -542,10 +525,46 @@ bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 		}
 	}
 
-	if (!doc.save_file(m_game_proj_file.string().c_str()))
+	if (!doc.save_file(m_game_vsproj_file.string().c_str()))
 	{
-		LOGERRORF("Failed to save xml document: {}", m_game_proj_file.string().c_str());
+		LOGERRORF("Failed to save xml document: {}", m_game_vsproj_file.string().c_str());
 		return false;
+	}
+
+	return true;
+}
+
+bool GameAssetsBrowser::VerifyPaths()
+{
+	if (m_game_vsproj_file.empty())
+	{
+		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
+		{
+			if (entry.path().has_extension() && entry.path().extension() == ".vcxproj")
+			{
+				if (entry.path().filename().string().find("_Game") != std::string::npos)
+				{
+					m_game_vsproj_file = entry.path();
+					break;
+				}
+			}
+		}
+	}
+
+	if (m_game_vsproj_file.empty())
+	{
+		LOGERRORF("Failed to find game vcxproj file in {}", project::current_project.project_path);
+		return false;
+	}
+
+	if (m_game_script_register_file.empty())
+	{
+		m_game_script_register_file = m_game_vsproj_file.parent_path() / "src" / "game_core" / "ScriptRegister.cpp";
+		if (!fs::exists(m_game_script_register_file))
+		{
+			LOGERRORF("can't find script register {}", m_game_script_register_file);
+			return false;
+		}
 	}
 
 	return true;
