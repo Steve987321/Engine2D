@@ -18,61 +18,28 @@ namespace Toad
 class ENGINE_API Object
 {
 public:
-	explicit Object(std::string_view name) : name(name) {}
-	Object() : name("Object") {}
-	
-	virtual ~Object() {}
-
 	std::string name;
 
-	virtual void Start()
-	{}
+	Object();
+	explicit Object(std::string_view name);
 
-	virtual void Render(sf::RenderWindow& window)
-	{}
+	virtual ~Object();
+
+	virtual void Start();
+
+	virtual void Render(sf::RenderWindow& window);
 
 	// For imgui, only when using the editor
-	virtual void Render(sf::RenderTexture& texture)
-	{}
+	virtual void Render(sf::RenderTexture& texture);
 
-	virtual void Update()
-	{}
+	virtual void Update();
 
-	template <class T>
-	T* GetScript()
-	{
-		for (const auto& script : m_attached_scripts | std::views::values)
-		{
-			auto res = dynamic_cast<T*>(script);
-			if (res != nullptr)
-				return res;
-		}
+	void AddScript(std::shared_ptr<Script> script);
 
-		return nullptr;
-	}
-
-	std::shared_ptr<Script> GetScript(std::string_view name)
-	{
-		auto it = m_attached_scripts.find(name.data());
-		if (it != m_attached_scripts.end())
-		{
-			return it->second;
-		}
-		return nullptr;
-	}
+	std::shared_ptr<Script> GetScript(std::string_view name);
 
 	// faster than removing by script type
-	bool RemoveScript(std::string_view script_name)
-	{
-		auto it = m_attached_scripts.find(script_name.data());
-		if (it != m_attached_scripts.end())
-		{
-			m_attached_scripts.erase(it);
-			return true;
-		}
-
-		return false;
-	}
+	bool RemoveScript(std::string_view script_name);
 
 	// slower than removing by script string name
 	template <class T>
@@ -91,15 +58,20 @@ public:
 		return false;
 	}
 
-	void AddScript(std::shared_ptr<Script> script)
+	template <class T>
+	T* GetScript()
 	{
-		m_attached_scripts[script->GetName()] = script;
+		for (const auto& script : m_attached_scripts | std::views::values)
+		{
+			auto res = dynamic_cast<T*>(script);
+			if (res != nullptr)
+				return res;
+		}
+
+		return nullptr;
 	}
 
-	const std::unordered_map<std::string, std::shared_ptr<Script> >& GetAttachedScripts() const
-	{
-		return m_attached_scripts;
-	}
+	const std::unordered_map<std::string, std::shared_ptr<Script> >& GetAttachedScripts() const;
 
 protected:
 	// attached scripts 
