@@ -69,6 +69,19 @@ void GameAssetsBrowser::Show()
 		return;
 	}
 
+	auto& droppedFilesQueue = Engine::Get().GetDroppedFilesQueue();
+	while (!droppedFilesQueue.empty())
+	{
+		const fs::path& queued_file = droppedFilesQueue.front();
+
+		if (!fs::copy_file(queued_file, m_current_path / queued_file.filename()))
+		{
+			LOGERRORF("Failed to copy {} to {}", queued_file, m_current_path / queued_file.filename());
+		}
+
+		droppedFilesQueue.pop();
+	}
+
 	static bool is_dragging_file = false;
 
 	if (is_dragging_file)
@@ -333,11 +346,14 @@ void GameAssetsBrowser::Show()
 			ImGui::PushID(i);
 			if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
 			{
+				if (selected.extension() == ".TSCENE")
+				{
+					Engine::Get().SetScene(LoadScene(selected));
+				}
 				selected = entry.path();
 			}
 			ImGui::PopID();
 		}
-
 
 		ImGuiDragDropFlags src_flags = 0;
 		src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
@@ -366,7 +382,6 @@ void GameAssetsBrowser::Show()
 
 			ImGui::EndDragDropTarget();
 		}
-
 
 		// options
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())

@@ -51,6 +51,8 @@ namespace Toad
 		// returns a map of scripts with script name as key, some script could be nullptr
 		std::unordered_map<std::string, std::shared_ptr<Script>>& GetGameScriptsRegister();
 
+		std::queue<std::filesystem::path>& GetDroppedFilesQueue();
+
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
 	private:
@@ -61,6 +63,8 @@ namespace Toad
 
 		// checks to see if a new game.dll is available 
 		void GameUpdatedWatcher();
+
+		static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
 
 	private:
 		sf::Time m_deltaTime;
@@ -80,9 +84,12 @@ namespace Toad
 		// instances of all game scripts
 		std::unordered_map<std::string, std::shared_ptr<Script>> m_gameScripts = {};
 
+		std::queue<std::filesystem::path> m_droppedFilesQueue;
+
 		bool m_beginPlay = false, m_beginPlayPrev = false;
 
 		HMODULE m_currDLL{};
+		inline static LONG_PTR s_originalWndProc = NULL;
 
 	private:
 		std::atomic_bool m_isRunning = false;

@@ -135,6 +135,11 @@ bool Engine::InitWindow(const AppSettings& settings)
 	LOGDEBUG("Loading editor window");
 	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
 	m_window.setFramerateLimit(60);
+
+	HWND window_handle = m_window.getSystemHandle();
+	DragAcceptFiles(window_handle, TRUE);
+	s_originalWndProc = SetWindowLongPtrA(window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc));
+
 	bool res = ImGui::SFML::Init(m_window, false);
 	LOGDEBUGF("ImGui SFML Init result: {}", res);
 	m_io = &ImGui::GetIO();
@@ -468,6 +473,11 @@ std::unordered_map<std::string, std::shared_ptr<Script>> & Engine::GetGameScript
 	return m_gameScripts;
 }
 
+std::queue<std::filesystem::path>& Engine::GetDroppedFilesQueue()
+{
+	return m_droppedFilesQueue;
+}
+
 void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 {
 	m_renderUI = p_ui;
@@ -492,6 +502,33 @@ void Engine::GameUpdatedWatcher()
 	if (f.is_open())
 	{
 	}
+}
+
+LRESULT Engine::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
+{
+	if (message == WM_DROPFILES)
+	{
+		HDROP hdrop = reinterpret_cast<HDROP>(wparam);
+		POINT drag_point = {0,0};
+		DragQueryPoint(hdrop, &drag_point);
+
+		const UINT dropped_files_count = DragQueryFileA(hdrop, 0xFFFFFFFF, nullptr, 0);
+		for (UINT i = 0; i < dropped_files_count; i++)
+		{
+			const UINT buf_size = DragQueryFileA(hdrop, i, nullptr, 0) + 1;
+			char* buf = new char[buf_size];
+
+			DragQueryFileA(hdrop, i, buf, buf_size);
+
+			s_Instance->m_droppedFilesQueue.emplace(buf);
+
+			delete[] buf;
+		}
+
+		DragFinish(hdrop);
+	}
+
+	return CallWindowProcA(reinterpret_cast<WNDPROC>(s_originalWndProc), handle, message, wparam, lparam);
 }
 
 }
