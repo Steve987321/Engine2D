@@ -482,6 +482,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
+				// TODO: delete multiple objects
 				prev_cursor_index = index;
 				selected_obj = obj;
 				object_selected.clear();
@@ -521,7 +522,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			check_range = false;
 		}
 
-		if (!ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered() && ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
 		{
 			selected_obj = nullptr;
 			object_selected.clear();
