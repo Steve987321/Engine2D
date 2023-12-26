@@ -124,9 +124,10 @@ void LoadSceneObjects(json objects, Scene& scene)
 
 			if (has_texture)
 			{
-				sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+				std::string path_str = props["texture_loc"].get<std::string>();
+				sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
 				sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
-				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(tex);
+				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 
 				circle.setTexture(new_tex);
 				circle.setTextureRect(tex_rect);
@@ -150,9 +151,10 @@ void LoadSceneObjects(json objects, Scene& scene)
 
 			if (has_texture)
 			{
+				std::string path_str = props["texture_loc"].get<std::string>();
 				sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
 				sf::IntRect texrect = GetRectFromJSON(props["texture_rect"]);
-				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(tex);
+				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 				sprite.setTexture(*new_tex);
 				sprite.setTextureRect(texrect);
 			}
@@ -295,7 +297,7 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 	data["objects"] = objects;
 
 	std::string dir = path.string();
-	if (dir.find("\\") != std::string::npos && !dir.ends_with("\\"))
+	if (dir.find('\\') != std::string::npos && !dir.ends_with("\\"))
 		dir += "\\";
 	auto full = dir + scene.name + ".TSCENE";
 
