@@ -33,6 +33,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
 	ImGuiID project_load_popup_id = ImHashStr("LoadProject");
 	ImGuiID project_package_popup_id = ImHashStr("PackageProject");
+	ImGuiID save_scene_popup_id = ImHashStr("SaveScene");
 	static bool project_load_popup_select = false;
 
 	static project::ProjectSettings settings{};
@@ -103,6 +104,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (!scene.objects_map.empty())
 				{
+					ImGui::PushOverrideID(save_scene_popup_id);
+					ImGui::OpenPopup("SaveScene");
+					ImGui::PopID();
+
 					Toad::SaveScene(scene, fBrowser.GetPath());
 				}
 			}
@@ -304,6 +309,26 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 	ImGui::PopID();
 
+	ImGui::PushOverrideID(save_scene_popup_id);
+	if (ImGui::BeginPopupModal("SaveScene"))
+	{
+		static char scene_name[50];
+		if (ImGui::Button("Close"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::InputText("name", scene_name, sizeof(scene_name));
+
+		if (ImGui::Button("Create"))
+		{
+			Toad::Engine::Get().GetScene().name = scene_name;
+			Toad::SaveScene(Toad::Engine::Get().GetScene(), asset_browser.GetAssetPath());
+		}
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
 	ImGui::Begin("Settings", nullptr);
 	{
 		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
@@ -321,7 +346,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 
-			auto asset_path = asset_browser.GetAssetPath();
+			const auto& asset_path = asset_browser.GetAssetPath();
 			if (!exists(asset_path))
 			{
 				ImGui::TextColored({ 1,0,0,1 }, "Can't find asset folder in %s", asset_path.string().c_str());
@@ -575,7 +600,65 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				auto& sprite = sprite_obj->GetSprite();
 
+				const sf::Texture* attached_texture = sprite.getTexture();
 				auto pos = sprite.getPosition();
+
+				ImGui::Text("texture");
+				ImGui::SameLine();
+
+				if (attached_texture != nullptr)
+				{
+					if (ImGui::ImageButton(*attached_texture, {25, 25}))
+					{
+						// TODO:
+					}
+				}
+				else
+				{
+					if (ImGui::Button("", { 25, 25 }))
+					{
+						
+					}
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+					{
+						std::filesystem::path src = *(std::string*)payload->Data;
+						do
+						{
+							if (!src.has_extension() && (src.extension().string() != ".jpg" || src.extension().string() != ".png")) 
+							{
+								break;
+							}
+						
+							std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
+							Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
+							if (resource_manager.GetTextures().contains(relative.string()))
+							{
+								sf::Texture* managed_texture = resource_manager.GetTexture(relative.string());
+								sprite_obj->SetTexture(relative, *managed_texture);
+							}
+							else
+							{
+								sf::Texture new_texture;
+								if (!new_texture.loadFromFile(src.string()))
+								{
+									LOGERRORF("Failed to load texture from {}", src);
+								}
+								sf::Texture* managed_texture = resource_manager.AddTexture(relative.string(), new_texture);
+								if (managed_texture != nullptr)
+								{
+									sprite_obj->SetTexture(relative, *managed_texture);
+								}
+							}
+
+						} while (false);
+					}
+
+					ImGui::EndDragDropTarget();
+				}
 
 				if (ImGui::DragFloat("X", &pos.x))
 					sprite.setPosition(pos);
