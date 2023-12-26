@@ -609,7 +609,61 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (selected_obj != nullptr)
 		{
 			auto attached_scripts = selected_obj->GetAttachedScripts();
+			bool suggestion = false;
+			char name_buf[100];
+			std::string new_name_str;
+			strcpy_s(name_buf, selected_obj->name.c_str());
 
+			ImVec2 input_name_pos = ImGui::GetCursorPos();
+			if (ImGui::InputText("name", name_buf, sizeof(name_buf)))
+			{
+				Toad::Scene& scene = Toad::Engine::Get().GetScene();
+
+				new_name_str = name_buf;
+				
+				if (new_name_str != selected_obj->name && scene.objects_map.contains(new_name_str))
+				{
+					suggestion = true;
+
+					auto count = scene.objects_map.count(new_name_str);
+					new_name_str += " (" + std::to_string(count) + ')';
+					while (scene.objects_map.contains(new_name_str))
+					{
+						new_name_str += " (" + std::to_string(++count) + ')';
+					}
+				}
+				else
+				{
+					suggestion = false;
+				}
+			}
+
+			if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
+			{
+				if (new_name_str != selected_obj->name)
+				{
+					auto& map = Toad::Engine::Get().GetScene().objects_map;
+					if (!map.contains(new_name_str))
+					{
+						auto a = map.extract(selected_obj->name);
+						a.key() = new_name_str;
+						map.insert(std::move(a));
+
+						selected_obj->name = new_name_str;
+					}
+				}
+			}
+
+			if (suggestion)
+			{
+				//ImGuiInputTextState* state = ImGui::GetInputTextState(ImGui::GetID("name"));
+				std::string part_of_str = new_name_str.substr(strlen(name_buf), new_name_str.length() - strlen(name_buf));
+				ImVec2 frame_pad = ImGui::GetStyle().FramePadding;
+				ImVec2 text_size = ImGui::CalcTextSize(name_buf);
+				ImGui::SetCursorPos({ input_name_pos.x + text_size.x + frame_pad.x, input_name_pos.y + frame_pad.y });
+				ImGui::TextColored({ 1,1,1,0.4f }, part_of_str.c_str());
+			}
+			
 			ImGui::Text(selected_obj->name.c_str());
 
 			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj.get());
