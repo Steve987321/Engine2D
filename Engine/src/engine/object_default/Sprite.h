@@ -13,7 +13,7 @@ public:
 
 	sf::Sprite& GetSprite();
 	std::filesystem::path& GetTextureSourcePath();
-
+	void SetTexture(const std::filesystem::path& relative_path, const sf::Texture& texture);
 	json Serialize();
 
 private:

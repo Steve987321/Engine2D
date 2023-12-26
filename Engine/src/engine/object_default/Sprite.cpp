@@ -28,6 +28,12 @@ std::filesystem::path& Sprite::GetTextureSourcePath()
 	return m_texture_source_path;
 }
 
+void Sprite::SetTexture(const std::filesystem::path& relative_path, const sf::Texture& texture)
+{
+	m_texture_source_path = relative_path;
+	m_sprite.setTexture(texture, true);
+}
+
 json Sprite::Serialize()
 {
 	json s_data;
