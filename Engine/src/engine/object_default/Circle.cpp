@@ -84,6 +84,7 @@ namespace Toad
 		circle_properties["posx"] = c.getPosition().x;
 		circle_properties["posy"] = c.getPosition().y;
 		circle_properties["fill_col"] = c.getFillColor().toInteger();
+		circle_properties["outline_col"] = c.getOutlineColor().toInteger();
 		circle_properties["radius"] = c.getRadius();
 		circle_properties["scalex"] = c.getScale().x;
 		circle_properties["scaley"] = c.getScale().y;
