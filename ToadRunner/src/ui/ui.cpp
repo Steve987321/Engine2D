@@ -423,7 +423,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		ImGui::SeparatorText(Toad::Engine::Get().GetScene().name.c_str());
 		bool ignore_mouse_click = false;
-		std::string remove_str;
+		std::queue<std::string> remove_objects_queue;
 
 		if (ImGui::IsWindowFocused())
 		{
@@ -443,7 +443,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		static std::set<std::string> object_selected = {};
+		static std::set<std::string> selected_objects = {};
 		int index = 0;
 		static size_t prev_cursor_index = 0;
 		static size_t cursor_index = 0;
@@ -454,17 +454,17 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			index++;
 
-			if (ImGui::Selectable(name.c_str(), object_selected.contains(name) || (selected_obj != nullptr && selected_obj->name == name)))
+			if (ImGui::Selectable(name.c_str(), selected_objects.contains(name) || (selected_obj != nullptr && selected_obj->name == name)))
 			{
 				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != name)
 				{
-					if (object_selected.contains(name))
+					if (selected_objects.contains(name))
 					{
-						object_selected.erase(name);
+						selected_objects.erase(name);
 					}
 					else
 					{
-						object_selected.insert(name);
+						selected_objects.insert(name);
 					}
 				}
 				else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != name)
@@ -477,15 +477,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					prev_cursor_index = index;
 					selected_obj = obj;
-					object_selected.clear();
+					selected_objects.clear();
 				}
 			}
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
-				// TODO: delete multiple objects
+				if (selected_objects.empty())
+				{
+					selected_obj = obj;
+				}
 				prev_cursor_index = index;
-				selected_obj = obj;
-				object_selected.clear();
 				if (!ImGui::IsPopupOpen("SceneModifyPopup"))
 				{
 					ImGui::OpenPopup("SceneModifyPopup");
@@ -513,10 +514,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				keys.push_back(name);
 			}
 
-			object_selected.clear();
+			selected_objects.clear();
 			for (int i = origin; cursor_index_is_under ? i < static_cast<int>(cursor_index) : i > static_cast<int>(cursor_index) - 2; cursor_index_is_under ? i++ : i--)
 			{
-				object_selected.insert(keys[i]);
+				selected_objects.insert(keys[i]);
 			}
 
 			check_range = false;
@@ -525,7 +526,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsAnyItemHovered() && ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
 		{
 			selected_obj = nullptr;
-			object_selected.clear();
+			selected_objects.clear();
 		}
 
 		if (!ignore_mouse_click && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
@@ -560,21 +561,43 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (ImGui::BeginPopup("SceneModifyPopup"))
 		{
-			if (ImGui::MenuItem("Delete"))
+			// multiple objects
+			if (!selected_objects.empty())
 			{
-				if (selected_obj != nullptr)
+				if (ImGui::MenuItem("Delete"))
 				{
-					remove_str = selected_obj->name;
+					if (selected_obj != nullptr)
+					{
+						remove_objects_queue.push(selected_obj->name);
+					}
+
+					for (const std::string& name : selected_objects)
+					{
+						remove_objects_queue.push(name);
+					}
+				}
+			}
+			else
+			{
+				// singular object 
+				if (ImGui::MenuItem("Delete"))
+				{
+					if (selected_obj != nullptr)
+					{
+						remove_objects_queue.push(selected_obj->name);
+					}
 				}
 			}
 
 			ImGui::EndPopup();
 		}
 
-		if (!remove_str.empty())
+		while (!remove_objects_queue.empty())
 		{
-			Toad::Engine::Get().GetScene().RemoveFromScene(remove_str);
-			remove_str.clear();
+			const std::string& front = remove_objects_queue.front();
+			selected_objects.erase(front);
+			Toad::Engine::Get().GetScene().RemoveFromScene(front);
+			remove_objects_queue.pop();
 		}
 
 		ImGui::End();
