@@ -4,15 +4,12 @@
 
 #include "FileBrowser.h"
 
-#include <sstream>
-
-
 namespace Toad {
 
     extern int CALLBACK ProjectBrowseFolderCallback(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata);
 
     FileBrowser::FileBrowser(std::string_view starting_directory) {
-        m_curr_path = starting_directory;
+        m_currPath = starting_directory;
     }
 
     FileBrowser::~FileBrowser() {
@@ -28,7 +25,7 @@ namespace Toad {
                 labelStr += PATH_SEPARATOR;
 
             auto full = it.path().string();
-            if (ImGui::Selectable(labelStr.c_str(), m_selected_file == full, ImGuiSelectableFlags_AllowDoubleClick))
+            if (ImGui::Selectable(labelStr.c_str(), m_selectedFile == full, ImGuiSelectableFlags_AllowDoubleClick))
             {
                 // read it
                 std::ifstream f;
@@ -37,19 +34,19 @@ namespace Toad {
                 {
                     std::stringstream ss;
                     ss << f.rdbuf();
-                    m_selected_file_buffer = ss.str();
+                    m_selectedFileBuffer = ss.str();
                     f.close();
                 }
 
-                m_selected_file = full;
+                m_selectedFile = full;
 
                 if (ImGui::IsMouseDoubleClicked(0))
                 {
                     if (it.is_directory())
                     {
-                        m_curr_path = full;
+                        m_currPath = full;
                     }
-                    m_is_double_clicked = true;
+                    m_isDoubleClicked = true;
                 }
             }
 
@@ -68,9 +65,9 @@ namespace Toad {
     }
 
     void FileBrowser::Show() {
-        m_is_double_clicked = false;
+        m_isDoubleClicked = false;
 
-        auto folders_in_path = SplitPath(m_curr_path);
+        auto folders_in_path = SplitPath(m_currPath);
 
         for (int i = 0; i < folders_in_path.size(); i++)
         {
@@ -94,19 +91,19 @@ namespace Toad {
                     if (j < i)
                         update_path += PATH_SEPARATOR;
                 }
-                m_curr_path = update_path;
+                m_currPath = update_path;
             }
         }
 
-        IterateDir(fs::directory_iterator(m_curr_path));
+        IterateDir(fs::directory_iterator(m_currPath));
     }
 
     std::string &FileBrowser::GetSelectedFileContent() {
-        return m_selected_file_buffer;
+        return m_selectedFileBuffer;
     }
 
     std::string& FileBrowser::GetSelectedFile() {
-        return m_selected_file;
+        return m_selectedFile;
     }
 
     void FileBrowser::SetPath(std::string_view path) {
@@ -116,17 +113,17 @@ namespace Toad {
             return;
         }
 
-        m_curr_path = path;
+        m_currPath = path;
     }
 
     const std::string& FileBrowser::GetPath() const
     {
-        return m_curr_path;
+        return m_currPath;
     }
 
     bool FileBrowser::IsDoubleClicked()
     {
-        return m_is_double_clicked;
+        return m_isDoubleClicked;
     }
 
     std::vector<std::string> FileBrowser::SplitPath(std::string_view path) {

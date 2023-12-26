@@ -26,11 +26,11 @@ namespace Toad {
 
         std::vector<std::string> SplitPath(std::string_view path);
 
-        std::string m_selected_file_buffer;
-        std::string m_curr_path;
-        std::string m_selected_file;
+        std::string m_selectedFileBuffer;
+        std::string m_currPath;
+        std::string m_selectedFile;
 
-        bool m_is_double_clicked = false;
+        bool m_isDoubleClicked = false;
     };
 
     std::string GetPathDialog(std::string_view title, std::string_view path);

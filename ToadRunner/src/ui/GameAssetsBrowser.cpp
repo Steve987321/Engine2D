@@ -319,10 +319,10 @@ void GameAssetsBrowser::Show()
 		is_dragging_file = false;
 	}
 
-	int i = 0;
+	int id = 0;
 	for (const auto& entry : fs::directory_iterator(m_currentPath))
 	{
-		i++;
+		id++;
 
 		if (!selected.empty())
 		{
@@ -336,7 +336,7 @@ void GameAssetsBrowser::Show()
 
 		if (entry.is_directory())
 		{
-			ImGui::PushID(i);
+			ImGui::PushID(id);
 			if (ImGui::Selectable("D", selected == entry.path(), 0, { 50, 50 }))
 			{
 				selected = entry.path();
@@ -350,7 +350,7 @@ void GameAssetsBrowser::Show()
 		}
 		else
 		{
-			ImGui::PushID(i);
+			ImGui::PushID(id);
 
 			fs::path ext = entry.path().extension();
 			
@@ -367,10 +367,6 @@ void GameAssetsBrowser::Show()
 				}
 
 				ImGui::Image(*texture, { 50, 50 });
-				if (ImGui::IsItemHovered())
-				{
-					
-				}
 			}
 			else
 			{

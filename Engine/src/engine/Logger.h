@@ -48,10 +48,10 @@ public:
 
 	std::unordered_map<LOG_TYPE, const char*> logTypeAsStr
 	{
-	{LOG_TYPE::DEBUG, "DEBUG"},
-	{LOG_TYPE::ERROR, "ERROR"},
-	{LOG_TYPE::EXCEPTION, "EXCEPTION"},
-	{LOG_TYPE::WARNING, "WARNING"},
+		{LOG_TYPE::DEBUG, "DEBUG"},
+		{LOG_TYPE::ERROR, "ERROR"},
+		{LOG_TYPE::EXCEPTION, "EXCEPTION"},
+		{LOG_TYPE::WARNING, "WARNING"},
 	};
 
 public:
@@ -92,7 +92,6 @@ private:
 
 private:
 	/// Outputs string to console 
-	template<typename ... Args>
 	void Print(const std::string_view str, LOG_TYPE log_type)
 	{
 #ifdef _WIN32
@@ -105,7 +104,7 @@ private:
 		std::cout << "] [";
 
 		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::GREY));
-		std::cout << GetDateStr("%H:%M:%S");
+		std::cout << get_date_str("%H:%M:%S");
 
 		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
 		std::cout << "] ";
@@ -132,7 +131,7 @@ private:
 		auto formattedStr = format_str(frmt, args...);
 
 		if (create_log_file)
-			LogToFile(GetDateStr("[%T]") + ' ' + formattedStr);
+			LogToFile(get_date_str("[%T]") + ' ' + formattedStr);
 
 		Print(formattedStr, log_type);
 	}

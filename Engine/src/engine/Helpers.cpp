@@ -21,7 +21,7 @@ namespace Toad
 		return dis(gen);
 	}
 
-	std::string GetDateStr(std::string_view format)
+	std::string get_date_str(std::string_view format)
 	{
 		std::ostringstream ss;
 		std::string time;
