@@ -5,6 +5,8 @@
 
 #include "GameAssetsBrowser.h"
 
+#include "imgui-SFML.h"
+
 #include "project/Misc.h"
 #include "project/ToadProject.h"
 #include "project/NewScriptClass.h"
@@ -57,12 +59,12 @@ void list_dir_contents(const fs::path& path)
 
 void GameAssetsBrowser::Show()
 {
-	if (!m_assets_path.empty())
-		list_dir_contents(m_assets_path);
+	if (!m_assetsPath.empty())
+		list_dir_contents(m_assetsPath);
 
 	ImGui::Begin("second");
 
-	if (m_assets_path.empty())
+	if (m_assetsPath.empty())
 	{
 		ImGui::Text("nothing to show");
 		ImGui::End();
@@ -74,9 +76,9 @@ void GameAssetsBrowser::Show()
 	{
 		const fs::path& queued_file = droppedFilesQueue.front();
 
-		if (!fs::copy_file(queued_file, m_current_path / queued_file.filename()))
+		if (!fs::copy_file(queued_file, m_currentPath / queued_file.filename()))
 		{
-			LOGERRORF("Failed to copy {} to {}", queued_file, m_current_path / queued_file.filename());
+			LOGERRORF("Failed to copy {} to {}", queued_file, m_currentPath / queued_file.filename());
 		}
 
 		droppedFilesQueue.pop();
@@ -90,9 +92,9 @@ void GameAssetsBrowser::Show()
 	}
 	else
 	{
-		if (m_current_path != m_assets_path && ImGui::ArrowButton("##back", ImGuiDir_Left))
+		if (m_currentPath != m_assetsPath && ImGui::ArrowButton("##back", ImGuiDir_Left))
 		{
-			m_current_path = m_current_path.parent_path();
+			m_currentPath = m_currentPath.parent_path();
 		}
 	}
 
@@ -111,7 +113,7 @@ void GameAssetsBrowser::Show()
 				{
 					// get .sln file
 					// TODO: temp
-					auto temp = m_assets_path.parent_path().parent_path().parent_path();
+					auto temp = m_assetsPath.parent_path().parent_path().parent_path();
 					fs::path slnpath;
 					for (const auto& entry : fs::recursive_directory_iterator(temp))
 					{
@@ -208,13 +210,13 @@ void GameAssetsBrowser::Show()
 		if (ImGui::MenuItem("Directory"))
 		{
 			std::string dir_name = "new_directory";
-			while (exists(m_current_path / dir_name))
+			while (exists(m_currentPath / dir_name))
 			{
 				dir_name += "_1";
 			}
-			create_directory(m_current_path / dir_name);
+			create_directory(m_currentPath / dir_name);
 
-			selected = m_current_path / dir_name;
+			selected = m_currentPath / dir_name;
 
 			strcpy_s(renaming_buf, selected.filename().string().c_str());
 			ignore_rename_warning = true;
@@ -227,19 +229,19 @@ void GameAssetsBrowser::Show()
 		{
 			std::string scene_name = "Scene";
 			std::string file_ext = ".TSCENE";
-			while (exists(m_current_path / (scene_name + file_ext)))
+			while (exists(m_currentPath / (scene_name + file_ext)))
 			{
 				scene_name += "_1";
 			}
 
 			scene_name += file_ext;
 
-			std::ofstream f(m_current_path / scene_name);
+			std::ofstream f(m_currentPath / scene_name);
 			nlohmann::json da;
 			f << da;
 			f.close();
 
-			selected = m_current_path / scene_name;
+			selected = m_currentPath / scene_name;
 			strcpy_s(renaming_buf, selected.filename().string().c_str());
 			renaming = true;
 			ignore_rename_warning = true;
@@ -275,11 +277,9 @@ void GameAssetsBrowser::Show()
 			ImGui::CloseCurrentPopup();
 		}
 
-		// Paste
-
 		if (ImGui::MenuItem("Delete"))
 		{
-			if (selected.has_extension() && selected.extension() == ".h" || selected.extension() == ".cpp")
+			if (selected.has_extension() && (selected.extension() == ".h" || selected.extension() == ".cpp"))
 			{
 				do
 				{
@@ -300,7 +300,14 @@ void GameAssetsBrowser::Show()
 					}
 				} while (false);
 			}
+			if (selected.has_extension() && (selected.extension() == ".png" || selected.extension() == ".jpg"))
+			{
+				fs::path relative = fs::relative(selected, m_assetsPath);
+				Engine::Get().GetResourceManager().RemoveTexture(relative.string());
+			}
+
 			fs::remove(selected);
+
 			ImGui::CloseCurrentPopup();
 		}
 
@@ -313,7 +320,7 @@ void GameAssetsBrowser::Show()
 	}
 
 	int i = 0;
-	for (const auto& entry : fs::directory_iterator(m_current_path))
+	for (const auto& entry : fs::directory_iterator(m_currentPath))
 	{
 		i++;
 
@@ -338,26 +345,52 @@ void GameAssetsBrowser::Show()
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 			{
-				m_current_path = entry.path();
+				m_currentPath = entry.path();
 			}
 		}
 		else
 		{
 			ImGui::PushID(i);
-			if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
+
+			fs::path ext = entry.path().extension();
+			
+			if (entry.path().has_extension() && (ext == ".png" || ext == ".jpg"))
 			{
-				if (selected.extension() == ".TSCENE")
+				fs::path relative = fs::relative(entry.path(), m_assetsPath);
+				sf::Texture* texture = Engine::Get().GetResourceManager().GetTexture(relative.string());
+
+				if (texture == nullptr)
 				{
-					Engine::Get().SetScene(LoadScene(selected));
+					sf::Texture new_texture;
+					new_texture.loadFromFile(entry.path().string());
+					texture = Engine::Get().GetResourceManager().AddTexture(relative.string(), new_texture);
 				}
-				selected = entry.path();
+
+				ImGui::Image(*texture, { 50, 50 });
+				if (ImGui::IsItemHovered())
+				{
+					
+				}
 			}
+			else
+			{
+				if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
+				{
+					if (ext == ".TSCENE")
+					{
+						Engine::Get().SetScene(LoadScene(selected));
+					}
+					selected = entry.path();
+				}
+			}
+
 			ImGui::PopID();
 		}
 
 		ImGuiDragDropFlags src_flags = 0;
 		src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
 		src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+		src_flags |= ImGuiDragDropFlags_SourceAllowNullID;
 		//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
 		if (ImGui::BeginDragDropSource(src_flags))
 		{
@@ -433,19 +466,19 @@ void GameAssetsBrowser::Show()
 
 void GameAssetsBrowser::SetAssetPath(std::string_view path)
 {
-	m_assets_path = path;
-	m_current_path = path;
+	m_assetsPath = path;
+	m_currentPath = path;
 }
 
 const fs::path& GameAssetsBrowser::GetAssetPath()
 {
-	return m_assets_path;
+	return m_assetsPath;
 }
 
 bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 {
-	std::string cpp_file = (m_current_path / script_name).string() + ".cpp";
-	std::string header_file = (m_current_path / script_name).string() + ".h";
+	std::string cpp_file = (m_currentPath / script_name).string() + ".cpp";
+	std::string header_file = (m_currentPath / script_name).string() + ".h";
 
 	std::ofstream fcpp(cpp_file);
 	if (!fcpp.is_open())
@@ -467,7 +500,7 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 		LOGERROR("Failed to verify paths");
 		return false;
 	}
-	if (!AddToScriptRegistry(m_current_path / script_name))
+	if (!AddToScriptRegistry(m_currentPath / script_name))
 	{
 		LOGERRORF("Failed to add {} to script registry", script_name);
 		return false;
@@ -488,11 +521,11 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 
 bool GameAssetsBrowser::AddToScriptRegistry(const fs::path& script_path) const
 {
-	std::ifstream register_file(m_game_script_register_file);
+	std::ifstream register_file(m_gameScriptRegisterFile);
 	std::stringstream modified_register_file_content;
 	modified_register_file_content << register_file.rdbuf();
 	std::string str = modified_register_file_content.str();
-	std::string file_relative = fs::relative(script_path, m_game_vsproj_file.parent_path() / "src").string();
+	std::string file_relative = fs::relative(script_path, m_gameVsprojFile.parent_path() / "src").string();
 	std::string script_name = fs::path(file_relative).filename().replace_extension("").string();
 
 	if (!file_relative.ends_with(".h"))
@@ -524,7 +557,7 @@ bool GameAssetsBrowser::AddToScriptRegistry(const fs::path& script_path) const
 		}
 		if (last_include.empty())
 		{
-			LOGERRORF("Invalid file: {}", m_game_script_register_file);
+			LOGERRORF("Invalid file: {}", m_gameScriptRegisterFile);
 			return false;
 		}
 
@@ -567,14 +600,14 @@ bool GameAssetsBrowser::AddToScriptRegistry(const fs::path& script_path) const
 			}
 			if (!valid)
 			{
-				LOGERRORF("register_scripts() is not valid in {}", m_game_script_register_file);
+				LOGERRORF("register_scripts() is not valid in {}", m_gameScriptRegisterFile);
 				register_file.close();
 				return false;
 			}
 		}
 		else
 		{
-			LOGERRORF("Can't find register_scripts() in {}", m_game_script_register_file);
+			LOGERRORF("Can't find register_scripts() in {}", m_gameScriptRegisterFile);
 			register_file.close();
 			return false;
 		}
@@ -582,7 +615,7 @@ bool GameAssetsBrowser::AddToScriptRegistry(const fs::path& script_path) const
 
 	register_file.close();
 
-	std::ofstream new_register_file(m_game_script_register_file);
+	std::ofstream new_register_file(m_gameScriptRegisterFile);
 	new_register_file << str;
 	new_register_file.close();
 	return true;
@@ -590,11 +623,11 @@ bool GameAssetsBrowser::AddToScriptRegistry(const fs::path& script_path) const
 
 bool GameAssetsBrowser::RemoveFromScriptRegistry(const fs::path& script_path) const
 {
-	std::ifstream register_file(m_game_script_register_file);
-	std::ofstream modified_register_file(m_game_script_register_file.parent_path() / "temp.cpp");
+	std::ifstream register_file(m_gameScriptRegisterFile);
+	std::ofstream modified_register_file(m_gameScriptRegisterFile.parent_path() / "temp.cpp");
 
 	std::string script_name = script_path.filename().replace_extension("").string();
-	std::string script_relative_path = fs::relative(script_path, m_game_vsproj_file.parent_path() / "src").replace_extension(".h").string();
+	std::string script_relative_path = fs::relative(script_path, m_gameVsprojFile.parent_path() / "src").replace_extension(".h").string();
 
 #ifdef _WIN32
 	for (char& c : script_relative_path)
@@ -629,11 +662,11 @@ bool GameAssetsBrowser::RemoveFromScriptRegistry(const fs::path& script_path) co
 	if (!removed_line)
 	{
 		LOGDEBUG("didn't modify ScriptRegister");
-		fs::remove(m_game_script_register_file.parent_path() / "temp.cpp");
+		fs::remove(m_gameScriptRegisterFile.parent_path() / "temp.cpp");
 	}
 	else
 	{
-		fs::rename(m_game_script_register_file.parent_path() / "temp.cpp", m_game_script_register_file);
+		fs::rename(m_gameScriptRegisterFile.parent_path() / "temp.cpp", m_gameScriptRegisterFile);
 	}
 
 	return true;
@@ -641,14 +674,14 @@ bool GameAssetsBrowser::RemoveFromScriptRegistry(const fs::path& script_path) co
 
 bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 {
-	fs::path file_relative = fs::relative(file_path_full, m_game_vsproj_file.parent_path());
+	fs::path file_relative = fs::relative(file_path_full, m_gameVsprojFile.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
 	std::string child_name = is_header ? "ClInclude" : "ClCompile";
 
 	pugi::xml_document doc;
 
-	pugi::xml_parse_result result = doc.load_file(m_game_vsproj_file.string().c_str());
+	pugi::xml_parse_result result = doc.load_file(m_gameVsprojFile.string().c_str());
 
 	if (!result)
 	{
@@ -667,9 +700,9 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 	pugi::xml_node headerfile = item_groupHeaders.append_child(child_name.c_str());
 	headerfile.append_attribute("Include").set_value(std::string(file_relative.string()).c_str());
 
-	if (!doc.save_file(m_game_vsproj_file.string().c_str()))
+	if (!doc.save_file(m_gameVsprojFile.string().c_str()))
 	{
-		LOGERRORF("Failed to save xml document: {}", m_game_vsproj_file.string().c_str());
+		LOGERRORF("Failed to save xml document: {}", m_gameVsprojFile.string().c_str());
 		return false;
 	}
 
@@ -678,7 +711,7 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 
 bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 {
-	fs::path file_relative = fs::relative(file_path_full, m_game_vsproj_file.parent_path());
+	fs::path file_relative = fs::relative(file_path_full, m_gameVsprojFile.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 
 	std::string xpath = is_header ? "//ItemGroup[ClInclude]" : "//ItemGroup[ClCompile]";
@@ -686,7 +719,7 @@ bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 
 	pugi::xml_document doc;
 
-	pugi::xml_parse_result result = doc.load_file(m_game_vsproj_file.string().c_str());
+	pugi::xml_parse_result result = doc.load_file(m_gameVsprojFile.string().c_str());
 
 	if (!result)
 	{
@@ -711,9 +744,9 @@ bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 		}
 	}
 
-	if (!doc.save_file(m_game_vsproj_file.string().c_str()))
+	if (!doc.save_file(m_gameVsprojFile.string().c_str()))
 	{
-		LOGERRORF("Failed to save xml document: {}", m_game_vsproj_file.string().c_str());
+		LOGERRORF("Failed to save xml document: {}", m_gameVsprojFile.string().c_str());
 		return false;
 	}
 
@@ -722,7 +755,7 @@ bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 
 bool GameAssetsBrowser::VerifyPaths()
 {
-	if (m_game_vsproj_file.empty())
+	if (m_gameVsprojFile.empty())
 	{
 		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
 		{
@@ -730,25 +763,25 @@ bool GameAssetsBrowser::VerifyPaths()
 			{
 				if (entry.path().filename().string().find("_Game") != std::string::npos)
 				{
-					m_game_vsproj_file = entry.path();
+					m_gameVsprojFile = entry.path();
 					break;
 				}
 			}
 		}
 	}
 
-	if (m_game_vsproj_file.empty())
+	if (m_gameVsprojFile.empty())
 	{
 		LOGERRORF("Failed to find game vcxproj file in {}", project::current_project.project_path);
 		return false;
 	}
 
-	if (m_game_script_register_file.empty())
+	if (m_gameScriptRegisterFile.empty())
 	{
-		m_game_script_register_file = m_game_vsproj_file.parent_path() / "src" / "game_core" / "ScriptRegister.cpp";
-		if (!fs::exists(m_game_script_register_file))
+		m_gameScriptRegisterFile = m_gameVsprojFile.parent_path() / "src" / "game_core" / "ScriptRegister.cpp";
+		if (!fs::exists(m_gameScriptRegisterFile))
 		{
-			LOGERRORF("can't find script register {}", m_game_script_register_file);
+			LOGERRORF("can't find script register {}", m_gameScriptRegisterFile);
 			return false;
 		}
 	}

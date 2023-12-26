@@ -9,10 +9,6 @@
 #include "GameAssetsBrowser.h"
 #include "TextEditor.h"
 
-#include <queue>
-#include <limits>
-#include <string>
-
 #include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
 

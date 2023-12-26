@@ -18,7 +18,11 @@ namespace Toad
 
 	sf::Texture* ResourceManager::GetTexture(std::string_view id)
 	{
-		return &m_textures[id.data()];
+		if (m_textures.contains(id.data()))
+		{
+			return &m_textures[id.data()];
+		}
+		return nullptr;
 	}
 
 	bool ResourceManager::RemoveTexture(std::string_view id)

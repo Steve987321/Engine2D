@@ -15,10 +15,10 @@ namespace Toad
 		const fs::path& GetAssetPath();
 
 	private:
-		fs::path m_assets_path;
-		fs::path m_current_path;
-		fs::path m_game_vsproj_file;
-		fs::path m_game_script_register_file;
+		fs::path m_assetsPath;
+		fs::path m_currentPath;
+		fs::path m_gameVsprojFile;
+		fs::path m_gameScriptRegisterFile;
 
 		bool CreateCPPScript(std::string_view script_name);
 		bool AddToScriptRegistry(const fs::path& script_path) const;
