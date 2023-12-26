@@ -21,7 +21,7 @@ namespace Toad
 			m_logFile.open(GetDocumentsFolder() + "\\" + logFileName, std::fstream::out);
 
 			// log the date in the beginning
-			LogToFile(GetDateStr("%Y %d %b \n"));
+			LogToFile(get_date_str("%Y %d %b \n"));
 		}
 		#endif
 	}
