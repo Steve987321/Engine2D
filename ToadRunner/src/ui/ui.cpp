@@ -30,6 +30,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGuiID project_load_popup_id = ImHashStr("LoadProject");
 	ImGuiID project_package_popup_id = ImHashStr("PackageProject");
 	ImGuiID save_scene_popup_id = ImHashStr("SaveScene");
+	ImGuiID scene_modify_popup_id = ImHashStr("SceneModifyPopup");
 	static bool project_load_popup_select = false;
 
 	static project::ProjectSettings settings{};
@@ -37,8 +38,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
 
-	static std::shared_ptr<Toad::Object> selected_obj = nullptr;
-	static std::shared_ptr<Toad::Sprite> selected_sprite = nullptr;
+	static Toad::Object* selected_obj = nullptr;
 
 	static std::string clipboard_data;
 
@@ -450,58 +450,248 @@ void ui::engine_ui(ImGuiContext* ctx)
 		static bool cursor_index_is_under = false;
 		static bool check_range = false;
 
-		for (auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
-		{
-			index++;
+		std::vector<std::string> scene_objects {};
+		scene_objects.reserve(Toad::Engine::Get().GetScene().objects_map.size());
 
-			if (ImGui::Selectable(name.c_str(), selected_objects.contains(name) || (selected_obj != nullptr && selected_obj->name == name)))
+		for (const auto& [obj_name, obj] : Toad::Engine::Get().GetScene().objects_map)
+		{
+			if (!obj->GetParent().empty())
 			{
-				if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != name)
-				{
-					if (selected_objects.contains(name))
-					{
-						selected_objects.erase(name);
-					}
-					else
-					{
-						selected_objects.insert(name);
-					}
-				}
-				else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != name)
-				{
-					check_range = true;
-					cursor_index = index;
-					cursor_index_is_under = cursor_index > prev_cursor_index;
-				}
-				else
-				{
-					prev_cursor_index = index;
-					selected_obj = obj;
-					selected_objects.clear();
-				}
+				continue;
 			}
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+
+			scene_objects.emplace_back(obj_name);
+
+			for (const std::string& name : obj->GetChildren())
 			{
-				if (selected_objects.empty())
-				{
-					selected_obj = obj;
-				}
-				prev_cursor_index = index;
-				if (!ImGui::IsPopupOpen("SceneModifyPopup"))
-				{
-					ImGui::OpenPopup("SceneModifyPopup");
-					ignore_mouse_click = true;
-				}
+				scene_objects.emplace_back(name);
 			}
 		}
 
+		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
+			{
+				index++;
+
+				if (obj->GetChildren().empty())
+				{
+					if (ImGui::Selectable(obj->name.c_str(), selected_objects.contains(obj->name) || (selected_obj != nullptr && selected_obj->name == obj->name)))
+					{
+						LOGDEBUGF("selectable pressed: {}", obj->name);
+						if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
+						{
+							if (selected_objects.contains(obj->name))
+							{
+								selected_objects.erase(obj->name);
+							}
+							else
+							{
+								selected_objects.insert(obj->name);
+							}
+						}
+						else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != obj->name)
+						{
+							check_range = true;
+							cursor_index = index;
+							cursor_index_is_under = cursor_index > prev_cursor_index;
+						}
+						else
+						{
+							prev_cursor_index = index;
+							selected_obj = obj;
+							selected_objects.clear();
+						}
+					}
+					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					{
+						if (selected_objects.empty())
+						{
+							selected_obj = obj;
+						}
+						prev_cursor_index = index;
+
+						ImGui::PushOverrideID(scene_modify_popup_id);
+						ImGui::OpenPopup("SceneModifyPopup");
+						ImGui::PopID();
+
+						ignore_mouse_click = true;
+					}
+				}
+				else
+				{
+					ImGuiTreeNodeFlags node_flags = 0;
+					node_flags |= ImGuiTreeNodeFlags_OpenOnArrow;
+					if (selected_objects.contains(obj->name) || (selected_obj != nullptr && selected_obj->name == obj->name))
+					{
+						node_flags |= ImGuiTreeNodeFlags_Selected;
+					}
+
+					if (ImGui::TreeNodeEx(obj->name.c_str(), node_flags))
+					{
+						// root/parent widget
+						if (ImGui::IsItemHovered())
+						{
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+							{
+								if (selected_objects.empty())
+								{
+									selected_obj = obj;
+								}
+								prev_cursor_index = index;
+								if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+								{
+									ImGui::PushOverrideID(scene_modify_popup_id);
+									ImGui::OpenPopup("SceneModifyPopup");
+									ImGui::PopID();
+									ignore_mouse_click = true;
+								}
+							}
+							else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
+								{
+									if (selected_objects.contains(obj->name))
+									{
+										selected_objects.erase(obj->name);
+									}
+									else
+									{
+										selected_objects.insert(obj->name);
+									}
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != obj->name)
+								{
+									check_range = true;
+									cursor_index = index;
+									cursor_index_is_under = cursor_index > prev_cursor_index;
+								}
+								else
+								{
+									prev_cursor_index = index;
+									selected_obj = obj;
+									selected_objects.clear();
+								}
+							}
+						}
+
+						for (Toad::Object* child : obj->GetChildrenAsObjects())
+						{
+							recursive_iterate_children(child);
+							if (ImGui::IsItemHovered())
+							{
+								if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+								{
+									if (selected_objects.empty())
+									{
+										selected_obj = child;
+									}
+									prev_cursor_index = index;
+									if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+									{
+										ImGui::PushOverrideID(scene_modify_popup_id);
+										ImGui::OpenPopup("SceneModifyPopup");
+										ImGui::PopID();
+										ignore_mouse_click = true;
+									}
+								}
+								else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+								{
+									if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != child->name)
+									{
+										if (selected_objects.contains(child->name))
+										{
+											selected_objects.erase(child->name);
+										}
+										else
+										{
+											selected_objects.insert(child->name);
+										}
+									}
+									else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != child->name)
+									{
+										check_range = true;
+										cursor_index = index;
+										cursor_index_is_under = cursor_index > prev_cursor_index;
+									}
+									else
+									{
+										prev_cursor_index = index;
+										selected_obj = obj;
+										selected_objects.clear();
+									}
+								}
+							}
+						}
+
+						ImGui::TreePop();
+					}
+					else
+					{
+						if (ImGui::IsItemHovered())
+						{
+							if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+							{
+								if (selected_objects.empty())
+								{
+									selected_obj = obj;
+								}
+								prev_cursor_index = index;
+								if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+								{
+									ImGui::PushOverrideID(scene_modify_popup_id);
+									ImGui::OpenPopup("SceneModifyPopup");
+									ImGui::PopID();
+									ignore_mouse_click = true;
+								}
+							}
+							else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+							{
+								if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
+								{
+									if (selected_objects.contains(obj->name))
+									{
+										selected_objects.erase(obj->name);
+									}
+									else
+									{
+										selected_objects.insert(obj->name);
+									}
+								}
+								else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != obj->name)
+								{
+									check_range = true;
+									cursor_index = index;
+									cursor_index_is_under = cursor_index > prev_cursor_index;
+								}
+								else
+								{
+									prev_cursor_index = index;
+									selected_obj = obj;
+									selected_objects.clear();
+								}
+							}
+						}
+					}
+				}
+			};
+		for (auto& name : scene_objects)
+		{
+			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+			// make sure we only iterate over root objects
+			if (!obj->GetParent().empty())
+			{
+				continue;
+			}
+
+			recursive_iterate_children(obj);
+		}
 		if (check_range)
 		{
 			std::vector<std::string> keys;
 			int origin = 0;
 			int j = 0;
-			for (const std::string& name : Toad::Engine::Get().GetScene().objects_map | std::views::keys)
+			for (const std::string& name : scene_objects)
 			{
+				LOGDEBUGF("{} {}", j, name);
 				j++;
 				if (name == selected_obj->name)
 				{
@@ -514,6 +704,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 				keys.push_back(name);
 			}
 
+			LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
+			
 			selected_objects.clear();
 			for (int i = origin; cursor_index_is_under ? i < static_cast<int>(cursor_index) : i > static_cast<int>(cursor_index) - 2; cursor_index_is_under ? i++ : i--)
 			{
@@ -559,6 +751,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::EndPopup();
 		}
 
+		ImGui::PushOverrideID(scene_modify_popup_id);
 		if (ImGui::BeginPopup("SceneModifyPopup"))
 		{
 			// multiple objects
@@ -591,12 +784,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			ImGui::EndPopup();
 		}
+		ImGui::PopID();
 
 		while (!remove_objects_queue.empty())
 		{
 			const std::string& front = remove_objects_queue.front();
+			selected_obj = nullptr;
 			selected_objects.erase(front);
-			Toad::Engine::Get().GetScene().RemoveFromScene(front);
+			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(front);
+			if (obj != nullptr)
+			{
+				obj->Destroy();
+			}
 			remove_objects_queue.pop();
 		}
 
@@ -666,8 +865,25 @@ void ui::engine_ui(ImGuiContext* ctx)
 			
 			ImGui::Text(selected_obj->name.c_str());
 
-			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj.get());
-			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj.get());
+			float pos_x = selected_obj->GetPosition().x;
+			float pos_y = selected_obj->GetPosition().y;
+			if (ImGui::DragFloat("x", &pos_x))
+			{
+				selected_obj->SetPosition({ pos_x, pos_y });
+			}
+			if (ImGui::DragFloat("y", &pos_y))
+			{
+				selected_obj->SetPosition({ pos_x, pos_y });
+			}
+
+			if (ImGui::Button("Test"))
+			{
+				auto child_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("child object"));
+				child_obj->SetParent(selected_obj);
+			}
+
+			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj);
+			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj);
 
 			// show sprite properties
 			if (sprite_obj != nullptr)
@@ -675,7 +891,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				auto& sprite = sprite_obj->GetSprite();
 
 				const sf::Texture* attached_texture = sprite.getTexture();
-				auto pos = sprite.getPosition();
+				//auto pos = sprite.getPosition();
 
 				ImGui::Text("texture");
 				ImGui::SameLine();
@@ -734,10 +950,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 					ImGui::EndDragDropTarget();
 				}
 
-				if (ImGui::DragFloat("X", &pos.x))
+				/*if (ImGui::DragFloat("X", &pos.x))
 					sprite.setPosition(pos);
 				if (ImGui::DragFloat("Y", &pos.y))
-					sprite.setPosition(pos);
+					sprite.setPosition(pos);*/
 
 				auto colorU32 = ImGui::ColorConvertU32ToFloat4(sprite.getColor().toInteger());
 				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
@@ -750,12 +966,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				auto& circle = circle_obj->GetCircle();
 
-				auto pos = circle.getPosition();
+				//auto pos = circle.getPosition();
 
-				if (ImGui::DragFloat("X", &pos.x))
+				/*if (ImGui::DragFloat("X", &pos.x))
 					circle.setPosition(pos);
 				if (ImGui::DragFloat("Y", &pos.y))
-					circle.setPosition(pos);
+					circle.setPosition(pos);*/
 
 				const auto& circle_col = circle.getFillColor();
 				float col[4] = {
