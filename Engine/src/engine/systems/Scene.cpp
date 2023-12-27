@@ -101,15 +101,31 @@ sf::IntRect GetRectFromJSON(json obj)
 template <typename T> 
 void LoadSceneObjects(json objects, Scene& scene)
 {
+	std::queue<std::pair<std::string, std::string>> set_object_parents_queue {};
+
 	for (const auto& object : objects.items())
 	{
 		auto& props = object.value()["properties"];
 		auto x = props["posx"].get<float>();
 		auto y = props["posy"].get<float>();
 
-		auto newobj = scene.AddToScene(T(object.key()));
+		Object* newobj = scene.AddToScene(T(object.key()));
 		Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 		Circle* circleobj = dynamic_cast<Circle*>(newobj);
+
+		std::string parent_name = props["parent"].get<std::string>();
+		if (!parent_name.empty())
+		{
+			Object* parent_obj = scene.GetSceneObject(parent_name);
+			if (parent_obj != nullptr)
+			{
+				newobj->SetParent(parent_obj);
+			}
+			else
+			{
+				set_object_parents_queue.emplace(newobj->name, parent_name);
+			}
+		}
 
 		if (circleobj != nullptr)
 		{
@@ -231,6 +247,18 @@ void LoadSceneObjects(json objects, Scene& scene)
 			}
 		}
 	}
+
+	while (!set_object_parents_queue.empty())
+	{
+		const auto& [child, parent] = set_object_parents_queue.front();
+		Object* child_obj = scene.GetSceneObject(child);
+		Object* parent_obj = scene.GetSceneObject(parent);
+
+		child_obj->SetParent(parent_obj);
+
+		set_object_parents_queue.pop();
+	}
+
 }
 
 Scene LoadScene(const std::filesystem::path& path)

@@ -93,8 +93,10 @@ namespace Toad
 
 		const auto& c = GetCircle();
 
-		circle_properties["posx"] = c.getPosition().x;
-		circle_properties["posy"] = c.getPosition().y;
+		circle_properties["parent"] = GetParent();
+
+		circle_properties["posx"] = GetPosition().x;
+		circle_properties["posy"] = GetPosition().y;
 		circle_properties["fill_col"] = c.getFillColor().toInteger();
 		circle_properties["outline_col"] = c.getOutlineColor().toInteger();
 		circle_properties["radius"] = c.getRadius();

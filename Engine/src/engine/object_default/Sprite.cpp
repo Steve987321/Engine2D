@@ -105,8 +105,10 @@ json Sprite::Serialize()
 
 	const auto& s = GetSprite();
 
-	sprite_properties["posx"] = s.getPosition().x;
-	sprite_properties["posy"] = s.getPosition().y;
+	sprite_properties["parent"] = GetParent();
+
+	sprite_properties["posx"] = GetPosition().x;
+	sprite_properties["posy"] = GetPosition().y;
 	sprite_properties["fill_col"] = s.getColor().toInteger();
 	sprite_properties["scalex"] = s.getScale().x;
 	sprite_properties["scaley"] = s.getScale().y;

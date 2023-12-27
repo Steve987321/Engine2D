@@ -62,7 +62,6 @@ struct ENGINE_API Scene
 		object.name = objName;
 		objects_map.insert({ objName, std::make_shared<T>(object) });
 		return objects_map[objName].get();
-
 	}
 
 	///
