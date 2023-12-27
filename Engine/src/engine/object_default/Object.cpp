@@ -92,10 +92,14 @@ namespace Toad
 		if (!m_parent.empty())
 		{
 			m_currentScene.objects_map[m_parent]->RemoveChild(name);
+			m_parent.clear();
 		}
 
-		m_parent = object->name;
-		object->AddChild(this);
+		if (object != nullptr)
+		{
+			m_parent = object->name;
+			object->AddChild(this);
+		}
 	}
 
 	const std::string& Object::GetParent()
@@ -105,15 +109,8 @@ namespace Toad
 
 	void Object::Destroy()
 	{
-		if (!m_parent.empty())
-		{
-			Object* obj = m_currentScene.GetSceneObject(m_parent);
-			if (obj != nullptr)
-			{
-				obj->RemoveChild(name);
-			}
-		}
-		m_currentScene.objects_map.erase(name);
+		SetParent(nullptr);
+		m_currentScene.RemoveFromScene(name);
 	}
 
 	std::shared_ptr<Script> Object::GetScript(std::string_view name)
