@@ -41,11 +41,14 @@ public:
 	virtual void SetPosition(const Vec2f& position);
 
 	const std::set<std::string>& GetChildren();
+	const std::vector<Object*>& GetChildrenAsObjects();
 	bool AddChild(Object* object);
 	bool RemoveChild(std::string_view obj_name);
 
 	void SetParent(Object* object);
 	const std::string& GetParent();
+
+	void Destroy();
 
 	void AddScript(std::shared_ptr<Script> script);
 

@@ -46,6 +46,23 @@ namespace Toad
 		return m_children;
 	}
 
+	std::vector<Object*> Object::GetChildrenAsObjects() const
+	{
+		std::vector<Object*> res {};
+		res.reserve(m_children.size());
+
+		for (const std::string& child_name : m_children)
+		{
+			Object* obj = m_currentScene.GetSceneObject(child_name);
+			if (obj != nullptr)
+			{
+				res.push_back(obj);
+			}
+		}
+
+		return res;
+	}
+
 	bool Object::AddChild(Object* object)
 	{
 		assert(object->GetParent() == this->name && "make sure this is already a parent of object");
@@ -84,6 +101,19 @@ namespace Toad
 	const std::string& Object::GetParent()
 	{
 		return m_parent;
+	}
+
+	void Object::Destroy()
+	{
+		if (!m_parent.empty())
+		{
+			Object* obj = m_currentScene.GetSceneObject(m_parent);
+			if (obj != nullptr)
+			{
+				obj->RemoveChild(name);
+			}
+		}
+		m_currentScene.objects_map.erase(name);
 	}
 
 	std::shared_ptr<Script> Object::GetScript(std::string_view name)
