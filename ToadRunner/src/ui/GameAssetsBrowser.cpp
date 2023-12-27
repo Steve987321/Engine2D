@@ -59,6 +59,8 @@ void list_dir_contents(const fs::path& path)
 
 void GameAssetsBrowser::Show()
 {
+	loaded_scene = false;
+
 	if (!m_assetsPath.empty())
 		list_dir_contents(m_assetsPath);
 
@@ -375,6 +377,7 @@ void GameAssetsBrowser::Show()
 					if (ext == ".TSCENE")
 					{
 						Engine::Get().SetScene(LoadScene(selected));
+						loaded_scene = true;
 					}
 					selected = entry.path();
 				}

@@ -14,6 +14,8 @@ namespace Toad
 		void SetAssetPath(std::string_view path);
 		const fs::path& GetAssetPath();
 
+		bool loaded_scene = false;
+
 	private:
 		fs::path m_assetsPath;
 		fs::path m_currentPath;

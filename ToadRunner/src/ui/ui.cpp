@@ -1164,6 +1164,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ext == ".TSCENE")
 			{
 				Toad::Engine::Get().SetScene(Toad::LoadScene(file));
+				selected_obj = nullptr;
 			}
 		}
 	}
@@ -1173,6 +1174,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::Begin("Game Assets");
 
 	asset_browser.Show();
+	if (asset_browser.loaded_scene)
+	{
+		selected_obj = nullptr;
+	}
 
 	ImGui::End();
 
