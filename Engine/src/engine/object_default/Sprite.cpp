@@ -23,6 +23,18 @@ sf::Sprite& Sprite::GetSprite()
 	return m_sprite;
 }
 
+const Vec2f& Sprite::GetPosition()
+{
+	return m_sprite.getPosition();
+}
+
+void Sprite::SetPosition(const Vec2f& position)
+{
+	Object::SetPosition(position);
+
+	m_sprite.setPosition(position);
+}
+
 std::filesystem::path& Sprite::GetTextureSourcePath()
 {
 	return m_texture_source_path;
@@ -122,7 +134,7 @@ json Sprite::Serialize()
 void Sprite::Render(sf::RenderWindow& window)
 {
 	// update attached scripts
-	for (auto& script : m_attached_scripts | std::views::values)
+	for (auto& script : m_attachedScripts | std::views::values)
 	{
 		script->OnUpdate(this);
 	}
@@ -138,7 +150,7 @@ void Sprite::Render(sf::RenderTexture& texture)
 void Sprite::Update()
 {
 	// update attached scripts
-	for (auto script : m_attached_scripts | std::views::values)
+	for (auto script : m_attachedScripts | std::views::values)
 	{
 		script->OnUpdate(this);
 	}

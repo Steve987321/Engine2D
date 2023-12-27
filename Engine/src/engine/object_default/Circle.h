@@ -14,6 +14,9 @@ namespace Toad
 
 		std::filesystem::path& GetTextureSourcePath();
 
+		const Vec2f& GetPosition() override;
+		void SetPosition(const Vec2f& position) override;
+
 		json Serialize();
 
 	private:

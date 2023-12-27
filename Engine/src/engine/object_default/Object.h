@@ -2,8 +2,10 @@
 
 #include <EngineCore.h>
 
+#include "engine/Types.h"
 #include "nlohmann/json.hpp"
 #include "engine/default_scripts/Script.h"
+#include "engine/systems/Scene.h"
 
 namespace Toad
 {
@@ -34,6 +36,17 @@ public:
 
 	virtual void Update();
 
+	virtual const Vec2f& GetPosition();
+
+	virtual void SetPosition(const Vec2f& position);
+
+	const std::set<std::string>& GetChildren();
+	bool AddChild(Object* object);
+	bool RemoveChild(std::string_view obj_name);
+
+	void SetParent(Object* object);
+	const std::string& GetParent();
+
 	void AddScript(std::shared_ptr<Script> script);
 
 	std::shared_ptr<Script> GetScript(std::string_view name);
@@ -45,12 +58,12 @@ public:
 	template <class T>
 	bool RemoveScript()
 	{
-		for (const auto& script : m_attached_scripts | std::views::values)
+		for (const auto& script : m_attachedScripts | std::views::values)
 		{
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
 			{
-				m_attached_scripts.erase(script->GetName());
+				m_attachedScripts.erase(script->GetName());
 				return true;
 			}
 		}
@@ -61,7 +74,7 @@ public:
 	template <class T>
 	T* GetScript()
 	{
-		for (const auto& script : m_attached_scripts | std::views::values)
+		for (const auto& script : m_attachedScripts | std::views::values)
 		{
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
@@ -75,7 +88,12 @@ public:
 
 protected:
 	// attached scripts 
-	std::unordered_map<std::string, std::shared_ptr<Script> > m_attached_scripts {};
+	std::unordered_map<std::string, std::shared_ptr<Script> > m_attachedScripts {};
+
+	std::set<std::string> m_children{};
+	std::string m_parent;
+
+	Scene& m_currentScene;
 };
 
 }

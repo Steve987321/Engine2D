@@ -22,6 +22,18 @@ namespace Toad
 		return m_texture_source_path;
 	}
 
+	const Vec2f& Circle::GetPosition()
+	{
+		return m_circle.getPosition();
+	}
+
+	void Circle::SetPosition(const Vec2f& position)
+	{
+		Object::SetPosition(position);
+
+		m_circle.setPosition(position);
+	}
+
 	json Circle::Serialize()
 	{
 		json c_data;
@@ -111,7 +123,7 @@ namespace Toad
 
 	void Circle::Start()
 	{
-		for (auto script : m_attached_scripts | std::views::values)
+		for (auto script : m_attachedScripts | std::views::values)
 		{
 			script->OnStart(this);
 		}
@@ -132,7 +144,7 @@ namespace Toad
 	void Circle::Update()
 	{
 		// update attached scripts
-		for (const auto& script : m_attached_scripts | std::views::values)
+		for (const auto& script : m_attachedScripts | std::views::values)
 		{
 			script->OnUpdate(this);
 		}
