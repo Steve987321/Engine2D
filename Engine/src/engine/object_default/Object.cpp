@@ -91,7 +91,8 @@ namespace Toad
 	{
 		if (!m_parent.empty())
 		{
-			m_currentScene.objects_map[m_parent]->RemoveChild(name);
+			Object* parent_obj = m_currentScene.GetSceneObject(m_parent);
+			parent_obj->RemoveChild(name);
 			m_parent.clear();
 		}
 
@@ -107,8 +108,22 @@ namespace Toad
 		return m_parent;
 	}
 
-	void Object::Destroy()
+	void Object::Destroy(bool destroy_children)
 	{
+		Object* parent_obj = m_currentScene.GetSceneObject(m_parent);
+
+		for (Object* child : GetChildrenAsObjects())
+		{
+			if (destroy_children)
+			{
+				child->Destroy(true);
+			}
+			else
+			{
+				child->SetParent(parent_obj);
+			}
+		}
+
 		SetParent(nullptr);
 		m_currentScene.RemoveFromScene(name);
 	}
