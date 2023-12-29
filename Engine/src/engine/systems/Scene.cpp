@@ -147,13 +147,19 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 				if (has_texture)
 				{
 					std::string path_str = props["texture_loc"].get<std::string>();
-#ifdef TOAD_EDITOR
-					sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
-#else
-					sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
-#endif
+
+					sf::Texture* new_tex = Engine::Get().GetResourceManager().GetTexture(path_str);
 					sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
-					sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+
+					if (new_tex == nullptr)
+					{
+#ifdef TOAD_EDITOR
+						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
+#else
+						sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+#endif
+						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+					}
 
 					circle.setTexture(new_tex);
 					circle.setTextureRect(tex_rect);
@@ -178,15 +184,22 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 				if (has_texture)
 				{
 					std::string path_str = props["texture_loc"].get<std::string>();
+
+					sf::Texture* new_tex = Engine::Get().GetResourceManager().GetTexture(path_str);
+					sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
+
+					if (new_tex == nullptr)
+					{
 #ifdef TOAD_EDITOR
-					sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
+						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
 #else
-					sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+						sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
 #endif
-					sf::IntRect texrect = GetRectFromJSON(props["texture_rect"]);
-					sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+					}
+
 					sprite.setTexture(*new_tex);
-					sprite.setTextureRect(texrect);
+					sprite.setTextureRect(tex_rect);
 				}
 
 				sprite.setPosition({ x, y });

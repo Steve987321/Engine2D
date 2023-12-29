@@ -10,7 +10,7 @@ namespace Toad
 	{
 		if (m_textures.contains(id.data()))
 		{
-			LOGWARNF("[ResourceManager] Texture {} is getting replaced", id.data());
+			LOGWARNF("[ResourceManager] Texture {} already exists and is getting replaced", id.data());
 		}
 		m_textures[id.data()] = sf::Texture(tex);
 		return &m_textures[id.data()];
