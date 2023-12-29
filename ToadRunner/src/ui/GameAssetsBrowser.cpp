@@ -376,7 +376,7 @@ void GameAssetsBrowser::Show()
 				{
 					if (ext == ".TSCENE")
 					{
-						Engine::Get().SetScene(LoadScene(selected));
+						Engine::Get().SetScene(LoadScene(selected, m_assetsPath));
 						loaded_scene = true;
 					}
 					selected = entry.path();

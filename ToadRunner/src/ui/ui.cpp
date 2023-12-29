@@ -476,7 +476,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					if (ImGui::Selectable(obj->name.c_str(), selected_objects.contains(obj->name) || (selected_obj != nullptr && selected_obj->name == obj->name)))
 					{
-						LOGDEBUGF("selectable pressed: {}", obj->name);
 						if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
 						{
 							if (selected_objects.contains(obj->name))
@@ -691,7 +690,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			int j = 0;
 			for (const std::string& name : scene_objects)
 			{
-				LOGDEBUGF("{} {}", j, name);
 				j++;
 				if (name == selected_obj->name)
 				{
@@ -704,7 +702,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				keys.push_back(name);
 			}
 
-			LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
+			//LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
 			
 			selected_objects.clear();
 			for (int i = origin; cursor_index_is_under ? i < static_cast<int>(cursor_index) : i > static_cast<int>(cursor_index) - 2; cursor_index_is_under ? i++ : i--)
@@ -1163,7 +1161,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ext == ".TSCENE")
 			{
-				Toad::Engine::Get().SetScene(Toad::LoadScene(file));
+				Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
 				selected_obj = nullptr;
 			}
 		}

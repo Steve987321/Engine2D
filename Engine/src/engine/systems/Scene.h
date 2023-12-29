@@ -17,7 +17,7 @@ struct ENGINE_API Scene
 	std::string name;
 
 	// scene path
-	std::string path;
+	std::filesystem::path path;
 
 	// holds object instances in the scene
 	std::unordered_map < std::string, std::shared_ptr<Object> > objects_map;
@@ -77,11 +77,11 @@ struct ENGINE_API Scene
 	Object* GetSceneObject(std::string_view obj_name);
 };
 
-	// to make sure scripts are added and loaded to objects make sure to update script registry before calling this function
-ENGINE_API Scene LoadScene(const std::filesystem::path& path);
+// to make sure scripts are added and loaded to objects make sure to update script registry before calling this function
+// supply asset_folder only when in editor so it nows where to search for textures in the project 
+ENGINE_API Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder = {});
 
-// for path don't specify file name only the folder to save to 
-// TODO: handle scene indexing 
+// for path specify only the folder to save to 
 ENGINE_API void SaveScene(const Scene& scene, const std::filesystem::path& path);
 
 }

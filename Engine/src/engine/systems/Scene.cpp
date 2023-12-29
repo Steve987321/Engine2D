@@ -99,152 +99,171 @@ sf::IntRect GetRectFromJSON(json obj)
 }
 
 template <typename T> 
-void LoadSceneObjects(json objects, Scene& scene)
+void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {})
 {
+#ifdef TOAD_EDITOR
+	assert(!asset_folder.empty() && "asset_folder argument should be used when in toad editor");
+#endif
+
 	std::queue<std::pair<std::string, std::string>> set_object_parents_queue {};
 
 	for (const auto& object : objects.items())
 	{
-		auto& props = object.value()["properties"];
-		auto x = props["posx"].get<float>();
-		auto y = props["posy"].get<float>();
-
-		Object* newobj = scene.AddToScene(T(object.key()));
-		Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
-		Circle* circleobj = dynamic_cast<Circle*>(newobj);
-
-		std::string parent_name = props["parent"].get<std::string>();
-		if (!parent_name.empty())
+		try
 		{
-			Object* parent_obj = scene.GetSceneObject(parent_name);
-			if (parent_obj != nullptr)
+			auto& props = object.value()["properties"];
+			auto x = props["posx"].get<float>();
+			auto y = props["posy"].get<float>();
+
+			Object* newobj = scene.AddToScene(T(object.key()));
+			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
+			Circle* circleobj = dynamic_cast<Circle*>(newobj);
+
+			std::string parent_name = props["parent"].get<std::string>();
+			if (!parent_name.empty())
 			{
-				newobj->SetParent(parent_obj);
-			}
-			else
-			{
-				set_object_parents_queue.emplace(newobj->name, parent_name);
-			}
-		}
-
-		if (circleobj != nullptr)
-		{
-			auto& circle = circleobj->GetCircle();
-
-			// props 
-			sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
-			sf::Color outline_col = sf::Color(props["outline_col"].get<int>());
-			sf::Vector2f scale = { props["scalex"].get<float>(), props["scaley"].get<float>() };
-			float radius = props["radius"].get<float>();
-			bool has_texture = props["has_texture"].get<bool>();
-
-			if (has_texture)
-			{
-				std::string path_str = props["texture_loc"].get<std::string>();
-				sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
-				sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
-				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
-
-				circle.setTexture(new_tex);
-				circle.setTextureRect(tex_rect);
-			}
-			circle.setFillColor(fill_col);
-			circle.setOutlineColor(outline_col);
-			circle.setScale(scale);
-			circle.setRadius(radius);
-			circle.setPosition({ x, y });
-		}
-		else if (spriteobj != nullptr)
-		{
-			auto& sprite = spriteobj->GetSprite();
-
-			// props
-			sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
-			sf::Vector2f scale = sf::Vector2f{ props["scalex"].get<float>(), props["scaley"].get<float>() };
-			
-			float rotation = props["rotation"].get<float>();
-			bool has_texture = props["has_texture"].get<bool>();
-
-			if (has_texture)
-			{
-				std::string path_str = props["texture_loc"].get<std::string>();
-				sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
-				sf::IntRect texrect = GetRectFromJSON(props["texture_rect"]);
-				sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
-				sprite.setTexture(*new_tex);
-				sprite.setTextureRect(texrect);
-			}
-
-			sprite.setPosition({ x, y });
-			sprite.setColor(fill_col);
-			sprite.setRotation(rotation);
-			sprite.setColor(fill_col);
-			sprite.setScale(scale);
-		}
-
-		for (const auto& script : object.value()["scripts"].items())
-		{
-			auto gscripts = Engine::Get().GetGameScriptsRegister();
-			if (gscripts.empty())
-			{
-				LOGWARN("Scripts register is empty");
-			}
-			if (auto it = gscripts.find(script.key()); it != gscripts.end())
-			{
-				newobj->AddScript(it->second->Clone());
-				auto new_attached_script = newobj->GetScript(it->first);
-				auto& vars = new_attached_script->GetReflection().Get();
-				int i = 0;
-				for (const auto& script_vars : script.value().items())
+				Object* parent_obj = scene.GetSceneObject(parent_name);
+				if (parent_obj != nullptr)
 				{
-					switch (i++)
-					{
-					case (int)TypesMap::b:
-						for (const auto& j : script_vars.value().items())
-						{
-							*vars.b[j.key()] = j.value().get<bool>();
-						}
-						break;
-					case (int)TypesMap::flt:
-						for (const auto& j : script_vars.value().items())
-						{
-							*vars.flt[j.key()] = j.value().get<float>();
-						}
-						break;
-					case (int)TypesMap::i8:
-						for (const auto& j : script_vars.value().items())
-						{
-							*vars.i8[j.key()] = j.value().get<int8_t>();
-						}
-						break;
-					case (int)TypesMap::i16:
-						for (const auto& j : script_vars.value().items())
-						{
-							*vars.i16[j.key()] = j.value().get<int16_t>();
-						}
-						break;
-					case (int)TypesMap::i32:
-						for (const auto& j : script_vars.value().items())
-						{
-							*vars.i32[j.key()] = j.value().get<int32_t>();
-						}
-						break;
-					case (int)TypesMap::str:
-						for (const auto& j : script_vars.value().items())
-						{
-							*vars.str[j.key()] = j.value().get<std::string>();
-						}
-						break;
-					default:
-						LOGWARNF("Unknown type for script_vars iteration: {} key: {} value: {}", i, script_vars.key(), script_vars.value());
-						break;
-					}
+					newobj->SetParent(parent_obj);
+				}
+				else
+				{
+					set_object_parents_queue.emplace(newobj->name, parent_name);
 				}
 			}
-			else
+
+			if (circleobj != nullptr)
 			{
-				LOGWARNF("Script not found needed by scene with name: {}", script.key());
+				auto& circle = circleobj->GetCircle();
+
+				// props 
+				sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
+				sf::Color outline_col = sf::Color(props["outline_col"].get<int>());
+				sf::Vector2f scale = { props["scalex"].get<float>(), props["scaley"].get<float>() };
+				float radius = props["radius"].get<float>();
+				bool has_texture = props["has_texture"].get<bool>();
+
+				if (has_texture)
+				{
+					std::string path_str = props["texture_loc"].get<std::string>();
+#ifdef TOAD_EDITOR
+					sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
+#else
+					sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+#endif
+					sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
+					sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+
+					circle.setTexture(new_tex);
+					circle.setTextureRect(tex_rect);
+				}
+				circle.setFillColor(fill_col);
+				circle.setOutlineColor(outline_col);
+				circle.setScale(scale);
+				circle.setRadius(radius);
+				circle.setPosition({ x, y });
 			}
+			else if (spriteobj != nullptr)
+			{
+				auto& sprite = spriteobj->GetSprite();
+
+				// props
+				sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
+				sf::Vector2f scale = sf::Vector2f{ props["scalex"].get<float>(), props["scaley"].get<float>() };
+
+				float rotation = props["rotation"].get<float>();
+				bool has_texture = props["has_texture"].get<bool>();
+
+				if (has_texture)
+				{
+					std::string path_str = props["texture_loc"].get<std::string>();
+#ifdef TOAD_EDITOR
+					sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
+#else
+					sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+#endif
+					sf::IntRect texrect = GetRectFromJSON(props["texture_rect"]);
+					sf::Texture* new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+					sprite.setTexture(*new_tex);
+					sprite.setTextureRect(texrect);
+				}
+
+				sprite.setPosition({ x, y });
+				sprite.setColor(fill_col);
+				sprite.setRotation(rotation);
+				sprite.setColor(fill_col);
+				sprite.setScale(scale);
+			}
+
+			for (const auto& script : object.value()["scripts"].items())
+			{
+				auto gscripts = Engine::Get().GetGameScriptsRegister();
+				if (gscripts.empty())
+				{
+					LOGWARN("Scripts register is empty");
+				}
+				if (auto it = gscripts.find(script.key()); it != gscripts.end())
+				{
+					newobj->AddScript(it->second->Clone());
+					auto new_attached_script = newobj->GetScript(it->first);
+					auto& vars = new_attached_script->GetReflection().Get();
+					int i = 0;
+					for (const auto& script_vars : script.value().items())
+					{
+						switch (i++)
+						{
+						case (int)TypesMap::b:
+							for (const auto& j : script_vars.value().items())
+							{
+								*vars.b[j.key()] = j.value().get<bool>();
+							}
+							break;
+						case (int)TypesMap::flt:
+							for (const auto& j : script_vars.value().items())
+							{
+								*vars.flt[j.key()] = j.value().get<float>();
+							}
+							break;
+						case (int)TypesMap::i8:
+							for (const auto& j : script_vars.value().items())
+							{
+								*vars.i8[j.key()] = j.value().get<int8_t>();
+							}
+							break;
+						case (int)TypesMap::i16:
+							for (const auto& j : script_vars.value().items())
+							{
+								*vars.i16[j.key()] = j.value().get<int16_t>();
+							}
+							break;
+						case (int)TypesMap::i32:
+							for (const auto& j : script_vars.value().items())
+							{
+								*vars.i32[j.key()] = j.value().get<int32_t>();
+							}
+							break;
+						case (int)TypesMap::str:
+							for (const auto& j : script_vars.value().items())
+							{
+								*vars.str[j.key()] = j.value().get<std::string>();
+							}
+							break;
+						default:
+							LOGWARNF("Unknown type for script_vars iteration: {} key: {} value: {}", i, script_vars.key(), script_vars.value());
+							break;
+						}
+					}
+				}
+				else
+				{
+					LOGWARNF("Script not found needed by scene with name: {}", script.key());
+				}
+			}
+		}
+		catch(json::type_error& e)
+		{
+			LOGERRORF("JSON type error: {}", e.what());
 		}
 	}
 
@@ -261,7 +280,7 @@ void LoadSceneObjects(json objects, Scene& scene)
 
 }
 
-Scene LoadScene(const std::filesystem::path& path)
+Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder)
 {
 	std::ifstream in(path);
 
@@ -282,13 +301,14 @@ Scene LoadScene(const std::filesystem::path& path)
 	}
 
 	Scene scene;
+	scene.path = path;
 	scene.name = path.filename().string();
 
 	if (data.contains("objects"))
 	{
 		auto objects = data["objects"];
-		LoadSceneObjects<Circle>(objects["circles"], scene);
-		LoadSceneObjects<Sprite>(objects["sprites"], scene);
+		LoadSceneObjects<Circle>(objects["circles"], scene, asset_folder);
+		LoadSceneObjects<Sprite>(objects["sprites"], scene, asset_folder);
 	}
 
 	return scene;
