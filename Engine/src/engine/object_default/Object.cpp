@@ -27,7 +27,7 @@ namespace Toad
 
 	const Vec2f& Object::GetPosition()
 	{
-		return { -1, -1 };
+		return { 0, 0 };
 	}
 
 	void Object::SetPosition(const Vec2f& position)
@@ -36,7 +36,7 @@ namespace Toad
 
 		for (const std::string& child : m_children)
 		{
-			auto& obj = m_currentScene.objects_map[child];
+			Object* obj = m_currentScene.GetSceneObject(child);
 			obj->SetPosition(obj->GetPosition() + (position - current_position));
 		}
 	}
