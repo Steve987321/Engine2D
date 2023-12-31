@@ -1,6 +1,7 @@
 #pragma once
 
 #include <EngineCore.h>
+#include "engine/Engine.h"
 
 #include "engine/Types.h"
 #include "nlohmann/json.hpp"
@@ -24,7 +25,6 @@ public:
 
 	Object();
 	explicit Object(std::string_view name);
-
 	virtual ~Object();
 
 	virtual void Start();
