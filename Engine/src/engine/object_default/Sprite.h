@@ -16,7 +16,7 @@ public:
 	void SetPosition(const Vec2f& position) override;
 
 	std::filesystem::path& GetTextureSourcePath();
-	void SetTexture(const std::filesystem::path& relative_path, const sf::Texture& texture);
+	void SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture);
 	json Serialize();
 
 private:
@@ -24,6 +24,7 @@ private:
 	void Render(sf::RenderTexture& texture) override;
 	void Update() override;
 
+private:
 	sf::Sprite m_sprite;
 	std::filesystem::path m_texture_source_path;
 };

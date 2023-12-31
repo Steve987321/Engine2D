@@ -22,6 +22,12 @@ namespace Toad
 		return m_texture_source_path;
 	}
 
+	void Circle::SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture)
+	{
+		m_texture_source_path = relative_path;
+		m_circle.setTexture(texture, true);
+	}
+
 	const Vec2f& Circle::GetPosition()
 	{
 		return m_circle.getPosition();
