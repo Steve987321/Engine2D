@@ -1,7 +1,6 @@
 #pragma once
 
 #include <EngineCore.h>
-#include "engine/Engine.h"
 
 #include "engine/Types.h"
 #include "nlohmann/json.hpp"
