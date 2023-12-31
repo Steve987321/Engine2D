@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#include "EngineCore.h"
-
 #include "Engine.h"
 #include "Settings.h"
 
@@ -318,6 +316,7 @@ void Engine::LoadGameScripts()
 			ReflectVarsCopy vars;
 			i->second->GetReflection().Get().copy(vars);
 			prev_scripts[i->first] = vars;
+
 			obj->RemoveScript(i->first);
 			i = scripts.begin();
 		}
