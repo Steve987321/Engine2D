@@ -6,6 +6,8 @@
 
 namespace Toad
 {
+	ResourceManager::ResourceManager() = default;
+
 	sf::Texture* ResourceManager::AddTexture(std::string_view id, const sf::Texture& tex)
 	{
 		if (m_textures.contains(id.data()))
@@ -37,9 +39,62 @@ namespace Toad
 		return false;
 	}
 
+	std::unordered_map<std::string, AudioSource>& ResourceManager::GetAudioSources()
+	{
+		return m_audioSources;
+	}
+
+	AudioSource* ResourceManager::AddAudioSource(std::string_view id, const AudioSource& sound_buffer)
+	{
+		if (m_audioSources.contains(id.data()))
+		{
+			LOGDEBUGF("{}", m_audioSources[id.data()].sound_buffer.getSampleCount());
+			LOGWARNF("[ResourceManager] AudioSource {} already exists and is getting replaced", id.data());
+		}
+		m_audioSources[id.data()] = AudioSource(sound_buffer);
+		return &m_audioSources[id.data()];
+	}
+
+	AudioSource* ResourceManager::GetAudioSource(std::string_view id)
+	{
+		if (m_audioSources.contains(id.data()))
+		{
+			return &m_audioSources[id.data()];
+		}
+		return nullptr;
+	}
+
+	bool ResourceManager::RemoveAudioSource(std::string_view id)
+	{
+		if (auto it = m_audioSources.find(id.data());
+			it != m_audioSources.end())
+		{
+			it->second.has_valid_buffer = false;
+			it->second.sound_buffer = {};
+			return true;
+		}
+
+		return false;
+	}
+
 	void ResourceManager::Clear()
 	{
 		m_textures.clear();
+		m_audioSources.clear();
+	}
+
+	ResourceManager ResourceManager::Deserialize(const nlohmann::json& data)
+	{
+		ResourceManager m;
+
+		return m;
+	}
+
+	nlohmann::json ResourceManager::Serialize()
+	{
+		nlohmann::json data;
+
+		return data;
 	}
 
 	std::unordered_map<std::string, sf::Texture>& ResourceManager::GetTextures()

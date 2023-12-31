@@ -11,4 +11,5 @@ struct AudioSource
 	std::filesystem::path full_path;
 	std::filesystem::path relative_path;
 	sf::SoundBuffer sound_buffer;
+	bool has_valid_buffer;
 };

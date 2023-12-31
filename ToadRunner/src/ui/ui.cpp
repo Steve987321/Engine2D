@@ -2,6 +2,9 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "Engine/Engine.h"
+
+#include "EngineMeta.h"
+
 #include "ui.h"
 
 #include "imgui-SFML.h"
@@ -742,6 +745,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
 				}
+				if (ImGui::MenuItem("Audio"))
+				{
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Audio("Audio"));
+				}
 
 				ImGui::EndMenu();
 			}
@@ -874,22 +881,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 				selected_obj->SetPosition({ pos_x, pos_y });
 			}
 
-			if (ImGui::Button("Test"))
-			{
-				auto child_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("child object"));
-				child_obj->SetParent(selected_obj);
-			}
+			//if (ImGui::Button("Test"))
+			//{
+			//	auto child_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("child object"));
+			//	child_obj->SetParent(selected_obj);
+			//}
 
 			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj);
 			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj);
+			auto audio_obj = dynamic_cast<Toad::Audio*>(selected_obj);
 
-			// show sprite properties
 			if (sprite_obj != nullptr)
 			{
 				auto& sprite = sprite_obj->GetSprite();
 
 				const sf::Texture* attached_texture = sprite.getTexture();
-				//auto pos = sprite.getPosition();
 
 				ImGui::Text("texture");
 				ImGui::SameLine();
@@ -916,7 +922,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						std::filesystem::path src = *(std::string*)payload->Data;
 						do
 						{
-							if (!src.has_extension() && (src.extension().string() != ".jpg" || src.extension().string() != ".png")) 
+							if (!src.has_extension() || (src.extension().string() != ".jpg" && src.extension().string() != ".png")) 
 							{
 								break;
 							}
@@ -926,7 +932,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 							if (resource_manager.GetTextures().contains(relative.string()))
 							{
 								sf::Texture* managed_texture = resource_manager.GetTexture(relative.string());
-								sprite_obj->SetTexture(relative, *managed_texture);
+								sprite_obj->SetTexture(relative, managed_texture);
 							}
 							else
 							{
@@ -938,7 +944,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 								sf::Texture* managed_texture = resource_manager.AddTexture(relative.string(), new_texture);
 								if (managed_texture != nullptr)
 								{
-									sprite_obj->SetTexture(relative, *managed_texture);
+									sprite_obj->SetTexture(relative, managed_texture);
 								}
 							}
 
@@ -959,17 +965,68 @@ void ui::engine_ui(ImGuiContext* ctx)
 					sprite.setColor(sf::Color(ImGui::ColorConvertFloat4ToU32({ col[0], col[1], col[2], col[3] })));
 			}
 
-			// show circle properties
 			else if (circle_obj != nullptr)
 			{
 				auto& circle = circle_obj->GetCircle();
 
-				//auto pos = circle.getPosition();
+				const sf::Texture* attached_texture = circle.getTexture();
 
-				/*if (ImGui::DragFloat("X", &pos.x))
-					circle.setPosition(pos);
-				if (ImGui::DragFloat("Y", &pos.y))
-					circle.setPosition(pos);*/
+				ImGui::Text("texture");
+				ImGui::SameLine();
+
+				if (attached_texture != nullptr)
+				{
+					if (ImGui::ImageButton(*attached_texture, { 25, 25 }))
+					{
+						// TODO:
+					}
+				}
+				else
+				{
+					if (ImGui::Button("##notex", { 25, 25 }))
+					{
+
+					}
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+					{
+						std::filesystem::path src = *(std::string*)payload->Data;
+						do
+						{
+							if (!src.has_extension() || (src.extension().string() != ".jpg" && src.extension().string() != ".png"))
+							{
+								break;
+							}
+
+							std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
+							Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
+							if (resource_manager.GetTextures().contains(relative.string()))
+							{
+								sf::Texture* managed_texture = resource_manager.GetTexture(relative.string());
+								circle_obj->SetTexture(relative, managed_texture);
+							}
+							else
+							{
+								sf::Texture new_texture;
+								if (!new_texture.loadFromFile(src.string()))
+								{
+									LOGERRORF("Failed to load texture from {}", src);
+								}
+								sf::Texture* managed_texture = resource_manager.AddTexture(relative.string(), new_texture);
+								if (managed_texture != nullptr)
+								{
+									circle_obj->SetTexture(relative, managed_texture);
+								}
+							}
+
+						} while (false);
+					}
+
+					ImGui::EndDragDropTarget();
+				}
 
 				const auto& circle_col = circle.getFillColor();
 				float col[4] = {
@@ -978,6 +1035,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					circle_col.b / 255.f,
 					circle_col.a / 255.f
 				};
+
 				if (ImGui::ColorEdit4("fill color", col))
 					circle.setFillColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
 
@@ -986,6 +1044,135 @@ void ui::engine_ui(ImGuiContext* ctx)
 					circle.setRadius(circle_radius);
 			}
 
+			else if (audio_obj != nullptr)
+			{
+				float volume = audio_obj->GetVolume();
+				float pitch = audio_obj->GetPitch();
+				Vec3f spatial_pos = audio_obj->GetAudioPosition();
+				const AudioSource* audio_source = audio_obj->GetAudioSource();
+
+				if (ImGui::SliderFloat("volume", &volume, 0, 100))
+				{
+					audio_obj->SetVolume(volume);
+				}
+				if (ImGui::SliderFloat("pitch", &pitch, 0, 2))
+				{
+					audio_obj->SetPitch(pitch);
+				}
+
+				ImGui::BeginDisabled(audio_obj->GetChannels() > 1 || audio_obj->GetChannels() == 0);
+				if (
+				ImGui::DragFloat("spatial x", &spatial_pos.x) ||
+				ImGui::DragFloat("spatial y", &spatial_pos.y) ||
+				ImGui::DragFloat("spatial z", &spatial_pos.z))
+				{
+					audio_obj->SetAudioPosition(spatial_pos);
+				}
+				ImGui::EndDisabled();
+
+				ImGui::Text("source file");
+				ImGui::SameLine();
+
+				if (audio_source != nullptr && audio_source->has_valid_buffer)
+				{
+					if (ImGui::Button(audio_obj->GetAudioSource()->relative_path.string().c_str(), { 25, 25 }))
+					{
+						// TODO:
+					}
+				}
+				else
+				{
+					if (ImGui::Button("##notex", { 25, 25 }))
+					{
+
+					}
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+					{
+						std::filesystem::path src = *(std::string*)payload->Data;
+						do
+						{
+							if (!src.has_extension() || (src.extension() != ".mp3" && src.extension() != ".wav" && src.extension() != ".ogg"))
+							{
+								break;
+							}
+
+							std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
+							Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
+							AudioSource* managed_sound_buffer = resource_manager.GetAudioSource(relative.string());
+
+							if (managed_sound_buffer != nullptr)
+							{
+								audio_obj->SetSource(managed_sound_buffer);
+							}
+							else
+							{
+								AudioSource new_src;
+								new_src.full_path = src;
+								new_src.relative_path = relative;
+
+								if (!audio_obj->PlaysFromSource())
+								{
+									sf::SoundBuffer sound_buffer;
+									if (!sound_buffer.loadFromFile(src.string()))
+									{
+										LOGERRORF("Failed to soundbuffer from {}", src);
+									}
+
+									new_src.sound_buffer = sound_buffer;
+									new_src.has_valid_buffer = true;
+								}
+								else
+								{
+									new_src.has_valid_buffer = false;	
+								}
+
+								AudioSource* managed_audio_source = resource_manager.AddAudioSource(relative.string(), new_src);
+								if (managed_audio_source != nullptr)
+								{
+									audio_obj->SetSource(managed_audio_source);
+								}
+							}
+
+						} while (false);
+					}
+
+					ImGui::EndDragDropTarget();
+				}
+
+				if (audio_source != nullptr && !audio_source->full_path.empty())
+				{
+					bool play_from_src = !audio_obj->PlaysFromSource();
+					if (ImGui::Checkbox("cache source", &play_from_src))
+					{
+						audio_obj->ShouldPlayFromSource(!play_from_src);
+					}
+
+					if (ImGui::Button("Play"))
+					{
+						audio_obj->Play();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Pause"))
+					{
+						audio_obj->Pause();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Stop"))
+					{
+						audio_obj->Stop();
+					}
+
+					float time_line = audio_obj->GetTimeLine().asSeconds();
+					if (ImGui::SliderFloat("time", &time_line, 0, audio_obj->GetDuration().asSeconds()))
+					{
+						audio_obj->SetTimeLine(time_line);
+					}
+				}
+			}
 			static std::string selected_script_name;
 
 			bool script_node_open = ImGui::TreeNode("Scripts");
@@ -1176,7 +1363,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		selected_obj = nullptr;
 	}
-
 	ImGui::End();
 
     ImGui::Begin("Text Editor");

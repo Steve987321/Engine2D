@@ -307,6 +307,11 @@ void GameAssetsBrowser::Show()
 				fs::path relative = fs::relative(selected, m_assetsPath);
 				Engine::Get().GetResourceManager().RemoveTexture(relative.string());
 			}
+			if (selected.has_extension() && (selected.extension() == ".mp3" || selected.extension() == ".wav" || selected.extension() == ".org"))
+			{
+				fs::path relative = fs::relative(selected, m_assetsPath);
+				Engine::Get().GetResourceManager().RemoveAudioSource(relative.string());
+			}
 
 			fs::remove(selected);
 

@@ -3,6 +3,7 @@
 // SFML
 #include "SFML/Window.hpp"
 #include "SFML/Graphics.hpp"
+#include "SFML/Audio.hpp"
 
 #ifdef _WIN32
 // api
