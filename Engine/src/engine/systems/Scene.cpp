@@ -118,6 +118,9 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 			Object* newobj = scene.AddToScene(T(object.key()));
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
+			Audio* audioobj = dynamic_cast<Audio*>(newobj);
+
+			newobj->SetPosition({ x,y });
 
 			std::string parent_name = props["parent"].get<std::string>();
 			if (!parent_name.empty())
@@ -168,7 +171,6 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 				circle.setOutlineColor(outline_col);
 				circle.setScale(scale);
 				circle.setRadius(radius);
-				circle.setPosition({ x, y });
 			}
 			else if (spriteobj != nullptr)
 			{
@@ -202,11 +204,56 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 					sprite.setTextureRect(tex_rect);
 				}
 
-				sprite.setPosition({ x, y });
 				sprite.setColor(fill_col);
 				sprite.setRotation(rotation);
 				sprite.setColor(fill_col);
 				sprite.setScale(scale);
+			}
+			else if (audioobj != nullptr)
+			{
+				float play_from_src = props["play_from_source"].get<float>();
+				float volume = props["volume"].get<float>();
+				float pitch = props["pitch"].get<float>();
+				float spatial_x = props["audio_posx"].get<float>();
+				float spatial_y = props["audio_posy"].get<float>();
+				float spatial_z = props["audio_posz"].get<float>();
+
+				audioobj->ShouldPlayFromSource(play_from_src);
+				audioobj->SetVolume(volume);
+				audioobj->SetPitch(pitch);
+				audioobj->SetAudioPosition({spatial_x, spatial_y, spatial_z});
+
+				if (props.contains("audio_source"))
+				{
+					json audio_source_data = props["audio_source"];
+
+					std::filesystem::path full_path = audio_source_data["full_path"].get<std::string>();
+					std::filesystem::path rel_path = audio_source_data["rel_path"].get<std::string>();
+					bool valid_buf = audio_source_data["has_valid_buf"].get<bool>();
+
+					AudioSource new_audio_source;
+					new_audio_source.has_valid_buffer = valid_buf;
+					new_audio_source.full_path = full_path;
+					new_audio_source.relative_path = rel_path;
+
+					if (valid_buf)
+					{
+						sf::SoundBuffer sb;
+#ifdef TOAD_EDITOR
+						if (!sb.loadFromFile(full_path.string()))
+						{
+							LOGERRORF("[Scene] Loading soundbuffer file from path {} failed", full_path);
+						}
+#else
+						sb.loadFromFile(relative_path.string());
+#endif
+
+						new_audio_source.sound_buffer = sf::SoundBuffer(sb);
+					}
+
+					AudioSource* managed_audio_source = Engine::Get().GetResourceManager().AddAudioSource(rel_path.string(), new_audio_source);
+					audioobj->SetSource(managed_audio_source);
+				}
 			}
 
 			for (const auto& script : object.value()["scripts"].items())
@@ -322,6 +369,7 @@ Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& 
 		auto objects = data["objects"];
 		LoadSceneObjects<Circle>(objects["circles"], scene, asset_folder);
 		LoadSceneObjects<Sprite>(objects["sprites"], scene, asset_folder);
+		LoadSceneObjects<Audio>(objects["audios"], scene, asset_folder);
 	}
 
 	return scene;
@@ -335,11 +383,13 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 	json objects; // all 
 	json circles;
 	json sprites;
+	json audios;
 
 	for (const auto& [name, object] : scene.objects_map)
 	{
 		Circle* circle = dynamic_cast<Circle*>(object.get());
 		Sprite* sprite = dynamic_cast<Sprite*>(object.get());
+		Audio* audio = dynamic_cast<Audio*>(object.get());
 
 		if (circle != nullptr)
 		{
@@ -349,9 +399,14 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 		{
 			sprites[name] = sprite->Serialize();
 		}
+		else if (audio != nullptr)
+		{
+			audios[name] = audio->Serialize();
+		}
 
 		objects["circles"] = circles;
 		objects["sprites"] = sprites;
+		objects["audios"] = audios;
 		//objects["..."] = ...
 	}
 

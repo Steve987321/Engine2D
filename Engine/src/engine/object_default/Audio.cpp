@@ -125,17 +125,20 @@ json Audio::Serialize()
 	audio_properties["posx"] = GetPosition().x;
 	audio_properties["posy"] = GetPosition().y;
 
-	audio_properties["from_source"] = m_playFromSource;
+	audio_properties["play_from_source"] = m_playFromSource;
 
 	audio_properties["volume"] = m_sound.getVolume();
 	audio_properties["pitch"] = m_sound.getPitch();
 	audio_properties["audio_posx"] = m_sound.getPosition().x;
 	audio_properties["audio_posy"] = m_sound.getPosition().y;
 	audio_properties["audio_posz"] = m_sound.getPosition().z;
-	audio_properties["has_audio"] = m_sound.getBuffer() != nullptr;
-	if (m_sound.getBuffer() != nullptr)
+	if (m_audioSource != nullptr)
 	{
-		audio_properties["audio_source"] = m_audioSource->relative_path.string();
+		json audio_source;
+		audio_source["full_path"] = m_audioSource->full_path.string();
+		audio_source["rel_path"] = m_audioSource->relative_path.string();
+		audio_source["has_valid_buf"] = m_audioSource->has_valid_buffer;
+		audio_properties["audio_source"] = audio_source;
 	}
 	a_data["properties"] = audio_properties;
 	a_data["scripts"] = attached_scripts;

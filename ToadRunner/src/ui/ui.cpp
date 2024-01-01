@@ -106,8 +106,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 					ImGui::PushOverrideID(save_scene_popup_id);
 					ImGui::OpenPopup("SaveScene");
 					ImGui::PopID();
-
-					Toad::SaveScene(scene, fBrowser.GetPath());
 				}
 			}
 			if (scene.objects_map.empty())
@@ -321,7 +319,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (ImGui::Button("Create"))
 		{
 			Toad::Engine::Get().GetScene().name = scene_name;
-			Toad::SaveScene(Toad::Engine::Get().GetScene(), asset_browser.GetAssetPath());
+			SaveScene(Toad::Engine::Get().GetScene(), asset_browser.GetAssetPath());
 		}
 
 		ImGui::EndPopup();
@@ -1073,7 +1071,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::Text("source file");
 				ImGui::SameLine();
 
-				if (audio_source != nullptr && audio_source->has_valid_buffer)
+				if (audio_source != nullptr && !audio_source->full_path.empty())
 				{
 					if (ImGui::Button(audio_obj->GetAudioSource()->relative_path.string().c_str(), { 25, 25 }))
 					{
