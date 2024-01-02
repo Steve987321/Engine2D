@@ -31,6 +31,12 @@ Audio::~Audio()
 void Audio::Start()
 {
 	Object::Start();
+
+	// update attached scripts
+	for (auto script : m_attachedScripts | std::views::values)
+	{
+		script->OnStart(this);
+	}
 }
 
 void Audio::Render(sf::RenderWindow& window)
@@ -46,6 +52,12 @@ void Audio::Render(sf::RenderTexture& texture)
 void Audio::Update()
 {
 	Object::Update();
+
+	// update attached scripts
+	for (auto script : m_attachedScripts | std::views::values)
+	{
+		script->OnUpdate(this);
+	}
 }
 
 AudioSource* Audio::GetAudioSource() const
