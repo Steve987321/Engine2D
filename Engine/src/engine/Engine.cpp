@@ -346,7 +346,7 @@ void Engine::LoadGameScripts()
 	{
 		if (fs::exists(game_dll_path))
 		{
-			if (fs::remove(current_game_dll.c_str()) != 0)
+			if (!fs::remove(current_game_dll.c_str()))
 			{
 				LOGERRORF("Failed to remove file {}", current_game_dll);
 			}
