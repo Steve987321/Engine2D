@@ -1,5 +1,5 @@
-#include "pch.h"
-#include "game_core/ScriptRegister.h"
+#include "pch.h" 
+#include "framework/Framework.h"
 #include "TestScript.h"
 
 #include "Engine/Engine.h"

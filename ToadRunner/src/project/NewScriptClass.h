@@ -4,7 +4,7 @@ namespace Toad
 {
 constexpr const char* NewScriptCplusplus =
 R"(#include "pch.h"
-#include "game_core/ScriptRegister.h"
+#include "framework/Framework.h/ScriptRegister.h"
 #include "$0@.h"
 
 #include "Engine/Engine.h"
