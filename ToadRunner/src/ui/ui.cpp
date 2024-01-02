@@ -84,10 +84,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 		
 		if (ImGui::BeginMenu("Scripts"))
 		{
+			ImGui::BeginDisabled(project::current_project.name.empty());
 			if (ImGui::MenuItem("Reload"))
 			{
 				Toad::Engine::Get().LoadGameScripts();
 			}
+			ImGui::EndDisabled();
 			ImGui::EndMenu();
 		}
 
@@ -181,7 +183,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					else
 					{
 						LOGDEBUGF("{} {}", cpri.res, cpri.description);
-						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / settings.name / (settings.name + "_GAME") / "src" / "assets").string());
+						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
 					Toad::Engine::Get().UpdateGameBinPaths(settings.name + ".dll", settings.project_path + "bin\\Dev-windows-x86_64");
