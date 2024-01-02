@@ -148,13 +148,14 @@ void Sprite::Render(sf::RenderTexture& texture)
 	texture.draw(m_sprite);
 }
 
+void Sprite::Start()
+{
+	Object::Start();
+}
+
 void Sprite::Update()
 {
-	// update attached scripts
-	for (auto script : m_attachedScripts | std::views::values)
-	{
-		script->OnUpdate(this);
-	}
+	Object::Update();
 }
 
 }

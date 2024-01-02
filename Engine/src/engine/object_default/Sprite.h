@@ -22,6 +22,7 @@ public:
 private:
 	void Render(sf::RenderWindow& window) override;
 	void Render(sf::RenderTexture& texture) override;
+	void Start() override;
 	void Update() override;
 
 private:

@@ -14,7 +14,12 @@ namespace Toad
 	Object::~Object() = default;
 
 	void Object::Start()
-	{}
+	{
+		for (auto& script : m_attachedScripts | std::views::values)
+		{
+			script->OnStart(this);
+		}
+	}
 
 	void Object::Render(sf::RenderWindow& window)
 	{}
@@ -23,7 +28,12 @@ namespace Toad
 	{}
 
 	void Object::Update()
-	{}
+	{
+		for (auto& script : m_attachedScripts | std::views::values)
+		{
+			script->OnUpdate(this);
+		}
+	}
 
 	const Vec2f& Object::GetPosition()
 	{

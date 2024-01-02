@@ -131,10 +131,7 @@ namespace Toad
 
 	void Circle::Start()
 	{
-		for (auto script : m_attachedScripts | std::views::values)
-		{
-			script->OnStart(this);
-		}
+		Object::Start();
 	}
 
 	void Circle::Render(sf::RenderWindow& window)
@@ -151,10 +148,6 @@ namespace Toad
 
 	void Circle::Update()
 	{
-		// update attached scripts
-		for (const auto& script : m_attachedScripts | std::views::values)
-		{
-			script->OnUpdate(this);
-		}
+		Object::Update();
 	}
 }
