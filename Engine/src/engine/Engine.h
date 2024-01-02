@@ -96,5 +96,7 @@ namespace Toad
 
 		inline static Engine* s_Instance = nullptr;
 		inline static Logger s_LoggerInstance;
+
+		std::filesystem::path m_current_path;
 	};
 }

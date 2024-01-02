@@ -37,7 +37,8 @@ bool Engine::Init()
 		}
 	}
 
-	LoadGameScripts();
+	m_current_path = std::filesystem::current_path();
+	//LoadGameScripts();
 
 #ifndef TOAD_EDITOR
 	std::vector<Scene> found_scenes;
@@ -79,9 +80,13 @@ bool Engine::Init()
 
 #endif
 
-	auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
+	AppSettings gsettings;
+	if (m_currDLL != nullptr)
+	{
+		auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
 
-	auto gsettings = get_game_settings();
+		gsettings = get_game_settings();
+	}
 
 	if (!InitWindow(gsettings))
 		return false;
@@ -301,21 +306,28 @@ void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string
 
 void Engine::LoadGameScripts()
 {
+	namespace fs = std::filesystem;
 	for (auto& script : m_gameScripts | std::views::values)
 	{
 		// TODO: save name and give warning about lost scripts 
 		script = nullptr;
 	}
+	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
+	std::unordered_map <std::string, std::vector<object_script >> objects_with_scripts{};
 
-	std::unordered_map < std::string, ReflectVarsCopy> prev_scripts {};
 	for (auto& obj : m_currentScene.objects_map | std::views::values)
 	{
 		auto& scripts = obj->GetAttachedScripts();
+		if (scripts.empty())
+		{
+			continue;
+		}
+
 		for (auto i = scripts.begin(); i != scripts.end();)
 		{
 			ReflectVarsCopy vars;
 			i->second->GetReflection().Get().copy(vars);
-			prev_scripts[i->first] = vars;
+			objects_with_scripts[obj->name].emplace_back(i->first, vars);
 
 			obj->RemoveScript(i->first);
 			i = scripts.begin();
@@ -323,39 +335,43 @@ void Engine::LoadGameScripts()
 	}
 
 	if (m_currDLL)
-		FreeLibrary(m_currDLL);
-
-	// delete old one (if there is one) then rename new one 
-	std::string game_dll_path = game_bin_directory + game_bin_file;
-	std::string current_game_dll = game_bin_directory + "GameCurrent.dll";
-
-	if (std::ifstream(current_game_dll).good())
 	{
-		// check if game.dll exists then don't delete 
-		if (std::ifstream(game_dll_path).good())
+		FreeLibrary(m_currDLL);
+	}
+
+	fs::path game_dll_path = game_bin_directory + game_bin_file;
+	fs::path current_game_dll = game_bin_directory + "GameCurrent.dll";
+
+	if (fs::exists(current_game_dll))
+	{
+		if (fs::exists(game_dll_path))
 		{
-			if (remove(current_game_dll.c_str()) != 0)
+			if (fs::remove(current_game_dll.c_str()) != 0)
 			{
 				LOGERRORF("Failed to remove file {}", current_game_dll);
 			}
 		}
 	}
 
-	if (!std::ifstream(game_dll_path).good())
+	if (!fs::exists(game_dll_path))
 	{
 		LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
 	}
 	else
 	{
-		if (rename(game_dll_path.c_str(), current_game_dll.c_str()) != 0)
+		try
 		{
-			LOGERRORF("Failed to remove file {}", current_game_dll);
+			fs::rename(game_dll_path, current_game_dll);
+		}
+		catch(fs::filesystem_error& e)
+		{
+			LOGERRORF("{}", e.what());
 			return;
 		}
 	}
 
 #ifdef _WIN32
-	auto dll = LoadLibraryA(current_game_dll.c_str());
+	auto dll = LoadLibraryA(current_game_dll.string().c_str());
 	if (!dll)
 	{
 		LOGERRORF("Couldn't load game dll file, {}", current_game_dll);
@@ -377,9 +393,16 @@ void Engine::LoadGameScripts()
 	}
 
 	// update scripts on object if it has an old version
-	for (auto& [obj_name, obj] : m_currentScene.objects_map) 
+	for (auto& [obj_name, obj] : m_currentScene.objects_map)
 	{
-		for (auto& [attached_script_name, old_reflection_vars] : prev_scripts)
+		if (!objects_with_scripts.contains(obj_name))
+		{
+			continue;
+		}
+
+		const auto& prev_obj_state = objects_with_scripts[obj_name];
+
+		for (auto& [attached_script_name, old_reflection_vars] : prev_obj_state)
 		{
 			auto it = m_gameScripts.find(attached_script_name);
 			if (it != m_gameScripts.end())
@@ -417,6 +440,8 @@ void Engine::LoadGameScripts()
 				LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj_name);
 			}
 		}
+
+		objects_with_scripts.erase(obj_name);
 	}
 
 #else
@@ -455,14 +480,17 @@ void Engine::LoadGameScripts()
 #endif
 
 #ifdef _DEBUG
-	for (const auto& [name, script]: m_gameScripts)
+	for (const auto& [name, script] : m_gameScripts)
 	{
 		if (!script)
 			LOGWARNF("Script {} is now null", name.c_str());
 	}
-	for (const auto& name : prev_scripts | std::views::keys)
+	for (const auto& [obj_name, info] : objects_with_scripts)
 	{
-		LOGWARNF("Script lost: {}", name.c_str());
+		for (const auto& script : info)
+		{
+			LOGWARNF("Script lost {} on object {}", script.script_name, obj_name);
+		}
 	}
 #endif
 }
