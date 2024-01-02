@@ -173,7 +173,7 @@ project(game_project_name)
         }
         staticruntime "off"
         runtime "Debug"
-        symbols "On"
+        symbols "Off"
 
 project "ToadRunner"
     location "ToadRunner"
