@@ -54,7 +54,7 @@ void Audio::Update()
 	Object::Update();
 
 	// update attached scripts
-	for (auto script : m_attachedScripts | std::views::values)
+	for (auto& script : m_attachedScripts | std::views::values)
 	{
 		script->OnUpdate(this);
 	}
