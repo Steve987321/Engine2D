@@ -39,6 +39,42 @@ namespace Toad
 		return false;
 	}
 
+	std::unordered_map<std::string, sf::Font>& ResourceManager::GetFonts()
+	{
+		return m_fonts;
+	}
+
+	sf::Font* ResourceManager::AddFont(std::string_view id, const sf::Font& font)
+	{
+		if (m_fonts.contains(id.data()))
+		{
+			LOGWARNF("[ResourceManager] Font {} already exists and is getting replaced", id.data());
+		}
+		m_fonts[id.data()] = sf::Font(font);
+		return &m_fonts[id.data()];
+	}
+
+	sf::Font* ResourceManager::GetFont(std::string_view id)
+	{
+		if (m_fonts.contains(id.data()))
+		{
+			return &m_fonts[id.data()];
+		}
+		return nullptr;
+	}
+
+	bool ResourceManager::RemoveFont(std::string_view id)
+	{
+		if (auto it = m_fonts.find(id.data());
+			it != m_fonts.end())
+		{
+			m_fonts.erase(it);
+			return true;
+		}
+
+		return false;
+	}
+
 	std::unordered_map<std::string, AudioSource>& ResourceManager::GetAudioSources()
 	{
 		return m_audioSources;
@@ -48,7 +84,6 @@ namespace Toad
 	{
 		if (m_audioSources.contains(id.data()))
 		{
-			LOGDEBUGF("{}", m_audioSources[id.data()].sound_buffer.getSampleCount());
 			LOGWARNF("[ResourceManager] AudioSource {} already exists and is getting replaced", id.data());
 		}
 		m_audioSources[id.data()] = AudioSource(sound_buffer);
@@ -81,20 +116,7 @@ namespace Toad
 	{
 		m_textures.clear();
 		m_audioSources.clear();
-	}
-
-	ResourceManager ResourceManager::Deserialize(const nlohmann::json& data)
-	{
-		ResourceManager m;
-
-		return m;
-	}
-
-	nlohmann::json ResourceManager::Serialize()
-	{
-		nlohmann::json data;
-
-		return data;
+		m_fonts.clear();
 	}
 
 	std::unordered_map<std::string, sf::Texture>& ResourceManager::GetTextures()

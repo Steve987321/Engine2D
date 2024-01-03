@@ -17,6 +17,12 @@
 
 using json = nlohmann::json;
 
+constexpr int i8_min = std::numeric_limits<int8_t>::min();
+constexpr int i8_max = std::numeric_limits<int8_t>::max();
+constexpr int i16_min = std::numeric_limits<int16_t>::min();
+constexpr int i16_max = std::numeric_limits<int16_t>::max();
+constexpr int i32_max = std::numeric_limits<int32_t>::max();
+
 void ui::engine_ui(ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
@@ -749,6 +755,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Toad::Engine::Get().GetScene().AddToScene(Toad::Audio("Audio"));
 				}
+				if (ImGui::MenuItem("Text"))
+				{
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Text("Text"));
+				}
 
 				ImGui::EndMenu();
 			}
@@ -890,6 +900,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj);
 			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj);
 			auto audio_obj = dynamic_cast<Toad::Audio*>(selected_obj);
+			auto text_obj = dynamic_cast<Toad::Text*>(selected_obj);
 
 			if (sprite_obj != nullptr)
 			{
@@ -1173,6 +1184,213 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 				}
 			}
+
+			else if (text_obj != nullptr)
+			{
+				char buf[512];
+				strcpy_s(buf, text_obj->GetText().c_str());
+				if (ImGui::InputTextMultiline("Text", buf, sizeof(buf), {}))
+				{
+					text_obj->SetText(buf);
+				}
+
+				if (ImGui::TreeNode("Style properties"))
+				{
+					sf::Text& text = text_obj->GetTextObj();
+					Toad::TextStyle text_style = text_obj->GetStyle();
+
+					if (!text.getFont()->getInfo().family.empty())
+					{
+						if (ImGui::Button(text.getFont()->getInfo().family.c_str()))
+						{
+							// TODO:
+						}
+					}
+					else
+					{
+						if (ImGui::Button("##nofont"))
+						{
+
+						}
+					}
+
+					if (ImGui::Button("set default font"))
+					{
+						Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
+						sf::Font* font = resource_manager.GetFont("Default");
+
+						if (font == nullptr)
+						{
+							if (!font->loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
+							{
+								LOGWARN("Can't find C:\\Windows\\Fonts\\Arial.ttf");
+							}
+							else
+							{
+								resource_manager.AddFont("Default", *font);
+								text_obj->SetFont("Default", *font);
+							}
+						}
+						else
+						{
+							text_obj->SetFont("Default", *font);
+						}
+					}
+
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+						{
+							std::filesystem::path src = *(std::string*)payload->Data;
+							do
+							{
+								if (!src.has_extension() || (
+									src.extension().string() != ".ttf" &&
+									src.extension().string() != ".pfa" && 
+									src.extension().string() != ".pfb" && 
+									src.extension().string() != ".cff" && 
+									src.extension().string() != ".otf" && 
+									src.extension().string() != ".sfnt" && 
+									src.extension().string() != ".pcf" && 
+									src.extension().string() != ".fnt" && 
+									src.extension().string() != ".bdf" && 
+									src.extension().string() != ".pfr" && 
+									src.extension().string() != ".t42" 
+									))
+								{
+									break;
+								}
+
+								std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
+								Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
+								if (resource_manager.GetFonts().contains(relative.string()))
+								{
+									sf::Font* managed_font = resource_manager.GetFont(relative.string());
+									text_obj->SetFont(relative, *managed_font);
+								}
+								else
+								{
+									sf::Font new_font;
+									if (!new_font.loadFromFile(src.string()))
+									{
+										LOGERRORF("Failed to load font from {}", src);
+									}
+									sf::Font* managed_font = resource_manager.AddFont(relative.string(), new_font);
+									if (managed_font != nullptr)
+									{
+										text_obj->SetFont(relative, *managed_font);
+									}
+								}
+
+							} while (false);
+						}
+
+						ImGui::EndDragDropTarget();
+					}
+
+					float fill_col[4] = {
+						text_style.fill_col.r / 255.f,
+						text_style.fill_col.g / 255.f,
+						text_style.fill_col.b / 255.f,
+						text_style.fill_col.a / 255.f
+					};
+
+					float outline_col[4] = {
+						text_style.outline_col.r / 255.f,
+						text_style.outline_col.g / 255.f,
+						text_style.outline_col.b / 255.f,
+						text_style.outline_col.a / 255.f
+					};
+
+					if (ImGui::ColorEdit4("fill color", fill_col))
+					{
+						sf::Color col = sf::Color(
+							static_cast<uint8_t>(fill_col[0] * 255.f),
+							static_cast<uint8_t>(fill_col[1] * 255.f),
+							static_cast<uint8_t>(fill_col[2] * 255.f),
+							static_cast<uint8_t>(fill_col[3] * 255.f)
+						);
+
+						text.setFillColor(col);
+
+						text_style.fill_col = col;
+						text_obj->SetStyle(text_style, false);
+					}
+
+					if (ImGui::ColorEdit4("outline color", outline_col))
+					{
+						sf::Color col = sf::Color(
+							static_cast<uint8_t>(outline_col[0] * 255.f),
+							static_cast<uint8_t>(outline_col[1] * 255.f),
+							static_cast<uint8_t>(outline_col[2] * 255.f),
+							static_cast<uint8_t>(outline_col[3] * 255.f)
+						);
+
+						text.setOutlineColor(col);
+
+						text_style.outline_col = col;
+						text_obj->SetStyle(text_style, false);
+					}
+					int char_size_int = (int)text_style.char_size;
+					if (ImGui::InputInt("character size", &char_size_int, 1, 3))
+					{
+						char_size_int = std::clamp(char_size_int, 0, INT_MAX);
+						text_style.char_size = char_size_int;
+						text.setCharacterSize(text_style.char_size);
+						text_obj->SetStyle(text_style, false);
+					}
+					if (ImGui::InputFloat("character spacing", &text_style.char_spacing, 1, 3))
+					{
+						text.setLetterSpacing(text_style.char_spacing);
+						text_obj->SetStyle(text_style, false);
+					}
+					if (ImGui::InputFloat("line spacing", &text_style.line_spacing, 1, 3))
+					{
+						text.setLineSpacing(text_style.line_spacing);
+						text_obj->SetStyle(text_style, false);
+					}
+					if (ImGui::InputFloat("outline thickness", &text_style.outline_thickness, 1, 3))
+					{
+						text.setOutlineThickness(text_style.outline_thickness);
+						text_obj->SetStyle(text_style, false);
+					}
+					
+					if (ImGui::BeginCombo("style", ""))
+					{
+						if (ImGui::Selectable("Regular", text_style.style & sf::Text::Style::Regular))
+						{
+							text_style.style = static_cast<sf::Text::Style>(static_cast<int>(text_style.style) ^ static_cast<int>(sf::Text::Style::Regular));
+							text_obj->SetStyle(text_style);
+						}
+						if (ImGui::Selectable("Bold", text_style.style & sf::Text::Style::Bold))
+						{
+							text_style.style = static_cast<sf::Text::Style>(static_cast<int>(text_style.style) ^ static_cast<int>(sf::Text::Style::Bold));
+							text_obj->SetStyle(text_style);
+						}
+						if (ImGui::Selectable("Italic", text_style.style & sf::Text::Style::Italic))
+						{
+							text_style.style = static_cast<sf::Text::Style>(static_cast<int>(text_style.style) ^ static_cast<int>(sf::Text::Style::Italic));
+							text_obj->SetStyle(text_style);
+						}
+						if (ImGui::Selectable("Underlined", text_style.style & sf::Text::Style::Underlined))
+						{
+							text_style.style = static_cast<sf::Text::Style>(static_cast<int>(text_style.style) ^ static_cast<int>(sf::Text::Style::Underlined));
+							text_obj->SetStyle(text_style);
+						}
+						if (ImGui::Selectable("StrikeThrough", text_style.style & sf::Text::Style::StrikeThrough))
+						{
+							text_style.style = static_cast<sf::Text::Style>(static_cast<int>(text_style.style) ^ static_cast<int>(sf::Text::Style::StrikeThrough));
+							text_obj->SetStyle(text_style);
+						}
+
+						ImGui::EndCombo();
+					}
+
+
+					ImGui::TreePop();
+				}
+			}
+
 			static std::string selected_script_name;
 
 			bool script_node_open = ImGui::TreeNode("Scripts");
@@ -1212,11 +1430,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 					{
 						ImGui::SameLine();
 						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script.get());
-
-						constexpr int i8_min = std::numeric_limits<int8_t>::min();
-						constexpr int i8_max = std::numeric_limits<int8_t>::max();
-						constexpr int i16_min = std::numeric_limits<int16_t>::min();
-						constexpr int i16_max = std::numeric_limits<int16_t>::max();
 
 						auto script_vars = script->GetReflection().Get();
 

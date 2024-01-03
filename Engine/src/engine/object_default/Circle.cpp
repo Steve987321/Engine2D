@@ -44,58 +44,7 @@ namespace Toad
 	{
 		json c_data;
 		json circle_properties;
-		json attached_scripts;
-
-		for (const auto& it : GetAttachedScripts())
-		{
-			const auto& reflection_vars = it.second->GetReflection().Get();
-			const auto& bs = reflection_vars.b;
-			const auto& flts = reflection_vars.flt;
-			const auto& i8s = reflection_vars.i8;
-			const auto& i16s = reflection_vars.i16;
-			const auto& i32s = reflection_vars.i32;
-			const auto& strs = reflection_vars.str;
-
-			auto bs_data = json::object();
-			for (const auto& [name, val] : bs)
-			{
-				bs_data[name] = *val;
-			}
-			auto flts_data = json::object();
-			for (const auto& [name, val] : flts)
-			{
-				flts_data[name] = *val;
-			}
-			auto i8s_data = json::object();
-			for (const auto& [name, val] : i8s)
-			{
-				i8s_data[name] = *val;
-			}
-			auto i16s_data = json::object();
-			for (const auto& [name, val] : i16s)
-			{
-				i16s_data[name] = *val;
-			}
-			auto i32s_data = json::object();
-			for (const auto& [name, val] : i32s)
-			{
-				i32s_data[name] = *val;
-			}
-			auto strs_data = json::object();
-			for (const auto& [name, val] : strs)
-			{
-				strs_data[name] = *val;
-			}
-			attached_scripts[it.first] =
-			{
-				bs_data,
-				flts_data,
-				i8s_data,
-				i16s_data,
-				i32s_data,
-				strs_data
-			};
-		}
+		json attached_scripts = SerializeScripts();
 
 		const auto& c = GetCircle();
 

@@ -6,8 +6,6 @@ namespace Toad
 {
 
 class Object;
-class Sprite;
-class Circle;
 
 struct ENGINE_API Scene
 {

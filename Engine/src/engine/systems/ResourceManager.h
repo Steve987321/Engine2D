@@ -12,13 +12,15 @@ class ENGINE_API ResourceManager
 public:
 	ResourceManager();
 
-	ResourceManager Deserialize(const nlohmann::json& data);
-	nlohmann::json Serialize();
-
 	std::unordered_map<std::string, sf::Texture>& GetTextures();
 	sf::Texture* AddTexture(std::string_view id, const sf::Texture& tex);
 	sf::Texture* GetTexture(std::string_view id);
 	bool RemoveTexture(std::string_view id);
+
+	std::unordered_map<std::string, sf::Font>& GetFonts();
+	sf::Font* AddFont(std::string_view id, const sf::Font& font);
+	sf::Font* GetFont(std::string_view id);
+	bool RemoveFont(std::string_view id);
 
 	std::unordered_map<std::string, AudioSource>& GetAudioSources();
 	AudioSource* AddAudioSource(std::string_view id, const AudioSource& sound_buffer);
@@ -31,7 +33,7 @@ public:
 private:
 	std::unordered_map<std::string, sf::Texture> m_textures;
 	std::unordered_map<std::string, AudioSource> m_audioSources;
-	//std::unordered_map<std::string, sf::Font> m_fonts;
+	std::unordered_map<std::string, sf::Font> m_fonts;
 };
 
 }

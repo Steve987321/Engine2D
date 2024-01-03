@@ -119,6 +119,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
+			Text* textobj = dynamic_cast<Text*>(newobj);
 
 			newobj->SetPosition({ x,y });
 
@@ -163,8 +164,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 #endif
 						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 					}
-
-					circle.setTexture(new_tex);
+					circleobj->SetTexture(path_str, new_tex);
 					circle.setTextureRect(tex_rect);
 				}
 				circle.setFillColor(fill_col);
@@ -199,8 +199,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 #endif
 						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 					}
-
-					sprite.setTexture(*new_tex);
+					spriteobj->SetTexture(path_str, new_tex);
 					sprite.setTextureRect(tex_rect);
 				}
 
@@ -254,6 +253,45 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 					AudioSource* managed_audio_source = Engine::Get().GetResourceManager().AddAudioSource(rel_path.string(), new_audio_source);
 					audioobj->SetSource(managed_audio_source);
 				}
+			}
+			else if (textobj != nullptr)
+			{
+				// props
+				textobj->SetText(props["text"].get<std::string>());
+				std::string font_loc = props["font_loc"].get<std::string>();
+
+				if (font_loc == "Default")
+				{
+					sf::Font* font = Engine::Get().GetResourceManager().GetFont("Default");
+					if (font != nullptr)
+					{
+						textobj->SetFont("Default", *font);
+					}
+					else
+					{
+						sf::Font arial;
+
+						if (!arial.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
+						{
+							LOGWARNF("Can't find C:\\Windows\\Fonts\\Arial.ttf");
+						}
+						else
+						{
+							font = Engine::Get().GetResourceManager().AddFont("Default", arial);
+							textobj->SetFont("Default", *font);
+						}
+					}
+				}
+
+				TextStyle style;
+				style.char_size = props["char_size"].get<unsigned>();
+				style.char_spacing = props["char_spacing"].get<float>();
+				style.line_spacing = props["line_spacing"].get<float>();
+				style.fill_col = sf::Color(props["fill_col"].get<int>());
+				style.outline_col = sf::Color(props["outline_col"].get<int>());
+				style.style = static_cast<sf::Text::Style>(props["style"].get<uint32_t>());
+				style.outline_thickness = props["outline_thickness"].get<float>();
+				textobj->SetStyle(style);
 			}
 
 			for (const auto& script : object.value()["scripts"].items())
@@ -370,6 +408,7 @@ Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& 
 		LoadSceneObjects<Circle>(objects["circles"], scene, asset_folder);
 		LoadSceneObjects<Sprite>(objects["sprites"], scene, asset_folder);
 		LoadSceneObjects<Audio>(objects["audios"], scene, asset_folder);
+		LoadSceneObjects<Text>(objects["texts"], scene, asset_folder);
 	}
 
 	return scene;
@@ -384,12 +423,14 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 	json circles;
 	json sprites;
 	json audios;
+	json texts;
 
 	for (const auto& [name, object] : scene.objects_map)
 	{
 		Circle* circle = dynamic_cast<Circle*>(object.get());
 		Sprite* sprite = dynamic_cast<Sprite*>(object.get());
 		Audio* audio = dynamic_cast<Audio*>(object.get());
+		Text* text = dynamic_cast<Text*>(object.get());
 
 		if (circle != nullptr)
 		{
@@ -403,12 +444,17 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 		{
 			audios[name] = audio->Serialize();
 		}
-
-		objects["circles"] = circles;
-		objects["sprites"] = sprites;
-		objects["audios"] = audios;
-		//objects["..."] = ...
+		else if (text != nullptr)
+		{
+			texts[name] = text->Serialize();
+		}		
 	}
+
+	objects["circles"] = circles;
+	objects["sprites"] = sprites;
+	objects["audios"] = audios;
+	objects["texts"] = texts;
+	//objects["..."] = ...
 
 	data["objects"] = objects;
 

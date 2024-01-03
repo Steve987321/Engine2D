@@ -49,6 +49,8 @@ public:
 
 	void Destroy(bool destroy_children = false);
 
+	json SerializeScripts() const;
+
 	void AddScript(std::shared_ptr<Script> script);
 
 	std::shared_ptr<Script> GetScript(std::string_view name);
