@@ -244,7 +244,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 							LOGERRORF("[Scene] Loading soundbuffer file from path {} failed", full_path);
 						}
 #else
-						sb.loadFromFile(relative_path.string());
+						sb.loadFromFile(new_audio_source.relative_path.string());
 #endif
 
 						new_audio_source.sound_buffer = sf::SoundBuffer(sb);

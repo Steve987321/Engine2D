@@ -152,7 +152,7 @@ void Audio::SetSource(AudioSource* source)
 #ifdef TOAD_EDITOR
 	m_sourceFile = source->full_path;
 #else
-	m_sourceFile = source.relative_path;
+	m_sourceFile = source->relative_path;
 #endif
 
 	assert(!m_sourceFile.empty());

@@ -211,6 +211,27 @@ namespace project {
 		// ToadRunner
 		fs::copy(engine_parent_path.string() + "/ToadRunner/src", runner_src_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 
+		// TODO: Test 
+		for (const auto& entry : fs::recursive_directory_iterator(runner_src_path))
+		{
+			if (entry.path().filename() == "entry.cpp")
+			{
+				std::fstream f(entry.path().string());
+				std::string s; 
+				while (std::getline(f, s))
+				{
+					if (s.find("#include ") != std::string::npos)
+					{
+						if (auto pos = s.find("/Game/"); pos != std::string::npos)
+						{
+							s.replace(pos, std::string("/Game/").length(), '/' + settings.name + "_Game/");
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		// Vendor
 		for (const auto& entry : fs::recursive_directory_iterator(fs::path(engine_parent_path / "vendor")))
 		{

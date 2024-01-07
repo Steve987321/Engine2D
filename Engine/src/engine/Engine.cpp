@@ -38,10 +38,11 @@ bool Engine::Init()
 	}
 
 	m_current_path = std::filesystem::current_path();
-	//LoadGameScripts();
 
 #ifndef TOAD_EDITOR
 	std::vector<Scene> found_scenes;
+
+	LoadGameScripts();
 
 	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
 	{
@@ -104,6 +105,7 @@ bool Engine::Init()
 void Engine::Run()
 {
 #ifndef TOAD_EDITOR
+	m_beginPlay = true;
 	SetScene(m_currentScene);
 #endif
 
@@ -342,6 +344,7 @@ void Engine::LoadGameScripts()
 	fs::path game_dll_path = game_bin_directory + game_bin_file;
 	fs::path current_game_dll = game_bin_directory + "GameCurrent.dll";
 
+#ifdef TOAD_EDITOR
 	if (fs::exists(current_game_dll))
 	{
 		if (fs::exists(game_dll_path))
@@ -352,6 +355,7 @@ void Engine::LoadGameScripts()
 			}
 		}
 	}
+#endif
 
 	if (!fs::exists(game_dll_path))
 	{

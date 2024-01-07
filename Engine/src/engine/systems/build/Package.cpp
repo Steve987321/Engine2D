@@ -111,6 +111,7 @@ namespace Toad
 		while (!build_done)
 		{
 			// building status ..
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
 		if (check_build_done.joinable())
@@ -128,7 +129,7 @@ namespace Toad
 			}
 		}
 
-		for (const auto& entry : fs::recursive_directory_iterator(proj_dir))
+		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
 			if (!entry.is_directory())
 			{
@@ -137,7 +138,7 @@ namespace Toad
 
 			if (entry.path().filename().string().find("_Game") != std::string::npos)
 			{
-				fs::copy(entry.path() / "src" / "assets", out_dir);
+				fs::copy(entry.path() / "src" / "assets", out_dir, fs::copy_options::recursive);
 
 				break;
 			}
