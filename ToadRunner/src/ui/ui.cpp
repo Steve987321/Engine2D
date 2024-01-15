@@ -453,6 +453,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		}
 
 		static std::set<std::string> selected_objects = {};
+		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
 		int index = 0;
 		static size_t prev_cursor_index = 0;
 		static size_t cursor_index = 0;
@@ -460,26 +461,32 @@ void ui::engine_ui(ImGuiContext* ctx)
 		static bool check_range = false;
 
 		std::vector<std::string> scene_objects {};
-		scene_objects.reserve(Toad::Engine::Get().GetScene().objects_map.size());
+		std::set<std::string> scene_objects_set {};
 
-		for (const auto& [obj_name, obj] : Toad::Engine::Get().GetScene().objects_map)
-		{
-			if (!obj->GetParent().empty())
-			{
-				continue;
-			}
+		//for (const auto& [obj_name, obj] : Toad::Engine::Get().GetScene().objects_map)
+		//{
+		///*	if (!obj->GetParent().empty())
+		//	{
+		//		continue;
+		//	}*/
 
-			scene_objects.emplace_back(obj_name);
+		//	scene_objects.emplace_back(obj_name);
 
-			for (const std::string& name : obj->GetChildren())
-			{
-				scene_objects.emplace_back(name);
-			}
-		}
+		//	//for (const std::string& name : obj->GetChildren())
+		//	//{
+		//		//scene_objects.emplace_back(name);
+		//	//}
+		//}
 
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{
 				index++;
+
+				if (!scene_objects_set.contains(obj->name))
+				{
+					scene_objects.emplace_back(obj->name);
+					scene_objects_set.emplace(obj->name);
+				}
 
 				if (obj->GetChildren().empty())
 				{
@@ -581,8 +588,34 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 						}
 
+						if (ImGui::BeginDragDropTarget())
+						{
+							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move object"))
+							{
+								const char* object_name = static_cast<char*>(payload->Data);
+								Toad::Object* object = Toad::Engine::Get().GetScene().GetSceneObject(object_name);
+								if (object != nullptr)
+								{
+									object->SetParent(obj);
+									ImGui::SetNextItemOpen(true);
+								}
+							}
+							ImGui::EndDragDropTarget();
+						}
+						if (ImGui::BeginDragDropSource())
+						{
+							ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
+							ImGui::EndDragDropSource();
+						}
+
 						for (Toad::Object* child : obj->GetChildrenAsObjects())
 						{
+							if (!scene_objects_set.contains(child->name))
+							{
+								scene_objects.emplace_back(child->name);
+								scene_objects_set.emplace(child->name);
+							}
+
 							recursive_iterate_children(child);
 							if (ImGui::IsItemHovered())
 							{
@@ -627,6 +660,24 @@ void ui::engine_ui(ImGuiContext* ctx)
 										selected_objects.clear();
 									}
 								}
+							}
+							if (ImGui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move object"))
+								{
+									const char* object_name = static_cast<char*>(payload->Data);
+									Toad::Object* object = Toad::Engine::Get().GetScene().GetSceneObject(object_name);
+									if (object != nullptr)
+									{
+										object->SetParent(child);
+									}
+								}
+								ImGui::EndDragDropTarget();
+							}
+							if (ImGui::BeginDragDropSource())
+							{
+								ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
+								ImGui::EndDragDropSource();
 							}
 						}
 
@@ -680,8 +731,28 @@ void ui::engine_ui(ImGuiContext* ctx)
 						}
 					}
 				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move object"))
+					{
+						const char* object_name = static_cast<char*>(payload->Data);
+						Toad::Object* object = Toad::Engine::Get().GetScene().GetSceneObject(object_name);
+						if (object != nullptr)
+						{
+							object->SetParent(obj);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+				if (ImGui::BeginDragDropSource())
+				{
+					ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
+					ImGui::EndDragDropSource();
+				}
+
 			};
-		for (auto& name : scene_objects)
+		for (auto& name : Toad::Engine::Get().GetScene().objects_map | std::views::keys)
 		{
 			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
 			// make sure we only iterate over root objects
@@ -703,19 +774,27 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (name == selected_obj->name)
 				{
 					origin = j;
-					if (!cursor_index_is_under)
-					{
-						origin -= 1;
-					}
 				}
 				keys.push_back(name);
 			}
 
-			//LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
-			
+			LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
+			cursor_index = std::clamp(cursor_index, 0ull, keys.size());
+
 			selected_objects.clear();
-			for (int i = origin; cursor_index_is_under ? i < static_cast<int>(cursor_index) : i > static_cast<int>(cursor_index) - 2; cursor_index_is_under ? i++ : i--)
+			int dest = 0;
+			if (cursor_index_is_under)
 			{
+				dest = static_cast<int>(cursor_index);
+			}
+			else
+			{
+				dest = static_cast<int>(cursor_index);
+				origin -= 2;
+			}
+			for (int i = origin; cursor_index_is_under ? i < dest : i >= dest - 1; cursor_index_is_under ? i++ : i--)
+			{
+				LOGDEBUGF("{} {}", i, keys[i]);
 				selected_objects.insert(keys[i]);
 			}
 
