@@ -463,21 +463,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		std::vector<std::string> scene_objects {};
 		std::set<std::string> scene_objects_set {};
 
-		//for (const auto& [obj_name, obj] : Toad::Engine::Get().GetScene().objects_map)
-		//{
-		///*	if (!obj->GetParent().empty())
-		//	{
-		//		continue;
-		//	}*/
-
-		//	scene_objects.emplace_back(obj_name);
-
-		//	//for (const std::string& name : obj->GetChildren())
-		//	//{
-		//		//scene_objects.emplace_back(name);
-		//	//}
-		//}
-
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{
 				index++;
@@ -604,6 +589,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 						}
 						if (ImGui::BeginDragDropSource())
 						{
+							if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
+							{
+								selected_objects.clear();
+								selected_obj = obj;
+							}
 							ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
 							ImGui::EndDragDropSource();
 						}
@@ -676,6 +666,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 							if (ImGui::BeginDragDropSource())
 							{
+								if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
+								{
+									selected_objects.clear();
+									selected_obj = obj;
+								}
 								ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
 								ImGui::EndDragDropSource();
 							}
@@ -747,6 +742,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				if (ImGui::BeginDragDropSource())
 				{
+					if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
+					{
+						//LOGDEBUGF(" {} {} ", selected_objects.contains(obj->name), selected_obj->name);
+						selected_objects.clear();
+						selected_obj = obj;
+					}
 					ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
 					ImGui::EndDragDropSource();
 				}
@@ -895,7 +896,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		ImGui::End();
 	}
-
 
 	ImGui::Begin("Inspector", nullptr);
 	{
