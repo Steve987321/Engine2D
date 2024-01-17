@@ -467,6 +467,38 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				index++;
 
+				const auto drag_drop = [](Toad::Object* obj) {
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (ImGui::AcceptDragDropPayload("move object") != nullptr)
+						{
+							if (selected_obj != nullptr)
+							{
+								selected_obj->SetParent(obj);
+							}
+							for (const std::string& o : selected_objects)
+							{
+								Toad::Object* as_object = Toad::Engine::Get().GetScene().GetSceneObject(o);
+								if (as_object != nullptr)
+								{
+									as_object->SetParent(obj);
+								}
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+					if (ImGui::BeginDragDropSource())
+					{
+						if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
+						{
+							selected_objects.clear();
+							selected_obj = obj;
+						}
+						ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
+						ImGui::EndDragDropSource();
+					}
+				};
+
 				if (!scene_objects_set.contains(obj->name))
 				{
 					scene_objects.emplace_back(obj->name);
@@ -573,30 +605,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 						}
 
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move object"))
-							{
-								const char* object_name = static_cast<char*>(payload->Data);
-								Toad::Object* object = Toad::Engine::Get().GetScene().GetSceneObject(object_name);
-								if (object != nullptr)
-								{
-									object->SetParent(obj);
-									ImGui::SetNextItemOpen(true);
-								}
-							}
-							ImGui::EndDragDropTarget();
-						}
-						if (ImGui::BeginDragDropSource())
-						{
-							if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
-							{
-								selected_objects.clear();
-								selected_obj = obj;
-							}
-							ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
-							ImGui::EndDragDropSource();
-						}
+						drag_drop(obj);
 
 						for (Toad::Object* child : obj->GetChildrenAsObjects())
 						{
@@ -651,29 +660,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 									}
 								}
 							}
-							if (ImGui::BeginDragDropTarget())
-							{
-								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move object"))
-								{
-									const char* object_name = static_cast<char*>(payload->Data);
-									Toad::Object* object = Toad::Engine::Get().GetScene().GetSceneObject(object_name);
-									if (object != nullptr)
-									{
-										object->SetParent(child);
-									}
-								}
-								ImGui::EndDragDropTarget();
-							}
-							if (ImGui::BeginDragDropSource())
-							{
-								if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
-								{
-									selected_objects.clear();
-									selected_obj = obj;
-								}
-								ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
-								ImGui::EndDragDropSource();
-							}
+
+							drag_drop(child);
 						}
 
 						ImGui::TreePop();
@@ -727,31 +715,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 				}
 
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move object"))
-					{
-						const char* object_name = static_cast<char*>(payload->Data);
-						Toad::Object* object = Toad::Engine::Get().GetScene().GetSceneObject(object_name);
-						if (object != nullptr)
-						{
-							object->SetParent(obj);
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-				if (ImGui::BeginDragDropSource())
-				{
-					if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
-					{
-						//LOGDEBUGF(" {} {} ", selected_objects.contains(obj->name), selected_obj->name);
-						selected_objects.clear();
-						selected_obj = obj;
-					}
-					ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
-					ImGui::EndDragDropSource();
-				}
-
+				drag_drop(obj);
 			};
 		for (auto& name : Toad::Engine::Get().GetScene().objects_map | std::views::keys)
 		{
