@@ -40,6 +40,18 @@ namespace Toad
 		m_circle.setPosition(position);
 	}
 
+	void Circle::SetRotation(float degrees)
+	{
+		Object::SetRotation(degrees);
+
+		m_circle.setRotation(degrees);
+	}
+
+	float Circle::GetRotation()
+	{
+		return m_circle.getRotation();
+	}
+
 	json Circle::Serialize()
 	{
 		json c_data;

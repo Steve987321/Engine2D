@@ -18,6 +18,9 @@ namespace Toad
 		const Vec2f& GetPosition() override;
 		void SetPosition(const Vec2f& position) override;
 
+		void SetRotation(float degrees) override;
+		float GetRotation() override;
+
 		json Serialize();
 
 	private:

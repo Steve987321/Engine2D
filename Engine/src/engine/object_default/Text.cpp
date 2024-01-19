@@ -9,7 +9,7 @@ namespace Toad
 Text::Text(std::string_view obj_name)
 {
 	name = obj_name;
-
+	
 	sf::Font* default_font = Engine::Get().GetResourceManager().GetFont("Default");
 	if (default_font == nullptr)
 	{
@@ -118,6 +118,18 @@ void Text::SetPosition(const Vec2f& position)
 	Object::SetPosition(position);
 
 	m_text.setPosition(position);
+}
+
+void Text::SetRotation(float degrees)
+{
+	Object::SetRotation(degrees);
+
+	m_text.setRotation(degrees);
+}
+
+float Text::GetRotation()
+{
+	return m_text.getRotation();
 }
 
 json Text::Serialize()

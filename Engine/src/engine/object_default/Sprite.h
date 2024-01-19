@@ -15,6 +15,9 @@ public:
 	const Vec2f& GetPosition() override;
 	void SetPosition(const Vec2f& position) override;
 
+	void SetRotation(float degrees) override;
+	float GetRotation() override;
+
 	std::filesystem::path& GetTextureSourcePath();
 	void SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture);
 	json Serialize();

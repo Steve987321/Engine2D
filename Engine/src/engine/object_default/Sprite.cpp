@@ -33,6 +33,18 @@ void Sprite::SetPosition(const Vec2f& position)
 	m_sprite.setPosition(position);
 }
 
+void Sprite::SetRotation(float degrees)
+{
+	Object::SetRotation(degrees);
+
+	m_sprite.setRotation(degrees);
+}
+
+float Sprite::GetRotation()
+{
+	return m_sprite.getRotation();
+}
+
 std::filesystem::path& Sprite::GetTextureSourcePath()
 {
 	return m_texture_source_path;
