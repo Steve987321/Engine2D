@@ -76,7 +76,7 @@ namespace Toad
 
 		while (!fs::exists(proj_dir / "buildlog.txt"))
 		{
-			
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		}
 
 		std::ifstream buildlog(proj_dir / "buildlog.txt");
