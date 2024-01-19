@@ -36,8 +36,10 @@ public:
 	virtual void Update();
 
 	virtual const Vec2f& GetPosition();
-
 	virtual void SetPosition(const Vec2f& position);
+
+	virtual float GetRotation();
+	virtual void SetRotation(float degrees);
 
 	const std::set<std::string>& GetChildren();
 	std::vector<Object*> GetChildrenAsObjects() const;

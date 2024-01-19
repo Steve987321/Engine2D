@@ -51,6 +51,33 @@ namespace Toad
 		}
 	}
 
+	float Object::GetRotation()
+	{
+		return -1;
+	}
+
+	void Object::SetRotation(float degrees)
+	{
+		const Vec2f& pos = GetPosition();
+		float rad = (degrees - GetRotation()) * (std::numbers::pi_v<float> / 180.f);
+		float c = cos(rad);
+		float s = sin(rad);
+
+		for (const std::string& child : m_children)
+		{
+			Object* obj = m_currentScene.GetSceneObject(child);
+
+			Vec2f relative_position = obj->GetPosition() - pos;
+
+			float newx = c * relative_position.x - s * relative_position.y + pos.x;
+			float newy = s * relative_position.x + c * relative_position.y + pos.y;
+
+			obj->SetPosition({ newx, newy});
+
+			obj->SetRotation(degrees);
+		}
+	}
+
 	const std::set<std::string>& Object::GetChildren()
 	{
 		return m_children;
