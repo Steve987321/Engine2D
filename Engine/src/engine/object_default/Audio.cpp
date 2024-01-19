@@ -25,8 +25,7 @@ Audio::Audio(const Audio& other)
 	m_sourceFile = other.m_sourceFile;
 }
 
-Audio::~Audio()
-= default;
+Audio::~Audio() = default;
 
 void Audio::Start()
 {

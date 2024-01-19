@@ -462,8 +462,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		std::vector<std::string> scene_objects {};
 		std::set<std::string> scene_objects_set {};
-		if (selected_obj != nullptr)
-		LOGDEBUGF(" SEL OBJ {}", selected_obj->name);
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{
 				index++;
@@ -474,7 +472,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 					{
 						if (ImGui::AcceptDragDropPayload("move object") != nullptr)
 						{
-							LOGDEBUGF("{} set parent ({})", selected_obj->name, obj->name);
 							if (selected_obj != nullptr)
 							{
 								selected_obj->SetParent(obj);
@@ -646,7 +643,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 										ignore_mouse_click = true;
 									}
 								}
-								else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+								else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 								{
 									if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != child->name)
 									{
@@ -730,10 +727,26 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 
 				if (!skip)
+				{
 					drag_drop(skip, obj);
+				}
 
 				skip = false;
 			};
+
+		if (ImGui::IsKeyPressed(ImGuiKey_Delete))
+		{
+			if (selected_obj != nullptr)
+			{
+				Toad::Engine::Get().GetScene().RemoveFromScene(selected_obj->name);
+				selected_obj = nullptr;
+			}
+			for (const std::string& s : selected_objects)
+			{
+				Toad::Engine::Get().GetScene().RemoveFromScene(s);
+				remove_objects_queue.emplace(s);
+			}
+		}
 
 		for (auto& name : Toad::Engine::Get().GetScene().objects_map | std::views::keys)
 		{
@@ -943,6 +956,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			float pos_x = selected_obj->GetPosition().x;
 			float pos_y = selected_obj->GetPosition().y;
+			float rotation = selected_obj->GetRotation();
+
 			if (ImGui::DragFloat("x", &pos_x))
 			{
 				selected_obj->SetPosition({ pos_x, pos_y });
@@ -950,6 +965,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::DragFloat("y", &pos_y))
 			{
 				selected_obj->SetPosition({ pos_x, pos_y });
+			}
+			if (ImGui::DragFloat("rotation (degrees)", &rotation))
+			{
+				selected_obj->SetRotation(rotation);
 			}
 
 			//if (ImGui::Button("Test"))
@@ -1622,7 +1641,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ext == ".TSCENE")
 			{
-				Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
+				if (asset_browser.GetAssetPath().empty())
+				{
+					Toad::Engine::Get().SetScene(Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+				}
+				else
+				{
+					Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
+				}
 				selected_obj = nullptr;
 			}
 		}

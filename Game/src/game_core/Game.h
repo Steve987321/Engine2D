@@ -11,6 +11,9 @@
 #include "engine/systems/Scene.h" 
 #include "engine/Types.h"
 
+#include "engine/Engine.h"
+#include "engine/systems/ResourceManager.h"
+
 struct AppSettings
 {
 	std::string window_name;
