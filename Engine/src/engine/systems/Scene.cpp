@@ -22,6 +22,14 @@ void Scene::Start()
 	}
 }
 
+void Scene::FixedUpdate()
+{
+	for (auto& obj : objects_map | std::views::values)
+	{
+		obj->FixedUpdate();
+	}
+}
+
 void Scene::Update()
 {
 	for (auto& obj : objects_map | std::views::values)

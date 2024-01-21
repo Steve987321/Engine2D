@@ -17,6 +17,10 @@ const std::string& Script::GetName() const
 	return m_name;
 }
 
+void Script::OnFixedUpdate(Object* obj)
+{
+}
+
 void Script::OnUpdate(Object* obj)
 {
 }

@@ -6,6 +6,8 @@
 #include "game_core/ScriptRegister.h"
 #include "game_core/Game.h"
 
+#include "engine/systems/Timer.h"
+
 #ifdef __APPLE__
 #include <dlfcn.h>
 #endif
@@ -38,6 +40,7 @@ bool Engine::Init()
 	}
 
 	m_current_path = std::filesystem::current_path();
+	LoadGameScripts();
 
 #ifndef TOAD_EDITOR
 	std::vector<Scene> found_scenes;
@@ -109,6 +112,8 @@ void Engine::Run()
 	SetScene(m_currentScene);
 #endif
 
+	Timer timer(true);
+
 	while (m_window.isOpen())
 	{
 		// update deltatime
@@ -120,7 +125,17 @@ void Engine::Run()
 
 		// update objects 
 		if (m_beginPlay)
+		{
+			if ((int)timer.Elapsed<std::chrono::milliseconds>() > fixed_update_frequency)
+			{
+				m_fixedDeltaTime = sf::milliseconds((int)timer.Elapsed<std::chrono::milliseconds>());
+				m_currentScene.FixedUpdate();
+				timer.Start();
+			}
+			
+
 			m_currentScene.Update();
+		}
 #else
 		m_currentScene.Update();
 #endif
@@ -194,6 +209,22 @@ void Engine::EventHandler()
 			//m_window.setView(view);
 				// shape match pixel to coords
 #endif
+			break;
+		}
+
+		case sf::Event::KeyPressed:
+		{
+			break;
+		}
+
+		case sf::Event::KeyReleased:
+		{
+			break;
+		}
+
+		case sf::Event::MouseButtonPressed:
+		{
+			break;
 		}
 
 		}
@@ -244,6 +275,11 @@ Logger& Engine::GetLogger()
 sf::Time Engine::GetDeltaTime() const
 {
 	return m_deltaTime;
+}
+
+sf::Time Engine::GetFixedDeltaTime() const
+{
+	return m_fixedDeltaTime;
 }
 
 sf::RenderWindow& Engine::GetWindow()

@@ -13,4 +13,3 @@
 #include "engine/object_default/Circle.h"
 #include "engine/object_default/Audio.h"
 #include "engine/object_default/Text.h"
-

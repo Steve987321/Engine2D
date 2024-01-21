@@ -1,0 +1,31 @@
+#pragma once
+
+#include <EngineCore.h>
+
+namespace Toad
+{
+
+class ENGINE_API Timer
+{
+public:
+	using TClock = std::chrono::high_resolution_clock;
+
+	explicit Timer(std::chrono::time_point<TClock> starting_point);
+	explicit Timer(bool start);
+
+	Timer();
+	~Timer();
+
+	void Start();
+
+	template<typename TDur = std::chrono::milliseconds>
+	float Elapsed() const
+	{
+		return std::chrono::duration_cast<TDur>(TClock::now() - m_start).count();
+	}
+
+private:
+	std::chrono::time_point<TClock> m_start;
+};
+
+}

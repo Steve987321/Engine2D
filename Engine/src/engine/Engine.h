@@ -29,6 +29,7 @@ namespace Toad
 		sf::Vector2i GetWindowPos() const;
 
 		sf::Time GetDeltaTime() const;
+		sf::Time GetFixedDeltaTime() const;
 
 		sf::RenderWindow& GetWindow();
 
@@ -55,6 +56,8 @@ namespace Toad
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
+		int fixed_update_frequency = 1000 / 50;
+
 	private:
 		bool InitWindow(const AppSettings& settings);
 		void EventHandler();
@@ -68,6 +71,8 @@ namespace Toad
 
 	private:
 		sf::Time m_deltaTime;
+		sf::Time m_fixedDeltaTime;
+
 		sf::RenderWindow m_window;
 		sf::Clock m_deltaClock;
 
