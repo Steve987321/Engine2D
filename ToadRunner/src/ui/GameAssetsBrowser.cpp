@@ -327,9 +327,15 @@ void GameAssetsBrowser::Show()
 	}
 
 	int id = 0;
+	int counter = 0;
+	int max_columns = (int)(ImGui::GetWindowWidth() / (70.f + ImGui::GetStyle().FramePadding.x));
+
 	for (const auto& entry : fs::directory_iterator(m_currentPath))
 	{
 		id++;
+		counter++;
+
+		ImGui::BeginChild(id, { 70, 70 }, false);
 
 		if (!selected.empty())
 		{
@@ -398,7 +404,8 @@ void GameAssetsBrowser::Show()
 		//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
 		if (ImGui::BeginDragDropSource(src_flags))
 		{
-			auto buf = new std::string(entry.path().string());
+			// TODO: FIX memory leak
+			std::string* buf = new std::string(entry.path().string());
 			is_dragging_file = true;
 			ImGui::SetDragDropPayload("move file", buf, entry.path().string().length());
 			ImGui::BeginTooltip();
@@ -452,6 +459,17 @@ void GameAssetsBrowser::Show()
 		else
 		{
 			ImGui::Text(entry.path().filename().string().c_str());
+		}
+
+		ImGui::EndChild();
+
+		if (counter < max_columns)
+		{
+			ImGui::SameLine();
+		}
+		else
+		{
+			counter = 0;
 		}
 	}
 
