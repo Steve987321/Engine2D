@@ -43,7 +43,7 @@ public:
 	void SetRotation(float degrees) override;
 	float GetRotation() override;
 
-	json Serialize();
+	json Serialize() override;
 
 private:
 	TextStyle m_style;

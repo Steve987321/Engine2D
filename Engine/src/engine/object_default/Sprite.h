@@ -20,7 +20,7 @@ public:
 
 	std::filesystem::path& GetTextureSourcePath();
 	void SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture);
-	json Serialize();
+	json Serialize() override;
 
 private:
 	void Render(sf::RenderWindow& window) override;

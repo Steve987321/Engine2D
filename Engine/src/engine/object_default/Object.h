@@ -43,6 +43,8 @@ public:
 	virtual float GetRotation();
 	virtual void SetRotation(float degrees);
 
+	virtual json Serialize() = 0;
+
 	const std::set<std::string>& GetChildren();
 	std::vector<Object*> GetChildrenAsObjects() const;
 	bool AddChild(Object* object);

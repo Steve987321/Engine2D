@@ -10,8 +10,11 @@ class Camera : public Object
 public:
 	explicit Camera(std::string_view obj_name);
 
+
+	json Serialize() override;
+
 public:
-	static Camera& GetActiveCamera();
+	static std::vector<Camera*> GetActiveCameras();
 
 public:
 
@@ -25,6 +28,8 @@ public:
 	float GetRotation() override;
 	void SetRotation(float degrees) override;
 
+	bool IsActive() const;
+
 	void ActivateCamera();
 	void DeactivateCamera();
 
@@ -37,7 +42,8 @@ public:
 
 private:
 	sf::View m_view;
-	static std::vector<Camera*> m_cameras;
+	static inline std::vector<Camera*> m_cameras {};
+	bool m_active = false;
 
 };
 

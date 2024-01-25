@@ -23,7 +23,7 @@ public:
 	const Vec2f& GetPosition() override;
 	void SetPosition(const Vec2f& position) override;
 
-	json Serialize();
+	json Serialize() override;
 
 	const sf::SoundBuffer* GetSoundBuffer() const;
 

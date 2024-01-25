@@ -21,7 +21,7 @@ namespace Toad
 		void SetRotation(float degrees) override;
 		float GetRotation() override;
 
-		json Serialize();
+		json Serialize() override;
 
 	private:
 		void Start() override;

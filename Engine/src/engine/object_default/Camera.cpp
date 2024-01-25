@@ -11,8 +11,24 @@ Camera::Camera(std::string_view obj_name)
 	name = obj_name;
 }
 
-Camera& Camera::GetActiveCamera()
+json Camera::Serialize()
 {
+	throw std::logic_error("The method or operation is not implemented.");
+}
+
+std::vector<Camera*> Camera::GetActiveCameras()
+{
+	std::vector<Camera*> active_cams;
+
+	for (Camera* cam : m_cameras)
+	{
+		if (cam->IsActive())
+		{
+			active_cams.push_back(cam);
+		}
+	}
+
+	return active_cams;
 	
 }
 
@@ -58,14 +74,37 @@ void Camera::SetRotation(float degrees)
 	m_view.setRotation(degrees);
 }
 
+bool Camera::IsActive() const
+{
+	return m_active;
+}
+
 void Camera::ActivateCamera()
 {
+	m_active = true;
 	Engine::Get().GetWindow().setView(m_view);
 }
 
 void Camera::DeactivateCamera()
 {
+	m_active = false;
 	Engine::Get().GetWindow().setView(m_view);
 }
 
+void Camera::SetSize(const Vec2f& size)
+{
+}
+
+const Vec2f& Camera::GetSize() const
+{
+	return m_view.getSize();
+}
+
+void Camera::Zoom(float factor)
+{
+}
+
+void Camera::SetViewport(const sf::FloatRect& viewport)
+{
+}
 }
