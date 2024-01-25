@@ -328,14 +328,16 @@ void GameAssetsBrowser::Show()
 
 	int id = 0;
 	int counter = 0;
-	int max_columns = (int)(ImGui::GetWindowWidth() / (70.f + ImGui::GetStyle().FramePadding.x));
+	float child_size = 90.f;
+	int max_columns = (int)(ImGui::GetWindowWidth() / (child_size + ImGui::GetStyle().FramePadding.x));
+	bool open_modify_popup = false;
 
 	for (const auto& entry : fs::directory_iterator(m_currentPath))
 	{
 		id++;
 		counter++;
 
-		ImGui::BeginChild(id, { 70, 70 }, false);
+		ImGui::BeginChild(id, { child_size, child_size }, false);
 
 		if (!selected.empty())
 		{
@@ -404,17 +406,15 @@ void GameAssetsBrowser::Show()
 		//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
 		if (ImGui::BeginDragDropSource(src_flags))
 		{
-			// TODO: FIX memory leak
-			std::string* buf = new std::string(entry.path().string());
+			std::string buf = std::string(entry.path().string());
 			is_dragging_file = true;
-			ImGui::SetDragDropPayload("move file", buf, entry.path().string().length());
+			ImGui::SetDragDropPayload("move file", &buf, entry.path().string().length());
 			ImGui::BeginTooltip();
-			ImGui::Text(fs::path(*buf).filename().string().c_str());
+			ImGui::Text(fs::path(buf).filename().string().c_str());
 			ImGui::EndTooltip();
 			ImGui::EndDragDropSource();
 		}
-
-		if (entry.is_directory() && ImGui::BeginDragDropTarget())
+		if (ImGui::BeginDragDropTarget() && entry.is_directory())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
 			{
@@ -431,7 +431,7 @@ void GameAssetsBrowser::Show()
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())
 		{
 			selected = entry.path();
-			ImGui::OpenPopup("modify menu");
+			open_modify_popup = true;
 		}
 		if (renaming && selected == entry.path())
 		{
@@ -473,14 +473,21 @@ void GameAssetsBrowser::Show()
 		}
 	}
 
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	if (open_modify_popup)
 	{
-		if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
+		ImGui::OpenPopup("modify menu");
+		open_modify_popup = false;
+	}
+	else
+	{
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		{
-			if (!ImGui::IsPopupOpen("modify menu"))
-				ImGui::OpenPopup("creation menu");
+			if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
+			{
+				if (!ImGui::IsPopupOpen("modify menu"))
+					ImGui::OpenPopup("creation menu");
+			}
 		}
-
 	}
 
 	ImGui::End();
