@@ -126,6 +126,7 @@ void Engine::Run()
 		// update objects 
 		if (m_beginPlay)
 		{
+			// TODO: remove timer 
 			if ((int)timer.Elapsed<std::chrono::milliseconds>() > fixed_update_frequency)
 			{
 				m_fixedDeltaTime = sf::milliseconds((int)timer.Elapsed<std::chrono::milliseconds>());

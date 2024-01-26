@@ -56,7 +56,7 @@ namespace Toad
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
 
-		int fixed_update_frequency = 1000 / 50;
+		static constexpr int fixed_update_frequency = 1000 / 50;
 
 	private:
 		bool InitWindow(const AppSettings& settings);
