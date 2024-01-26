@@ -54,15 +54,6 @@ void Scene::Render(sf::RenderWindow& window)
 	}
 }
 
-Object* Scene::GetSceneObject(std::string_view obj_name)
-{
-	if (objects_map.contains(obj_name.data()))
-	{
-		return objects_map[obj_name.data()].get();
-	}
-	return nullptr;
-}
-
 bool Scene::RemoveFromScene(std::string_view obj_name)
 {
 	if (objects_map.contains(obj_name.data()))
@@ -74,6 +65,78 @@ bool Scene::RemoveFromScene(std::string_view obj_name)
 	return false;
 }
 
+Object* Scene::GetSceneObject(std::string_view obj_name) const
+{
+	if (auto pos = objects_map.find(obj_name.data()); pos != objects_map.end())
+	{
+		return pos->second.get();
+	}
+	return nullptr;
+}
+
+json Scene::Serialize() const
+{
+	std::vector<std::string> objects;
+	objects.reserve(objects_map.size());
+
+	for (const auto& name: objects_map | std::views::keys)
+	{
+		objects.emplace_back(name);
+	}
+
+	json data = Serialize(objects);
+	return data;
+}
+
+json Scene::Serialize(const std::vector<std::string>& object_names) const
+{
+	json data; 
+
+	// object types
+	json objects; // all 
+	json circles;
+	json sprites;
+	json audios;
+	json texts;
+	
+	for (const auto& name : object_names)
+	{
+		Object* object = GetSceneObject(name);
+
+		Circle* circle = dynamic_cast<Circle*>(object);
+		Sprite* sprite = dynamic_cast<Sprite*>(object);
+		Audio* audio = dynamic_cast<Audio*>(object);
+		Text* text = dynamic_cast<Text*>(object);
+
+		if (circle != nullptr)
+		{
+			circles[name] = circle->Serialize();
+		}
+		else if (sprite != nullptr)
+		{
+			sprites[name] = sprite->Serialize();
+		}
+		else if (audio != nullptr)
+		{
+			audios[name] = audio->Serialize();
+		}
+		else if (text != nullptr)
+		{
+			texts[name] = text->Serialize();
+		}
+	}
+
+	objects["circles"] = circles;
+	objects["sprites"] = sprites;
+	objects["audios"] = audios;
+	objects["texts"] = texts;
+	//objects["..."] = ...
+
+	data["objects"] = objects;
+
+	return data;
+}
+
 enum class TypesMap
 {
 	b = 0,
@@ -83,7 +146,6 @@ enum class TypesMap
 	i32 = 4,
 	str = 5
 };
-
 
 sf::Texture GetTexFromPath(const std::filesystem::path& path)
 {
@@ -106,14 +168,69 @@ sf::IntRect GetRectFromJSON(json obj)
 	};
 }
 
-template <typename T> 
-void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {})
+Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder)
+{
+	std::ifstream in(path);
+
+	json data;
+	if (in.is_open())
+	{
+		try
+		{
+			data = json::parse(in);
+			in.close();
+		}
+		catch (json::parse_error& e)
+		{
+			LOGERRORF("JSON parse error at {} {}", e.byte, e.what());
+			in.close();
+			return {};
+		}
+	}
+
+	Scene scene;
+	scene.path = path;
+	scene.name = path.filename().string();
+
+	LoadSceneObjects(data, scene, asset_folder);
+
+	return scene;
+}
+
+void SaveScene(const Scene& scene, const std::filesystem::path& path)
+{
+	json data = scene.Serialize();
+
+	std::string dir = path.string();
+	if (dir.find('\\') != std::string::npos && !dir.ends_with("\\"))
+		dir += "\\";
+
+	std::string full = dir + scene.name;
+	if (!scene.name.ends_with(".TSCENE"))
+	{
+		full += ".TSCENE";
+	}
+
+	std::ofstream out(full);
+	if (out.is_open())
+	{
+		out << data;
+		out.close();
+	}
+	else if (out.fail())
+	{
+		throw "bitchass";
+	}
+}
+
+template <typename T>
+ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesystem::path& asset_folder = {})
 {
 #ifdef TOAD_EDITOR
 	assert(!asset_folder.empty() && "asset_folder argument should be used when in toad editor");
 #endif
 
-	std::queue<std::pair<std::string, std::string>> set_object_parents_queue {};
+	std::queue<std::pair<std::string, std::string>> set_object_parents_queue{};
 
 	for (const auto& object : objects.items())
 	{
@@ -228,7 +345,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 				audioobj->ShouldPlayFromSource(play_from_src);
 				audioobj->SetVolume(volume);
 				audioobj->SetPitch(pitch);
-				audioobj->SetAudioPosition({spatial_x, spatial_y, spatial_z});
+				audioobj->SetAudioPosition({ spatial_x, spatial_y, spatial_z });
 
 				if (props.contains("audio_source"))
 				{
@@ -367,7 +484,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 				}
 			}
 		}
-		catch(json::type_error& e)
+		catch (json::type_error& e)
 		{
 			LOGERRORF("JSON type error: {}", e.what());
 		}
@@ -383,103 +500,18 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 
 		set_object_parents_queue.pop();
 	}
-
 }
 
-Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder)
+
+ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder)
 {
-	std::ifstream in(path);
-
-	json data;
-	if (in.is_open())
+	if (objects.contains("objects"))
 	{
-		try
-		{
-			data = json::parse(in);
-			in.close();
-		}
-		catch (json::parse_error& e)
-		{
-			LOGERRORF("JSON parse error at {} {}", e.byte, e.what());
-			in.close();
-			return {};
-		}
-	}
-
-	Scene scene;
-	scene.path = path;
-	scene.name = path.filename().string();
-
-	if (data.contains("objects"))
-	{
-		auto objects = data["objects"];
-		LoadSceneObjects<Circle>(objects["circles"], scene, asset_folder);
-		LoadSceneObjects<Sprite>(objects["sprites"], scene, asset_folder);
-		LoadSceneObjects<Audio>(objects["audios"], scene, asset_folder);
-		LoadSceneObjects<Text>(objects["texts"], scene, asset_folder);
-	}
-
-	return scene;
-}
-
-void SaveScene(const Scene& scene, const std::filesystem::path& path)
-{
-	json data; 
-
-	// object types
-	json objects; // all 
-	json circles;
-	json sprites;
-	json audios;
-	json texts;
-
-	for (const auto& [name, object] : scene.objects_map)
-	{
-		Circle* circle = dynamic_cast<Circle*>(object.get());
-		Sprite* sprite = dynamic_cast<Sprite*>(object.get());
-		Audio* audio = dynamic_cast<Audio*>(object.get());
-		Text* text = dynamic_cast<Text*>(object.get());
-
-		if (circle != nullptr)
-		{
-			circles[name] = circle->Serialize();
-		}
-		else if (sprite != nullptr)
-		{
-			sprites[name] = sprite->Serialize();
-		}
-		else if (audio != nullptr)
-		{
-			audios[name] = audio->Serialize();
-		}
-		else if (text != nullptr)
-		{
-			texts[name] = text->Serialize();
-		}		
-	}
-
-	objects["circles"] = circles;
-	objects["sprites"] = sprites;
-	objects["audios"] = audios;
-	objects["texts"] = texts;
-	//objects["..."] = ...
-
-	data["objects"] = objects;
-
-	std::string dir = path.string();
-	if (dir.find('\\') != std::string::npos && !dir.ends_with("\\"))
-		dir += "\\";
-	auto full = dir + scene.name + ".TSCENE";
-
-	std::ofstream out(full);
-	if (out.is_open())
-	{
-		out << data;
-		out.close();
-	}
-	else if (out.fail())
-	{
-		throw "bitchass";
+		auto& objectsall = objects["objects"];
+		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder);
+		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder);
+		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder);
+		LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder);
 	}
 }
 

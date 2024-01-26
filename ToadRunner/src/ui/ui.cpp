@@ -430,6 +430,68 @@ void ui::engine_ui(ImGuiContext* ctx)
 	// SCENE/HIERARCHY
 	ImGui::Begin("Scene", nullptr);
 	{
+		static std::set<std::string> selected_objects = {};
+		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
+		int index = 0;
+		static size_t prev_cursor_index = 0;
+		static size_t cursor_index = 0;
+		static bool cursor_index_is_under = false;
+		static bool check_range = false;
+
+		std::vector<std::string> scene_objects{};
+		std::set<std::string> scene_objects_set{};
+
+		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+		{
+			Toad::Scene& scene = Toad::Engine::Get().GetScene();
+
+			if (ImGui::IsKeyPressed(ImGuiKey_S))
+			{
+				if (!scene.path.empty())
+				{
+					SaveScene(scene, scene.path.parent_path());
+				}
+			}
+			if (ImGui::IsKeyPressed(ImGuiKey_C))
+			{
+				std::vector<std::string> objects;
+				size_t count = 0;
+				if (selected_obj != nullptr)
+				{
+					count++;
+					objects.emplace_back(selected_obj->name);
+				}
+				count += selected_objects.size();
+
+				objects.reserve(count);
+
+				for (const std::string& name : selected_objects)
+				{
+					objects.emplace_back(name);
+				}
+
+				json data = scene.Serialize(objects);
+				std::stringstream ss;
+				ss << data;
+
+				ImGui::SetClipboardText(ss.str().c_str());
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_V))
+			{
+				const char* data = ImGui::GetClipboardText();
+
+				try
+				{
+					json data_json = json::parse(data);
+					Toad::LoadSceneObjects(data_json, scene, "asset_browser.GetAssetPath()");
+				}
+				catch (const json::parse_error& e)
+				{
+					LOGERRORF("json parse error {}, check your clipboard", e.what());
+				}
+			}
+		}
+
 		ImGui::SeparatorText(Toad::Engine::Get().GetScene().name.c_str());
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
@@ -452,16 +514,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		static std::set<std::string> selected_objects = {};
-		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
-		int index = 0;
-		static size_t prev_cursor_index = 0;
-		static size_t cursor_index = 0;
-		static bool cursor_index_is_under = false;
-		static bool check_range = false;
-
-		std::vector<std::string> scene_objects {};
-		std::set<std::string> scene_objects_set {};
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{
 				index++;

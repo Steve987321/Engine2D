@@ -1,11 +1,14 @@
 #pragma once
 
 #include <EngineCore.h>
+#include "nlohmann/json.hpp"
 
 namespace Toad
 {
 
 class Object;
+
+using json = nlohmann::json;
 
 struct ENGINE_API Scene
 {
@@ -77,7 +80,12 @@ struct ENGINE_API Scene
 	/// @returns 
 	/// A pointer to object if found nullptr if no objects were found.
 	///
-	Object* GetSceneObject(std::string_view obj_name);
+	Object* GetSceneObject(std::string_view obj_name) const;
+
+	json Serialize() const;
+
+	// for serializing a selection of objects 
+	json Serialize(const std::vector<std::string>& objects) const;
 };
 
 // to make sure scripts are added and loaded to objects make sure to update script registry before calling this function
@@ -86,5 +94,7 @@ ENGINE_API Scene LoadScene(const std::filesystem::path& path, const std::filesys
 
 // for path specify only the folder to save to 
 ENGINE_API void SaveScene(const Scene& scene, const std::filesystem::path& path);
+
+ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {});
 
 }
