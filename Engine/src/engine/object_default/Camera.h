@@ -5,19 +5,19 @@
 namespace Toad
 {
 
-class Camera : public Object
+class ENGINE_API Camera : public Object
 {
 public:
 	explicit Camera(std::string_view obj_name);
-
+	~Camera();
 
 	json Serialize() override;
 
 public:
-	static std::vector<Camera*> GetActiveCameras();
+	static Camera* GetActiveCamera();
 
 public:
-
+	void OnCreate() override;
 	void Start() override;
 	void Render(sf::RenderWindow& window) override;
 	void Render(sf::RenderTexture& texture) override;
@@ -40,9 +40,12 @@ public:
 
 	void SetViewport(const sf::FloatRect& viewport);
 
+	const sf::View& GetView() const;
+
 private:
 	sf::View m_view;
 	static inline std::vector<Camera*> m_cameras {};
+	static inline Camera* m_activeCam = nullptr;
 	bool m_active = false;
 
 };
