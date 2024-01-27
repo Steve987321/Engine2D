@@ -1,5 +1,8 @@
 #include "pch.h"
 
+#ifdef _DEBUG
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 #include "Engine.h"
 #include "Settings.h"
 
@@ -238,20 +241,39 @@ void Engine::Render()
 
 	//--------------------draw------------------------//
 
-#ifdef TOAD_EDITOR
+	Camera* cam = Camera::GetActiveCamera();
 
+#if defined(_DEBUG) && !defined(TOAD_EDITOR)
+	ImDrawList* draw = ImGui::GetWindowDrawList();
+	const char* err_msg = "NO CAMERA'S IN SCENE ARE AVAILABLE FOR RENDERING";
+	ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
+	draw->AddText({ m_window.getSize().x / 2 - size.x, m_window.getSize().y / 2 - size.y }, IM_COL32(255, 0, 0, 255), err_msg);
+#endif
+
+#if defined(TOAD_EDITOR)
 	m_windowTexture.clear();
 
 	// Update scene to the texture so it can display on the viewport 
 	GetScene().Render(m_windowTexture);
+
+	if (cam != nullptr)
+	{
+		m_windowTexture.setView(cam->GetView());
+	}
+
 	m_windowTexture.display();
 
 	// imgui
 	m_renderUI(ImGui::GetCurrentContext());
-	ImGui::SFML::Render(m_window);
 
+	ImGui::SFML::Render(m_window);
 #else
 	GetScene().Render(m_window);
+
+	if (cam != nullptr)
+	{
+		m_window.setView(cam->GetView());
+	}
 #endif
 	//--------------------draw------------------------//
 
