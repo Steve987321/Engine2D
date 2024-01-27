@@ -406,11 +406,12 @@ void GameAssetsBrowser::Show()
 		//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
 		if (ImGui::BeginDragDropSource(src_flags))
 		{
-			std::string buf = std::string(entry.path().string());
+			std::string* buf = new std::string(entry.path().string());
 			is_dragging_file = true;
-			ImGui::SetDragDropPayload("move file", &buf, entry.path().string().length());
+
+			ImGui::SetDragDropPayload("move file", buf, buf->length());
 			ImGui::BeginTooltip();
-			ImGui::Text(fs::path(buf).filename().string().c_str());
+			ImGui::Text(fs::path(*buf).filename().string().c_str());
 			ImGui::EndTooltip();
 			ImGui::EndDragDropSource();
 		}

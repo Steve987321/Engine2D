@@ -1134,7 +1134,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (ImGui::BeginDragDropTarget())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file");
+					if (payload != nullptr)
 					{
 						std::filesystem::path src = *(std::string*)payload->Data;
 						do
@@ -1167,7 +1168,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 						} while (false);
 					}
-
 					ImGui::EndDragDropTarget();
 				}
 
