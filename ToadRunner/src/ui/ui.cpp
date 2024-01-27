@@ -886,6 +886,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Toad::Engine::Get().GetScene().AddToScene(Toad::Text("Text"));
 				}
+				if (ImGui::MenuItem("Camera"))
+				{
+					Toad::Camera* cam = Toad::Engine::Get().GetScene().AddToScene(Toad::Camera("Camera"));
+
+					cam->ActivateCamera();
+				}
 
 				ImGui::EndMenu();
 			}
@@ -1033,6 +1039,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj);
 			auto audio_obj = dynamic_cast<Toad::Audio*>(selected_obj);
 			auto text_obj = dynamic_cast<Toad::Text*>(selected_obj);
+			auto cam_obj = dynamic_cast<Toad::Camera*>(selected_obj);
 
 			if (sprite_obj != nullptr)
 			{
@@ -1523,6 +1530,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 
+			else if (cam_obj != nullptr)
+			{
+				bool active = cam_obj->IsActive();
+				if (ImGui::Checkbox("Active", &active))
+				{
+					if (active)
+					{
+						cam_obj->ActivateCamera();
+					}
+					else
+					{
+						cam_obj->DeactivateCamera();
+					}
+				}
+			}
+
 			static std::string selected_script_name;
 
 			bool script_node_open = ImGui::TreeNode("Scripts");
@@ -1660,7 +1683,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 			(content_size.y - image_height + pady) * 0.5f
 		});
 
-		ImGui::Image(window_texture, {image_width, image_height + pady}, sf::Color::White);
+		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
+		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
@@ -1677,6 +1701,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 			ImGui::TreePop();
+		}
+
+		if (Toad::Camera::GetActiveCamera() == nullptr)
+		{
+			const char* err_msg = "No camera's in scene, please create a camera";
+			ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
+			ImGui::SetCursorPos({
+				image_cursor_pos.x + image_width / 2 - size.x,
+				image_cursor_pos.y + image_height / 2
+			});
+
+			ImGui::TextColored({ 1, 0, 0, 1 }, err_msg);
 		}
 		
 		ImGui::End();
