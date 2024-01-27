@@ -50,7 +50,7 @@ struct ENGINE_API Scene
 	///	Also checks if name of object is already here.
 	///
 	template <class T>
-	Object* AddToScene(T&& object)
+	T* AddToScene(T&& object)
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
@@ -67,7 +67,8 @@ struct ENGINE_API Scene
 
 		object.name = objName;
 		objects_map.insert({ objName, std::make_shared<T>(object) });
-		return objects_map[objName].get();
+		objects_map[objName]->OnCreate();
+		return dynamic_cast<T*>(objects_map[objName].get());
 	}
 
 	///
