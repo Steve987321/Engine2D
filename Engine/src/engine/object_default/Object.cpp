@@ -13,6 +13,9 @@ namespace Toad
 
 	Object::~Object() = default;
 
+	void Object::OnCreate()
+	{}
+
 	void Object::Start()
 	{
 		for (auto& script : m_attachedScripts | std::views::values)

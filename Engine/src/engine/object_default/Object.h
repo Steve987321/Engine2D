@@ -25,6 +25,8 @@ public:
 	Object();
 	explicit Object(std::string_view name);
 	virtual ~Object();
+	
+	virtual void OnCreate();
 
 	virtual void Start();
 
