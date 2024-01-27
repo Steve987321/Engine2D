@@ -269,6 +269,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				// props 
 				sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
 				sf::Color outline_col = sf::Color(props["outline_col"].get<int>());
+				float rotation = props["rotation"].get<float>();
 				sf::Vector2f scale = { props["scalex"].get<float>(), props["scaley"].get<float>() };
 				float radius = props["radius"].get<float>();
 				bool has_texture = props["has_texture"].get<bool>();
@@ -384,6 +385,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				// props
 				textobj->SetText(props["text"].get<std::string>());
 				std::string font_loc = props["font_loc"].get<std::string>();
+				float rotation = props["rotation"].get<float>();
 
 				if (font_loc == "Default")
 				{

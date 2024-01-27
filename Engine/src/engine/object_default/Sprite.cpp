@@ -68,10 +68,10 @@ json Sprite::Serialize()
 
 	sprite_properties["posx"] = GetPosition().x;
 	sprite_properties["posy"] = GetPosition().y;
+	sprite_properties["rotation"] = GetRotation();
 	sprite_properties["fill_col"] = s.getColor().toInteger();
 	sprite_properties["scalex"] = s.getScale().x;
 	sprite_properties["scaley"] = s.getScale().y;
-	sprite_properties["rotation"] = s.getRotation();
 	bool has_texture = s.getTexture() != nullptr;
 	if (has_texture)
 	{

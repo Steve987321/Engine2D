@@ -142,6 +142,7 @@ json Text::Serialize()
 
 	text_properties["posx"] = GetPosition().x;
 	text_properties["posy"] = GetPosition().y;
+	text_properties["rotation"] = GetRotation();
 
 	text_properties["text"] = m_text.getString();
 	text_properties["char_size"] = m_text.getCharacterSize();
