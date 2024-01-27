@@ -1654,12 +1654,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 		}
 
 		// we want texture in the center 
+		float pady = 25; // #TODO: find the actual imgui style property 
 		ImGui::SetCursorPos({
 			(content_size.x - image_width) * 0.5f,
-			(content_size.y - image_height) * 0.5f
+			(content_size.y - image_height + pady) * 0.5f
 		});
 
-		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
+		ImGui::Image(window_texture, {image_width, image_height + pady}, sf::Color::White);
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
