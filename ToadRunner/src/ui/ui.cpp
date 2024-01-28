@@ -1035,6 +1035,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 			//	child_obj->SetParent(selected_obj);
 			//}
 
+			ImGui::SeparatorText("object properties");
+
 			auto sprite_obj = dynamic_cast<Toad::Sprite*>(selected_obj);
 			auto circle_obj = dynamic_cast<Toad::Circle*>(selected_obj);
 			auto audio_obj = dynamic_cast<Toad::Audio*>(selected_obj);
@@ -1067,7 +1069,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (ImGui::BeginDragDropTarget())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file");
+					if (payload != nullptr)
 					{
 						std::filesystem::path src = *(std::string*)payload->Data;
 						do
@@ -1104,10 +1107,31 @@ void ui::engine_ui(ImGuiContext* ctx)
 					ImGui::EndDragDropTarget();
 				}
 
-				/*if (ImGui::DragFloat("X", &pos.x))
-					sprite.setPosition(pos);
-				if (ImGui::DragFloat("Y", &pos.y))
-					sprite.setPosition(pos);*/
+				if (attached_texture != nullptr)
+				{
+					if (ImGui::TreeNode("texture rect"))
+					{
+						sf::IntRect rect = sprite.getTextureRect();
+						if (ImGui::DragInt("left", &rect.left))
+						{
+							sprite.setTextureRect(rect);
+						}
+						if (ImGui::DragInt("top", &rect.top))
+						{
+							sprite.setTextureRect(rect);
+						}
+						if (ImGui::DragInt("width", &rect.width))
+						{
+							sprite.setTextureRect(rect);
+						}
+						if (ImGui::DragInt("height", &rect.height))
+						{
+							sprite.setTextureRect(rect);
+						}
+	
+						ImGui::TreePop();
+					}
+				}
 
 				auto colorU32 = ImGui::ColorConvertU32ToFloat4(sprite.getColor().toInteger());
 				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
@@ -1176,6 +1200,32 @@ void ui::engine_ui(ImGuiContext* ctx)
 						} while (false);
 					}
 					ImGui::EndDragDropTarget();
+				}
+
+				if (attached_texture != nullptr)
+				{
+					if (ImGui::TreeNode("texture rect"))
+					{
+						sf::IntRect rect = circle.getTextureRect();
+						if (ImGui::DragInt("left", &rect.left))
+						{
+							circle.setTextureRect(rect);
+						}
+						if (ImGui::DragInt("top", &rect.top))
+						{
+							circle.setTextureRect(rect);
+						}
+						if (ImGui::DragInt("width", &rect.width))
+						{
+							circle.setTextureRect(rect);
+						}
+						if (ImGui::DragInt("height", &rect.height))
+						{
+							circle.setTextureRect(rect);
+						}
+
+						ImGui::TreePop();
+					}
 				}
 
 				const auto& circle_col = circle.getFillColor();
@@ -1544,6 +1594,17 @@ void ui::engine_ui(ImGuiContext* ctx)
 						cam_obj->DeactivateCamera();
 					}
 				}
+
+				Vec2f size = cam_obj->GetSize();
+				if (ImGui::DragFloat("size x", &size.x))
+				{
+					cam_obj->SetSize(size);
+				}
+
+				if (ImGui::DragFloat("size y", &size.y))
+				{
+					cam_obj->SetSize(size);
+				}
 			}
 
 			static std::string selected_script_name;
@@ -1709,7 +1770,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
 			ImGui::SetCursorPos({
 				image_cursor_pos.x + image_width / 2 - size.x,
-				image_cursor_pos.y + image_height / 2
+				image_cursor_pos.y + size.y + 10
 			});
 
 			ImGui::TextColored({ 1, 0, 0, 1 }, err_msg);
