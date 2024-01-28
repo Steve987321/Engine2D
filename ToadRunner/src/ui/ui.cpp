@@ -1133,10 +1133,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 				}
 
-				auto colorU32 = ImGui::ColorConvertU32ToFloat4(sprite.getColor().toInteger());
-				float col[4] = { colorU32.x, colorU32.y, colorU32.z, colorU32.w };
+				auto sprite_col = sprite.getColor();
+				float col[4] = {
+					sprite_col.r / 255.f,
+					sprite_col.g / 255.f,
+					sprite_col.b / 255.f,
+					sprite_col.a / 255.f
+				};
 				if (ImGui::ColorEdit4("color", col))
-					sprite.setColor(sf::Color(ImGui::ColorConvertFloat4ToU32({ col[0], col[1], col[2], col[3] })));
+					sprite.setColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
 			}
 
 			else if (circle_obj != nullptr)
