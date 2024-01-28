@@ -1142,6 +1142,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 				};
 				if (ImGui::ColorEdit4("color", col))
 					sprite.setColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
+
+				Vec2f scale = sprite.getScale();
+				if (ImGui::DragFloat("scale x", &scale.x))
+				{
+					sprite.setScale(scale);
+				}
+				if (ImGui::DragFloat("scale y", &scale.y))
+				{
+					sprite.setScale(scale);
+				}
 			}
 
 			else if (circle_obj != nullptr)
@@ -1247,6 +1257,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 				auto circle_radius = circle.getRadius();
 				if (ImGui::DragFloat("radius", &circle_radius))
 					circle.setRadius(circle_radius);
+
+				Vec2f scale = circle.getScale();
+				if (ImGui::DragFloat("scale x", &scale.x))
+				{
+					circle.setScale(scale);
+				}
+				if (ImGui::DragFloat("scale y", &scale.y))
+				{
+					circle.setScale(scale);
+				}
 			}
 
 			else if (audio_obj != nullptr)
