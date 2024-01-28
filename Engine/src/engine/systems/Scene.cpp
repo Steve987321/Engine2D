@@ -98,6 +98,7 @@ json Scene::Serialize(const std::vector<std::string>& object_names) const
 	json sprites;
 	json audios;
 	json texts;
+	json cameras;
 	
 	for (const auto& name : object_names)
 	{
@@ -107,6 +108,7 @@ json Scene::Serialize(const std::vector<std::string>& object_names) const
 		Sprite* sprite = dynamic_cast<Sprite*>(object);
 		Audio* audio = dynamic_cast<Audio*>(object);
 		Text* text = dynamic_cast<Text*>(object);
+		Camera* cam = dynamic_cast<Camera*>(object);
 
 		if (circle != nullptr)
 		{
@@ -124,12 +126,17 @@ json Scene::Serialize(const std::vector<std::string>& object_names) const
 		{
 			texts[name] = text->Serialize();
 		}
+		else if (cam != nullptr)
+		{
+			cameras[name] = cam->Serialize();
+		}
 	}
 
 	objects["circles"] = circles;
 	objects["sprites"] = sprites;
 	objects["audios"] = audios;
 	objects["texts"] = texts;
+	objects["cams"] = cameras;
 	//objects["..."] = ...
 
 	data["objects"] = objects;
@@ -245,6 +252,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
 			Text* textobj = dynamic_cast<Text*>(newobj);
+			Camera* camobj = dynamic_cast<Camera*>(newobj);
 
 			newobj->SetPosition({ x,y });
 
@@ -419,6 +427,25 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				style.style = static_cast<sf::Text::Style>(props["style"].get<uint32_t>());
 				style.outline_thickness = props["outline_thickness"].get<float>();
 				textobj->SetStyle(style);
+			}
+			else if (camobj != nullptr)
+			{
+				float rotation = props["rotation"].get<float>();;
+				bool active = props["cam_active"].get<bool>();
+				float sizex = props["sizex"].get<float>();
+				float sizey = props["sizey"].get<float>();
+
+				camobj->SetRotation(rotation);
+				camobj->SetSize({ sizex, sizey });
+
+				if (active)
+				{
+					camobj->ActivateCamera();
+				}
+				else
+				{
+					camobj->DeactivateCamera();
+				}
 			}
 
 			for (const auto& script : object.value()["scripts"].items())
