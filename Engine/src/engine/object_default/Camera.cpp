@@ -28,7 +28,7 @@ Camera::~Camera()
 	
 	if (m_activeCam != nullptr)
 	{
-		if (m_activeCam->name == name)
+		if (m_activeCam == this)
 		{
 			m_activeCam = nullptr;
 		}
