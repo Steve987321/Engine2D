@@ -136,7 +136,7 @@ json Scene::Serialize(const std::vector<std::string>& object_names) const
 	objects["sprites"] = sprites;
 	objects["audios"] = audios;
 	objects["texts"] = texts;
-	objects["cams"] = cameras;
+	objects["cameras"] = cameras;
 	//objects["..."] = ...
 
 	data["objects"] = objects;
@@ -167,11 +167,21 @@ sf::Texture GetTexFromPath(const std::filesystem::path& path)
 
 sf::IntRect GetRectFromJSON(json obj)
 {
+	int left = 0;
+	int top = 0;
+	int width = 0;
+	int height = 0;
+
+	GET_JSON_ELEMENT(left, obj, "left");
+	GET_JSON_ELEMENT(top, obj, "top");
+	GET_JSON_ELEMENT(width, obj, "width");
+	GET_JSON_ELEMENT(height, obj, "height");
+
 	return sf::IntRect{
 		obj["left"].get<int>(),
 		obj["top"].get<int>(),
 		obj["width"].get<int>(),
-		obj["heigth"].get<int>(),
+		obj["height"].get<int>(),
 	};
 }
 
@@ -243,9 +253,13 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 	{
 		try
 		{
-			auto& props = object.value()["properties"];
-			auto x = props["posx"].get<float>();
-			auto y = props["posy"].get<float>();
+			json props;
+			float x = 0.f;
+			float y = 0.f;
+
+			GET_JSON_ELEMENT(props, object.value(), "properties");
+			GET_JSON_ELEMENT(x, props, "posx");
+			GET_JSON_ELEMENT(y, props, "posy");
 
 			Object* newobj = scene.AddToScene(T(object.key()));
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
@@ -275,26 +289,43 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				auto& circle = circleobj->GetCircle();
 
 				// props 
-				sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
-				sf::Color outline_col = sf::Color(props["outline_col"].get<int>());
-				float rotation = props["rotation"].get<float>();
-				sf::Vector2f scale = { props["scalex"].get<float>(), props["scaley"].get<float>() };
-				float radius = props["radius"].get<float>();
-				bool has_texture = props["has_texture"].get<bool>();
+				sf::Color fill_col{};
+				sf::Color outline_col{};
+				uint32_t u32fill_col = 0;
+				uint32_t u32outline_col = 0;
+				float rotation = 0;
+				sf::Vector2f scale = {};
+				float radius = 0; 
+				bool has_texture = false; 
+
+				GET_JSON_ELEMENT(u32fill_col, props, "fill_col");
+				GET_JSON_ELEMENT(u32outline_col, props, "outline_col");
+				GET_JSON_ELEMENT(rotation, props, "rotation");
+				GET_JSON_ELEMENT(scale.x, props, "scalex");
+				GET_JSON_ELEMENT(scale.y, props, "scaley");
+				GET_JSON_ELEMENT(radius, props, "radius");
+				GET_JSON_ELEMENT(has_texture, props, "has_texture");
+
+				fill_col = sf::Color(u32fill_col);
+				outline_col = sf::Color(u32outline_col);
 
 				if (has_texture)
 				{
-					std::string path_str = props["texture_loc"].get<std::string>();
+					std::string path_str;
+					json rect; 
+
+					GET_JSON_ELEMENT(path_str, props, "texture_loc");
+					GET_JSON_ELEMENT(rect, props, "texture_rect");
 
 					sf::Texture* new_tex = Engine::Get().GetResourceManager().GetTexture(path_str);
-					sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
+					sf::IntRect tex_rect = GetRectFromJSON(rect);
 
 					if (new_tex == nullptr)
 					{
 #ifdef TOAD_EDITOR
-						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
+						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
 #else
-						sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str);
 #endif
 						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 					}
@@ -311,25 +342,37 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				auto& sprite = spriteobj->GetSprite();
 
 				// props
-				sf::Color fill_col = sf::Color(props["fill_col"].get<int>());
-				sf::Vector2f scale = sf::Vector2f{ props["scalex"].get<float>(), props["scaley"].get<float>() };
+				sf::Color fill_col = {};
+				sf::Vector2f scale = {};
+				uint32_t u32fill_col = 0;
+				float rotation = 0;
+				bool has_texture = false;
 
-				float rotation = props["rotation"].get<float>();
-				bool has_texture = props["has_texture"].get<bool>();
+				GET_JSON_ELEMENT(u32fill_col, props, "fill_col");
+				GET_JSON_ELEMENT(scale.x, props, "scalex");
+				GET_JSON_ELEMENT(scale.y, props, "scaley");
+				GET_JSON_ELEMENT(rotation, props, "rotation");
+				GET_JSON_ELEMENT(has_texture, props, "has_texture");
+
+				fill_col = sf::Color(u32fill_col);
 
 				if (has_texture)
 				{
-					std::string path_str = props["texture_loc"].get<std::string>();
+					std::string path_str;
+					json rect;
+
+					GET_JSON_ELEMENT(path_str, props, "texture_loc");
+					GET_JSON_ELEMENT(rect, props, "texture_rect");
 
 					sf::Texture* new_tex = Engine::Get().GetResourceManager().GetTexture(path_str);
-					sf::IntRect tex_rect = GetRectFromJSON(props["texture_rect"]);
+					sf::IntRect tex_rect = GetRectFromJSON(rect);
 
 					if (new_tex == nullptr)
 					{
 #ifdef TOAD_EDITOR
-						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(props["texture_loc"].get<std::string>()));
+						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
 #else
-						sf::Texture tex = GetTexFromPath(std::filesystem::path(props["texture_loc"].get<std::string>()));
+						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
 #endif
 						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 					}
@@ -344,12 +387,19 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			}
 			else if (audioobj != nullptr)
 			{
-				float play_from_src = props["play_from_source"].get<float>();
-				float volume = props["volume"].get<float>();
-				float pitch = props["pitch"].get<float>();
-				float spatial_x = props["audio_posx"].get<float>();
-				float spatial_y = props["audio_posy"].get<float>();
-				float spatial_z = props["audio_posz"].get<float>();
+				float play_from_src = 0.f;
+				float volume = 0.f;
+				float pitch = 0.f;
+				float spatial_x = 0.f;
+				float spatial_y = 0.f;
+				float spatial_z = 0.f;
+
+				GET_JSON_ELEMENT(play_from_src, props, "play_from_source")
+				GET_JSON_ELEMENT(volume, props, "volume")
+				GET_JSON_ELEMENT(pitch, props, "pitch")
+				GET_JSON_ELEMENT(spatial_x, props, "audio_posx")
+				GET_JSON_ELEMENT(spatial_y, props, "audio_posy")
+				GET_JSON_ELEMENT(spatial_z, props, "audio_posz")
 
 				audioobj->ShouldPlayFromSource(play_from_src);
 				audioobj->SetVolume(volume);
@@ -360,9 +410,13 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				{
 					json audio_source_data = props["audio_source"];
 
-					std::filesystem::path full_path = audio_source_data["full_path"].get<std::string>();
-					std::filesystem::path rel_path = audio_source_data["rel_path"].get<std::string>();
-					bool valid_buf = audio_source_data["has_valid_buf"].get<bool>();
+					std::string full_path;
+					std::string rel_path;
+					bool valid_buf = false;
+
+					GET_JSON_ELEMENT(full_path, audio_source_data, "full_path");
+					GET_JSON_ELEMENT(rel_path, audio_source_data, "rel_path");
+					GET_JSON_ELEMENT(valid_buf, audio_source_data, "has_valid_buf");
 
 					AudioSource new_audio_source;
 					new_audio_source.has_valid_buffer = valid_buf;
@@ -373,7 +427,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 					{
 						sf::SoundBuffer sb;
 #ifdef TOAD_EDITOR
-						if (!sb.loadFromFile(full_path.string()))
+						if (!sb.loadFromFile(full_path))
 						{
 							LOGERRORF("[Scene] Loading soundbuffer file from path {} failed", full_path);
 						}
@@ -384,16 +438,22 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 						new_audio_source.sound_buffer = sf::SoundBuffer(sb);
 					}
 
-					AudioSource* managed_audio_source = Engine::Get().GetResourceManager().AddAudioSource(rel_path.string(), new_audio_source);
+					AudioSource* managed_audio_source = Engine::Get().GetResourceManager().AddAudioSource(rel_path, new_audio_source);
 					audioobj->SetSource(managed_audio_source);
 				}
 			}
 			else if (textobj != nullptr)
 			{
-				// props
-				textobj->SetText(props["text"].get<std::string>());
-				std::string font_loc = props["font_loc"].get<std::string>();
-				float rotation = props["rotation"].get<float>();
+				std::string text; 
+				std::string font_loc; 
+				float rotation = 0;
+
+				GET_JSON_ELEMENT(text, props, "text");
+				GET_JSON_ELEMENT(font_loc, props, "font_loc");
+				GET_JSON_ELEMENT(rotation, props, "rotation");
+
+				textobj->SetText(text);
+				textobj->SetRotation(rotation);
 
 				if (font_loc == "Default")
 				{
@@ -419,21 +479,36 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				}
 
 				TextStyle style;
-				style.char_size = props["char_size"].get<unsigned>();
-				style.char_spacing = props["char_spacing"].get<float>();
-				style.line_spacing = props["line_spacing"].get<float>();
-				style.fill_col = sf::Color(props["fill_col"].get<int>());
-				style.outline_col = sf::Color(props["outline_col"].get<int>());
-				style.style = static_cast<sf::Text::Style>(props["style"].get<uint32_t>());
-				style.outline_thickness = props["outline_thickness"].get<float>();
+
+				uint32_t u32style = 0;
+				uint32_t u32fill_col = 0;
+				uint32_t u32outline_col = 0;
+				
+				GET_JSON_ELEMENT(style.char_size, props, "char_size");
+				GET_JSON_ELEMENT(style.char_spacing, props, "char_spacing");
+				GET_JSON_ELEMENT(style.line_spacing, props, "line_spacing");
+				GET_JSON_ELEMENT(u32fill_col, props, "fill_col");
+				GET_JSON_ELEMENT(u32outline_col, props, "outline_col");
+				GET_JSON_ELEMENT(style.outline_thickness, props, "outline_thickness");
+				GET_JSON_ELEMENT(u32style, props, "style");
+
+				style.fill_col = sf::Color(u32fill_col);
+				style.outline_col = sf::Color(u32outline_col);
+				style.style = static_cast<sf::Text::Style>(u32style);
+
 				textobj->SetStyle(style);
 			}
 			else if (camobj != nullptr)
 			{
-				float rotation = props["rotation"].get<float>();;
-				bool active = props["cam_active"].get<bool>();
-				float sizex = props["sizex"].get<float>();
-				float sizey = props["sizey"].get<float>();
+				float rotation = 0;
+				bool active = false;
+				float sizex = 0;
+				float sizey = 0;
+
+				GET_JSON_ELEMENT(rotation, props, "rotation");
+				GET_JSON_ELEMENT(active, props, "cam_active");
+				GET_JSON_ELEMENT(sizex, props, "sizex");
+				GET_JSON_ELEMENT(sizey, props, "sizey");
 
 				camobj->SetRotation(rotation);
 				camobj->SetSize({ sizex, sizey });
@@ -541,6 +616,7 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder);
 		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder);
 		LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder);
+		LoadSceneObjectsOfType<Camera>(objectsall["cameras"], scene, asset_folder);
 	}
 }
 

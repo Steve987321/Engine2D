@@ -10,6 +10,8 @@ class Object;
 
 using json = nlohmann::json;
 
+#define GET_JSON_ELEMENT(val, data, key) assert(data.contains(key)); val = data[key]; 
+
 struct ENGINE_API Scene
 {
 	Scene() : name("unnamed_scene") {}
