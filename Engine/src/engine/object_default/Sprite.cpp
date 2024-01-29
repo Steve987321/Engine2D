@@ -81,7 +81,7 @@ json Sprite::Serialize()
 		rect["left"] = tex_rect.left;
 		rect["top"] = tex_rect.top;
 		rect["width"] = tex_rect.width;
-		rect["heigth"] = tex_rect.height;
+		rect["height"] = tex_rect.height;
 
 		sprite_properties["texture_rect"] = rect;
 	}
