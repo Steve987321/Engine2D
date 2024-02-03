@@ -1768,6 +1768,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 			(content_size.y - image_height + pady) * 0.5f
 		});
 
+		auto pos = ImGui::GetCursorScreenPos();
+		//LOGDEBUGF("{} {}", pos.x, pos.y + ImGui::GetCursorPos().y);
+
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
 		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
 
@@ -1781,37 +1784,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (Toad::Camera::GetActiveCamera())
 				{
-					const Vec2f& view = Toad::Camera::GetActiveCamera()->GetSize();
-					float fx = select_begin_relative.x * (view.x / content_size.x);
-					float fy = select_begin_relative.y * (view.y / content_size.y);
+					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
+					float fx = Toad::Camera::GetActiveCamera()->GetSize().x / image_width;
+					float fy = Toad::Camera::GetActiveCamera()->GetSize().y / image_height;
+					float x1 = select_begin_relative.x * fx;
+					float y1 = select_begin_relative.y * fy;
+					float x2 = curr_pos.x * fx;
+					float y2 = curr_pos.y * fy;
 					
-					Vec2f start = {
-						window_texture.mapPixelToCoords({(int)fx, (int)fy})
-					};
-
-					//Vec2f start = { 
-					//	(fx - view.x / 2.f) + Toad::Camera::GetActiveCamera()->GetPosition().x,
-					//	(fy - view.y / 2.f) + Toad::Camera::GetActiveCamera()->GetPosition().y 
-					//};
-
-					//start.y *= -1.f;
-					auto size = Vec2f{
-						ImGui::GetMouseDragDelta().x * (view.x / content_size.x),
-						ImGui::GetMouseDragDelta().y * (view.y / content_size.y)
-					};
-
-
-					//size.y *= -1;
-					sf::Rect<float> rect(start, size);
-					//LOGDEBUGF("{} {} {} {}", rect.left, rect.top, rect.left + rect.width, rect.top + rect.height);
+					ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
+					
 					for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
 					{
 						auto a = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
-						LOGDEBUGF("{} {}", a.x, a.y);
-
-						if (rect.contains(obj->GetPosition()))
-						{
+						
+						if (rect.Contains({ (float)a.x, (float)a.y })) {
 							LOGDEBUGF("{}", name);
 						}
 					}
@@ -1823,10 +1811,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
-				//LOGDEBUGF("{} {}", select_begin.x, select_begin.y);
+				//LOGDEBUGF("{} {} {} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y, image_cursor_pos.x, image_cursor_pos.y);
 				ImVec2 window_pos = ImGui::GetWindowPos();
 				select_begin_cursor = ImGui::GetMousePos();
-				select_begin_relative = {ImGui::GetMousePos().x - window_pos.x, ImGui::GetMousePos().y - window_pos.y - image_cursor_pos.y };
+				select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 			}
 		}
 
