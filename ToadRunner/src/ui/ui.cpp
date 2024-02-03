@@ -427,10 +427,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
+	static std::set<std::string> selected_objects = {};
+
 	// SCENE/HIERARCHY
 	ImGui::Begin("Scene", nullptr);
 	{
-		static std::set<std::string> selected_objects = {};
 		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
 		int index = 0;
 		static size_t prev_cursor_index = 0;
@@ -1800,7 +1801,25 @@ void ui::engine_ui(ImGuiContext* ctx)
 						auto a = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
 						
 						if (rect.Contains({ (float)a.x, (float)a.y })) {
-							LOGDEBUGF("{}", name);
+							if (selected_obj)
+							{
+								selected_objects.emplace(name);
+							}
+							else
+							{
+								selected_obj = obj.get();
+							}
+						}
+						else
+						{
+							if (selected_obj == obj.get())
+							{
+								selected_obj = nullptr;
+							}
+							else if (selected_objects.contains(name))
+							{
+								selected_objects.erase(name);
+							}
 						}
 					}
 				}
@@ -1815,6 +1834,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImVec2 window_pos = ImGui::GetWindowPos();
 				select_begin_cursor = ImGui::GetMousePos();
 				select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
+
+				selected_obj = nullptr;
+				selected_objects.clear();
 			}
 		}
 
