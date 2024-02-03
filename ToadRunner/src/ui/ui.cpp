@@ -1750,7 +1750,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		auto& window_texture = Toad::Engine::Get().GetWindowTexture();
 
 		auto content_size = ImGui::GetContentRegionAvail();
-
 		// resize but keep aspect ratio
 		constexpr float ar = 16.f / 9.f;
 		float image_width = content_size.x;
@@ -1771,6 +1770,65 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
 		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
+
+		static ImVec2 select_begin_relative = {};
+		static ImVec2 select_begin_cursor = {}; 
+		if (ImGui::IsItemHovered())
+		{
+			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+			{
+				ImGui::GetWindowDrawList()->AddRectFilled(select_begin_cursor, select_begin_cursor + ImGui::GetMouseDragDelta(), IM_COL32(155, 155, 255, 50), 0);
+
+				if (Toad::Camera::GetActiveCamera())
+				{
+					const Vec2f& view = Toad::Camera::GetActiveCamera()->GetSize();
+					float fx = select_begin_relative.x * (view.x / content_size.x);
+					float fy = select_begin_relative.y * (view.y / content_size.y);
+
+					
+					Vec2f start = {
+						window_texture.mapPixelToCoords({(int)fx, (int)fy})
+					};
+
+					//Vec2f start = { 
+					//	(fx - view.x / 2.f) + Toad::Camera::GetActiveCamera()->GetPosition().x,
+					//	(fy - view.y / 2.f) + Toad::Camera::GetActiveCamera()->GetPosition().y 
+					//};
+
+					//start.y *= -1.f;
+					auto size = Vec2f{
+						ImGui::GetMouseDragDelta().x * (view.x / content_size.x),
+						ImGui::GetMouseDragDelta().y * (view.y / content_size.y)
+					};
+
+
+					//size.y *= -1;
+					sf::Rect<float> rect(start, size);
+					//LOGDEBUGF("{} {} {} {}", rect.left, rect.top, rect.left + rect.width, rect.top + rect.height);
+					for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+					{
+						auto a = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
+						LOGDEBUGF("{} {}", a.x, a.y);
+
+						if (rect.contains(obj->GetPosition()))
+						{
+							LOGDEBUGF("{}", name);
+						}
+					}
+				}
+				else
+				{
+					
+				}
+			}
+			else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			{
+				//LOGDEBUGF("{} {}", select_begin.x, select_begin.y);
+				ImVec2 window_pos = ImGui::GetWindowPos();
+				select_begin_cursor = ImGui::GetMousePos();
+				select_begin_relative = {ImGui::GetMousePos().x - window_pos.x, ImGui::GetMousePos().y - window_pos.y - image_cursor_pos.y };
+			}
+		}
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
