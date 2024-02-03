@@ -30,14 +30,6 @@ namespace Toad
 	void Object::Render(sf::RenderTexture& texture)
 	{}
 
-	void Object::FixedUpdate()
-	{
-		for (auto& script : m_attachedScripts | std::views::values)
-		{
-			script->OnFixedUpdate(this);
-		}
-	}
-
 	void Object::Update()
 	{
 		for (auto& script : m_attachedScripts | std::views::values)

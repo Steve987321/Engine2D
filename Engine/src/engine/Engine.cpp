@@ -115,8 +115,6 @@ void Engine::Run()
 	SetScene(m_currentScene);
 #endif
 
-	Timer timer(true);
-
 	while (m_window.isOpen())
 	{
 		// update deltatime
@@ -129,15 +127,6 @@ void Engine::Run()
 		// update objects 
 		if (m_beginPlay)
 		{
-			// TODO: remove timer 
-			if ((int)timer.Elapsed<std::chrono::milliseconds>() > fixed_update_frequency)
-			{
-				m_fixedDeltaTime = sf::milliseconds((int)timer.Elapsed<std::chrono::milliseconds>());
-				m_currentScene.FixedUpdate();
-				timer.Start();
-			}
-			
-
 			m_currentScene.Update();
 		}
 #else

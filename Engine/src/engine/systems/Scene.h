@@ -31,11 +31,6 @@ struct ENGINE_API Scene
 	void Start();
 
 	///
-	/// Calls FixedUpdate on all object instances in this scene.
-	///
-	void FixedUpdate();
-
-	///
 	/// Calls Update on all object instances in this scene.
 	///
 	void Update();
