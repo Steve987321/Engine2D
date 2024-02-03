@@ -1812,13 +1812,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 						}
 						else
 						{
-							if (selected_obj == obj.get())
+							if (!ImGui::IsKeyDown(ImGuiKey_LeftShift))
 							{
-								selected_obj = nullptr;
-							}
-							else if (selected_objects.contains(name))
-							{
-								selected_objects.erase(name);
+								if (selected_obj == obj.get())
+								{
+									selected_obj = nullptr;
+								}
+								else if (selected_objects.contains(name))
+								{
+									selected_objects.erase(name);
+								}
 							}
 						}
 					}
@@ -1837,6 +1840,39 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				selected_obj = nullptr;
 				selected_objects.clear();
+			}
+		}
+
+		if (Toad::Camera::GetActiveCamera())
+		{
+			if (selected_obj)
+			{
+				float fx = Toad::Camera::GetActiveCamera()->GetSize().x / image_width;
+				float fy = Toad::Camera::GetActiveCamera()->GetSize().y / image_height;
+
+				auto obj_pos = window_texture.mapCoordsToPixel(selected_obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
+				obj_pos.x += pos.x + ImGui::GetWindowPos().x + image_cursor_pos.x;
+				obj_pos.x /= fx;	
+				obj_pos.y += pos.y + ImGui::GetWindowPos().y + image_cursor_pos.y;
+				obj_pos.y /= fy;
+
+				ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos.x, (float)obj_pos.y }, IM_COL32(255, 255, 0, 100), selected_obj->name.c_str());
+			}
+			for (const auto& name : selected_objects)
+			{
+				Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+				if (obj)
+				{
+					float fx = Toad::Camera::GetActiveCamera()->GetSize().x / image_width;
+					float fy = Toad::Camera::GetActiveCamera()->GetSize().y / image_height;
+
+					auto obj_pos = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
+					obj_pos.x += pos.x + ImGui::GetWindowPos().x + image_cursor_pos.x;
+					obj_pos.x /= fx;
+					obj_pos.y += pos.y + ImGui::GetWindowPos().y + image_cursor_pos.y;
+					obj_pos.y /= fy;
+					ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos.x, (float)obj_pos.y }, IM_COL32(255, 255, 0, 100), name.c_str() );
+				}
 			}
 		}
 
