@@ -14,6 +14,7 @@
 
 #include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
+#include "SceneHistory.h"
 
 #include "engine/systems/Animation.h"
 
@@ -48,6 +49,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
+	static Toad::SceneHistory scene_history{};
 
 	static Toad::Object* selected_obj = nullptr;
 
@@ -1938,70 +1940,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (is_animator)
 		{
-			ImGui::Begin("Animation", &is_animator);
-			{
-				if (selected_animation_obj)
-				{
-					if (ImGui::Button("close"))
-					{
-						selected_animation_obj = nullptr;
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("save"))
-					{
-						// serialize and save as file tied to the object 
-					}
-
-
-				}
-				else
-				{
-					ImGui::TextColored({ 1, 1, 0, 1 }, "Select an object in the scene to animate");
-
-					char input[256] = "";
-					std::vector<std::pair<std::string, Toad::Object*>> matches;
-					auto& scene = Toad::Engine::Get().GetScene();
-					matches.reserve(scene.objects_map.size());
-
-					if (ImGui::InputText("search", input, 256))
-					{
-						for (const auto& [name, obj] : scene.objects_map)
-						{
-							if (name.find(input) != std::string::npos)
-							{
-								matches.emplace_back(name, obj.get());
-							}
-						}
-					}
-
-					if (strlen(input) == 0)
-					{
-						for (const auto& [name, obj] : scene.objects_map)
-						{
-							matches.emplace_back(name, obj.get());
-						}
-					}
-
-					static Toad::Object* selected = nullptr;
-					for (const auto& [name, obj] : matches)
-					{
-						if (ImGui::Selectable(name.c_str(), selected == obj))
-						{
-							selected = obj;
-						}
-						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-						{
-							selected_animation_obj = selected;
-							anim.frames.resize(10);
-							selected = nullptr;
-						}
-					}
-
-				}
-
-				ImGui::End();
-			}
-
 			ImGui::SetCursorPosY(pos.y + image_height);
 			ImGui::Begin("Anim Editor", nullptr, ImGuiWindowFlags_NoBackground);
 			{
@@ -2032,7 +1970,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 					ImGui::EndDisabled();
 					ImGui::SameLine();
-					if (ImGui::Button("KEY UPDATE"))
+					if (ImGui::Button("FRAMES UPDATE"))
 					{
 						update_all_frames = true;
 					}
@@ -2124,7 +2062,46 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				else
 				{
-					ImGui::TextColored({ 1, 1, 0, 1 }, "No object");
+					ImGui::TextColored({ 1, 1, 0, 1 }, "Select an object in the scene to animate");
+
+					char input[256] = "";
+					std::vector<std::pair<std::string, Toad::Object*>> matches;
+					auto& scene = Toad::Engine::Get().GetScene();
+					matches.reserve(scene.objects_map.size());
+
+					if (ImGui::InputText("search", input, 256))
+					{
+						for (const auto& [name, obj] : scene.objects_map)
+						{
+							if (name.find(input) != std::string::npos)
+							{
+								matches.emplace_back(name, obj.get());
+							}
+						}
+					}
+
+					if (strlen(input) == 0)
+					{
+						for (const auto& [name, obj] : scene.objects_map)
+						{
+							matches.emplace_back(name, obj.get());
+						}
+					}
+
+					static Toad::Object* selected = nullptr;
+					for (const auto& [name, obj] : matches)
+					{
+						if (ImGui::Selectable(name.c_str(), selected == obj))
+						{
+							selected = obj;
+						}
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							selected_animation_obj = selected;
+							anim.frames.resize(10);
+							selected = nullptr;
+						}
+					}
 				}
 				ImGui::End();
 			}
@@ -2161,16 +2138,45 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (asset_browser.GetAssetPath().empty())
 				{
 					Toad::Engine::Get().SetScene(Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+					scene_history.asset_folder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+					scene_history.scene = &Toad::Engine::Get().GetScene();
+					scene_history.SaveState();
 				}
 				else
 				{
 					Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
+					scene_history.asset_folder = asset_browser.GetAssetPath();
+					scene_history.scene = &Toad::Engine::Get().GetScene();
+					scene_history.SaveState();
 				}
 				selected_obj = nullptr;
 			}
 		}
 	}
+	ImGui::Begin("test undo redo save");
+	{
+		if (ImGui::Button("SAVE"))
+		{
+			scene_history.SaveState();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("UNDO"))
+		{
+			selected_obj = nullptr;
+			selected_objects.clear();
+			scene_history.Undo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("REDO"))
+		{
+			selected_obj = nullptr;
+			selected_objects.clear();
+			scene_history.Redo();
+		}
 
+		ImGui::End();
+	}
+	
     ImGui::End();
 
 	ImGui::Begin("Game Assets");
@@ -2179,6 +2185,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 	if (asset_browser.loaded_scene)
 	{
 		selected_obj = nullptr;
+		scene_history.asset_folder = asset_browser.GetAssetPath();
+		scene_history.scene = &Toad::Engine::Get().GetScene();
+		scene_history.SaveState();
 	}
 	ImGui::End();
 
