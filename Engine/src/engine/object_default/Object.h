@@ -35,8 +35,6 @@ public:
 	// For imgui, only when using the editor
 	virtual void Render(sf::RenderTexture& texture);
 
-	virtual void FixedUpdate();
-
 	virtual void Update();
 
 	virtual const Vec2f& GetPosition();

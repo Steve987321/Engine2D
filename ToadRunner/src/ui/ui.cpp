@@ -14,6 +14,9 @@
 
 #include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
+#include "SceneHistory.h"
+
+#include "engine/systems/Animation.h"
 
 using json = nlohmann::json;
 
@@ -46,6 +49,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
+	static Toad::SceneHistory scene_history{};
 
 	static Toad::Object* selected_obj = nullptr;
 
@@ -427,10 +431,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
+	static std::set<std::string> selected_objects = {};
+
 	// SCENE/HIERARCHY
 	ImGui::Begin("Scene", nullptr);
 	{
-		static std::set<std::string> selected_objects = {};
 		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
 		int index = 0;
 		static size_t prev_cursor_index = 0;
@@ -1716,6 +1721,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
 						}
 
+						ImGui::SeparatorText("OnEditorUI");
+
+						script->OnEditorUI(selected_obj);
+
 						ImGui::TreePop();
 					}
 
@@ -1750,7 +1759,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		auto& window_texture = Toad::Engine::Get().GetWindowTexture();
 
 		auto content_size = ImGui::GetContentRegionAvail();
-
 		// resize but keep aspect ratio
 		constexpr float ar = 16.f / 9.f;
 		float image_width = content_size.x;
@@ -1769,8 +1777,139 @@ void ui::engine_ui(ImGuiContext* ctx)
 			(content_size.y - image_height + pady) * 0.5f
 		});
 
+		const auto pos = ImGui::GetCursorScreenPos();
+		//LOGDEBUGF("{} {}", pos.x, pos.y + ImGui::GetCursorPos().y);
+
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
 		ImGui::Image(window_texture, {image_width, image_height}, sf::Color::White);
+
+		static ImVec2 select_begin_relative = {};
+		static ImVec2 select_begin_cursor = {}; 
+		if (ImGui::IsItemHovered())
+		{
+			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+			{
+				ImGui::GetWindowDrawList()->AddRectFilled(select_begin_cursor, select_begin_cursor + ImGui::GetMouseDragDelta(), IM_COL32(155, 155, 255, 50), 0);
+
+				if (Toad::Camera::GetActiveCamera())
+				{
+					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
+
+					float fx = Toad::Camera::GetActiveCamera()->GetSize().x / image_width;
+					float fy = Toad::Camera::GetActiveCamera()->GetSize().y / image_height;
+					float x1 = select_begin_relative.x * fx;
+					float y1 = select_begin_relative.y * fy;
+					float x2 = curr_pos.x * fx;
+					float y2 = curr_pos.y * fy;
+					
+					ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
+					
+					for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+					{
+						auto a = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
+						
+						if (rect.Contains({ (float)a.x, (float)a.y })) {
+							if (selected_obj)
+							{
+								selected_objects.emplace(name);
+							}
+							else
+							{
+								selected_obj = obj.get();
+							}
+						}
+						else
+						{
+							if (!ImGui::IsKeyDown(ImGuiKey_LeftShift))
+							{
+								if (selected_obj == obj.get())
+								{
+									selected_obj = nullptr;
+								}
+								else if (selected_objects.contains(name))
+								{
+									selected_objects.erase(name);
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					
+				}
+			}
+			else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			{
+				//LOGDEBUGF("{} {} {} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y, image_cursor_pos.x, image_cursor_pos.y);
+				select_begin_cursor = ImGui::GetMousePos();
+				select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
+
+				selected_obj = nullptr;
+				selected_objects.clear();
+			}
+		}
+
+		ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)pos.x, (float)pos.y }, IM_COL32(255, 255, 0, 100), "selected_obj->name.c_str()");
+
+		if (Toad::Camera::GetActiveCamera())
+		{
+			std::vector<ImVec2> positions;
+			if (selected_obj)
+			{
+				float fx = image_width / Toad::Camera::GetActiveCamera()->GetSize().x;
+				float fy = image_height / Toad::Camera::GetActiveCamera()->GetSize().y;
+
+				auto obj_pos = window_texture.mapCoordsToPixel(selected_obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
+
+				obj_pos.x = pos.x + obj_pos.x * fx;
+				obj_pos.y = pos.y + obj_pos.y * fy;
+
+				positions.emplace_back((float)obj_pos.x, (float)obj_pos.y);
+
+				ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos.x, (float)obj_pos.y }, IM_COL32(255, 255, 0, 100), selected_obj->name.c_str());
+			}
+			for (const auto& name : selected_objects)
+			{
+				Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+				if (obj)
+				{
+					float fx = image_width / Toad::Camera::GetActiveCamera()->GetSize().x;
+					float fy = image_height / Toad::Camera::GetActiveCamera()->GetSize().y;
+
+
+					float x = Toad::Camera::GetActiveCamera()->GetSize().x - ImGui::GetMainViewport()->Size.x;
+					float y = Toad::Camera::GetActiveCamera()->GetSize().y - ImGui::GetMainViewport()->Size.y;
+					x *= fx;
+					y *= fy;
+
+					auto obj_pos = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
+					obj_pos.x *= fx;
+					obj_pos.x += pos.x + x * 0.5f;
+					obj_pos.y *= fy;
+					obj_pos.y += pos.y + y * 0.5f;
+
+					positions.emplace_back((float)obj_pos.x, (float)obj_pos.y);
+					ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos.x, (float)obj_pos.y }, IM_COL32(255, 255, 0, 100), name.c_str() );
+				}
+			}
+
+			ImVec2 gizmo_pos;
+
+			for (const ImVec2& position : positions)
+			{
+				gizmo_pos.x += position.x;
+				gizmo_pos.y += position.y;
+			}
+			gizmo_pos.x /= positions.size();
+			gizmo_pos.y /= positions.size();
+
+			ImGui::GetWindowDrawList()->AddRectFilled(gizmo_pos - ImVec2{5, 5}, gizmo_pos + ImVec2{5, 5}, IM_COL32(255, 0, 0, 100));
+			// y
+			ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{0, 20}, IM_COL32(0, 0, 255, 100), 2.f);
+			// x
+			ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{20, 0}, IM_COL32(0, 255, 0, 100), 2.f);
+		}
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
@@ -1789,6 +1928,185 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::TreePop();
 		}
 
+		static bool is_animator = false;
+		if (ImGui::TreeNode("Tools"))
+		{
+			ImGui::Checkbox("animator", &is_animator);
+			ImGui::TreePop();
+		}
+
+		static Toad::Object* selected_animation_obj = nullptr;
+		static Toad::Animation anim;
+
+		if (is_animator)
+		{
+			ImGui::SetCursorPosY(pos.y + image_height);
+			ImGui::Begin("Anim Editor", nullptr, ImGuiWindowFlags_NoBackground);
+			{
+				if (selected_animation_obj)
+				{
+					static int timeline = 0;
+					bool update_all_frames = false;
+					
+					int spacex = anim.frames.size() / ImGui::GetWindowSize().x;
+					int cursorposx = ImGui::GetCursorPosX();
+
+					ImGui::PushItemWidth(ImGui::GetWindowSize().x);
+					ImGui::SliderInt("time", &timeline, 0, anim.frames.size() - 1);
+
+					Toad::AnimationFrame& current_frame = anim.frames[timeline];
+
+					ImGui::BeginDisabled(current_frame.is_key);
+					if (ImGui::Button("KEY ADD"))
+					{
+						current_frame.is_key = true;
+					}
+					ImGui::EndDisabled();
+					ImGui::BeginDisabled(!current_frame.is_key);
+					ImGui::SameLine();
+					if (ImGui::Button("KEY REMOVE"))
+					{
+						current_frame.is_key = false;
+					}
+					ImGui::EndDisabled();
+					ImGui::SameLine();
+					if (ImGui::Button("FRAMES UPDATE"))
+					{
+						update_all_frames = true;
+					}
+
+					ImGui::BeginChild("properties", {0, 100}, true);
+					{
+						ImGui::SliderVec2("position", &current_frame.position, -1000, 1000);
+						ImGui::SliderVec2("scale   ", &current_frame.scale, -1000, 1000);
+						ImGui::SliderFloat("rotation", &current_frame.rotation, -1000, 1000);
+
+						ImGui::EndChild();
+					}
+					if (update_all_frames)
+					{
+						// interpolation between key frames 
+
+						for (int i = 0; i < anim.frames.size(); i++)
+						{
+							int start = 0;
+							int end = 0;
+
+							if (anim.frames[i].is_key || i == 0)
+							{
+								start = i;
+								for (int j = i + 1; j < anim.frames.size(); j++)
+								{
+									if (anim.frames[j].is_key)
+									{
+										end = j;
+										for (int k = start; k < end; k++)
+										{
+											float t = (float)(k - start) / (float)(end - start);
+											float posx = std::lerp(anim.frames[i].position.x, anim.frames[j].position.x, t);
+											float posy = std::lerp(anim.frames[i].position.y, anim.frames[j].position.y, t);
+											float scalex = std::lerp(anim.frames[i].scale.x, anim.frames[j].scale.x, t);
+											float scaley = std::lerp(anim.frames[i].scale.y, anim.frames[j].scale.y, t);
+											float rotation = std::lerp(anim.frames[i].rotation, anim.frames[j].rotation, t);
+
+											anim.frames[k].position = { posx, posy };
+											anim.frames[k].scale = { scalex, scaley };
+											anim.frames[k].rotation = rotation;
+										}
+
+										start = end;
+										i = start;
+									}
+								}
+							}
+						}
+					}
+					for (int i = 0; i < anim.frames.size(); i++)
+					{
+						Toad::AnimationFrame& frame = anim.frames[i];
+
+						cursorposx += spacex * 2 + ImGui::GetStyle().FramePadding.x;
+						if (frame.is_key)
+						{
+							ImGui::SetCursorPosX(cursorposx);
+							if (timeline == i)
+							{
+								ImGui::TextColored({ 1, 1, 1, 1, }, "O");
+							}
+							else
+							{
+								ImGui::TextColored({ 1, 1, 1, 0.6f, }, "O");
+							}
+							cursorposx += ImGui::CalcTextSize("O").x;
+							ImGui::SameLine();
+						}
+						else 
+						{
+							ImGui::SetCursorPosX(cursorposx);
+							if (timeline == i)
+							{
+								ImGui::TextColored({ 1, 1, 1, 1, }, "_");
+							}
+							else
+							{
+								ImGui::TextColored({ 1, 1, 1, 0.6f, }, "_");
+							}
+							cursorposx += ImGui::CalcTextSize("_").x;
+							ImGui::SameLine();
+						}
+
+						ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+						ImGui::SameLine();
+					}
+					ImGui::PopItemWidth();
+				}
+				else
+				{
+					ImGui::TextColored({ 1, 1, 0, 1 }, "Select an object in the scene to animate");
+
+					char input[256] = "";
+					std::vector<std::pair<std::string, Toad::Object*>> matches;
+					auto& scene = Toad::Engine::Get().GetScene();
+					matches.reserve(scene.objects_map.size());
+
+					if (ImGui::InputText("search", input, 256))
+					{
+						for (const auto& [name, obj] : scene.objects_map)
+						{
+							if (name.find(input) != std::string::npos)
+							{
+								matches.emplace_back(name, obj.get());
+							}
+						}
+					}
+
+					if (strlen(input) == 0)
+					{
+						for (const auto& [name, obj] : scene.objects_map)
+						{
+							matches.emplace_back(name, obj.get());
+						}
+					}
+
+					static Toad::Object* selected = nullptr;
+					for (const auto& [name, obj] : matches)
+					{
+						if (ImGui::Selectable(name.c_str(), selected == obj))
+						{
+							selected = obj;
+						}
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							selected_animation_obj = selected;
+							anim.frames.resize(10);
+							selected = nullptr;
+						}
+					}
+				}
+				ImGui::End();
+			}
+		}
+
 		if (Toad::Camera::GetActiveCamera() == nullptr)
 		{
 			const char* err_msg = "No camera's in scene, please create a camera";
@@ -1803,6 +2121,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		
 		ImGui::End();
 	}
+
 
     ImGui::Begin("File Browser", nullptr);
     fBrowser.Show();
@@ -1819,16 +2138,45 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (asset_browser.GetAssetPath().empty())
 				{
 					Toad::Engine::Get().SetScene(Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+					scene_history.asset_folder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+					scene_history.scene = &Toad::Engine::Get().GetScene();
+					scene_history.SaveState();
 				}
 				else
 				{
 					Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
+					scene_history.asset_folder = asset_browser.GetAssetPath();
+					scene_history.scene = &Toad::Engine::Get().GetScene();
+					scene_history.SaveState();
 				}
 				selected_obj = nullptr;
 			}
 		}
 	}
+	ImGui::Begin("test undo redo save");
+	{
+		if (ImGui::Button("SAVE"))
+		{
+			scene_history.SaveState();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("UNDO"))
+		{
+			selected_obj = nullptr;
+			selected_objects.clear();
+			scene_history.Undo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("REDO"))
+		{
+			selected_obj = nullptr;
+			selected_objects.clear();
+			scene_history.Redo();
+		}
 
+		ImGui::End();
+	}
+	
     ImGui::End();
 
 	ImGui::Begin("Game Assets");
@@ -1837,6 +2185,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 	if (asset_browser.loaded_scene)
 	{
 		selected_obj = nullptr;
+		scene_history.asset_folder = asset_browser.GetAssetPath();
+		scene_history.scene = &Toad::Engine::Get().GetScene();
+		scene_history.SaveState();
 	}
 	ImGui::End();
 
@@ -1865,4 +2216,35 @@ void ui::HelpMarker(const char* desc)
 		ImGui::PopTextWrapPos();
 		ImGui::EndTooltip();
 	}
+}
+
+void ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, float max)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return;
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+	const float w = ImGui::CalcItemWidth();
+
+	const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, style.FramePadding.y * 2.0f));
+
+	std::string label_final = "##x";
+	label_final += label;
+
+	ImGui::Text(label.data());
+	ImGui::SameLine();
+	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
+	ImGui::DragFloat(label_final.c_str(), x, 1.0f, min, max);
+	ImGui::SameLine();
+	label_final = "##y";
+	label_final += label;
+	ImGui::DragFloat(label_final.c_str(), y, 1.0f, min, max);
+	ImGui::PopItemWidth();
+}
+
+void ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
+{
+	ImGui::SliderVec2(label, &v->x, &v->y, min, max);
 }

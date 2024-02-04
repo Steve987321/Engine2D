@@ -70,6 +70,7 @@ namespace Toad
 		static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
 
 	private:
+		float m_tickps = 1000.f / 50.f;
 		sf::Time m_deltaTime;
 		sf::Time m_fixedDeltaTime;
 
