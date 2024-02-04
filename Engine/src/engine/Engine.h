@@ -93,8 +93,12 @@ namespace Toad
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
 
-		HMODULE m_currDLL{};
+#ifdef _WIN32
+        HMODULE m_currDLL{};
 		inline static LONG_PTR s_originalWndProc = NULL;
+#else
+        void* m_currDLL{};
+#endif
 
 	private:
 		std::atomic_bool m_isRunning = false;

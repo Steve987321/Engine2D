@@ -114,7 +114,7 @@ private:
 
 		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
 #else
-		std::cout << '[' << logTypeAsStr[log_type] << "] [" << GetDateStr("%H:%M:%S") << "] " << str << std::endl;
+		std::cout << '[' << logTypeAsStr[log_type] << "] [" << get_date_str("%H:%M:%S") << "] " << str << std::endl;
 #endif
 	}
 
