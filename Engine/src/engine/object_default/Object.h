@@ -5,11 +5,11 @@
 #include "engine/Types.h"
 #include "nlohmann/json.hpp"
 #include "engine/default_scripts/Script.h"
-#include "engine/systems/Scene.h"
 
 namespace Toad
 {
 	class Script;
+	class Scene;
 
 	using json = nlohmann::json;
 
