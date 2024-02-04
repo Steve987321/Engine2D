@@ -18,10 +18,11 @@ public:
 public:
 	void OnStart(Object* obj) override;
 	void OnUpdate(Object* obj) override;
+	void OnEditorUI(Object* obj) override;
 	void ExposeVars() override;
 
 private: 
-	std::string m_usedAnimId = "";
+	std::string m_usedAnimId;
 };
 
 }

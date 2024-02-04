@@ -29,6 +29,10 @@ void Script::OnDestroy(Object* obj)
 {
 }
 
+void Script::OnEditorUI(Object* obj)
+{
+}
+
 void Script::ExposeVars()
 {
 }

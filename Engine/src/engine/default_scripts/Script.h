@@ -35,6 +35,7 @@ public:
 	virtual void OnUpdate(Object* obj);
 	virtual void OnStart(Object* obj);
 	virtual void OnDestroy(Object* obj);
+	virtual void OnEditorUI(Object* obj);
 
 	virtual void ExposeVars();
 

@@ -1719,6 +1719,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
 						}
 
+						ImGui::SeparatorText("OnEditorUI");
+
+						script->OnEditorUI(selected_obj);
+
 						ImGui::TreePop();
 					}
 
@@ -2063,8 +2067,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 											float t = (float)(k - start) / (float)(end - start);
 											float posx = std::lerp(anim.frames[i].position.x, anim.frames[j].position.x, t);
 											float posy = std::lerp(anim.frames[i].position.y, anim.frames[j].position.y, t);
+											float scalex = std::lerp(anim.frames[i].scale.x, anim.frames[j].scale.x, t);
+											float scaley = std::lerp(anim.frames[i].scale.y, anim.frames[j].scale.y, t);
+											float rotation = std::lerp(anim.frames[i].rotation, anim.frames[j].rotation, t);
 
-											anim.frames[k].position = {posx, posy};
+											anim.frames[k].position = { posx, posy };
+											anim.frames[k].scale = { scalex, scaley };
+											anim.frames[k].rotation = rotation;
 										}
 
 										start = end;
