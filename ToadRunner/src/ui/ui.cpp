@@ -1842,6 +1842,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
+		ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)pos.x, (float)pos.y }, IM_COL32(255, 255, 0, 100), "selected_obj->name.c_str()");
+
 		if (Toad::Camera::GetActiveCamera())
 		{
 			std::vector<ImVec2> positions;
@@ -1850,21 +1852,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				float fx = image_width / Toad::Camera::GetActiveCamera()->GetSize().x;
 				float fy = image_height / Toad::Camera::GetActiveCamera()->GetSize().y;
 
-				float diffy = (ImGui::GetMainViewport()->Size.y - Toad::Camera::GetActiveCamera()->GetSize().y);
-				float diffx = (ImGui::GetMainViewport()->Size.x - Toad::Camera::GetActiveCamera()->GetSize().x);
 				auto obj_pos = window_texture.mapCoordsToPixel(selected_obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
 
-				float x = Toad::Camera::GetActiveCamera()->GetSize().x - ImGui::GetMainViewport()->Size.x;
-				float y = Toad::Camera::GetActiveCamera()->GetSize().y - ImGui::GetMainViewport()->Size.y;
-				LOGDEBUGF(" {} {}", x, y);
-
-				x *= fx;
-				y *= fy;
-
-				obj_pos.x *= fx;
-				obj_pos.x += pos.x + x * 0.2f;
-				obj_pos.y *= fy;
-				obj_pos.y += pos.y + y / ar;
+				obj_pos.x = pos.x + obj_pos.x * fx;
+				obj_pos.y = pos.y + obj_pos.y * fy;
 
 				positions.emplace_back((float)obj_pos.x, (float)obj_pos.y);
 
@@ -1942,6 +1933,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::TextColored({ 1, 0, 0, 1 }, err_msg);
 		}
 		
+		ImGui::End();
+	}
+
+	ImGui::Begin("Animation", nullptr);
+	{
+		ImGui::BeginChild()
 		ImGui::End();
 	}
 
