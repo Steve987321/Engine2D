@@ -1769,7 +1769,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			(content_size.y - image_height + pady) * 0.5f
 		});
 
-		auto pos = ImGui::GetCursorScreenPos();
+		const auto pos = ImGui::GetCursorScreenPos();
 		//LOGDEBUGF("{} {}", pos.x, pos.y + ImGui::GetCursorPos().y);
 
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
@@ -1834,7 +1834,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
 				//LOGDEBUGF("{} {} {} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y, image_cursor_pos.x, image_cursor_pos.y);
-				ImVec2 window_pos = ImGui::GetWindowPos();
 				select_begin_cursor = ImGui::GetMousePos();
 				select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
@@ -1845,16 +1844,29 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (Toad::Camera::GetActiveCamera())
 		{
+			std::vector<ImVec2> positions;
 			if (selected_obj)
 			{
-				float fx = Toad::Camera::GetActiveCamera()->GetSize().x / image_width;
-				float fy = Toad::Camera::GetActiveCamera()->GetSize().y / image_height;
+				float fx = image_width / Toad::Camera::GetActiveCamera()->GetSize().x;
+				float fy = image_height / Toad::Camera::GetActiveCamera()->GetSize().y;
 
+				float diffy = (ImGui::GetMainViewport()->Size.y - Toad::Camera::GetActiveCamera()->GetSize().y);
+				float diffx = (ImGui::GetMainViewport()->Size.x - Toad::Camera::GetActiveCamera()->GetSize().x);
 				auto obj_pos = window_texture.mapCoordsToPixel(selected_obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
-				obj_pos.x += pos.x + ImGui::GetWindowPos().x + image_cursor_pos.x;
-				obj_pos.x /= fx;	
-				obj_pos.y += pos.y + ImGui::GetWindowPos().y + image_cursor_pos.y;
-				obj_pos.y /= fy;
+
+				float x = Toad::Camera::GetActiveCamera()->GetSize().x - ImGui::GetMainViewport()->Size.x;
+				float y = Toad::Camera::GetActiveCamera()->GetSize().y - ImGui::GetMainViewport()->Size.y;
+				LOGDEBUGF(" {} {}", x, y);
+
+				x *= fx;
+				y *= fy;
+
+				obj_pos.x *= fx;
+				obj_pos.x += pos.x + x * 0.2f;
+				obj_pos.y *= fy;
+				obj_pos.y += pos.y + y / ar;
+
+				positions.emplace_back((float)obj_pos.x, (float)obj_pos.y);
 
 				ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos.x, (float)obj_pos.y }, IM_COL32(255, 255, 0, 100), selected_obj->name.c_str());
 			}
@@ -1863,18 +1875,43 @@ void ui::engine_ui(ImGuiContext* ctx)
 				Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
 				if (obj)
 				{
-					float fx = Toad::Camera::GetActiveCamera()->GetSize().x / image_width;
-					float fy = Toad::Camera::GetActiveCamera()->GetSize().y / image_height;
+					float fx = image_width / Toad::Camera::GetActiveCamera()->GetSize().x;
+					float fy = image_height / Toad::Camera::GetActiveCamera()->GetSize().y;
+
+
+					float x = Toad::Camera::GetActiveCamera()->GetSize().x - ImGui::GetMainViewport()->Size.x;
+					float y = Toad::Camera::GetActiveCamera()->GetSize().y - ImGui::GetMainViewport()->Size.y;
+					x *= fx;
+					y *= fy;
 
 					auto obj_pos = window_texture.mapCoordsToPixel(obj->GetPosition(), Toad::Camera::GetActiveCamera()->GetView());
-					obj_pos.x += pos.x + ImGui::GetWindowPos().x + image_cursor_pos.x;
-					obj_pos.x /= fx;
-					obj_pos.y += pos.y + ImGui::GetWindowPos().y + image_cursor_pos.y;
-					obj_pos.y /= fy;
+					obj_pos.x *= fx;
+					obj_pos.x += pos.x + x * 0.5f;
+					obj_pos.y *= fy;
+					obj_pos.y += pos.y + y * 0.5f;
+
+					positions.emplace_back((float)obj_pos.x, (float)obj_pos.y);
 					ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos.x, (float)obj_pos.y }, IM_COL32(255, 255, 0, 100), name.c_str() );
 				}
 			}
+
+			ImVec2 gizmo_pos;
+
+			for (const ImVec2& position : positions)
+			{
+				gizmo_pos.x += position.x;
+				gizmo_pos.y += position.y;
+			}
+			gizmo_pos.x /= positions.size();
+			gizmo_pos.y /= positions.size();
+
+			ImGui::GetWindowDrawList()->AddRectFilled(gizmo_pos - ImVec2{5, 5}, gizmo_pos + ImVec2{5, 5}, IM_COL32(255, 0, 0, 100));
+			// y
+			ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{0, 20}, IM_COL32(0, 0, 255, 100), 2.f);
+			// x
+			ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{20, 0}, IM_COL32(0, 255, 0, 100), 2.f);
 		}
+
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
