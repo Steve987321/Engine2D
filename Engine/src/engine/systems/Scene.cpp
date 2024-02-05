@@ -317,7 +317,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 #ifdef TOAD_EDITOR
 						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
 #else
-						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str);
+						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
 #endif
 						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
 					}
@@ -460,7 +460,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 
 						if (!arial.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
 						{
-							LOGWARNF("Can't find C:\\Windows\\Fonts\\Arial.ttf");
+							LOGWARN("Can't find C:\\Windows\\Fonts\\Arial.ttf");
 						}
 						else
 						{

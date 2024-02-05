@@ -15,6 +15,6 @@ namespace Toad
     #ifdef _WIN32
     inline std::string game_bin_file = "Game.dll";
     #elif __APPLE__
-    inline std::string game_bin_name = "libGame.dylib";
+    inline std::string game_bin_file = "libGame.dylib";
     #endif
 }

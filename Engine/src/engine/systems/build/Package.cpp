@@ -174,6 +174,7 @@ namespace Toad
 
 	bool Package::RunBuildSystemWithArgs(const std::filesystem::path& build_program, std::string_view args)
 	{
+#ifdef _WIN32
 		STARTUPINFOA si;
 		PROCESS_INFORMATION pi;
 
@@ -197,6 +198,7 @@ namespace Toad
 
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
+#endif
 		return true;
 	}
 

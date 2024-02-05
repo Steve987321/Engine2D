@@ -90,8 +90,12 @@ bool Engine::Init()
 	AppSettings gsettings;
 	if (m_currDLL != nullptr)
 	{
-		auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
 
+#ifdef _WIN32
+		auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
+#else
+        auto get_game_settings = reinterpret_cast<get_game_settings_t*>(dlsym(m_currDLL, "get_game_settings"));
+#endif
 		gsettings = get_game_settings();
 	}
 
@@ -149,9 +153,13 @@ bool Engine::InitWindow(const AppSettings& settings)
 	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
 	m_window.setFramerateLimit(60);
 
+#ifdef _WIN32
 	HWND window_handle = m_window.getSystemHandle();
-	DragAcceptFiles(window_handle, TRUE);
+    DragAcceptFiles(window_handle, TRUE);
 	s_originalWndProc = SetWindowLongPtrA(window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc));
+#else
+    void* window_handle = m_window.getSystemHandle();
+#endif
 
 	bool res = ImGui::SFML::Init(m_window, false);
 	LOGDEBUGF("ImGui SFML Init result: {}", res);
@@ -377,7 +385,7 @@ void Engine::LoadGameScripts()
 		{
 			ReflectVarsCopy vars;
 			i->second->GetReflection().Get().copy(vars);
-			objects_with_scripts[obj->name].emplace_back(i->first, vars);
+			objects_with_scripts[obj->name].emplace_back(object_script{i->first, vars});
 
 			obj->RemoveScript(i->first);
 			i = scripts.begin();
@@ -386,7 +394,11 @@ void Engine::LoadGameScripts()
 
 	if (m_currDLL)
 	{
+#ifdef _WIN32
 		FreeLibrary(m_currDLL);
+#else
+        dlclose(m_currDLL);
+#endif
 	}
 
 	fs::path game_dll_path = game_bin_directory + game_bin_file;
@@ -498,10 +510,10 @@ void Engine::LoadGameScripts()
 
 #else
 	LOGDEBUG("getting game lib");
-	auto dll = dlopen(game_bin_path, RTLD_LAZY);
+	auto dll = dlopen(game_bin_file.c_str(), RTLD_LAZY);
 	if (dll == nullptr)
 	{
-		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), game_bin_path);
+		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), game_bin_file);
 		return;
 	}
 	LOGERROR("found dll");
@@ -583,6 +595,7 @@ void Engine::GameUpdatedWatcher()
 	}
 }
 
+#ifdef _WIN32
 LRESULT Engine::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	if (message == WM_DROPFILES)
@@ -609,5 +622,6 @@ LRESULT Engine::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
 
 	return CallWindowProcA(reinterpret_cast<WNDPROC>(s_originalWndProc), handle, message, wparam, lparam);
 }
+#endif
 
 }

@@ -219,8 +219,7 @@ void GameAssetsBrowser::Show()
 			create_directory(m_currentPath / dir_name);
 
 			selected = m_currentPath / dir_name;
-
-			strcpy_s(renaming_buf, selected.filename().string().c_str());
+            strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 			ignore_rename_warning = true;
 			renaming = true;
 
@@ -244,7 +243,7 @@ void GameAssetsBrowser::Show()
 			f.close();
 
 			selected = m_currentPath / scene_name;
-			strcpy_s(renaming_buf, selected.filename().string().c_str());
+            strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 			renaming = true;
 			ignore_rename_warning = true;
 
@@ -344,7 +343,7 @@ void GameAssetsBrowser::Show()
 			// rename
 			if (!renaming && selected == entry.path() && ImGui::IsKeyPressed(ImGuiKey_F2))
 			{
-				strcpy_s(renaming_buf, entry.path().filename().string().c_str());
+				strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
 				renaming = true;
 			}
 		}
@@ -453,7 +452,7 @@ void GameAssetsBrowser::Show()
 			}
 			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 			{
-				strcpy_s(renaming_buf, entry.path().filename().string().c_str());
+				strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
 				renaming = false;
 			}
 		}
