@@ -834,7 +834,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 			//LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
-			cursor_index = std::clamp(cursor_index, 0ul, keys.size());
+			cursor_index = std::clamp(cursor_index, (size_t)0, keys.size());
 
 			selected_objects.clear();
 			int dest = 0;
