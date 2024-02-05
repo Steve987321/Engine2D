@@ -16,7 +16,7 @@ Text::Text(std::string_view obj_name)
 		sf::Font arial;
 		if (!arial.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
 		{
-			LOGWARNF("Can't find C:\\Windows\\Fonts\\Arial.ttf");
+			LOGWARN("Can't find C:\\Windows\\Fonts\\Arial.ttf");
 			return;
 		}
 

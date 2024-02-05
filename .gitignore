@@ -1,6 +1,8 @@
 # Project files 
 .vs/
 .vscode/
+.idea/
+Makefile
 *.ini
 *.vcxproj
 *.vcxproj.filters
@@ -46,5 +48,3 @@ bin-intermediate/
 
 # Mac
 *.DS_Store
-
-

@@ -16,6 +16,7 @@ project "Engine"
     location "Engine"
     kind "SharedLib"
     language "C++"
+    cppdialect "C++20"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -39,11 +40,18 @@ project "Engine"
         "vendor/SFML-2.6.0/lib"
     }
 
-    links {
-        "opengl32",
-    }
+    filter "system:macosx"
+         links {
+                "OpenGL.framework",
+                "Cocoa.framework",
+                "IOKit.framework",
+                "CoreVideo.framework",
+        }
 
-    cppdialect "C++20"
+    filter "system:windows"
+        links {
+            "opengl32"
+        }
 
     pchheader "pch.h"
     pchsource "%{prj.name}/src/pch.cpp"
@@ -52,7 +60,6 @@ project "Engine"
         flags {"NoPCH"}
 
     filter "system:windows"
-        cppdialect "C++20"
         staticruntime "Off"
         systemversion "latest"
 
@@ -62,12 +69,20 @@ project "Engine"
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
         }
-        links {
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
         runtime "Debug"
         symbols "On"
     
@@ -93,12 +108,20 @@ project "Engine"
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
         }
-        links {
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
         runtime "Debug"
         symbols "On"
     
@@ -106,6 +129,7 @@ project "Game"
     location "Game"
     kind "SharedLib"
     language "C++"
+    cppdialect "C++20"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -119,6 +143,7 @@ project "Game"
         "Engine/src",
         "vendor",
         "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
@@ -129,16 +154,24 @@ project "Game"
 
     links {
         "Engine",
-        "opengl32",
     }
+    filter "system:macosx"
+         links {
+             "OpenGL.framework",
+             "Cocoa.framework",
+             "IOKit.framework",
+             "CoreVideo.framework",
+         }
 
-    cppdialect "C++20"
+    filter "system:windows"
+        links{
+            "opengl32"
+        }
 
     pchheader "pch.h"
     pchsource "%{prj.name}/src/pch.cpp"
 
     filter "system:windows"
-        cppdialect "C++20"
         staticruntime "off"
         systemversion "latest"
 
@@ -148,12 +181,20 @@ project "Game"
             "_WINDOWS",
             "_USRDLL"
         }
-        links {
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+       filter "system:macosx"
+           links {
+               "sfml-system",
+               "sfml-window",
+               "sfml-graphics",
+               "sfml-audio",
+           }
+       filter "system:windows"
+           links {
+               "sfml-system-d",
+               "sfml-window-d",
+               "sfml-graphics-d",
+               "sfml-audio-d",
+           }
         runtime "Debug"
         symbols "On"
     
@@ -181,12 +222,20 @@ project "Game"
             "TOAD_EDITOR",
             "_USRDLL"
         }
-        links {
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
         runtime "Debug"
         symbols "On"
 
@@ -194,6 +243,7 @@ project "ToadRunner"
     location "ToadRunner"
     kind "ConsoleApp"
     language "C++"
+    cppdialect "C++20"
 
     targetdir ("bin/" .. output_dir .. "/")
     objdir ("bin-intermediate/" .. output_dir .. "/")
@@ -221,10 +271,19 @@ project "ToadRunner"
     links {
         "Engine",
         "Game",
-        "opengl32",
     }
 
-    cppdialect "C++20"
+    filter "system:macosx"
+         links {
+             "OpenGL.framework",
+             "Cocoa.framework",
+             "IOKit.framework",
+             "CoreVideo.framework",
+         }
+    filter "system:windows"
+        links{
+            "opengl32"
+        }
 
     pchheader "pch.h"
     pchsource "%{prj.name}/src/pch.cpp"
@@ -233,7 +292,6 @@ project "ToadRunner"
         flags {"NoPCH"}
 
     filter "system:windows"
-        cppdialect "C++20"
         staticruntime "Off"
         systemversion "latest"
 
@@ -242,12 +300,20 @@ project "ToadRunner"
             "_DEBUG",
             "_CONSOLE",
         }
-        links {
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
         runtime "Debug"
         symbols "On"
 
@@ -256,12 +322,20 @@ project "ToadRunner"
             "NDEBUG",
             "_CONSOLE",
         }
-        links {
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
-        }
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
         optimize "On"
 
     filter "configurations:Dev" 
@@ -270,11 +344,19 @@ project "ToadRunner"
             "_CONSOLE",
             "TOAD_EDITOR"
         }
-        links {
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+       filter "system:macosx"
+           links {
+               "sfml-system",
+               "sfml-window",
+               "sfml-graphics",
+               "sfml-audio",
+           }
+       filter "system:windows"
+           links {
+               "sfml-system-d",
+               "sfml-window-d",
+               "sfml-graphics-d",
+               "sfml-audio-d",
+           }
         runtime "Debug"
         symbols "On"

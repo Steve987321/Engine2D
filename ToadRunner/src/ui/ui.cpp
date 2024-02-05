@@ -1,5 +1,7 @@
 #include "pch.h"
 
+#include <algorithm>
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "Engine/Engine.h"
 
@@ -832,7 +834,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 			//LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
-			cursor_index = std::clamp(cursor_index, 0ull, keys.size());
+			cursor_index = std::clamp(cursor_index, (size_t)0, keys.size());
 
 			selected_objects.clear();
 			int dest = 0;
@@ -963,7 +965,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			bool suggestion = false;
 			char name_buf[100];
 			std::string new_name_str;
-			strcpy_s(name_buf, selected_obj->name.c_str());
+			strncpy(name_buf, selected_obj->name.c_str(), selected_obj->name.length() + 1);
 
 			ImVec2 input_name_pos = ImGui::GetCursorPos();
 			if (ImGui::InputText("name", name_buf, sizeof(name_buf)))
@@ -1407,7 +1409,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			else if (text_obj != nullptr)
 			{
 				char buf[512];
-				strcpy_s(buf, text_obj->GetText().c_str());
+				strncpy(buf, text_obj->GetText().c_str(), text_obj->GetText().length() + 1);
 				if (ImGui::InputTextMultiline("Text", buf, sizeof(buf), {}))
 				{
 					text_obj->SetText(buf);

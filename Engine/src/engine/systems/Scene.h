@@ -2,11 +2,10 @@
 
 #include <EngineCore.h>
 #include "nlohmann/json.hpp"
+#include "engine/object_default/Object.h"
 
 namespace Toad
 {
-
-class Object;
 
 using json = nlohmann::json;
 

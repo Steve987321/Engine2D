@@ -67,7 +67,9 @@ namespace Toad
 		// checks to see if a new game.dll is available 
 		void GameUpdatedWatcher();
 
+#ifdef _WIN32
 		static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
+#endif
 
 	private:
 		float m_tickps = 1000.f / 50.f;

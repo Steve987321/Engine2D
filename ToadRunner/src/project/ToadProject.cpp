@@ -16,6 +16,7 @@ namespace project {
 
 	bool OpenSln(const fs::path& path, const misc::Editor& editor)
 	{
+#ifdef _WIN32
 		if (!path.has_extension() || path.extension() != ".sln")
 			return false;
 
@@ -42,6 +43,7 @@ namespace project {
 
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
+#endif
 		return true;
 	}
 

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <filesystem>
+#ifdef _WIN32
 #include <shlobj.h>
+#endif
 
 namespace Toad {
 
