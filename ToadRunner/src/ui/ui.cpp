@@ -1853,8 +1853,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)pos.x, (float)pos.y }, IM_COL32(255, 255, 0, 100), "selected_obj->name.c_str()");
-
 		if (Toad::Camera::GetActiveCamera())
 		{
 			std::vector<ImVec2> positions;
