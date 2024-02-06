@@ -322,20 +322,13 @@ project "ToadRunner"
             "NDEBUG",
             "_CONSOLE",
         }
-        filter "system:macosx"
-            links {
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links {
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
+
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
         optimize "On"
 
     filter "configurations:Dev" 
