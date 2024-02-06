@@ -13,6 +13,7 @@ namespace Toad
 	{
 	public:
 		using FENGINE_UI = std::function<void(ImGuiContext* ctx)>;
+		using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 
 		static Engine& Get();
 		static Logger& GetLogger();
@@ -55,6 +56,8 @@ namespace Toad
 		std::queue<std::filesystem::path>& GetDroppedFilesQueue();
 
 		void SetEngineUI(const FENGINE_UI& p_ui);
+		// use also only for ui
+		void SetEventCallback(const FEVENT_CALLBACK& callback);
 
 		static constexpr int fixed_update_frequency = 1000 / 50;
 
@@ -82,6 +85,7 @@ namespace Toad
 		sf::RenderTexture m_windowTexture;
 
 		FENGINE_UI m_renderUI = nullptr;
+		FEVENT_CALLBACK m_eventCallback = nullptr;
 		ImGuiIO* m_io = nullptr;
 
 		Scene m_currentScene = {};

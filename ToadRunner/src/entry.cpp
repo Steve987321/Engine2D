@@ -11,6 +11,7 @@ int main(int argc, char** argv)
 	
 #ifdef TOAD_EDITOR
 	engine.SetEngineUI(ui::engine_ui);
+	engine.SetEventCallback(ui::event_callback);
 #endif
 
 	if (!engine.Init())

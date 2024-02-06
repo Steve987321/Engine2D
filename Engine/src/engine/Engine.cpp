@@ -189,13 +189,14 @@ void Engine::EventHandler()
 	{
 #ifdef TOAD_EDITOR
 		ImGui::SFML::ProcessEvent(e);
+		m_eventCallback(e);
 #endif
+
 		switch (e.type)
 		{
-
+		
 		case sf::Event::Closed:
 		{
-			LOGDEBUG("closing window");
 			m_window.close();
 			break;
 		}
@@ -572,6 +573,11 @@ std::queue<std::filesystem::path>& Engine::GetDroppedFilesQueue()
 void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 {
 	m_renderUI = p_ui;
+}
+
+void Engine::SetEventCallback(const FEVENT_CALLBACK& callback)
+{
+	m_eventCallback = callback;
 }
 
 void Engine::CleanUp()

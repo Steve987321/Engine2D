@@ -28,6 +28,9 @@ constexpr int i16_min = std::numeric_limits<int16_t>::min();
 constexpr int i16_max = std::numeric_limits<int16_t>::max();
 constexpr int i32_max = std::numeric_limits<int32_t>::max();
 
+Toad::SceneHistory scene_history{};
+bool is_scene_loaded = false;
+
 void ui::engine_ui(ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
@@ -51,12 +54,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
-	static Toad::SceneHistory scene_history{};
 
 	static Toad::Object* selected_obj = nullptr;
 
 	static std::string clipboard_data;
-
 
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
@@ -832,9 +833,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				keys.push_back(name);
 			}
-
+			
 			//LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
-			cursor_index = std::clamp(cursor_index, 0ul, keys.size());
+			cursor_index = std::clamp(cursor_index, (size_t)0, keys.size());
 
 			selected_objects.clear();
 			int dest = 0;
@@ -2151,32 +2152,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 					scene_history.scene = &Toad::Engine::Get().GetScene();
 					scene_history.SaveState();
 				}
+				is_scene_loaded = true;
 				selected_obj = nullptr;
 			}
 		}
-	}
-	ImGui::Begin("test undo redo save");
-	{
-		if (ImGui::Button("SAVE"))
-		{
-			scene_history.SaveState();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("UNDO"))
-		{
-			selected_obj = nullptr;
-			selected_objects.clear();
-			scene_history.Undo();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("REDO"))
-		{
-			selected_obj = nullptr;
-			selected_objects.clear();
-			scene_history.Redo();
-		}
-
-		ImGui::End();
 	}
 	
     ImGui::End();
@@ -2190,6 +2169,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		scene_history.asset_folder = asset_browser.GetAssetPath();
 		scene_history.scene = &Toad::Engine::Get().GetScene();
 		scene_history.SaveState();
+		is_scene_loaded = true;
 	}
 	ImGui::End();
 
@@ -2206,6 +2186,38 @@ void ui::engine_ui(ImGuiContext* ctx)
 
     ImGui::End();
 
+	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+	{
+		if (ImGui::IsKeyPressed(ImGuiKey_Z))
+		{
+			if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
+			{
+				selected_obj = nullptr;
+				selected_objects.clear();
+				scene_history.Redo();
+			}
+			else
+			{
+				selected_obj = nullptr;
+				selected_objects.clear();
+				scene_history.Undo();
+			}
+		}
+	}
+}
+
+void ui::event_callback(const sf::Event& e)
+{
+	if (!is_scene_loaded)
+	{
+		return;
+	}
+
+	switch (e.type) {
+	case sf::Event::KeyReleased:
+	case sf::Event::MouseButtonReleased:
+		scene_history.SaveState();
+	}
 }
 
 void ui::HelpMarker(const char* desc)
