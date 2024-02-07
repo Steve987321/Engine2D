@@ -289,7 +289,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 #endif
 					Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
-                    LOGDEBUGF("{}", Toad::)
 					Toad::Engine::Get().LoadGameScripts();
 
 					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
