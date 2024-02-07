@@ -302,7 +302,10 @@ project "ToadRunner"
 
     filter "files:ToadRunner/src/imgui_impl/**.cpp"
         flags {"NoPCH"}
-
+    
+    filter "files:ToadRunner/src/**.mm"
+        flags {"NoPCH"}
+        
     filter "system:windows"
         staticruntime "Off"
         systemversion "latest"
