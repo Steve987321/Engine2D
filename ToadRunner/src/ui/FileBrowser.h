@@ -1,9 +1,6 @@
 #pragma once
 
 #include <filesystem>
-#ifdef _WIN32
-#include <shlobj.h>
-#endif
 
 namespace Toad {
 
@@ -34,8 +31,5 @@ namespace Toad {
 
         bool m_isDoubleClicked = false;
     };
-
-    std::string GetPathDialog(std::string_view title, std::string_view path);
-    std::string GetPathFile(std::string_view path, std::string_view file_types);
 
 } // Toad

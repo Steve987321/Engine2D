@@ -23,7 +23,8 @@ project "Engine"
 
     files {
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.mm",
     }
 
     includedirs {
@@ -250,7 +251,8 @@ project "ToadRunner"
 
     files {
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.mm",
     }
 
     includedirs {
