@@ -18,7 +18,7 @@ void TestScript::OnStart(Object* obj)
 
 	if (circle == nullptr)
 	{
-		LOGERRORF("CIRCLE IS NULL");
+		LOGERROR("CIRCLE IS NULL");
 	}
 
 	velx = start_direction_X;

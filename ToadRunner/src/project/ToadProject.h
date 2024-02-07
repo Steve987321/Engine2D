@@ -65,8 +65,18 @@ namespace project {
 	enum class PROJECT_FLAGS{
 		NO_VENDOR_COPY = 1 << 0,		// Copies only specified files from vendor to project
 		NO_DEFAULT_SCENE = 1 << 1,		// Doesn't copy default game scene to project, blank
+        NO_DEFAULT_SCRIPTS = 1 << 1,	// Doesn't copy default game scripts to project
 	};
 	DEFINE_ENUM_FLAG_OPERATORS(PROJECT_FLAGS)
+
+    enum class PROJECT_TYPE{
+        VS_2022,
+        VS_2019,
+        VS_2015,
+        Makefile,
+        Codelite,
+        Xcode,
+    };
 
 	enum class LOAD_PROJECT_RES
 	{
@@ -87,6 +97,7 @@ namespace project {
 		std::string project_path;
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
+        PROJECT_TYPE project_gen_type;
 
 		nlohmann::json to_json() const
 		{
@@ -101,7 +112,11 @@ namespace project {
 	// active project 
 	inline ProjectSettings current_project{};
 
+#ifdef _WIN32
 	bool OpenSln(const std::filesystem::path& settings, const misc::Editor& editor = misc::current_editor);
+#endif
+
+    std::string ProjectTypeAsStr(PROJECT_TYPE r);
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 

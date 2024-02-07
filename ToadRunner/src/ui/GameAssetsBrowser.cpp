@@ -135,11 +135,12 @@ void GameAssetsBrowser::Show()
 						break;
 					}
 
+#ifdef _WIN32
 					if (!project::OpenSln(slnpath, editor))
 					{
 						LOGERRORF("Failed to open {} with {}", slnpath, editor.name);
 					}
-
+#endif
 					misc::current_editor = editor;
 
 					break;

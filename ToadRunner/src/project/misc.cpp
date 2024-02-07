@@ -10,6 +10,9 @@ namespace fs = std::filesystem;
 
 std::vector<Editor> misc::FindEditors()
 {
+#ifdef __APPLE__
+    return {};
+#endif
 	std::vector<Editor> available_editors;
 
 	fs::path vs2022_path = "C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE";

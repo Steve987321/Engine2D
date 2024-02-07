@@ -33,6 +33,8 @@ constexpr int i32_max = std::numeric_limits<int32_t>::max();
 Toad::SceneHistory scene_history{};
 bool is_scene_loaded = false;
 
+extern std::filesystem::path GetEnginePath();
+
 void ui::engine_ui(ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
@@ -61,6 +63,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	static std::string clipboard_data;
 
+    // set default project settings
+    static bool once = true;
+    if (once)
+    {
+#ifdef _WIN32
+        settings.project_gen_type = project::PROJECT_TYPE::VS_2022;
+#else
+        settings.project_gen_type = project::PROJECT_TYPE::Makefile;
+#endif
+        once = false;
+    }
+
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
@@ -71,7 +85,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::MenuItem("Create Project"))
 			{
-				settings.engine_path = (std::filesystem::current_path().parent_path() / "Engine").string();
+				settings.engine_path = GetEnginePath();
 
 				ImGui::PushOverrideID(project_creation_popup_id);
 				ImGui::OpenPopup("CreateProject");
@@ -173,6 +187,28 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::TextDisabled("Engine path %s", settings.engine_path.c_str());
 			if (ImGui::InputText("name", name, 30))
 				settings.name = name;
+
+
+            const char* project_types[] = {"Visual Studio 2022", "Visual Studio 2019", "Visual Studio 2015", "Makefile", "Codelite", "Xcode"};
+
+#ifdef _WIN32
+            static const char* current_type_preview = "Visual Studio 2022";
+#else
+            static const char* current_type_preview = "Makefile";
+#endif
+
+            if (ImGui::BeginCombo("project file type", current_type_preview))
+            {
+                for (int i = 0; i < IM_ARRAYSIZE(project_types); i++)
+                {
+                    bool is_selected = (int)settings.project_gen_type == i;
+                    if (ImGui::Selectable(project_types[i], is_selected)) {
+                        settings.project_gen_type = project::PROJECT_TYPE(i);
+                        current_type_preview = project_types[i];
+                    }
+                }
+                ImGui::EndCombo();
+            }
 
 			ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.c_str());
 
@@ -2261,4 +2297,30 @@ void ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, fl
 void ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 {
 	ImGui::SliderVec2(label, &v->x, &v->y, min, max);
+}
+
+std::filesystem::path GetEnginePath()
+{
+    std::filesystem::path res;
+    res = (std::filesystem::current_path().parent_path() / "Engine").string();
+
+    if (!std::filesystem::exists(res))
+    {
+        res = std::filesystem::current_path();
+
+        std::filesystem::path parent;
+        do{
+            parent = res.parent_path();
+            for (auto entry : std::filesystem::directory_iterator(parent))
+            {
+                if (entry.path().filename().string().find("Engine") != std::string::npos)
+                {
+                    return entry.path();
+                }
+            }
+            res = parent;
+        } while(parent.has_parent_path());
+    }
+
+    return res;
 }

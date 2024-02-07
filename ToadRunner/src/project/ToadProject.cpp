@@ -14,9 +14,9 @@ namespace project {
 	namespace fs = std::filesystem;
 	using json = nlohmann::json;
 
+#ifdef _WIN32
 	bool OpenSln(const fs::path& path, const misc::Editor& editor)
 	{
-#ifdef _WIN32
 		if (!path.has_extension() || path.extension() != ".sln")
 			return false;
 
@@ -43,12 +43,17 @@ namespace project {
 
 		CloseHandle(pi.hProcess);
 		CloseHandle(pi.hThread);
-#endif
 		return true;
 	}
+#endif
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
 	{
+#ifdef _WIN32
+        std::string premake5 = "premake5.exe";
+#else
+        std::string premake5 = "premake5";
+#endif
 		// verify settings paths 
 		if (!fs::is_directory(settings.project_path))
 		{
@@ -149,14 +154,16 @@ namespace project {
 		premake_lua_file << generate_game_project_str.str();
 		premake_lua_file.close();
 
-		// copy premake executable
-		if (!fs::copy_file(engine_parent_path.string() + "/vendor/bin/premake5.exe", settings.project_path + "/premake5.exe"))
+		// copy premake executable, only needed for windows
+#ifdef _WIN32
+		if (!fs::copy_file(engine_parent_path.string() + "/vendor/bin/" + premake5, settings.project_path + "/" + premake5))
 		{
 			return {
 				CREATE_PROJECT_RES::ERROR,
-				("Failed to copy premake5.exe to {}", settings.project_path)
+				Toad::format_str("Failed to copy {} to {}", premake5, settings.project_path)
 			};
 		}
+
 		std::string project_path_backslash;
 		for (char c : settings.project_path)
 		{
@@ -167,9 +174,12 @@ namespace project {
 			}
 			project_path_backslash += c;
 		}
-
+#else
+        std::string project_path_backslash = settings.project_path;
+#endif
+        std::string proj_type_str = ProjectTypeAsStr(settings.project_gen_type);
 		std::string command1 = Toad::format_str("cd {}", project_path_backslash);
-		std::string command2 = Toad::format_str("premake5.exe --enginepath={} --projectname={} vs2022", settings.engine_path, settings.name);
+		std::string command2 = Toad::format_str("{} --enginepath={} --projectname={} {}", premake5, settings.engine_path, settings.name, proj_type_str);
 		int res = system(Toad::format_str("{} && {}", command1, command2).c_str());
 		if (res == -1)
 		{
@@ -446,5 +456,32 @@ namespace project {
 			Toad::format_str("Loaded project {} successfully", settings.name)
 		};
 	}
+
+    std::string ProjectTypeAsStr(PROJECT_TYPE r)
+    {
+        switch(r){
+            case PROJECT_TYPE::VS_2022:
+                return "vs2022";
+                break;
+            case PROJECT_TYPE::VS_2019:
+                return "vs2019";
+                break;
+            case PROJECT_TYPE::VS_2015:
+                return "vs2015";
+                break;
+            case PROJECT_TYPE::Makefile:
+                return "gmake2";
+                break;
+            case PROJECT_TYPE::Codelite:
+                return "codelite";
+                break;
+            case PROJECT_TYPE::Xcode:
+                return "xcode4";
+                break;
+            default:
+                return "invalid";
+                break;
+        }
+    }
 
 }
