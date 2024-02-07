@@ -402,10 +402,11 @@ void Engine::LoadGameScripts()
 #ifdef _WIN32
 	fs::path current_game_dll = game_bin_directory + "GameCurrent.dll";
 #else
-    fs::path current_game_dll = game_bin_directory + "libGameCurrent.dylib";
+//    fs::path current_game_dll = game_bin_directory + "libGameCurrent.dylib";
+    fs::path current_game_dll = game_bin_directory + game_bin_file;
 #endif
 
-#ifdef TOAD_EDITOR
+#if defined TOAD_EDITOR && _WIN32
 	if (fs::exists(current_game_dll))
 	{
 		if (fs::exists(game_dll_path))
@@ -418,22 +419,26 @@ void Engine::LoadGameScripts()
 	}
 #endif
 
-	if (!fs::exists(game_dll_path))
-	{
-		LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
-	}
-	else
-	{
-		try
-		{
-			fs::rename(game_dll_path, current_game_dll);
-		}
-		catch(fs::filesystem_error& e)
-		{
-			LOGERRORF("{}", e.what());
-			return;
-		}
-	}
+#ifdef _WIN32
+//#ifdef __APPLE__
+//    if (!game_bin_directory.empty())
+//    {
+//#endif
+        if (!fs::exists(game_dll_path)) {
+            LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
+        } else {
+            try {
+                fs::rename(game_dll_path, current_game_dll);
+            }
+            catch (fs::filesystem_error &e) {
+                LOGERRORF("{}", e.what());
+                return;
+            }
+        }
+//#ifdef __APPLE__
+//    }
+#endif
+//#endif
 
 #ifdef _WIN32
 	auto dll = LoadLibraryA(current_game_dll.string().c_str());
@@ -511,12 +516,14 @@ void Engine::LoadGameScripts()
 
 #else
 	LOGDEBUG("getting game lib");
-	auto dll = dlopen(game_bin_file.c_str(), RTLD_LAZY);
+	auto dll = dlopen(current_game_dll.c_str(), RTLD_LAZY);
 	if (dll == nullptr)
 	{
-		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), game_bin_file);
+		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), current_game_dll);
 		return;
 	}
+
+    m_currDLL = dll;
 	LOGERROR("found dll");
 
 	auto registerScripts = reinterpret_cast<register_scripts_t*>(dlsym(dll, "register_scripts"));
@@ -542,6 +549,58 @@ void Engine::LoadGameScripts()
 
 		m_gameScripts[script->GetName()] = script;
 	}
+
+    // update scripts on object if it has an old version
+    for (auto& [obj_name, obj] : m_currentScene.objects_map)
+    {
+        if (!objects_with_scripts.contains(obj_name))
+        {
+            continue;
+        }
+
+        const auto& prev_obj_state = objects_with_scripts[obj_name];
+
+        for (auto& [attached_script_name, old_reflection_vars] : prev_obj_state)
+        {
+            auto it = m_gameScripts.find(attached_script_name);
+            if (it != m_gameScripts.end())
+            {
+                // update exposed vars if they exist
+                obj->AddScript(it->second->Clone());
+
+                auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection().Get();
+
+                for (auto& [name, v] : new_reflection_vars.str)
+                    for (auto& [newname, newv] : old_reflection_vars.str)
+                        if (newname == name)
+                            *v = newv;
+                for (auto& [name, v] : new_reflection_vars.b)
+                    for (auto& [newname, newv] : old_reflection_vars.b)
+                        if (newname == name)
+                            *v = newv;
+                for (auto& [name, v] : new_reflection_vars.flt)
+                    for (auto& [newname, newv] : old_reflection_vars.flt)
+                        if (newname == name)
+                            *v = newv;
+                for (auto& [name, v] : new_reflection_vars.i8)
+                    for (auto& [newname, newv] : old_reflection_vars.i8)
+                        if (newname == name)
+                            *v = newv;
+                for (auto& [name, v] : new_reflection_vars.i16)
+                    for (auto& [newname, newv] : old_reflection_vars.i16)
+                        if (newname == name)
+                            *v = newv;
+                for (auto& [name, v] : new_reflection_vars.i32)
+                    for (auto& [newname, newv] : old_reflection_vars.i32)
+                        if (newname == name)
+                            *v = newv;
+
+                LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj_name);
+            }
+        }
+
+        objects_with_scripts.erase(obj_name);
+    }
 #endif
 
 #ifdef _DEBUG
