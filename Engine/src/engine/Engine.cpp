@@ -11,10 +11,6 @@
 
 #include "engine/systems/Timer.h"
 
-#ifdef __APPLE__
-#include <dlfcn.h>
-#endif
-
 #include <imgui/imgui.h>
 #include <imgui-SFML.h>
 
@@ -36,7 +32,7 @@ bool Engine::Init()
 
 	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
 	{
-		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == ".dll")
+		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
 		{
 			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
 		}
@@ -52,7 +48,7 @@ bool Engine::Init()
 
 	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
 	{
-		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == ".dll")
+		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
 		{
 			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
 		}
@@ -357,9 +353,9 @@ void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string
 	game_bin_directory = bin_path;
 	game_bin_file = game_bin_file_name;
 
-	if (!game_bin_directory.ends_with("\\"))
+	if (!game_bin_directory.ends_with(PATH_SEPARATOR))
 	{
-		game_bin_directory += "\\";
+		game_bin_directory += PATH_SEPARATOR;
 	}
 }
 
@@ -403,7 +399,11 @@ void Engine::LoadGameScripts()
 	}
 
 	fs::path game_dll_path = game_bin_directory + game_bin_file;
+#ifdef _WIN32
 	fs::path current_game_dll = game_bin_directory + "GameCurrent.dll";
+#else
+    fs::path current_game_dll = game_bin_directory + "libGameCurrent.dylib";
+#endif
 
 #ifdef TOAD_EDITOR
 	if (fs::exists(current_game_dll))

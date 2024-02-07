@@ -34,6 +34,7 @@ Toad::SceneHistory scene_history{};
 bool is_scene_loaded = false;
 
 extern std::filesystem::path GetEnginePath();
+extern std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings);
 
 void ui::engine_ui(ImGuiContext* ctx)
 {
@@ -237,7 +238,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
-					Toad::Engine::Get().UpdateGameBinPaths(settings.name + ".dll", settings.project_path + "bin\\Dev-windows-x86_64");
+                    std::string lib_prefix;
+#ifdef __APPLE__
+                    lib_prefix = "lib";
+#endif
+                    Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
 
 			}
@@ -278,8 +283,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
-					Toad::Engine::Get().UpdateGameBinPaths(project::current_project.name + "_Game.dll", project::current_project.project_path + "\\bin\\Dev-windows-x86_64");
+                    std::string lib_prefix;
+#ifdef __APPLE__
+                    lib_prefix = "lib";
+#endif
+					Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
+                    LOGDEBUGF("{}", Toad::)
 					Toad::Engine::Get().LoadGameScripts();
 
 					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
@@ -2323,4 +2333,24 @@ std::filesystem::path GetEnginePath()
     }
 
     return res;
+}
+
+std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings)
+{
+    for (const auto& entry : std::filesystem::directory_iterator(settings.project_path))
+    {
+        if (entry.path().filename().string().find("bin") != std::string::npos)
+        {
+            for (const auto& entry2 : std::filesystem::directory_iterator(entry.path()))
+            {
+                if (entry2.path().filename().string().find("Dev") != std::string::npos)
+                {
+                    return entry2.path();
+                }
+            }
+        }
+    }
+
+    LOGWARNF("Can't find binary directory in {}", settings.project_path);
+    return "";
 }

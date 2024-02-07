@@ -398,7 +398,7 @@ namespace project {
 
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
-					settings.project_path = path;
+                    settings.project_path = fs::path(path).parent_path();
 				}
 				catch(json::parse_error& e)
 				{
@@ -441,13 +441,12 @@ namespace project {
 
 			if (project_file.is_open())
 			{
-				json data = json::parse(project_file);
-
 				try
 				{
+                    json data = json::parse(project_file);
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
-					settings.project_path = path;
+                    settings.project_path = fs::path(path).parent_path();
 				}
 				catch (json::parse_error& e)
 				{
