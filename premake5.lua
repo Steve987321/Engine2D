@@ -182,22 +182,24 @@ project "Game"
             "_WINDOWS",
             "_USRDLL"
         }
-       filter "system:macosx"
+
+        runtime "Debug"
+        symbols "On"
+
+        filter "system:macosx"
            links {
                "sfml-system",
                "sfml-window",
                "sfml-graphics",
                "sfml-audio",
            }
-       filter "system:windows"
+        filter "system:windows"
            links {
                "sfml-system-d",
                "sfml-window-d",
                "sfml-graphics-d",
                "sfml-audio-d",
            }
-        runtime "Debug"
-        symbols "On"
     
     filter "configurations:Release" 
         defines {
@@ -206,14 +208,16 @@ project "Game"
             "_USRDLL",
             "GAME_IS_EXPORT"
         }
+
+        runtime "Release"
+        optimize "On"
+
         links {
             "sfml-system",
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
         }
-        runtime "Release"
-        optimize "On"
     
     filter "configurations:Dev" 
         defines {
@@ -223,6 +227,10 @@ project "Game"
             "TOAD_EDITOR",
             "_USRDLL"
         }
+
+        runtime "Debug"
+        symbols "On"
+
         filter "system:macosx"
             links {
                 "sfml-system",
@@ -237,8 +245,6 @@ project "Game"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
-        runtime "Debug"
-        symbols "On"
 
 project "ToadRunner"
     location "ToadRunner"
@@ -302,6 +308,10 @@ project "ToadRunner"
             "_DEBUG",
             "_CONSOLE",
         }
+
+        runtime "Debug"
+        symbols "On"
+
         filter "system:macosx"
             links {
                 "sfml-system",
@@ -316,8 +326,6 @@ project "ToadRunner"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
-        runtime "Debug"
-        symbols "On"
 
     filter "configurations:Release" 
         defines {
@@ -325,14 +333,15 @@ project "ToadRunner"
             "_CONSOLE",
         }
 
+        runtime "Release"
+        symbols "Off"
+
         links {
             "sfml-system",
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
         }
-        runtime "Release"
-        optimize "On"
 
     filter "configurations:Dev" 
         defines {
@@ -340,19 +349,21 @@ project "ToadRunner"
             "_CONSOLE",
             "TOAD_EDITOR"
         }
-       filter "system:macosx"
+
+        runtime "Debug"
+        symbols "On"
+
+        filter "system:macosx"
            links {
                "sfml-system",
                "sfml-window",
                "sfml-graphics",
                "sfml-audio",
            }
-       filter "system:windows"
+        filter "system:windows"
            links {
                "sfml-system-d",
                "sfml-window-d",
                "sfml-graphics-d",
                "sfml-audio-d",
            }
-        runtime "Debug"
-        symbols "On"
