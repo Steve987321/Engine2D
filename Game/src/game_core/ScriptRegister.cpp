@@ -3,6 +3,9 @@
 
 #include "assets/scripts/TestScript.h"
 
+// tools 
+#include "engine/default_scripts/AnimationController.h"
+
 namespace Toad
 {
 
@@ -11,6 +14,8 @@ void register_scripts()
 	get_registered_scripts().clear();
 
 	SCRIPT_REGISTER(TestScript);
+
+	SCRIPT_REGISTER(AnimationController);
 }
 
 void register_script(const std::shared_ptr<Script>& instance)

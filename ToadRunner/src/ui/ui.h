@@ -4,6 +4,8 @@ namespace ui
 {
 	void engine_ui(ImGuiContext* ctx);
 
+	void event_callback(const sf::Event& e);
+
 	void HelpMarker(const char* desc);
 }
 
