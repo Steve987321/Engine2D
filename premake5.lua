@@ -331,6 +331,7 @@ project "ToadRunner"
             "sfml-graphics",
             "sfml-audio",
         }
+        runtime "Release"
         optimize "On"
 
     filter "configurations:Dev" 
