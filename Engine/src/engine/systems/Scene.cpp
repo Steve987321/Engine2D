@@ -211,8 +211,9 @@ void SaveScene(const Scene& scene, const std::filesystem::path& path)
 	json data = scene.Serialize();
 
 	std::string dir = path.string();
-	if (dir.find('\\') != std::string::npos && !dir.ends_with("\\"))
-		dir += "\\";
+
+	if (dir.find(PATH_SEPARATOR) != std::string::npos && !dir.ends_with(PATH_SEPARATOR))
+		dir += PATH_SEPARATOR;
 
 	std::string full = dir + scene.name;
 	if (!scene.name.ends_with(".TSCENE"))

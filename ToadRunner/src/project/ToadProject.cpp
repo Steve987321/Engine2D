@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ToadProject.h"
 
-#include "engine/FormatStr.h"
+#include "engine/Engine.h"
 #include "Misc.h"
 
 #include "nlohmann/json.hpp"
@@ -64,6 +64,7 @@ namespace project {
 			};
 		}
 
+#ifdef _WIN32
 		if (!fs::is_empty(settings.project_path))
 		{
 			// change to warning, choose to add/overwrite directory contents
@@ -73,6 +74,23 @@ namespace project {
 				Toad::format_str("Project directory isn't empty {}", settings.project_path)
 			};
 		}
+#else
+        if (!fs::is_empty(settings.project_path))
+        {
+            for (const auto& entry : fs::directory_iterator(settings.project_path))
+            {
+                if (entry.is_directory())
+                {
+                    // change to warning, choose to add/overwrite directory contents
+                    return
+                    {
+                        CREATE_PROJECT_RES::ERROR,
+                        Toad::format_str("Project directory isn't empty {}", settings.project_path)
+                    };
+                }
+            }
+        }
+#endif
 
 		if (!fs::is_directory(settings.engine_path))
 		{
@@ -249,11 +267,11 @@ namespace project {
 		{
 			// ignore /vendor/bin /examples /imgui/misc /docs /doc
 			auto strpath = entry.path().string();
-			if (strpath.find("\\vendor\\bin") != std::string::npos ||
-				strpath.find("\\examples") != std::string::npos ||
-				strpath.find("\\imgui\\misc") != std::string::npos ||
-				strpath.find("\\docs") != std::string::npos ||
-				strpath.find("\\doc") != std::string::npos
+			if (strpath.find(fs::path("/vendor/bin")) != std::string::npos ||
+				strpath.find(fs::path("/examples")) != std::string::npos ||
+				strpath.find(fs::path("/imgui/misc")) != std::string::npos ||
+				strpath.find(fs::path("/docs")) != std::string::npos ||
+				strpath.find(fs::path("/doc")) != std::string::npos
 				)
 			{
 				continue;
@@ -261,7 +279,7 @@ namespace project {
 
 			if (entry.is_directory())
 			{
-				auto pos = entry.path().string().find("\\vendor");
+				auto pos = entry.path().string().find(fs::path("/vendor"));
 				if (pos != std::string::npos)
 				{
 					std::string relative = entry.path().string().substr(pos);
@@ -271,7 +289,7 @@ namespace project {
 			}
 			else if (entry.is_regular_file())
 			{
-				auto pos = entry.path().string().find("\\vendor");
+				auto pos = entry.path().string().find(fs::path("/vendor"));
 				if (pos != std::string::npos)
 				{
 					std::string relative = entry.path().string().substr(pos);
@@ -293,10 +311,9 @@ namespace project {
 
 		// project file 
 
-		json data;
+		json data = json::object();
 		data["name"] = settings.name;
 		data["engine_path"] = settings.engine_path;
-		data["project_path"] = settings.project_path;
 
 		std::ofstream engine_file(fs::path(settings.project_path) / (settings.name + ".TOADPROJECT"));
 
@@ -381,7 +398,7 @@ namespace project {
 
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
-					settings.project_path = data["project_path"];
+					settings.project_path = path;
 				}
 				catch(json::parse_error& e)
 				{
@@ -420,7 +437,7 @@ namespace project {
 				};
 			}
 
-			std::ifstream project_file(path.data());
+			std::ifstream project_file(path_to_file);
 
 			if (project_file.is_open())
 			{
@@ -430,7 +447,7 @@ namespace project {
 				{
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
-					settings.project_path = data["project_path"];
+					settings.project_path = path;
 				}
 				catch (json::parse_error& e)
 				{
