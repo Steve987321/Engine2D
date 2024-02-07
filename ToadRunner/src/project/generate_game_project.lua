@@ -35,6 +35,7 @@ project "Engine"
     location "Engine"
     kind "SharedLib"
     language "C++"
+    cppdialect "C++20"
 
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
@@ -58,14 +59,19 @@ project "Engine"
         "vendor/SFML-2.6.0/lib"
     }
 
-    links{
-        "opengl32",
-    }
-
-    cppdialect "C++20"
+    filter "system:macosx"
+         links {
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+        }
+    filter "system:windows"
+        links {
+            "opengl32"
+        }
 
     filter "system:windows"
-        cppdialect "C++20"
         staticruntime "On"
         systemversion "latest"
 
@@ -92,20 +98,31 @@ project "Engine"
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
         }
-        links{
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+
         staticruntime "off"
         runtime "Debug"
         symbols "On"
+
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
 
 project(game_project_name)
     location(game_project_name)
     kind "SharedLib"
     language "C++"
+    cppdialect "C++20"
 
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
@@ -128,15 +145,21 @@ project(game_project_name)
         "vendor/SFML-2.6.0/lib"
     }
 
-    links{
-        "Engine",
-        "opengl32",
-    }
-
-    cppdialect "C++20"
+    filter "system:macosx"
+         links {
+            "Engine",
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+        }
 
     filter "system:windows"
-        cppdialect "C++20"
+        links {
+            "Engine",
+            "opengl32"
+        }
+
         staticruntime "On"
         systemversion "latest"
 
@@ -165,15 +188,25 @@ project(game_project_name)
             "TOAD_EDITOR",
             "_USRDLL"
         }
-        links{
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+
         staticruntime "off"
         runtime "Debug"
         symbols "Off"
+
+        filter "system:macosx"
+           links {
+               "sfml-system",
+               "sfml-window",
+               "sfml-graphics",
+               "sfml-audio",
+           }
+        filter "system:windows"
+           links {
+               "sfml-system-d",
+               "sfml-window-d",
+               "sfml-graphics-d",
+               "sfml-audio-d",
+           }
 
 project "ToadRunner"
     location "ToadRunner"
@@ -203,10 +236,19 @@ project "ToadRunner"
         "vendor/SFML-2.6.0/lib"
     }
 
-    links{
-        "Engine",
-        "opengl32",
-    }
+    filter "system:macosx"
+         links {
+                "Engine",
+                "OpenGL.framework",
+                "Cocoa.framework",
+                "IOKit.framework",
+                "CoreVideo.framework",
+        }
+    filter "system:windows"
+        links {
+            "Engine",
+            "opengl32"
+        }
 
     cppdialect "C++20"
 
@@ -234,10 +276,20 @@ project "ToadRunner"
             "_CONSOLE",
             "TOAD_EDITOR"
         }
-        links{
-            "sfml-system-d",
-            "sfml-window-d",
-            "sfml-graphics-d",
-            "sfml-audio-d",
-        }
+
         symbols "On"
+
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
