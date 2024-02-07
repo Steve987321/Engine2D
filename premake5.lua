@@ -70,6 +70,10 @@ project "Engine"
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
         }
+
+        runtime "Debug"
+        symbols "On"
+
         filter "system:macosx"
             links {
                 "sfml-system",
@@ -84,8 +88,6 @@ project "Engine"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
-        runtime "Debug"
-        symbols "On"
     
     filter "configurations:Release" 
         defines {
@@ -109,6 +111,10 @@ project "Engine"
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
         }
+
+        runtime "Debug"
+        symbols "On"
+
         filter "system:macosx"
             links {
                 "sfml-system",
@@ -123,9 +129,7 @@ project "Engine"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
-        runtime "Debug"
-        symbols "On"
-    
+
 project "Game"
     location "Game"
     kind "SharedLib"
