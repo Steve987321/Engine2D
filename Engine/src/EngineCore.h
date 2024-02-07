@@ -26,8 +26,11 @@
 
 #ifdef __APPLE__
 #include <sys/syslimits.h>
+#include <dlfcn.h>
+#define LIB_FILE_EXT ".dylib"
 #define PATH_SEPARATOR '/'
 #define MAX_PATH PATH_MAX
-#else
+#elif _WIN32
 #define PATH_SEPARATOR '\\'
+#define LIB_FILE_EXT ".dll"
 #endif
