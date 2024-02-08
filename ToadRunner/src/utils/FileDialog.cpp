@@ -6,6 +6,9 @@
 #endif
 
 namespace Toad {
+
+	namespace fs = std::filesystem;
+
 #ifdef _WIN32
     extern int CALLBACK ProjectBrowseFolderCallback(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata);
 #endif

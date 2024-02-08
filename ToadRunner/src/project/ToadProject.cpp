@@ -267,11 +267,11 @@ namespace project {
 		{
 			// ignore /vendor/bin /examples /imgui/misc /docs /doc
 			auto strpath = entry.path().string();
-			if (strpath.find(fs::path("/vendor/bin")) != std::string::npos ||
-				strpath.find(fs::path("/examples")) != std::string::npos ||
-				strpath.find(fs::path("/imgui/misc")) != std::string::npos ||
-				strpath.find(fs::path("/docs")) != std::string::npos ||
-				strpath.find(fs::path("/doc")) != std::string::npos
+			if (strpath.find(fs::path("/vendor/bin").string()) != std::string::npos ||
+				strpath.find(fs::path("/examples").string()) != std::string::npos ||
+				strpath.find(fs::path("/imgui/misc").string()) != std::string::npos ||
+				strpath.find(fs::path("/docs").string()) != std::string::npos ||
+				strpath.find(fs::path("/doc").string()) != std::string::npos
 				)
 			{
 				continue;
@@ -279,7 +279,7 @@ namespace project {
 
 			if (entry.is_directory())
 			{
-				auto pos = entry.path().string().find(fs::path("/vendor"));
+				auto pos = entry.path().string().find(fs::path("/vendor").string());
 				if (pos != std::string::npos)
 				{
 					std::string relative = entry.path().string().substr(pos);
@@ -289,7 +289,7 @@ namespace project {
 			}
 			else if (entry.is_regular_file())
 			{
-				auto pos = entry.path().string().find(fs::path("/vendor"));
+				auto pos = entry.path().string().find(fs::path("/vendor").string());
 				if (pos != std::string::npos)
 				{
 					std::string relative = entry.path().string().substr(pos);
@@ -398,7 +398,7 @@ namespace project {
 
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
-                    settings.project_path = fs::path(path).parent_path();
+                    settings.project_path = fs::path(path).parent_path().string();
 				}
 				catch(json::parse_error& e)
 				{
@@ -446,7 +446,7 @@ namespace project {
                     json data = json::parse(project_file);
 					settings.name = data["name"];
 					settings.engine_path = data["engine_path"];
-                    settings.project_path = fs::path(path).parent_path();
+                    settings.project_path = fs::path(path).parent_path().string();
 				}
 				catch (json::parse_error& e)
 				{

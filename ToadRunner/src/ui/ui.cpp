@@ -86,7 +86,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::MenuItem("Create Project"))
 			{
-				settings.engine_path = GetEnginePath();
+				settings.engine_path = GetEnginePath().string();
 
 				ImGui::PushOverrideID(project_creation_popup_id);
 				ImGui::OpenPopup("CreateProject");
