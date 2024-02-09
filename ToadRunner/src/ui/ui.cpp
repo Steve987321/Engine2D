@@ -1877,66 +1877,163 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		static ImVec2 select_begin_relative = {};
 		static ImVec2 select_begin_cursor = {}; 
+		static bool is_moving_gizmo = false;
+
+		std::vector<ImVec2> positions;
+		if (selected_obj)
+		{
+			auto obj_pos_px = texture.mapCoordsToPixel(selected_obj->GetPosition(), editor_cam.GetView());
+
+			obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
+			obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
+			obj_pos_px.x += pos.x;
+			obj_pos_px.y += pos.y;
+
+			positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
+
+			ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), selected_obj->name.c_str());
+		}
+		for (const auto& name : selected_objects)
+		{
+			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+			if (obj)
+			{
+				auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
+
+				obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
+				obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
+				obj_pos_px.x += pos.x;
+				obj_pos_px.y += pos.y;
+
+				positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
+				ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), name.c_str());
+			}
+		}
+
+		ImVec2 gizmo_pos;
+
+		for (const ImVec2& position : positions)
+		{
+			gizmo_pos.x += position.x;
+			gizmo_pos.y += position.y;
+		}
+		gizmo_pos.x /= positions.size();
+		gizmo_pos.y /= positions.size();
+
+		ImGui::GetWindowDrawList()->AddRectFilled(gizmo_pos - ImVec2{ 10, 10 }, gizmo_pos + ImVec2{ 10, 10 }, IM_COL32(255, 0, 0, 100));
+		// y
+		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{ 0, 20 }, IM_COL32(0, 0, 255, 100), 2.f);
+		// x
+		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{ 20, 0 }, IM_COL32(0, 255, 0, 100), 2.f);
+
+		if (is_moving_gizmo)
+		{
+			ImVec2 d = ImGui::GetMouseDragDelta();
+
+			if (selected_obj)
+			{
+				selected_obj->SetPosition(selected_obj->GetPosition() + Vec2f{ d.x, d.y });
+			}
+			for (const std::string& name : selected_objects)
+			{
+				Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+				if (obj)
+				{
+					obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
+				}
+			}
+
+			ImGuiContext* g = ImGui::GetCurrentContext();
+			*g->IO.MouseClickedPos = ImGui::GetMousePos();
+
+			if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			{
+				g->IO.MouseDragThreshold = 6.0f;
+				is_moving_gizmo = false;
+			}
+		}
+		else
+		{
+			if (ImRect(gizmo_pos - ImVec2{ 10, 10 }, gizmo_pos + ImVec2{ 10, 10 }).Contains(ImGui::GetMousePos()))
+			{
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				{
+					ImGuiContext* g = ImGui::GetCurrentContext();
+					g->IO.MouseDragThreshold = 0.0f;
+					LOGDEBUG("MOVING");
+					is_moving_gizmo = true;
+				}
+				else
+				{
+					is_moving_gizmo = false;
+				}
+			}
+		}
+
+
 		if (ImGui::IsItemHovered())
 		{
-			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+			if (!is_moving_gizmo)
 			{
-				ImGui::GetWindowDrawList()->AddRectFilled(select_begin_cursor, select_begin_cursor + ImGui::GetMouseDragDelta(), IM_COL32(155, 155, 255, 50), 0);
-				
-				auto texture_size = texture.getSize();
-
-				ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
-
-				float fx = texture_size.x / editor_cam.GetSize().x;
-				float fy = texture_size.y / editor_cam.GetSize().y;
-				float x1 = select_begin_relative.x * fx;
-				float y1 = select_begin_relative.y * fy;
-				float x2 = curr_pos.x * fx;
-				float y2 = curr_pos.y * fy;
-
-				//LOGDEBUGF("{} {}  {} {}", x1, y1, x2, y2);
-					
-				ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
-					
-				for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
 				{
-					auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
+					ImGui::GetWindowDrawList()->AddRectFilled(select_begin_cursor, select_begin_cursor + ImGui::GetMouseDragDelta(), IM_COL32(155, 155, 255, 50), 0);
+				
+					auto texture_size = texture.getSize();
+
+					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
+
+					float fx = texture_size.x / editor_cam.GetSize().x;
+					float fy = texture_size.y / editor_cam.GetSize().y;
+					float x1 = select_begin_relative.x * fx;
+					float y1 = select_begin_relative.y * fy;
+					float x2 = curr_pos.x * fx;
+					float y2 = curr_pos.y * fy;
+
+					//LOGDEBUGF("{} {}  {} {}", x1, y1, x2, y2);
+					
+					ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
+					
+					for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+					{
+						auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
 						
-					//LOGDEBUGF("{} {} ", a.x, a.y);
-					if (rect.Contains({ (float)a.x, (float)a.y })) {
-						if (selected_obj != obj.get())
-						{
-							selected_objects.emplace(name);
+						//LOGDEBUGF("{} {} ", a.x, a.y);
+						if (rect.Contains({ (float)a.x, (float)a.y })) {
+							if (selected_obj != obj.get())
+							{
+								selected_objects.emplace(name);
+							}
+							else
+							{
+								selected_obj = obj.get();
+							}
 						}
 						else
 						{
-							selected_obj = obj.get();
-						}
-					}
-					else
-					{
-						if (!ImGui::IsKeyDown(ImGuiKey_LeftShift))
-						{
-							if (selected_obj == obj.get())
+							if (!ImGui::IsKeyDown(ImGuiKey_LeftShift))
 							{
-								selected_obj = nullptr;
-							}
-							else if (selected_objects.contains(name))
-							{
-								selected_objects.erase(name);
+								if (selected_obj == obj.get())
+								{
+									selected_obj = nullptr;
+								}
+								else if (selected_objects.contains(name))
+								{
+									selected_objects.erase(name);
+								}
 							}
 						}
 					}
 				}
-			}
-			else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-			{
-				//LOGDEBUGF("{} {} {} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y, image_cursor_pos.x, image_cursor_pos.y);
-				select_begin_cursor = ImGui::GetMousePos();
-				select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
+				else if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				{
+					//LOGDEBUGF("{} {} {} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y, image_cursor_pos.x, image_cursor_pos.y);
+					select_begin_cursor = ImGui::GetMousePos();
+					select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
-				selected_obj = nullptr;
-				selected_objects.clear();
+					selected_obj = nullptr;
+					selected_objects.clear();
+				}
 			}
 		}
 
@@ -1952,53 +2049,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImRect rect(obj_pos_px.x - 10, obj_pos_px.y - 10, obj_pos_px.x + 10, obj_pos_px.y + 10);
 			ImGui::GetWindowDrawList()->AddRectFilled(rect.Min, rect.Max, IM_COL32(255, 0, 0, 255));
 		}*/
-
-		std::vector<ImVec2> positions;
-		if (selected_obj)
-		{
-			auto obj_pos_px = texture.mapCoordsToPixel(selected_obj->GetPosition(), editor_cam.GetView());
-
-			obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
-			obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-			obj_pos_px.x += pos.x;
-			obj_pos_px.y += pos.y;
-
-			positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
-
-			ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y}, IM_COL32(255, 255, 0, 100), selected_obj->name.c_str());
-		}
-		for (const auto& name : selected_objects)
-		{
-			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
-			if (obj)
-			{
-				auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
-
-				obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
-				obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-				obj_pos_px.x += pos.x;
-				obj_pos_px.y += pos.y;
-
-				positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
-				ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y}, IM_COL32(255, 255, 0, 100), name.c_str() );
-			}
-		}
-
-		ImVec2 gizmo_pos;
-
-		for (const ImVec2& position : positions)
-		{
-			gizmo_pos.x += position.x;
-			gizmo_pos.y += position.y;
-		}
-		gizmo_pos.x /= positions.size();
-		gizmo_pos.y /= positions.size();
-
-		ImGui::GetWindowDrawList()->AddRectFilled(gizmo_pos - ImVec2{5, 5}, gizmo_pos + ImVec2{5, 5}, IM_COL32(255, 0, 0, 100));
-		// y
-		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{0, 20}, IM_COL32(0, 0, 255, 100), 2.f);
-		// x
-		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{20, 0}, IM_COL32(0, 255, 0, 100), 2.f);
 
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
