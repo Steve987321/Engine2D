@@ -22,6 +22,9 @@ Engine::Engine()
 	s_Instance = this;
 
 	m_currentScene = Scene();
+
+	m_editorCam.SetPosition({ 0, 0 });
+	m_editorCam.SetSize({ 1280, 720});
 }
 
 Engine::~Engine() = default;
@@ -99,8 +102,9 @@ bool Engine::Init()
 		return false;
 	 
 #ifdef TOAD_EDITOR
-	LOGDEBUG("Creating window texture for viewport");
+	LOGDEBUG("Creating window texture for viewport & game view");
 	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
+	m_windowEditorCamTexture.create(m_window.getSize().x, m_window.getSize().y);
 #endif
 
 	m_isRunning = true;
@@ -246,16 +250,19 @@ void Engine::Render()
 
 #if defined(TOAD_EDITOR)
 	m_windowTexture.clear();
+	m_windowEditorCamTexture.clear();
 
-	// Update scene to the texture so it can display on the viewport 
+	// Update scene to the texture so it can display on the (game) viewport 
 	GetScene().Render(m_windowTexture);
-
 	if (cam != nullptr)
 	{
 		m_windowTexture.setView(cam->GetView());
 	}
-
 	m_windowTexture.display();
+
+	GetScene().Render(m_windowEditorCamTexture);
+	m_windowEditorCamTexture.setView(m_editorCam.GetView());
+	m_windowEditorCamTexture.display();
 
 	// imgui
 	m_renderUI(ImGui::GetCurrentContext());
@@ -307,6 +314,16 @@ sf::RenderWindow& Engine::GetWindow()
 sf::RenderTexture& Engine::GetWindowTexture()
 {
 	return m_windowTexture;
+}
+
+sf::RenderTexture& Engine::GetEditorCameraTexture()
+{
+	return m_windowEditorCamTexture;
+}
+
+Toad::Camera& Engine::GetEditorCamera()
+{
+	return m_editorCam;
 }
 
 ResourceManager& Engine::GetResourceManager()

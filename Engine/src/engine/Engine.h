@@ -35,6 +35,9 @@ namespace Toad
 		sf::RenderWindow& GetWindow();
 
 		sf::RenderTexture& GetWindowTexture();
+		sf::RenderTexture& GetEditorCameraTexture();
+
+		Camera& GetEditorCamera();
 
 		ResourceManager& GetResourceManager();
 
@@ -83,6 +86,7 @@ namespace Toad
 		sf::Clock m_deltaClock;
 
 		sf::RenderTexture m_windowTexture;
+		sf::RenderTexture m_windowEditorCamTexture;
 
 		FENGINE_UI m_renderUI = nullptr;
 		FEVENT_CALLBACK m_eventCallback = nullptr;
@@ -99,6 +103,7 @@ namespace Toad
 		std::queue<std::filesystem::path> m_droppedFilesQueue;
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
+		Camera m_editorCam {"EditorCamera"};
 
 #ifdef _WIN32
         HMODULE m_currDLL{};
