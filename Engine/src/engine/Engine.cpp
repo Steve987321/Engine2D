@@ -533,7 +533,7 @@ void Engine::LoadGameScripts()
 
 #else
 	LOGDEBUG("getting game lib");
-	auto dll = dlopen(current_game_dll.c_str(), RTLD_LAZY);
+	auto dll = dlopen(current_game_dll.c_str(), RTLD_LOCAL | RTLD_NOW);
 	if (dll == nullptr)
 	{
 		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), current_game_dll);
