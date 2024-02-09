@@ -1875,10 +1875,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
 		ImGui::Image(texture, {editor_cam.GetSize().x, editor_cam.GetSize().y}, sf::Color::White);
 
-		static ImVec2 select_begin_relative = {};
-		static ImVec2 select_begin_cursor = {}; 
-		static bool is_moving_gizmo = false;
-
 		std::vector<ImVec2> positions;
 		if (selected_obj)
 		{
@@ -1910,25 +1906,84 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
+		// #TODO abstract gizmo 
+		static ImVec2 select_begin_relative = {};
+		static ImVec2 select_begin_cursor = {};
+		static bool is_moving_gizmo = false;
+
 		ImVec2 gizmo_pos;
+		static Vec2i selected_gizmo = { 0, 0 }; // #TODO enum 
+		static ImU32 gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 0.5f });
+		static ImU32 gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 1, 0 });
+		static ImU32 gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 1, 0, 0 });
+		
+		ImVec2 gizmo_xy_size = { 10, 10 };
+		const float gizmo_line_size = 40;
+		const float gizmo_line_width = 2.f;
 
 		for (const ImVec2& position : positions)
 		{
 			gizmo_pos.x += position.x;
 			gizmo_pos.y += position.y;
 		}
+
 		gizmo_pos.x /= positions.size();
 		gizmo_pos.y /= positions.size();
 
-		ImGui::GetWindowDrawList()->AddRectFilled(gizmo_pos - ImVec2{ 10, 10 }, gizmo_pos + ImVec2{ 10, 10 }, IM_COL32(255, 0, 0, 100));
+		ImGui::GetWindowDrawList()->AddRectFilled(gizmo_pos - gizmo_xy_size, gizmo_pos + gizmo_xy_size, gizmo_col_xy);
 		// y
-		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{ 0, 20 }, IM_COL32(0, 0, 255, 100), 2.f);
+		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, {gizmo_pos.x, gizmo_pos.y + gizmo_line_size}, gizmo_col_y, gizmo_line_width);
 		// x
-		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, gizmo_pos + ImVec2{ 20, 0 }, IM_COL32(0, 255, 0, 100), 2.f);
+		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, {gizmo_pos.x + gizmo_line_size, gizmo_pos.y}, gizmo_col_x, gizmo_line_width);
 
 		if (is_moving_gizmo)
 		{
 			ImVec2 d = ImGui::GetMouseDragDelta();
+
+			if (ImGui::IsKeyPressed(ImGuiKey_X))
+			{
+				selected_gizmo.x = ~selected_gizmo.x;
+				if (selected_gizmo.y)
+				{
+					selected_gizmo.y = ~selected_gizmo.y;
+				}
+				if (selected_gizmo.x)
+				{
+					gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 1, 0.8f });
+					gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 0, 1, 0 });
+				}
+				else
+				{
+					gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 1, 0 });
+				}
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_Y))
+			{
+				selected_gizmo.y = ~selected_gizmo.y;
+				if (selected_gizmo.x)
+				{
+					selected_gizmo.x = ~selected_gizmo.x;
+				}
+				if (selected_gizmo.y)
+				{
+					gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 1, 0, 0.8f });
+					gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 1, 0 });
+
+				}
+				else
+				{
+					gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 1, 0, 0 });
+				}
+			}
+
+			if (selected_gizmo.x)
+			{
+				d.y = 0;
+			}
+			else if (selected_gizmo.y)
+			{
+				d.x = 0;
+			}
 
 			if (selected_obj)
 			{
@@ -1949,18 +2004,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
 			{
 				g->IO.MouseDragThreshold = 6.0f;
+				selected_gizmo = { 0, 0 };
+				gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
+				gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
 				is_moving_gizmo = false;
 			}
 		}
 		else
-		{
-			if (ImRect(gizmo_pos - ImVec2{ 10, 10 }, gizmo_pos + ImVec2{ 10, 10 }).Contains(ImGui::GetMousePos()))
+		{	
+			// xy 
+			if (ImRect(gizmo_pos - gizmo_xy_size, gizmo_pos + gizmo_xy_size).Contains(ImGui::GetMousePos()))
 			{
+				gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 1 });
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 				{
 					ImGuiContext* g = ImGui::GetCurrentContext();
 					g->IO.MouseDragThreshold = 0.0f;
-					LOGDEBUG("MOVING");
 					is_moving_gizmo = true;
 				}
 				else
@@ -1968,8 +2027,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 					is_moving_gizmo = false;
 				}
 			}
+			else
+			{
+				gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 0.5f });
+			}
 		}
-
 
 		if (ImGui::IsItemHovered())
 		{
