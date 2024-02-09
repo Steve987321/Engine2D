@@ -2033,6 +2033,19 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+		{
+			ImGuiContext* g = ImGui::GetCurrentContext();
+			g->IO.MouseDragThreshold = 0.0f;
+			ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+			g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
+			editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x, d.y));
+		}
+		else 
+		{
+			ImGui::GetCurrentContext()->IO.MouseDragThreshold = 6.0f;
+		}
+
 		if (ImGui::IsItemHovered())
 		{
 			if (!is_moving_gizmo)
@@ -2099,19 +2112,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		/*for (const auto& obj : Toad::Engine::Get().GetScene().objects_map | std::views::values)
-		{
-			auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
-
-			obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
-			obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-			obj_pos_px.x += pos.x;
-			obj_pos_px.y += pos.y;
-
-			ImRect rect(obj_pos_px.x - 10, obj_pos_px.y - 10, obj_pos_px.x + 10, obj_pos_px.y + 10);
-			ImGui::GetWindowDrawList()->AddRectFilled(rect.Min, rect.Max, IM_COL32(255, 0, 0, 255));
-		}*/
-
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
 		{
@@ -2124,6 +2124,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (ImGui::Button("Stop"))
 					Toad::Engine::Get().StopGameSession();
+			}
+
+			if (ImGui::TreeNode("Editor Camera Settings"))
+			{
+				Vec2f pos = editor_cam.GetPosition();
+				if (ImGui::SliderVec2("pos", &pos, INT_MIN, INT_MAX))
+					editor_cam.SetPosition(pos);
+
+				ImGui::TreePop();
 			}
 
 			ImGui::TreePop();
@@ -2418,15 +2427,16 @@ void ui::HelpMarker(const char* desc)
 	}
 }
 
-void ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, float max)
+bool ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, float max)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
-		return;
+		return false;
 
 	ImGuiContext& g = *GImGui;
 	const ImGuiStyle& style = g.Style;
 	const float w = ImGui::CalcItemWidth();
+	bool res = false;
 
 	const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, style.FramePadding.y * 2.0f));
 
@@ -2436,17 +2446,21 @@ void ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, fl
 	ImGui::Text(label.data());
 	ImGui::SameLine();
 	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
-	ImGui::DragFloat(label_final.c_str(), x, 1.0f, min, max);
+	if (ImGui::DragFloat(label_final.c_str(), x, 1.0f, min, max))
+		res = true;
 	ImGui::SameLine();
 	label_final = "##y";
 	label_final += label;
-	ImGui::DragFloat(label_final.c_str(), y, 1.0f, min, max);
+	if (ImGui::DragFloat(label_final.c_str(), y, 1.0f, min, max))
+		res = true;
 	ImGui::PopItemWidth();
+
+	return res;
 }
 
-void ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
+bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 {
-	ImGui::SliderVec2(label, &v->x, &v->y, min, max);
+	return ImGui::SliderVec2(label, &v->x, &v->y, min, max);
 }
 
 std::filesystem::path GetEnginePath()
