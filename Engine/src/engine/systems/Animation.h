@@ -17,16 +17,22 @@ struct AnimationFrame
 	Vec2f scale{};
 	float rotation = 0; 
 
+	std::pair<std::string, std::string> script_prop;
+
 	// ui 
 	bool is_key = false;
 };
 
 struct Animation
 {
+	std::string name;
 	std::vector<AnimationFrame> frames;
 	//std::vector<FAnimTransition> frames;
 
-	//json Serialize() const;
+	int frame_rate = 5;
+	bool is_looping = false;
+
+	json Serialize() const;
 };
 
 //void AnimationDeserialize(const json& data);

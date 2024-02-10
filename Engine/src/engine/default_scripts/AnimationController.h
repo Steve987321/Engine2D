@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Script.h"
+#include "engine/systems/Animation.h"
 #include <EngineCore.h>
 
 namespace Toad
@@ -19,10 +20,10 @@ public:
 	void OnStart(Object* obj) override;
 	void OnUpdate(Object* obj) override;
 	void OnEditorUI(Object* obj) override;
-	void ExposeVars() override;
 
 private: 
-	std::string m_usedAnimId;
+	Animation* m_attachedAnimation = nullptr;
+	bool m_isPlaying = false;
 };
 
 }

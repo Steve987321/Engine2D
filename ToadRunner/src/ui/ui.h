@@ -10,6 +10,6 @@ namespace ui
 }
 
 namespace ImGui {
-	bool SliderVec2(std::string_view label, float* x, float* y, float min, float max);
-	bool SliderVec2(std::string_view label, Vec2f* v, float min, float max);
+	bool SliderVec2(std::string_view label, float* x, float* y, float min = 0, float max = 0);
+	bool SliderVec2(std::string_view label, Vec2f* v, float min = 0, float max = 0);
 }

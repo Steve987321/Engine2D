@@ -2129,9 +2129,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::TreeNode("Editor Camera Settings"))
 			{
 				Vec2f pos = editor_cam.GetPosition();
+				Vec2f size = editor_cam.GetSize();
 				if (ImGui::SliderVec2("pos", &pos, INT_MIN, INT_MAX))
 					editor_cam.SetPosition(pos);
-
+				if (ImGui::SliderVec2("size", &size, INT_MIN, INT_MAX))
+					editor_cam.SetSize(size);
 				ImGui::TreePop();
 			}
 
@@ -2157,12 +2159,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					static int timeline = 0;
 					bool update_all_frames = false;
+					static int anim_length = anim.frames.size();
 					
-					int spacex = anim.frames.size() / ImGui::GetWindowSize().x;
+					int spacex = anim_length / ImGui::GetWindowSize().x;
 					int cursorposx = ImGui::GetCursorPosX();
 
 					ImGui::PushItemWidth(ImGui::GetWindowSize().x);
-					ImGui::SliderInt("time", &timeline, 0, anim.frames.size() - 1);
+					ImGui::SliderInt("time", &timeline, 0, anim_length - 1);
 
 					Toad::AnimationFrame& current_frame = anim.frames[timeline];
 
@@ -2184,12 +2187,40 @@ void ui::engine_ui(ImGuiContext* ctx)
 					{
 						update_all_frames = true;
 					}
+					ImGui::SameLine();
+					if (ImGui::Button("SET LENGTH.."))
+					{
+						anim_length = anim.frames.size();
+						ImGui::OpenPopup("AnimLengthPopUp");
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("SAVE.."))
+					{
 
+					}
+
+					if (ImGui::BeginPopupModal("AnimLengthPopUp", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+					{
+						static int new_size = anim_length; 
+						ImGui::DragInt("size", &new_size);
+						if (new_size < anim_length)
+						{
+							ImGui::TextColored({ 1, 1, 0, 1 }, "Will remove old frames: new:%d < old:%d", new_size, anim_length);
+						}
+						if (ImGui::Button("ok"))
+						{
+							anim.frames.resize((size_t)new_size);
+							anim_length = new_size;
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::EndPopup();
+					}
+					
 					ImGui::BeginChild("properties", {0, 100}, true);
 					{
-						ImGui::SliderVec2("position", &current_frame.position, -1000, 1000);
-						ImGui::SliderVec2("scale   ", &current_frame.scale, -1000, 1000);
-						ImGui::SliderFloat("rotation", &current_frame.rotation, -1000, 1000);
+						ImGui::SliderVec2("position", &current_frame.position);
+						ImGui::SliderVec2("scale   ", &current_frame.scale);
+						ImGui::DragFloat("rotation", &current_frame.rotation);
 
 						ImGui::EndChild();
 					}
