@@ -1831,11 +1831,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			auto& window_texture = Toad::Engine::Get().GetWindowTexture();
 
 			auto content_size = ImGui::GetContentRegionAvail();
-			// resize but keep aspect ratio
-			constexpr float ar = 16.f / 9.f;
-			float image_width = content_size.x;
-			float image_height = content_size.x / ar;
-
 
 			if (image_height > content_size.y)
 			{
@@ -1860,11 +1855,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 	{
 		auto& texture = Toad::Engine::Get().GetEditorCameraTexture();
+		const auto content_size = ImGui::GetContentRegionAvail();
 
-		auto content_size = ImGui::GetContentRegionAvail();
-		
 		Toad::Camera& editor_cam = Toad::Engine::Get().GetEditorCamera();
-		editor_cam.SetSize({content_size.x, content_size.y});
+		//editor_cam.SetSize({content_size.x, content_size.y});
 
 		// we want texture in the center 
 		float pady = 25; // #TODO: find the actual imgui style property 
@@ -1873,36 +1867,41 @@ void ui::engine_ui(ImGuiContext* ctx)
 		//LOGDEBUGF("{} {}", pos.x, pos.y + ImGui::GetCursorPos().y);
 
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
-		ImGui::Image(texture, {editor_cam.GetSize().x, editor_cam.GetSize().y}, sf::Color::White);
+		ImGui::Image(texture, { content_size.x, content_size.y }, sf::Color::White);
+
+		// TEMP 
+		//ImGui::SetCursorPos();
+		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 10 }, IM_COL32_WHITE, Toad::format_str("W:{}\nH:{}", content_size.x, content_size.y).c_str());
 
 		std::vector<ImVec2> positions;
+
+		const auto obj_screen_pos_info = [&](Toad::Object* obj)
+			{
+				if (obj)
+				{
+					auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
+					//obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
+					//obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
+					obj_pos_px.x /= (editor_cam.GetSize().x / content_size.x);
+					obj_pos_px.y /= (editor_cam.GetSize().y / content_size.y);
+					obj_pos_px.x += pos.x;
+					obj_pos_px.y += pos.y;
+
+					positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
+					ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), obj->name.c_str());
+				}
+			};
+
 		if (selected_obj)
 		{
-			auto obj_pos_px = texture.mapCoordsToPixel(selected_obj->GetPosition(), editor_cam.GetView());
-
-			obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
-			obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-			obj_pos_px.x += pos.x;
-			obj_pos_px.y += pos.y;
-
-			positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
-
-			ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), selected_obj->name.c_str());
+			obj_screen_pos_info(selected_obj);
 		}
 		for (const auto& name : selected_objects)
 		{
 			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
 			if (obj)
 			{
-				auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
-
-				obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
-				obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-				obj_pos_px.x += pos.x;
-				obj_pos_px.y += pos.y;
-
-				positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
-				ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), name.c_str());
+				obj_screen_pos_info(obj);
 			}
 		}
 
@@ -1985,6 +1984,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 				d.x = 0;
 			}
 
+			float multiplierx = editor_cam.GetSize().x / content_size.x;
+			float multipliery = editor_cam.GetSize().y / content_size.y;
+			d.x *= multiplierx;
+			d.y *= multipliery;
+
 			if (selected_obj)
 			{
 				selected_obj->SetPosition(selected_obj->GetPosition() + Vec2f{ d.x, d.y });
@@ -2013,7 +2017,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		else
 		{	
 			// xy 
-			if (ImRect(gizmo_pos - gizmo_xy_size, gizmo_pos + gizmo_xy_size).Contains(ImGui::GetMousePos()))
+			if (ImRect((gizmo_pos - gizmo_xy_size), gizmo_pos + gizmo_xy_size).Contains(ImGui::GetMousePos()))
 			{
 				gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 1 });
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -2058,8 +2062,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
-					float fx = texture_size.x / editor_cam.GetSize().x;
-					float fy = texture_size.y / editor_cam.GetSize().y;
+					float fx = editor_cam.GetSize().x / content_size.x;
+					float fy = editor_cam.GetSize().y / content_size.y;
 					float x1 = select_begin_relative.x * fx;
 					float y1 = select_begin_relative.y * fy;
 					float x2 = curr_pos.x * fx;
@@ -2106,8 +2110,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 					select_begin_cursor = ImGui::GetMousePos();
 					select_begin_relative = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
-					selected_obj = nullptr;
-					selected_objects.clear();
+					if (!ImGui::IsAnyItemHovered())
+					{
+						selected_obj = nullptr;
+						selected_objects.clear();
+					}
 				}
 			}
 		}
@@ -2144,6 +2151,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (ImGui::TreeNode("Tools"))
 		{
 			ImGui::Checkbox("animator", &is_animator);
+		
 			ImGui::TreePop();
 		}
 
