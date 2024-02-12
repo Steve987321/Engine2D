@@ -1846,7 +1846,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				});
 
 			ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
-
 		}
 		
 		ImGui::End();
@@ -1858,16 +1857,34 @@ void ui::engine_ui(ImGuiContext* ctx)
 		const auto content_size = ImGui::GetContentRegionAvail();
 
 		Toad::Camera& editor_cam = Toad::Engine::Get().GetEditorCamera();
+		//Toad::Camera* cam = Toad::Camera::GetActiveCamera();
+		//if (cam)
+		//{
+		//	//editor_cam.SetSize(cam->GetSize());
+		//}
+		
+		constexpr float ar = 16.f / 9.f;
+		float image_width = content_size.x;
+		float image_height = content_size.x / ar;
+
+		if (image_height > content_size.y)
+		{
+			image_height = content_size.y;
+			image_width = content_size.y * ar;
+		}
+
+		float pady = 25; // #TODO: find the actual imgui style property 
+		ImGui::SetCursorPos({
+			(content_size.x - image_width) * 0.5f,
+			(content_size.y - image_height + pady) * 0.5f
+			});
+
 		//editor_cam.SetSize({content_size.x, content_size.y});
 
-		// we want texture in the center 
-		float pady = 25; // #TODO: find the actual imgui style property 
-	
 		const auto pos = ImGui::GetCursorScreenPos();
-		//LOGDEBUGF("{} {}", pos.x, pos.y + ImGui::GetCursorPos().y);
 
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
-		ImGui::Image(texture, { content_size.x, content_size.y }, sf::Color::White);
+		ImGui::Image(texture, { image_width, image_height }, sf::Color::White);
 
 		// TEMP 
 		//ImGui::SetCursorPos();
@@ -1882,8 +1899,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
 					//obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
 					//obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-					obj_pos_px.x /= (editor_cam.GetSize().x / content_size.x);
-					obj_pos_px.y /= (editor_cam.GetSize().y / content_size.y);
+					obj_pos_px.x /= (editor_cam.GetSize().x / image_width);
+					obj_pos_px.y /= (editor_cam.GetSize().y / image_height);
 					obj_pos_px.x += pos.x;
 					obj_pos_px.y += pos.y;
 
@@ -1984,8 +2001,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 				d.x = 0;
 			}
 
-			float multiplierx = editor_cam.GetSize().x / content_size.x;
-			float multipliery = editor_cam.GetSize().y / content_size.y;
+			float multiplierx = editor_cam.GetSize().x / image_width;
+			float multipliery = editor_cam.GetSize().y / image_height;
 			d.x *= multiplierx;
 			d.y *= multipliery;
 
@@ -2062,8 +2079,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
-					float fx = editor_cam.GetSize().x / content_size.x;
-					float fy = editor_cam.GetSize().y / content_size.y;
+					float fx = editor_cam.GetSize().x / image_width;
+					float fy = editor_cam.GetSize().y / image_height;
 					float x1 = select_begin_relative.x * fx;
 					float y1 = select_begin_relative.y * fy;
 					float x2 = curr_pos.x * fx;
