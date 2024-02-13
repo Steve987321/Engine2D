@@ -1857,6 +1857,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		const auto content_size = ImGui::GetContentRegionAvail();
 
 		Toad::Camera& editor_cam = Toad::Engine::Get().GetEditorCamera();
+		static Vec2i grid_size = {16, 16};
 		//Toad::Camera* cam = Toad::Camera::GetActiveCamera();
 		//if (cam)
 		//{
@@ -2160,6 +2161,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					editor_cam.SetSize(size);
 				ImGui::TreePop();
 			}
+
+			ImGui::SliderVec2i("Grid", &grid_size);
 
 			ImGui::TreePop();
 		}
@@ -2512,6 +2515,42 @@ bool ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, fl
 	ImGui::PopItemWidth();
 
 	return res;
+}
+
+bool ImGui::SliderVec2i(std::string_view label, int* x, int* y, int min, int max)
+{
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImGuiContext& g = *GImGui;
+	const ImGuiStyle& style = g.Style;
+	const float w = ImGui::CalcItemWidth();
+	bool res = false;
+
+	const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, style.FramePadding.y * 2.0f));
+
+	std::string label_final = "##x";
+	label_final += label;
+
+	ImGui::Text(label.data());
+	ImGui::SameLine();
+	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
+	if (ImGui::DragInt(label_final.c_str(), x, 1.0f, min, max))
+		res = true;
+	ImGui::SameLine();
+	label_final = "##y";
+	label_final += label;
+	if (ImGui::DragInt(label_final.c_str(), y, 1.0f, min, max))
+		res = true;
+	ImGui::PopItemWidth();
+
+	return res;
+}
+
+bool ImGui::SliderVec2i(std::string_view label, Vec2i* v, int min, int max)
+{
+	return ImGui::SliderVec2i(label, &v->x, &v->y, min, max);
 }
 
 bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
