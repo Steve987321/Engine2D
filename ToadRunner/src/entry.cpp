@@ -12,6 +12,7 @@ int main(int argc, char** argv)
 #ifdef TOAD_EDITOR
 	engine.SetEngineUI(ui::engine_ui);
 	engine.SetEventCallback(ui::event_callback);
+	engine.SetEditorTextureDrawCallback(ui::editor_texture_draw_callback);
 #endif
 
 	if (!engine.Init())
