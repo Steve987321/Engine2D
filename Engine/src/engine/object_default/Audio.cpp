@@ -52,7 +52,7 @@ AudioSource* Audio::GetAudioSource() const
 	return m_audioSource;
 }
 
-const Vec2f& Audio::GetPosition()
+const Vec2f& Audio::GetPosition() const 
 {
 	return Object::GetPosition();
 }

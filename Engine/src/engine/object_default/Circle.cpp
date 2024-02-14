@@ -28,7 +28,7 @@ namespace Toad
 		m_circle.setTexture(texture, true);
 	}
 
-	const Vec2f& Circle::GetPosition()
+	const Vec2f& Circle::GetPosition() const 
 	{
 		return m_circle.getPosition();
 	}

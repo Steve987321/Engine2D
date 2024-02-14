@@ -15,7 +15,7 @@ namespace Toad
 		std::filesystem::path& GetTextureSourcePath();
 		void SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture);
 
-		const Vec2f& GetPosition() override;
+		const Vec2f& GetPosition() const override;
 		void SetPosition(const Vec2f& position) override;
 
 		void SetRotation(float degrees) override;

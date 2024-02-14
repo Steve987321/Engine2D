@@ -108,7 +108,7 @@ void Text::Update()
 	Object::Update();
 }
 
-const Vec2f& Text::GetPosition()
+const Vec2f& Text::GetPosition() const
 {
 	return m_text.getPosition();
 }

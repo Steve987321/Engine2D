@@ -20,7 +20,7 @@ public:
 	AudioSource* GetAudioSource() const;
 
 	// Use GetAudioPosition 
-	const Vec2f& GetPosition() override;
+	const Vec2f& GetPosition() const override;
 	void SetPosition(const Vec2f& position) override;
 
 	json Serialize() override;

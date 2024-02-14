@@ -37,7 +37,7 @@ public:
 
 	virtual void Update();
 
-	virtual const Vec2f& GetPosition();
+	virtual const Vec2f& GetPosition() const;
 	virtual void SetPosition(const Vec2f& position);
 
 	virtual float GetRotation();

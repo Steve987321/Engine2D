@@ -21,7 +21,7 @@ sf::Sprite& Sprite::GetSprite()
 	return m_sprite;
 }
 
-const Vec2f& Sprite::GetPosition()
+const Vec2f& Sprite::GetPosition() const
 {
 	return m_sprite.getPosition();
 }

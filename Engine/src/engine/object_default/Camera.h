@@ -22,7 +22,7 @@ public:
 	void Render(sf::RenderWindow& window) override;
 	void Render(sf::RenderTexture& texture) override;
 	void Update() override;
-	const Vec2f& GetPosition() override;
+	const Vec2f& GetPosition() const override;
 	void SetPosition(const Vec2f& position) override;
 
 	float GetRotation() override;

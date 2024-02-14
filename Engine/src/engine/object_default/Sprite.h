@@ -12,7 +12,7 @@ public:
 	~Sprite() override;
 
 	sf::Sprite& GetSprite();
-	const Vec2f& GetPosition() override;
+	const Vec2f& GetPosition() const override;
 	void SetPosition(const Vec2f& position) override;
 
 	void SetRotation(float degrees) override;

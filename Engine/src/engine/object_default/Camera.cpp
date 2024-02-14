@@ -90,7 +90,7 @@ void Camera::Update()
 	Object::Update();
 }
 
-const Vec2f& Camera::GetPosition()
+const Vec2f& Camera::GetPosition() const 
 {
 	return m_view.getCenter();
 }
