@@ -261,6 +261,12 @@ void Engine::Render()
 	m_windowTexture.display();
 
 	GetScene().Render(m_windowEditorCamTexture);
+
+	if (m_editorTextureDrawCallback)
+	{
+		m_editorTextureDrawCallback(m_windowEditorCamTexture);
+	}
+
 	m_windowEditorCamTexture.setView(m_editorCam.GetView());
 	m_windowEditorCamTexture.display();
 
@@ -654,6 +660,11 @@ void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 void Engine::SetEventCallback(const FEVENT_CALLBACK& callback)
 {
 	m_eventCallback = callback;
+}
+
+void Engine::SetEditorTextureDrawCallback(const FEDITOR_TEXTURE_DRAW_CALLBACK& callback)
+{
+	m_editorTextureDrawCallback = callback;
 }
 
 void Engine::CleanUp()
