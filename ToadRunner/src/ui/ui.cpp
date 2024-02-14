@@ -1857,7 +1857,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		const auto content_size = ImGui::GetContentRegionAvail();
 
 		Toad::Camera& editor_cam = Toad::Engine::Get().GetEditorCamera();
-		static Vec2i grid_size = {16, 16};
 		//Toad::Camera* cam = Toad::Camera::GetActiveCamera();
 		//if (cam)
 		//{
@@ -1952,6 +1951,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, {gizmo_pos.x, gizmo_pos.y + gizmo_line_size}, gizmo_col_y, gizmo_line_width);
 		// x
 		ImGui::GetWindowDrawList()->AddLine(gizmo_pos, {gizmo_pos.x + gizmo_line_size, gizmo_pos.y}, gizmo_col_x, gizmo_line_width);
+
+		// draw grid 
+		//for (int i = 0; i < content_size.x / grid_size.x; i++)
+		{
+			//ImGui::GetWindowDrawList()->AddLine( pos + ImVec2{i * grid_size.x, 0}, pos + ImVec2{i * grid_size.x, content_size.y}, IM_COL32_WHITE);
+		}
 
 		if (is_moving_gizmo)
 		{
@@ -2168,11 +2173,144 @@ void ui::engine_ui(ImGuiContext* ctx)
 		}
 
 		static bool is_animator = false;
+		static std::vector<TileSpritePlacer> opened_tilemaps;
 		if (ImGui::TreeNode("Tools"))
 		{
 			ImGui::Checkbox("animator", &is_animator);
-		
+			if (ImGui::TreeNode("open tilemaps"))
+			{
+				if (ImGui::Button("open (draggable by file)"))
+				{
+
+				}
+				const ImGuiPayload* payload;
+				if (ImGui::BeginDragDropTarget() && (payload = ImGui::AcceptDragDropPayload("move file")))
+				{
+					std::filesystem::path src = *(std::string*)payload->Data;
+					do
+					{
+						if (!src.has_extension() || (src.extension().string() != ".jpg" && src.extension().string() != ".png"))
+						{
+							LOGERRORF("[UI:Tools:open tilemaps] {} is not a valid file for a tilemap", src);
+							break;
+						}
+						for (const auto& t : opened_tilemaps)
+						{
+							if (t.path == src)
+							{
+								LOGDEBUGF("[UI:Tools:open tilemaps] {} already is an existing tilemap", src);
+								break;
+							}
+						}
+
+						sf::Texture tex;
+						if (!tex.loadFromFile(src.string()))
+						{
+							LOGDEBUGF("[UI:Tools:open tilemaps] {} can't be opened/loaded", src);
+							break;
+						}
+						opened_tilemaps.push_back(TileSpritePlacer(src, { 16, 16 }, tex, {}));
+					} while (false);
+
+
+					ImGui::EndDragDropTarget();
+				}
+				for (auto it = opened_tilemaps.begin(); it != opened_tilemaps.end();)
+				{
+					ImGui::Text(it->path.filename().string().c_str());
+					ImGui::SameLine();
+					if (ImGui::Button("close"))
+					{
+						it = opened_tilemaps.erase(it);
+					}
+					else
+					{
+						++it;
+					}
+				}
+
+				ImGui::TreePop();
+			}
+
 			ImGui::TreePop();
+		}
+
+		for (auto& t : opened_tilemaps)
+		{
+			ImGui::Begin(t.path.filename().string().c_str());
+			{
+				static bool ignore_fully_transparent = true;
+
+				ImGui::SliderVec2i("size", &t.size);
+				ImGui::Checkbox("ignore full transparent tiles", &ignore_fully_transparent);
+				if (ImGui::Button("APPLY SIZE/RESET TEXTURE"))
+				{
+					assert(t.size.x < t.tile_map.getSize().x && t.size.y < t.tile_map.getSize().y);
+
+					t.tiles.clear();
+
+					for (int i = 0; i < t.tile_map.getSize().x; i += t.size.x)
+					{
+						for (int j = 0; j < t.tile_map.getSize().y; j += t.size.y)
+						{
+							sf::Sprite sprite = sf::Sprite(t.tile_map);
+							sprite.setTextureRect(sf::IntRect({ i, j }, t.size));
+
+							bool skip = false;
+
+							if (ignore_fully_transparent)
+							{
+								skip = true;
+								// must copy to an image 
+								auto image = t.tile_map.copyToImage();
+
+								for (int sprite_x = i; sprite_x < i + t.size.x; sprite_x++)
+								{
+									for (int sprite_y = j; sprite_y < j + t.size.y; sprite_y++)
+									{
+										if (image.getPixel(sprite_x, sprite_y) != sf::Color::Transparent)
+										{
+											skip = false;
+										}
+									}
+								}
+							}
+							
+							if (!skip)
+							{
+								t.tiles.emplace_back(sprite);
+							}
+						}
+					}
+				}
+				if (ImGui::TreeNode("preview"))
+				{
+					ImGui::Image(t.tile_map);
+					ImGui::TreePop();
+				}
+				if (ImGui::TreeNode("drag & drop"))
+				{
+					float total_w = 0;
+					for (const auto& t2 : t.tiles)
+					{
+						total_w += t.size.x;
+						ImGui::Image(t2);
+						if (total_w < ImGui::GetWindowWidth() - t.size.x)
+						{
+							ImGui::SameLine();
+						}
+						else
+						{
+							total_w = 0;
+						}
+
+						// #TODO drag and drop to viewport 
+						//ImGui::BeginDragDropSource();
+					}
+					ImGui::TreePop();
+				}
+				ImGui::End();
+			}
 		}
 
 		static Toad::Object* selected_animation_obj = nullptr;
@@ -2471,6 +2609,33 @@ void ui::event_callback(const sf::Event& e)
 	case sf::Event::KeyReleased:
 	case sf::Event::MouseButtonReleased:
 		scene_history.SaveState();
+	}
+}
+
+void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
+{
+	const Toad::Camera* active_cam = Toad::Camera::GetActiveCamera();
+	if (!active_cam)
+	{
+		return;
+	}
+	const Toad::Camera& cam = Toad::Engine::Get().GetEditorCamera();
+	static auto rect = sf::RectangleShape();
+	rect.setFillColor(sf::Color::Transparent);
+	rect.setOutlineThickness(2.f);
+	rect.setOutlineColor(sf::Color(255, 255, 255, 80));
+	rect.setSize(Vec2f{ (float)grid_size.x, (float)grid_size.y });
+
+	if (show_grid)
+	{
+		for (float i = active_cam->GetPosition().x - grid_size.x * (active_cam->GetSize().x / grid_size.x); i < grid_size.x * (active_cam->GetSize().x / grid_size.x); i += (float)grid_size.x)
+		{
+			for (float j = active_cam->GetPosition().y - grid_size.y * (active_cam->GetSize().y / grid_size.y); j < grid_size.y * (active_cam->GetSize().y / grid_size.y); j += (float)grid_size.y)
+			{
+				rect.setPosition(Vec2f{i, j});
+				texture.draw(rect);
+			}
+		}
 	}
 }
 
