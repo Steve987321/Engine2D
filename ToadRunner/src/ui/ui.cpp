@@ -2240,9 +2240,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::Begin(t.path.filename().string().c_str());
 			{
 				static bool ignore_fully_transparent = true;
+				static bool preview_size = true;
 
 				ImGui::SliderVec2i("size", &t.size);
+
 				ImGui::Checkbox("ignore full transparent tiles", &ignore_fully_transparent);
+				ImGui::Checkbox("preview size", &preview_size);
 				if (ImGui::Button("APPLY SIZE/RESET TEXTURE"))
 				{
 					assert(t.size.x < t.tile_map.getSize().x && t.size.y < t.tile_map.getSize().y);
@@ -2285,28 +2288,73 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				if (ImGui::TreeNode("preview"))
 				{
+					t.size.x = std::clamp(t.size.x, 5, INT_MAX);
+					t.size.y = std::clamp(t.size.y, 5, INT_MAX);
+
+					ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 					ImGui::Image(t.tile_map);
+					if (preview_size)
+					{
+						auto draw = ImGui::GetWindowDrawList();
+						for (int x = 0; x < t.tile_map.getSize().x; x += t.size.x)
+						{
+							for (int y = 0; y < t.tile_map.getSize().y; y += t.size.y)
+							{
+								draw->AddLine(
+									screen_pos + ImVec2{ (float)x, (float)y },
+									screen_pos + ImVec2{ (float)x, (float)t.tile_map.getSize().y},
+									IM_COL32(255, 255, 255, 60)
+								);
+								draw->AddLine(
+									screen_pos + ImVec2{ (float)x, (float)y }, 
+									screen_pos + ImVec2{ (float)t.tile_map.getSize().x, (float)y },
+									IM_COL32(255, 255, 255, 60)
+								);
+							}
+						}
+					}
 					ImGui::TreePop();
 				}
 				if (ImGui::TreeNode("drag & drop"))
 				{
-					float total_w = 0;
+					float y = ImGui::GetCursorPosY();
+					uint32_t total_h = 0;
+					
+					// t.tiles is saved vertically 
+					// split them up and store them in vertical lines for proper display
+					std::vector<std::vector<const sf::Sprite*>> splitted_tiles;
+					std::vector <const sf::Sprite*> line;
+
 					for (const auto& t2 : t.tiles)
 					{
-						total_w += t.size.x;
-						ImGui::Image(t2);
-						if (total_w < ImGui::GetWindowWidth() - t.size.x)
+						total_h += t.size.y;
+						line.push_back(&t2);
+						if (total_h > t.tile_map.getSize().y)
 						{
-							ImGui::SameLine();
+							splitted_tiles.push_back(line);
+							line.clear();
+							total_h = 0;
 						}
-						else
-						{
-							total_w = 0;
-						}
-
-						// #TODO drag and drop to viewport 
-						//ImGui::BeginDragDropSource();
 					}
+					for (uint32_t i = 0; i < splitted_tiles.size(); i++)
+					{
+						ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, { 0, 0 });
+						ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
+						ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
+						ImGui::BeginChild(Toad::format_str("{}", i).c_str(), {(float)t.size.x, ImGui::GetWindowHeight() - y}, false, ImGuiWindowFlags_NoScrollbar);
+						for (const auto* sprite : splitted_tiles[i])
+						{
+							ImGui::Image(*sprite);
+						}
+						ImGui::EndChild();
+						ImGui::PopStyleVar(3);
+
+						if (i < splitted_tiles.size() - 1)
+						{
+							ImGui::SameLine(0, 0);
+						}
+					}
+
 					ImGui::TreePop();
 				}
 				ImGui::End();
