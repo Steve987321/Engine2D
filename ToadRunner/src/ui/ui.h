@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 
 namespace ui
@@ -8,6 +10,11 @@ namespace ui
 
 		sf::Texture tile_map;
 		std::vector<sf::Sprite> tiles;
+
+        TileSpritePlacer(std::filesystem::path  sheet_path, const Vec2i& sheet_split_size, const sf::Texture& tile_sheet_texture, const std::vector<sf::Sprite>& tiles)
+        : path(std::move(sheet_path)), size(sheet_split_size), tile_map(tile_sheet_texture), tiles(tiles)
+        {
+        }
 	};
 
 	inline bool show_grid = true;
