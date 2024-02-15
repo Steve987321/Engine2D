@@ -17,6 +17,12 @@ namespace ui
         }
 	};
 
+	struct SheetTileData
+	{
+		char* path;
+		sf::IntRect tex_rect;
+	};
+
 	inline bool show_grid = true;
 	inline Vec2i grid_size = {80, 80};
 

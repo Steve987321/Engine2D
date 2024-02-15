@@ -1862,7 +1862,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		//{
 		//	//editor_cam.SetSize(cam->GetSize());
 		//}
-		
+
 		constexpr float ar = 16.f / 9.f;
 		float image_width = content_size.x;
 		float image_height = content_size.x / ar;
@@ -1886,8 +1886,37 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
 		ImGui::Image(texture, { image_width, image_height }, sf::Color::White);
 
-		// TEMP 
-		//ImGui::SetCursorPos();
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("dnd tilesheettile"))
+			{
+				SheetTileData data = *(SheetTileData*)payload->Data;
+
+				sf::Texture* stex = Toad::Engine::Get().GetResourceManager().GetTexture(data.path);
+				if (!stex)
+				{
+					LOGERRORF("[UI:Viewport Drag Drop tilesheet] texture can't be loaded from resourcemanager: {}", data.path);
+				}
+				else
+				{
+					Toad::Sprite* added_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
+
+					added_obj->SetTexture(data.path, stex);
+					added_obj->GetSprite().setTextureRect(data.tex_rect);
+					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
+
+					float fx = editor_cam.GetSize().x / image_width;
+					float fy = editor_cam.GetSize().y / image_height;
+					Vec2f pos = { curr_pos.x * fx, curr_pos.y * fy };
+
+					pos = texture.mapPixelToCoords({(int)pos.x, (int)pos.y}, editor_cam.GetView());
+
+					added_obj->SetPosition(pos);
+				}
+
+				ImGui::EndDragDropTarget();
+			}
+		}
 		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 10 }, IM_COL32_WHITE, Toad::format_str("W:{}\nH:{}", content_size.x, content_size.y).c_str());
 
 		std::vector<ImVec2> positions;
@@ -2342,9 +2371,27 @@ void ui::engine_ui(ImGuiContext* ctx)
 						ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 0, 0 });
 						ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 						ImGui::BeginChild(Toad::format_str("{}", i).c_str(), {(float)t.size.x, ImGui::GetWindowHeight() - y}, false, ImGuiWindowFlags_NoScrollbar);
-						for (const auto* sprite : splitted_tiles[i])
+						for (const sf::Sprite* sprite : splitted_tiles[i])
 						{
 							ImGui::Image(*sprite);
+							if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+							{
+								std::filesystem::path relative = std::filesystem::relative(t.path, asset_browser.GetAssetPath());
+
+								if (!Toad::Engine::Get().GetResourceManager().GetTexture(relative.string()))
+								{
+									Toad::Engine::Get().GetResourceManager().AddTexture(relative.string(), t.tile_map);
+								}
+
+								SheetTileData data;
+								data.path = new char[relative.string().length()];
+								strncpy(data.path, relative.string().c_str(), relative.string().length() + 1);
+								data.tex_rect = sprite->getTextureRect();
+								
+								ImGui::SetDragDropPayload("dnd tilesheettile", &data, sizeof(data));
+								ImGui::EndDragDropSource();
+							}
+
 						}
 						ImGui::EndChild();
 						ImGui::PopStyleVar(3);
