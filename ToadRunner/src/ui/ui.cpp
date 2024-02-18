@@ -1903,6 +1903,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					added_obj->SetTexture(data.path, stex);
 					added_obj->GetSprite().setTextureRect(data.tex_rect);
+					added_obj->GetSprite().setScale(data.tex_size);
 					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
 					float fx = editor_cam.GetSize().x / image_width;
@@ -1989,8 +1990,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (is_moving_gizmo)
 		{
-			ImVec2 d = ImGui::GetMouseDragDelta();
-
+			ImVec2 d = ImGui::GetMouseDragDelta(0, 0.f);
 			if (ImGui::IsKeyPressed(ImGuiKey_X))
 			{
 				selected_gizmo.x = ~selected_gizmo.x;
@@ -2092,14 +2092,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
 		{
 			ImGuiContext* g = ImGui::GetCurrentContext();
-			g->IO.MouseDragThreshold = 0.0f;
-			ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle);
+			ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
 			g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
 			editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x, d.y));
-		}
-		else 
-		{
-			ImGui::GetCurrentContext()->IO.MouseDragThreshold = 6.0f;
 		}
 
 		if (ImGui::IsItemHovered())
@@ -2196,6 +2191,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::TreePop();
 			}
 
+			ImGui::Checkbox("Show grid", &show_grid);
 			ImGui::SliderVec2i("Grid", &grid_size);
 
 			ImGui::TreePop();
@@ -2270,8 +2266,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				static bool ignore_fully_transparent = true;
 				static bool preview_size = true;
-
-				ImGui::SliderVec2i("size", &t.size);
+				static Vec2f tile_size = {1.f, 1.f};
+				ImGui::SliderVec2i("split size", &t.size);
+				ImGui::SliderVec2("tile dropped size", &tile_size);
 
 				ImGui::Checkbox("ignore full transparent tiles", &ignore_fully_transparent);
 				ImGui::Checkbox("preview size", &preview_size);
@@ -2387,7 +2384,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 								data.path = new char[relative.string().length()];
 								strncpy(data.path, relative.string().c_str(), relative.string().length() + 1);
 								data.tex_rect = sprite->getTextureRect();
-								
+								data.tex_size = tile_size;
 								ImGui::SetDragDropPayload("dnd tilesheettile", &data, sizeof(data));
 								ImGui::EndDragDropSource();
 							}
@@ -2710,7 +2707,7 @@ void ui::event_callback(const sf::Event& e)
 void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 {
 	const Toad::Camera* active_cam = Toad::Camera::GetActiveCamera();
-	if (!active_cam)
+	if (!show_grid || !active_cam)
 	{
 		return;
 	}
@@ -2721,17 +2718,15 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 	rect.setOutlineColor(sf::Color(255, 255, 255, 80));
 	rect.setSize(Vec2f{ (float)grid_size.x, (float)grid_size.y });
 
-	if (show_grid)
+	for (float i = active_cam->GetPosition().x - grid_size.x * (active_cam->GetSize().x / grid_size.x); i < grid_size.x * (active_cam->GetSize().x / grid_size.x); i += (float)grid_size.x)
 	{
-		for (float i = active_cam->GetPosition().x - grid_size.x * (active_cam->GetSize().x / grid_size.x); i < grid_size.x * (active_cam->GetSize().x / grid_size.x); i += (float)grid_size.x)
+		for (float j = active_cam->GetPosition().y - grid_size.y * (active_cam->GetSize().y / grid_size.y); j < grid_size.y * (active_cam->GetSize().y / grid_size.y); j += (float)grid_size.y)
 		{
-			for (float j = active_cam->GetPosition().y - grid_size.y * (active_cam->GetSize().y / grid_size.y); j < grid_size.y * (active_cam->GetSize().y / grid_size.y); j += (float)grid_size.y)
-			{
-				rect.setPosition(Vec2f{i, j});
-				texture.draw(rect);
-			}
+			rect.setPosition(Vec2f{ i, j });
+			texture.draw(rect);
 		}
 	}
+	
 }
 
 void ui::HelpMarker(const char* desc)

@@ -20,7 +20,8 @@ namespace ui
 	struct SheetTileData
 	{
 		char* path;
-		sf::IntRect tex_rect;
+		sf::IntRect tex_rect{};
+		Vec2f tex_size{};
 	};
 
 	inline bool show_grid = true;
