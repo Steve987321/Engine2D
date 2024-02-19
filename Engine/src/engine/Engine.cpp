@@ -121,6 +121,13 @@ void Engine::Run()
 
 	while (m_window.isOpen())
 	{
+#ifdef TOAD_EDITOR
+		if (!m_window.hasFocus())
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		}
+#endif
+
 		// update deltatime
 		m_deltaTime = m_deltaClock.restart();
 

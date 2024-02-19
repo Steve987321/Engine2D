@@ -65,8 +65,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	static Toad::Object* selected_obj = nullptr;
 
-	static std::string clipboard_data;
-
     // set default project settings
     static bool once = true;
     if (once)
@@ -569,24 +567,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::SeparatorText(Toad::Engine::Get().GetScene().name.c_str());
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
-
-		if (ImGui::IsWindowFocused())
-		{
-			if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
-			{
-				if (ImGui::IsKeyPressed(ImGuiKey_V))
-				{
-					if (!clipboard_data.empty())
-					{
-
-					}
-				}
-				else if (ImGui::IsKeyPressed(ImGuiKey_C))
-				{
-					clipboard_data;
-				}
-			}
-		}
 
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{

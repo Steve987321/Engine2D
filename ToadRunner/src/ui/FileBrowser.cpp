@@ -6,23 +6,26 @@
 
 namespace Toad {
 
-    FileBrowser::FileBrowser(std::string_view starting_directory) {
-        m_currPath = starting_directory;
+    FileBrowser::FileBrowser(std::string_view starting_directory)
+        : m_currPath(starting_directory)
+    {
+        Refresh();
     }
 
-    FileBrowser::~FileBrowser() {
+    FileBrowser::~FileBrowser()
+    {
 
     }
 
     void FileBrowser::IterateDir(const fs::directory_iterator& dir_it)
     {
-        for (const auto& it : dir_it)
+        for (const auto& p : m_pathContents)
         {
-            auto labelStr = it.path().filename().string();
-            if (it.is_directory())
+            auto labelStr = p.filename().string();
+            if (fs::is_directory(p))
                 labelStr += PATH_SEPARATOR;
 
-            auto full = it.path().string();
+            auto full = p.string();
             if (ImGui::Selectable(labelStr.c_str(), m_selectedFile == full, ImGuiSelectableFlags_AllowDoubleClick))
             {
                 // read it
@@ -40,7 +43,7 @@ namespace Toad {
 
                 if (ImGui::IsMouseDoubleClicked(0))
                 {
-                    if (it.is_directory())
+                    if (fs::is_directory(p))
                     {
                         m_currPath = full;
                     }
@@ -49,13 +52,13 @@ namespace Toad {
             }
 
             // TODO : accept  drag and drop from game asset browser 
-            if (it.is_directory() && ImGui::BeginDragDropTarget())
+            if (fs::is_directory(p) && ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
                 {
                     fs::path src = *(std::string*)payload->Data;
                     std::error_code e;
-                    fs::rename(src, it.path() / src.filename(), e);
+                    fs::rename(src, p / src.filename(), e);
                     LOGDEBUGF("error code message: {} {}", e.message(), e.value());
                 }
             }
@@ -90,10 +93,12 @@ namespace Toad {
                         update_path += PATH_SEPARATOR;
                 }
                 m_currPath = update_path;
+
+                Refresh();
             }
         }
 
-        IterateDir(fs::directory_iterator(m_currPath));
+		IterateDir(fs::directory_iterator(m_currPath));
     }
 
     std::string &FileBrowser::GetSelectedFileContent() {
@@ -112,6 +117,7 @@ namespace Toad {
         }
 
         m_currPath = path;
+		Refresh();
     }
 
     const std::string& FileBrowser::GetPath() const
@@ -119,7 +125,16 @@ namespace Toad {
         return m_currPath;
     }
 
-    bool FileBrowser::IsDoubleClicked()
+	void FileBrowser::Refresh()
+	{
+        m_pathContents.clear();
+        for (const auto& e : fs::directory_iterator(m_currPath))
+        {
+            m_pathContents.emplace_back(e);
+        }
+	}
+
+	bool FileBrowser::IsDoubleClicked()
     {
         return m_isDoubleClicked;
     }
