@@ -299,20 +299,17 @@ void Engine::Render()
 
 		if (!erased)
 		{
+			(*it)->clear(sf::Color::Black);
+			ImGui::Begin("abc");
+			ImGui::Text("ABC");
+
+			ImGui::End();
+			ImGui::SFML::Render(*(*it));
+			(*it)->display();
 			++it;
 		}
 	}
 
-	for (const auto& viewport : m_viewports)
-	{
-		viewport->clear(sf::Color::Black);
-		ImGui::Begin("abc");
-		ImGui::Text("ABC");
-
-		ImGui::End();
-		ImGui::SFML::Render(*viewport);
-		viewport->display();
-	}
 #else
 	GetScene().Render(m_window);
 
