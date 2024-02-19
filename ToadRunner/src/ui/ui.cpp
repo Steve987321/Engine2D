@@ -60,6 +60,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
 
+	static bool view_settings = false;
+	static bool view_text_editor = false;
+
 	static Toad::Object* selected_obj = nullptr;
 
 	static std::string clipboard_data;
@@ -151,6 +154,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			ImGui::EndMenu();
 		}
+
+		if (ImGui::BeginMenu("Views"))
+		{
+			ImGui::MenuItem("Settings", nullptr, &view_settings);
+			ImGui::MenuItem("Text Editor", nullptr, &view_text_editor);
+
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndMenuBar();
 	}
 	ImGui::End();
@@ -392,97 +404,100 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 	ImGui::PopID();
 
-	ImGui::Begin("Settings", nullptr);
+	if (view_settings)
 	{
-		ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
-
-		if (ImGui::TreeNode("game scenes order"))
+		ImGui::Begin("Settings", &view_settings);
 		{
-			static std::vector<std::filesystem::path> scenes;
+			ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
 
-			HelpMarker("only searches for scene files in asset folder");
-			static bool refresh = true;
-			if (ImGui::Button("refresh"))
+			if (ImGui::TreeNode("game scenes order"))
 			{
-				refresh = true;
-				scenes.clear();
-			}
+				static std::vector<std::filesystem::path> scenes;
 
-
-			const auto& asset_path = asset_browser.GetAssetPath();
-			if (!exists(asset_path))
-			{
-				ImGui::TextColored({ 1,0,0,1 }, "Can't find asset folder in %s", asset_path.string().c_str());
-			}
-			else
-			{
-				if (refresh)
+				HelpMarker("only searches for scene files in asset folder");
+				static bool refresh = true;
+				if (ImGui::Button("refresh"))
 				{
-					for (const auto& entry : std::filesystem::recursive_directory_iterator(asset_path))
+					refresh = true;
+					scenes.clear();
+				}
+
+
+				const auto& asset_path = asset_browser.GetAssetPath();
+				if (!exists(asset_path))
+				{
+					ImGui::TextColored({ 1,0,0,1 }, "Can't find asset folder in %s", asset_path.string().c_str());
+				}
+				else
+				{
+					if (refresh)
 					{
-						if (entry.path().has_extension() && entry.path().extension() == ".TSCENE")
-							scenes.push_back(entry);
+						for (const auto& entry : std::filesystem::recursive_directory_iterator(asset_path))
+						{
+							if (entry.path().has_extension() && entry.path().extension() == ".TSCENE")
+								scenes.push_back(entry);
+						}
+
+						refresh = false;
+					}
+				}
+
+				ImGui::Indent();
+				int move_to = -1, move_from = -1;
+
+				for (int i = 0; i < scenes.size(); i++)
+				{
+					ImGui::Selectable(Toad::format_str("[{}] {}", i, scenes[i].filename().string()).c_str());
+
+					ImGuiDragDropFlags src_flags = 0;
+					src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
+					src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+					src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
+					if (ImGui::BeginDragDropSource(src_flags))
+					{
+						ImGui::SetDragDropPayload("dnd scene order", &i, sizeof(int));
+						ImGui::EndDragDropSource();
 					}
 
-					refresh = false;
+					if (ImGui::BeginDragDropTarget())
+					{
+						ImGuiDragDropFlags target_flags = 0;
+						target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;
+						target_flags |= ImGuiDragDropFlags_AcceptNoDrawDefaultRect; // Don't display the yellow rectangle
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("dnd scene order", target_flags))
+						{
+							move_from = *(const int*)payload->Data;
+							move_to = i;
+							std::swap(scenes[move_from], scenes[move_to]);
+							ImGui::SetDragDropPayload("dnd scene order", &move_to, sizeof(int));
+						}
+						ImGui::EndDragDropTarget();
+					}
 				}
+
+				ImGui::Unindent();
+				ImGui::TreePop();
 			}
 
-			ImGui::Indent();
-			int move_to = -1, move_from = -1;
-
-			for (int i = 0; i < scenes.size(); i++)
+			if (ImGui::TreeNode("all attached scripts"))
 			{
-				ImGui::Selectable(Toad::format_str("[{}] {}", i, scenes[i].filename().string()).c_str());
-
-				ImGuiDragDropFlags src_flags = 0;
-				src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
-				src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
-				src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
-				if (ImGui::BeginDragDropSource(src_flags))
+				for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
 				{
-					ImGui::SetDragDropPayload("dnd scene order", &i, sizeof(int));
-					ImGui::EndDragDropSource();
-				}
-
-				if (ImGui::BeginDragDropTarget())
-				{
-					ImGuiDragDropFlags target_flags = 0;
-					target_flags |= ImGuiDragDropFlags_AcceptBeforeDelivery;
-					target_flags |= ImGuiDragDropFlags_AcceptNoDrawDefaultRect; // Don't display the yellow rectangle
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("dnd scene order", target_flags))
+					ImGui::Text("name %s %p", name.c_str(), obj.get());
+					for (const auto& [namescript, script] : obj->GetAttachedScripts())
 					{
-						move_from = *(const int*)payload->Data;
-						move_to = i;
-						std::swap(scenes[move_from], scenes[move_to]);
-						ImGui::SetDragDropPayload("dnd scene order", &move_to, sizeof(int));
+						ImGui::Text("script %s %p", namescript.c_str(), script.get());
+						for (const auto& [varname, pvar] : script->GetReflection().vars.b)
+						{
+							ImGui::Text("bool %s %p", varname.c_str(), pvar);
+						}
 					}
-					ImGui::EndDragDropTarget();
 				}
-			}				
 
-			ImGui::Unindent();
-			ImGui::TreePop();
+				ImGui::TreePop();
+			}
+			ImGui::End();
 		}
-
-		if (ImGui::TreeNode("all attached scripts"))
-		{
-			for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
-			{
-				ImGui::Text("name %s %p", name.c_str(), obj.get());
-				for (const auto& [namescript, script] : obj->GetAttachedScripts())
-				{
-					ImGui::Text("script %s %p", namescript.c_str(), script.get());
-					for (const auto& [varname, pvar] : script->GetReflection().vars.b)
-					{
-						ImGui::Text("bool %s %p", varname.c_str(), pvar);
-					}
-				}
-			}
-
-			ImGui::TreePop();
-		}
-		ImGui::End();
 	}
 
 	static std::set<std::string> selected_objects = {};
@@ -2104,15 +2119,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				ImGuiContext* g = ImGui::GetCurrentContext();
 				*g->IO.MouseClickedPos = ImGui::GetMousePos();
-
-				if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
-				{
-					g->IO.MouseDragThreshold = 6.0f;
-					selected_gizmo = { 0, 0 };
-					gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
-					gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
-					is_moving_gizmo = false;
-				}
+			}
+			if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			{
+				selected_gizmo = { 0, 0 };
+				gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
+				gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
+				is_moving_gizmo = false;
 			}
 		}
 		else
@@ -2659,7 +2672,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-
     ImGui::Begin("File Browser", nullptr);
     fBrowser.Show();
 
@@ -2707,18 +2719,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 	ImGui::End();
 
-    ImGui::Begin("Text Editor");
+	if (view_text_editor)
+	{
+		ImGui::Begin("Text Editor", &view_text_editor);
 
-    if (!fBrowser.GetSelectedFile().ends_with(PATH_SEPARATOR))
-    {
-        textEditor.Show(fBrowser.GetSelectedFileContent());
-    }
-    else
-    {
-        ImGui::Text("Select a file");
-    }
+		if (!fBrowser.GetSelectedFile().ends_with(PATH_SEPARATOR))
+		{
+			textEditor.Show(fBrowser.GetSelectedFileContent());
+		}
+		else
+		{
+			ImGui::Text("Select a file");
+		}
 
-    ImGui::End();
+		ImGui::End();
+	}
 
 	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
 	{
