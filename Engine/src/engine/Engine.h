@@ -16,9 +16,15 @@ namespace Toad
 		using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
 
+		template<class T> 
+		static T* GetObjectAsType(Object* obj)
+		{
+			return dynamic_cast<T*>(obj);
+		}
+
 		static Engine& Get();
 		static Logger& GetLogger();
-
+		
 		Engine();
 		~Engine();
 
@@ -50,6 +56,8 @@ namespace Toad
 		bool GameStateIsPlaying() const;
 		void StartGameSession();
 		void StopGameSession();
+
+		void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style = 0);
 
 		void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path);
 		// load game.dll 
@@ -107,6 +115,9 @@ namespace Toad
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
 		Camera m_editorCam {"EditorCamera"};
+
+		// multiple windows
+		std::vector<std::shared_ptr<sf::RenderWindow>> m_viewports;
 
 #ifdef _WIN32
         HMODULE m_currDLL{};

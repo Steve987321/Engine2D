@@ -84,6 +84,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		if (ImGui::BeginMenu("Engine"))
 		{
+			if (ImGui::MenuItem("Test child window"))
+			{
+				Toad::Engine::Get().AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
+			}
 			if (ImGui::MenuItem("Create Project"))
 			{
 				settings.engine_path = GetEnginePath().string();
@@ -1991,6 +1995,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (is_moving_gizmo)
 		{
 			ImVec2 d = ImGui::GetMouseDragDelta(0, 0.f);
+
 			if (ImGui::IsKeyPressed(ImGuiKey_X))
 			{
 				selected_gizmo.x = ~selected_gizmo.x;
@@ -2027,43 +2032,87 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 
-			if (selected_gizmo.x)
+			if (d.x && d.y)
 			{
-				d.y = 0;
-			}
-			else if (selected_gizmo.y)
-			{
-				d.x = 0;
-			}
-
-			float multiplierx = editor_cam.GetSize().x / image_width;
-			float multipliery = editor_cam.GetSize().y / image_height;
-			d.x *= multiplierx;
-			d.y *= multipliery;
-
-			if (selected_obj)
-			{
-				selected_obj->SetPosition(selected_obj->GetPosition() + Vec2f{ d.x, d.y });
-			}
-			for (const std::string& name : selected_objects)
-			{
-				Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
-				if (obj)
+				if (selected_gizmo.x)
 				{
-					obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
+					d.y = 0;
 				}
-			}
+				else if (selected_gizmo.y)
+				{
+					d.x = 0;
+				}
 
-			ImGuiContext* g = ImGui::GetCurrentContext();
-			*g->IO.MouseClickedPos = ImGui::GetMousePos();
+				float multiplierx = editor_cam.GetSize().x / image_width;
+				float multipliery = editor_cam.GetSize().y / image_height;
+				d.x *= multiplierx;
+				d.y *= multipliery;
 
-			if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
-			{
-				g->IO.MouseDragThreshold = 6.0f;
-				selected_gizmo = { 0, 0 };
-				gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
-				gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
-				is_moving_gizmo = false;
+				if (selected_obj)
+				{
+					if (drag_snap)
+					{
+						auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
+						selected_obj->SetPosition(drag_pos);
+
+						for (const auto& obj : Toad::Engine::Get().GetScene().objects_map | std::views::values)
+						{
+							Toad::Sprite* sprite = Toad::Engine::GetObjectAsType<Toad::Sprite>(obj.get());
+							Toad::Circle* circle = Toad::Engine::GetObjectAsType<Toad::Circle>(obj.get());
+							Vec2f scale = {};
+							if (sprite)
+							{
+								scale = sprite->GetSprite().getScale();
+							}
+							else if (circle)
+							{
+								float radius = circle->GetCircle().getRadius();
+								scale = { radius, radius };
+							}
+							else
+							{
+								continue;
+							}
+
+							const auto& pos = obj->GetPosition();
+
+							ImRect snap_bounds = { {pos.x, pos.y}, {pos.x + scale.x, pos.y + scale.y} };
+							snap_bounds.Expand(10.f);
+
+							if (snap_bounds.Contains({drag_pos.x, drag_pos.y}))
+							{
+								snap_bounds.Expand(-10.f);
+								drag_pos.x = std::clamp(drag_pos.x, snap_bounds.Min.x, snap_bounds.Max.x);
+								drag_pos.y = std::clamp(drag_pos.y, snap_bounds.Min.y, snap_bounds.Max.y);
+								selected_obj->SetPosition(drag_pos);
+							}
+						}
+					}
+					else
+					{
+						selected_obj->SetPosition(selected_obj->GetPosition() + Vec2f{ d.x, d.y });
+					}
+				}
+				for (const std::string& name : selected_objects)
+				{
+					Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+					if (obj)
+					{
+						obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
+					}
+				}
+
+				ImGuiContext* g = ImGui::GetCurrentContext();
+				*g->IO.MouseClickedPos = ImGui::GetMousePos();
+
+				if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				{
+					g->IO.MouseDragThreshold = 6.0f;
+					selected_gizmo = { 0, 0 };
+					gizmo_col_x = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
+					gizmo_col_y = ImGui::ColorConvertFloat4ToU32({ 0, 0, 0, 0 });
+					is_moving_gizmo = false;
+				}
 			}
 		}
 		else
@@ -2192,6 +2241,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 
 			ImGui::Checkbox("Show grid", &show_grid);
+			ImGui::Checkbox("Snapping", &drag_snap);
 			ImGui::SliderVec2i("Grid", &grid_size);
 
 			ImGui::TreePop();

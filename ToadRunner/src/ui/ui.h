@@ -25,6 +25,7 @@ namespace ui
 	};
 
 	inline bool show_grid = true;
+	inline bool drag_snap = false;
 	inline Vec2i grid_size = {80, 80};
 
 	void engine_ui(ImGuiContext* ctx);

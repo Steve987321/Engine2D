@@ -188,7 +188,7 @@ void Engine::EventHandler()
 	while (m_window.pollEvent(e))
 	{
 #ifdef TOAD_EDITOR
-		ImGui::SFML::ProcessEvent(e);
+		ImGui::SFML::ProcessEvent(m_window, e);
 		m_eventCallback(e);
 #endif
 
@@ -274,6 +274,45 @@ void Engine::Render()
 	m_renderUI(ImGui::GetCurrentContext());
 
 	ImGui::SFML::Render(m_window);
+
+	auto it = m_viewports.begin();
+	while (it != m_viewports.end())
+	{
+		bool erased = false;
+		ImGui::SFML::Update(*(*it), m_deltaTime);
+
+		sf::Event e2;
+		while (!erased && (*it)->pollEvent(e2))
+		{
+			ImGui::SFML::ProcessEvent(*(*it), e2);
+			m_eventCallback(e2);
+
+			switch (e2.type)
+			{
+			case e2.Closed:
+				(*it)->close();
+				it = m_viewports.erase(it);
+				erased = true;
+				break;
+			}
+		}
+
+		if (!erased)
+		{
+			++it;
+		}
+	}
+
+	for (const auto& viewport : m_viewports)
+	{
+		viewport->clear(sf::Color::Black);
+		ImGui::Begin("abc");
+		ImGui::Text("ABC");
+
+		ImGui::End();
+		ImGui::SFML::Render(*viewport);
+		viewport->display();
+	}
 #else
 	GetScene().Render(m_window);
 
@@ -369,6 +408,16 @@ void Engine::StartGameSession()
 void Engine::StopGameSession()
 {
 	m_beginPlay = false;
+}
+
+void Engine::AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style)
+{
+	auto window = std::make_shared<sf::RenderWindow>();
+	window->create(mode, title.data(), style);
+	window->setFramerateLimit(30);
+	bool res = ImGui::SFML::Init(*window, true);
+	LOGDEBUGF("[Engine::AddViewport] ImGui SFML Init result: {}", res);
+	m_viewports.emplace_back(window);
 }
 
 void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
