@@ -1922,8 +1922,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 10 }, IM_COL32_WHITE, Toad::format_str("W:{}\nH:{}", content_size.x, content_size.y).c_str());
 
 		std::vector<ImVec2> positions;
+		static bool always_show_object_names = true;
 
-		const auto obj_screen_pos_info = [&](Toad::Object* obj)
+		const auto obj_screen_pos_info = [&](Toad::Object* obj, bool add_to_list = true)
 			{
 				if (obj)
 				{
@@ -1935,11 +1936,32 @@ void ui::engine_ui(ImGuiContext* ctx)
 					obj_pos_px.x += pos.x;
 					obj_pos_px.y += pos.y;
 
-					positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
-					ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), obj->name.c_str());
+					if (add_to_list)
+					{
+						positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
+						ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 160), obj->name.c_str());
+					}
+					else
+					{
+						ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), obj->name.c_str());
+					}
 				}
 			};
 
+		if (always_show_object_names)
+		{
+			for (const auto& obj : Toad::Engine::Get().GetScene().objects_map | std::views::values)
+			{
+				if (obj.get() == selected_obj || selected_objects.contains(obj->name))
+				{
+					obj_screen_pos_info(selected_obj);
+				}
+				else
+				{
+					obj_screen_pos_info(obj.get(), false);
+				}
+			}
+		}
 		if (selected_obj)
 		{
 			obj_screen_pos_info(selected_obj);
