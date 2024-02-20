@@ -22,7 +22,7 @@ struct ENGINE_API Scene
 	std::filesystem::path path;
 
 	// holds object instances in the scene
-	std::unordered_map < std::string, std::shared_ptr<Object> > objects_map;
+	std::vector<std::shared_ptr<Object>> objects;
 
 	///
 	/// Is called once when switching to or starting this scene.
@@ -50,21 +50,32 @@ struct ENGINE_API Scene
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
-		std::string objName = object.name;
-		if (objects_map.contains(objName))
+		std::string obj_name = object.name;
+		bool found = false;
+		uint32_t count = 0;
+		for (auto& obj : objects)
 		{
-			auto count = objects_map.count(objName);
-			objName += " (" + std::to_string(count) + ')';
-			while (objects_map.contains(objName))
+			if (obj->name == obj_name)
 			{
-				objName = object.name + " (" + std::to_string(++count) + ')';
+				count++;
+				found = true;
+			}
+		}
+		if (found)
+		{
+			obj_name += " (" + std::to_string(count) + ')';
+			auto it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+			while (it != objects.end())
+			{
+				obj_name = object.name + " (" + std::to_string(++count) + ')';
+				it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
 			}
 		}
 
-		object.name = objName;
-		objects_map.insert({ objName, std::make_shared<T>(object) });
-		objects_map[objName]->OnCreate();
-		return dynamic_cast<T*>(objects_map[objName].get());
+		object.name = obj_name;
+		objects.emplace_back(std::make_shared<T>(object));
+		objects.back()->OnCreate();
+		return dynamic_cast<T*>(objects.back().get());
 	}
 
 	///
@@ -77,12 +88,12 @@ struct ENGINE_API Scene
 	/// @returns 
 	/// A pointer to object if found nullptr if no objects were found.
 	///
-	Object* GetSceneObject(std::string_view obj_name) const;
+	Object* GetSceneObject(std::string_view obj_name);
 
-	json Serialize() const;
+	json Serialize();
 
 	// for serializing a selection of objects 
-	json Serialize(const std::vector<std::string>& objects) const;
+	json Serialize(const std::vector<std::string>& objects);
 };
 
 // to make sure scripts are added and loaded to objects make sure to update script registry before calling this function
@@ -90,7 +101,7 @@ struct ENGINE_API Scene
 ENGINE_API Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder = {});
 
 // for path specify only the folder to save to 
-ENGINE_API void SaveScene(const Scene& scene, const std::filesystem::path& path);
+ENGINE_API void SaveScene(Scene& scene, const std::filesystem::path& path);
 
 ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {});
 

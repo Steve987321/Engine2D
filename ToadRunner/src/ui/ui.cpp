@@ -479,9 +479,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ImGui::TreeNode("all attached scripts"))
 			{
-				for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+				for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
 				{
-					ImGui::Text("name %s %p", name.c_str(), obj.get());
+					ImGui::Text("name %s %p", obj->name.c_str(), obj.get());
 					for (const auto& [namescript, script] : obj->GetAttachedScripts())
 					{
 						ImGui::Text("script %s %p", namescript.c_str(), script.get());
@@ -856,16 +856,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		for (auto& name : Toad::Engine::Get().GetScene().objects_map | std::views::keys)
+		for (auto& obj : Toad::Engine::Get().GetScene().objects_map)
 		{
-			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
 			// make sure we only iterate over root objects
 			if (!obj->GetParent().empty())
 			{
 				continue;
 			}
 
-			recursive_iterate_children(obj);
+			recursive_iterate_children(obj.get());
 		}
 		if (check_range)
 		{
@@ -1022,16 +1021,29 @@ void ui::engine_ui(ImGuiContext* ctx)
 				Toad::Scene& scene = Toad::Engine::Get().GetScene();
 
 				new_name_str = name_buf;
+
+				int count = 0;
+				bool found = false;
+
+				for (const auto& obj : scene.objects_map)
+				{
+					if (obj->name == new_name_str)
+					{
+						count++;
+						found = true;
+					}
+				}
 				
-				if (new_name_str != selected_obj->name && scene.objects_map.contains(new_name_str))
+				if (new_name_str != selected_obj->name && found)
 				{
 					suggestion = true;
 
-					auto count = scene.objects_map.count(new_name_str);
 					new_name_str += " (" + std::to_string(count) + ')';
-					while (scene.objects_map.contains(new_name_str))
+					auto it = std::ranges::find_if(scene.objects_map, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
+					while (it != scene.objects_map.end())
 					{
 						new_name_str += " (" + std::to_string(++count) + ')';
+						it = std::ranges::find_if(scene.objects_map, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
 					}
 				}
 				else
@@ -1044,7 +1056,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (new_name_str != selected_obj->name)
 				{
-					auto& map = Toad::Engine::Get().GetScene().objects_map;
+					selected_obj->name = new_name_str;
+
+					/*auto& map = Toad::Engine::Get().GetScene().objects_map;
 					if (!map.contains(new_name_str))
 					{
 						auto a = map.extract(selected_obj->name);
@@ -1052,7 +1066,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						map.insert(std::move(a));
 
 						selected_obj->name = new_name_str;
-					}
+					}*/
 				}
 			}
 
@@ -1950,7 +1964,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (always_show_object_names)
 		{
-			for (const auto& obj : Toad::Engine::Get().GetScene().objects_map | std::views::values)
+			for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
 			{
 				if (obj.get() == selected_obj || selected_objects.contains(obj->name))
 				{
@@ -2074,7 +2088,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 						selected_obj->SetPosition(drag_pos);
 
-						for (const auto& obj : Toad::Engine::Get().GetScene().objects_map | std::views::values)
+						for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
 						{
 							Toad::Sprite* sprite = Toad::Engine::GetObjectAsType<Toad::Sprite>(obj.get());
 							Toad::Circle* circle = Toad::Engine::GetObjectAsType<Toad::Circle>(obj.get());
@@ -2140,8 +2154,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 1 });
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 				{
-					ImGuiContext* g = ImGui::GetCurrentContext();
-					g->IO.MouseDragThreshold = 0.0f;
 					is_moving_gizmo = true;
 				}
 				else
@@ -2170,7 +2182,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
 				{
 					ImGui::GetWindowDrawList()->AddRectFilled(select_begin_cursor, select_begin_cursor + ImGui::GetMouseDragDelta(), IM_COL32(155, 155, 255, 50), 0);
-				
 					auto texture_size = texture.getSize();
 
 					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
@@ -2186,7 +2197,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
 					
-					for (const auto& [name, obj] : Toad::Engine::Get().GetScene().objects_map)
+					for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
 					{
 						auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
 						
@@ -2194,7 +2205,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						if (rect.Contains({ (float)a.x, (float)a.y })) {
 							if (selected_obj != obj.get())
 							{
-								selected_objects.emplace(name);
+								selected_objects.emplace(obj->name);
 							}
 							else
 							{
@@ -2209,9 +2220,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 								{
 									selected_obj = nullptr;
 								}
-								else if (selected_objects.contains(name))
+								else if (selected_objects.contains(obj->name))
 								{
-									selected_objects.erase(name);
+									selected_objects.erase(obj->name);
 								}
 							}
 						}
@@ -2636,20 +2647,20 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					if (ImGui::InputText("search", input, 256))
 					{
-						for (const auto& [name, obj] : scene.objects_map)
+						for (const auto& obj : scene.objects_map)
 						{
-							if (name.find(input) != std::string::npos)
+							if (obj->name.find(input) != std::string::npos)
 							{
-								matches.emplace_back(name, obj.get());
+								matches.emplace_back(obj->name, obj.get());
 							}
 						}
 					}
 
 					if (strlen(input) == 0)
 					{
-						for (const auto& [name, obj] : scene.objects_map)
+						for (const auto& obj : scene.objects_map)
 						{
-							matches.emplace_back(name, obj.get());
+							matches.emplace_back(obj->name, obj.get());
 						}
 					}
 

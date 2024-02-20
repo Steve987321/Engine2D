@@ -446,7 +446,7 @@ void Engine::LoadGameScripts()
 	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
 	std::unordered_map <std::string, std::vector<object_script >> objects_with_scripts{};
 
-	for (auto& obj : m_currentScene.objects_map | std::views::values)
+	for (auto& obj : m_currentScene.objects_map)
 	{
 		auto& scripts = obj->GetAttachedScripts();
 		if (scripts.empty())
@@ -539,14 +539,14 @@ void Engine::LoadGameScripts()
 	}
 
 	// update scripts on object if it has an old version
-	for (auto& [obj_name, obj] : m_currentScene.objects_map)
+	for (auto& obj : m_currentScene.objects_map)
 	{
-		if (!objects_with_scripts.contains(obj_name))
+		if (!objects_with_scripts.contains(obj->name))
 		{
 			continue;
 		}
 
-		const auto& prev_obj_state = objects_with_scripts[obj_name];
+		const auto& prev_obj_state = objects_with_scripts[obj->name];
 
 		for (auto& [attached_script_name, old_reflection_vars] : prev_obj_state)
 		{
@@ -583,11 +583,11 @@ void Engine::LoadGameScripts()
 						if (newname == name)
 							*v = newv;
 
-				LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj_name);
+				LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj->name);
 			}
 		}
 
-		objects_with_scripts.erase(obj_name);
+		objects_with_scripts.erase(obj->name);
 	}
 
 #else

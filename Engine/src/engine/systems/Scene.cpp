@@ -16,7 +16,7 @@ using json = nlohmann::json;
 
 void Scene::Start()
 {
-	for (auto& obj : objects_map | std::views::values)
+	for (auto& obj : objects_map)
 	{
 		obj->Start();
 	}
@@ -24,7 +24,7 @@ void Scene::Start()
 
 void Scene::Update()
 {
-	for (auto& obj : objects_map | std::views::values)
+	for (auto& obj : objects_map)
 	{
 		obj->Update();
 	}
@@ -32,7 +32,7 @@ void Scene::Update()
 
 void Scene::Render(sf::RenderTexture& texture)
 {
-	for (auto& obj : objects_map | std::views::values)
+	for (auto& obj : objects_map)
 	{
 		obj->Render(texture);
 	}
@@ -40,7 +40,7 @@ void Scene::Render(sf::RenderTexture& texture)
 
 void Scene::Render(sf::RenderWindow& window)
 {
-	for (auto& obj : objects_map | std::views::values)
+	for (auto& obj : objects_map)
 	{
 		obj->Render(window);
 	}
@@ -48,39 +48,43 @@ void Scene::Render(sf::RenderWindow& window)
 
 bool Scene::RemoveFromScene(std::string_view obj_name)
 {
-	if (objects_map.contains(obj_name.data()))
-	{
-		objects_map.erase(obj_name.data());
-		return true;
-	}
+	uint32_t n = objects_map.size();
+	auto it = std::remove_if(objects_map.begin(), objects_map.end(), [&obj_name](const std::shared_ptr<Object>& obj) {
+		return obj->name == obj_name;
+	});
+
+	objects_map.erase(it, objects_map.end());
 	
-	return false;
+	return n != objects_map.size();
 }
 
-Object* Scene::GetSceneObject(std::string_view obj_name) const
+Object* Scene::GetSceneObject(std::string_view obj_name) 
 {
-	if (auto pos = objects_map.find(obj_name.data()); pos != objects_map.end())
+	for (auto& obj : objects_map)
 	{
-		return pos->second.get();
+		if (obj->name == obj_name)
+		{
+			return obj.get();
+		}
 	}
 	return nullptr;
 }
 
-json Scene::Serialize() const
+json Scene::Serialize()
 {
 	std::vector<std::string> objects;
 	objects.reserve(objects_map.size());
 
-	for (const auto& name: objects_map | std::views::keys)
+	for (const auto& obj: objects_map)
 	{
-		objects.emplace_back(name);
+		objects.emplace_back(obj->name);
 	}
 
 	json data = Serialize(objects);
 	return data;
 }
 
-json Scene::Serialize(const std::vector<std::string>& object_names) const
+json Scene::Serialize(const std::vector<std::string>& object_names)
 {
 	json data; 
 
@@ -206,7 +210,7 @@ Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& 
 	return scene;
 }
 
-void SaveScene(const Scene& scene, const std::filesystem::path& path)
+void SaveScene(Scene& scene, const std::filesystem::path& path)
 {
 	json data = scene.Serialize();
 
