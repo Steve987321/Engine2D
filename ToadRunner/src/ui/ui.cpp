@@ -720,7 +720,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 						}
 
-						drag_drop(skip, obj);
+						if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+							drag_drop(skip, obj);
 
 						for (Toad::Object* child : obj->GetChildrenAsObjects())
 						{
@@ -778,7 +779,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 								}
 							}
 
-							drag_drop(skip, child);
+							if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+								drag_drop(skip, child);
 						}
 
 						ImGui::TreePop();
@@ -1913,9 +1915,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					added_obj->SetPosition(pos);
 				}
-
-				ImGui::EndDragDropTarget();
 			}
+
+			ImGui::EndDragDropTarget();
 		}
 		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 10 }, IM_COL32_WHITE, Toad::format_str("W:{}\nH:{}", content_size.x, content_size.y).c_str());
 
@@ -2247,39 +2249,38 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::Checkbox("animator", &is_animator);
 			if (ImGui::TreeNode("open tilemaps"))
 			{
-				if (ImGui::Button("open (draggable by file)"))
+				ImGui::Button("open (draggable by file)");
+				if (ImGui::BeginDragDropTarget())
 				{
-
-				}
-				const ImGuiPayload* payload;
-				if (ImGui::BeginDragDropTarget() && (payload = ImGui::AcceptDragDropPayload("move file")))
-				{
-					std::filesystem::path src = *(std::string*)payload->Data;
-					do
+					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file");
+					if (payload != nullptr)
 					{
-						if (!src.has_extension() || (src.extension().string() != ".jpg" && src.extension().string() != ".png"))
+						std::filesystem::path src = *(std::string*)payload->Data;
+						do
 						{
-							LOGERRORF("[UI:Tools:open tilemaps] {} is not a valid file for a tilemap", src);
-							break;
-						}
-						for (const auto& t : opened_tilemaps)
-						{
-							if (t.path == src)
+							if (!src.has_extension() || (src.extension().string() != ".jpg" && src.extension().string() != ".png"))
 							{
-								LOGDEBUGF("[UI:Tools:open tilemaps] {} already is an existing tilemap", src);
+								LOGERRORF("[UI:Tools:open tilemaps] {} is not a valid file for a tilemap", src);
 								break;
 							}
-						}
+							for (const auto& t : opened_tilemaps)
+							{
+								if (t.path == src)
+								{
+									LOGDEBUGF("[UI:Tools:open tilemaps] {} already is an existing tilemap", src);
+									break;
+								}
+							}
 
-						sf::Texture tex;
-						if (!tex.loadFromFile(src.string()))
-						{
-							LOGDEBUGF("[UI:Tools:open tilemaps] {} can't be opened/loaded", src);
-							break;
-						}
-						opened_tilemaps.push_back(TileSpritePlacer(src, { 16, 16 }, tex, {}));
-					} while (false);
-
+							sf::Texture tex;
+							if (!tex.loadFromFile(src.string()))
+							{
+								LOGDEBUGF("[UI:Tools:open tilemaps] {} can't be opened/loaded", src);
+								break;
+							}
+							opened_tilemaps.push_back(TileSpritePlacer(src, { 16, 16 }, tex, {}));
+						} while (false);
+					}
 
 					ImGui::EndDragDropTarget();
 				}

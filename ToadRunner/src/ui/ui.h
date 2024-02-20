@@ -24,7 +24,7 @@ namespace ui
 		Vec2f tex_size{};
 	};
 
-	inline bool show_grid = true;
+	inline bool show_grid = false;
 	inline bool drag_snap = false;
 	inline Vec2i grid_size = {80, 80};
 
