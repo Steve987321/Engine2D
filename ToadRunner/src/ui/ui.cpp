@@ -132,20 +132,20 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			auto& scene = Toad::Engine::Get().GetScene();
 
-			if (scene.objects_map.empty())
+			if (scene.objects_all.empty())
 			{
 				ImGui::BeginDisabled();
 			}
 			if (ImGui::MenuItem("Save"))
 			{
-				if (!scene.objects_map.empty())
+				if (!scene.objects_all.empty())
 				{
 					ImGui::PushOverrideID(save_scene_popup_id);
 					ImGui::OpenPopup("SaveScene");
 					ImGui::PopID();
 				}
 			}
-			if (scene.objects_map.empty())
+			if (scene.objects_all.empty())
 			{
 				ImGui::EndDisabled();
 			}
@@ -479,7 +479,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ImGui::TreeNode("all attached scripts"))
 			{
-				for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
+				for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
 				{
 					ImGui::Text("name %s %p", obj->name.c_str(), obj.get());
 					for (const auto& [namescript, script] : obj->GetAttachedScripts())
@@ -526,12 +526,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			if (ImGui::IsKeyPressed(ImGuiKey_C))
 			{
-				std::vector<std::string> objects;
+				std::vector<Toad::Object*> objects;
 				size_t count = 0;
 				if (selected_obj != nullptr)
 				{
 					count++;
-					objects.emplace_back(selected_obj->name);
+					objects.emplace_back(selected_obj);
 				}
 				count += selected_objects.size();
 
@@ -539,7 +539,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				for (const std::string& name : selected_objects)
 				{
-					objects.emplace_back(name);
+					objects.emplace_back(scene.GetSceneObject(name).get());
 				}
 
 				json data = scene.Serialize(objects);
@@ -584,7 +584,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 							for (const std::string& o : selected_objects)
 							{
-								Toad::Object* as_object = Toad::Engine::Get().GetScene().GetSceneObject(o);
+								Toad::Object* as_object = Toad::Engine::Get().GetScene().GetSceneObject(o).get();
 
 								if (as_object != nullptr)
 								{
@@ -856,7 +856,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		for (auto& obj : Toad::Engine::Get().GetScene().objects_map)
+		for (auto& obj : Toad::Engine::Get().GetScene().objects_all)
 		{
 			// make sure we only iterate over root objects
 			if (!obj->GetParent().empty())
@@ -943,7 +943,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				if (ImGui::MenuItem("Camera"))
 				{
-					Toad::Camera* cam = Toad::Engine::Get().GetScene().AddToScene(Toad::Camera("Camera"));
+					Toad::Camera* cam = Toad::Engine::Get().GetScene().AddToScene(Toad::Camera("Camera")).get();
 
 					cam->ActivateCamera();
 				}
@@ -994,7 +994,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			const std::string& front = remove_objects_queue.front();
 			selected_obj = nullptr;
 			selected_objects.erase(front);
-			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(front);
+			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(front).get();
 			if (obj != nullptr)
 			{
 				obj->Destroy();
@@ -1025,7 +1025,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				int count = 0;
 				bool found = false;
 
-				for (const auto& obj : scene.objects_map)
+				for (const auto& obj : scene.objects_all)
 				{
 					if (obj->name == new_name_str)
 					{
@@ -1039,11 +1039,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 					suggestion = true;
 
 					new_name_str += " (" + std::to_string(count) + ')';
-					auto it = std::ranges::find_if(scene.objects_map, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
-					while (it != scene.objects_map.end())
+					auto it = std::ranges::find_if(scene.objects_all, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
+					while (it != scene.objects_all.end())
 					{
 						new_name_str += " (" + std::to_string(++count) + ')';
-						it = std::ranges::find_if(scene.objects_map, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
+						it = std::ranges::find_if(scene.objects_all, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
 					}
 				}
 				else
@@ -1914,7 +1914,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				else
 				{
-					Toad::Sprite* added_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
+					Toad::Sprite* added_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite")).get();
 
 					added_obj->SetTexture(data.path, stex);
 					added_obj->GetSprite().setTextureRect(data.tex_rect);
@@ -1964,7 +1964,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (always_show_object_names)
 		{
-			for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
+			for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
 			{
 				if (obj.get() == selected_obj || selected_objects.contains(obj->name))
 				{
@@ -1982,7 +1982,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		}
 		for (const auto& name : selected_objects)
 		{
-			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name).get();
 			if (obj)
 			{
 				obj_screen_pos_info(obj);
@@ -2088,7 +2088,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 						selected_obj->SetPosition(drag_pos);
 
-						for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
+						for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
 						{
 							Toad::Sprite* sprite = Toad::Engine::GetObjectAsType<Toad::Sprite>(obj.get());
 							Toad::Circle* circle = Toad::Engine::GetObjectAsType<Toad::Circle>(obj.get());
@@ -2128,7 +2128,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				for (const std::string& name : selected_objects)
 				{
-					Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name);
+					Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name).get();
 					if (obj)
 					{
 						obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
@@ -2197,7 +2197,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
 					
-					for (const auto& obj : Toad::Engine::Get().GetScene().objects_map)
+					for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
 					{
 						auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
 						
@@ -2643,11 +2643,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 					char input[256] = "";
 					std::vector<std::pair<std::string, Toad::Object*>> matches;
 					auto& scene = Toad::Engine::Get().GetScene();
-					matches.reserve(scene.objects_map.size());
+					matches.reserve(scene.objects_all.size());
 
 					if (ImGui::InputText("search", input, 256))
 					{
-						for (const auto& obj : scene.objects_map)
+						for (const auto& obj : scene.objects_all)
 						{
 							if (obj->name.find(input) != std::string::npos)
 							{
@@ -2658,7 +2658,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					if (strlen(input) == 0)
 					{
-						for (const auto& obj : scene.objects_map)
+						for (const auto& obj : scene.objects_all)
 						{
 							matches.emplace_back(obj->name, obj.get());
 						}

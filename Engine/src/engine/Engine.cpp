@@ -71,7 +71,7 @@ bool Engine::Init()
 				m_currentScene = s;
 			}
 
-			if (!s.objects_map.empty())
+			if (!s.objects_all.empty())
 			{
 				found_scenes.push_back(s);
 			}
@@ -446,7 +446,7 @@ void Engine::LoadGameScripts()
 	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
 	std::unordered_map <std::string, std::vector<object_script >> objects_with_scripts{};
 
-	for (auto& obj : m_currentScene.objects_map)
+	for (auto& obj : m_currentScene.objects_all)
 	{
 		auto& scripts = obj->GetAttachedScripts();
 		if (scripts.empty())
@@ -539,7 +539,7 @@ void Engine::LoadGameScripts()
 	}
 
 	// update scripts on object if it has an old version
-	for (auto& obj : m_currentScene.objects_map)
+	for (auto& obj : m_currentScene.objects_all)
 	{
 		if (!objects_with_scripts.contains(obj->name))
 		{
@@ -627,7 +627,7 @@ void Engine::LoadGameScripts()
 	}
 
     // update scripts on object if it has an old version
-    for (auto& [obj_name, obj] : m_currentScene.objects_map)
+    for (auto& [obj_name, obj] : m_currentScene.objects_all)
     {
         if (!objects_with_scripts.contains(obj_name))
         {

@@ -22,7 +22,7 @@ struct ENGINE_API Scene
 	std::filesystem::path path;
 
 	// holds object instances in the scene
-	std::vector<std::shared_ptr<Object>> objects;
+	std::vector<std::shared_ptr<Object>> objects_all;
 
 	///
 	/// Is called once when switching to or starting this scene.
@@ -46,14 +46,14 @@ struct ENGINE_API Scene
 	///	Also checks if name of object is already here.
 	///
 	template <class T>
-	T* AddToScene(T&& object)
+	std::shared_ptr<T> AddToScene(T&& object)
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
 		std::string obj_name = object.name;
 		bool found = false;
 		uint32_t count = 0;
-		for (auto& obj : objects)
+		for (auto& obj : objects_all)
 		{
 			if (obj->name == obj_name)
 			{
@@ -64,18 +64,18 @@ struct ENGINE_API Scene
 		if (found)
 		{
 			obj_name += " (" + std::to_string(count) + ')';
-			auto it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
-			while (it != objects.end())
+			auto it = std::ranges::find_if(objects_all, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+			while (it != objects_all.end())
 			{
 				obj_name = object.name + " (" + std::to_string(++count) + ')';
-				it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+				it = std::ranges::find_if(objects_all, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
 			}
 		}
 
 		object.name = obj_name;
-		objects.emplace_back(std::make_shared<T>(object));
-		objects.back()->OnCreate();
-		return dynamic_cast<T*>(objects.back().get());
+		objects_all.emplace_back(std::make_shared<T>(object));
+		objects_all.back()->OnCreate();
+		return std::dynamic_pointer_cast<T>(objects_all.back());
 	}
 
 	///
@@ -88,12 +88,10 @@ struct ENGINE_API Scene
 	/// @returns 
 	/// A pointer to object if found nullptr if no objects were found.
 	///
-	Object* GetSceneObject(std::string_view obj_name);
-
-	json Serialize();
+	std::shared_ptr<Object> GetSceneObject(std::string_view obj_name);
 
 	// for serializing a selection of objects 
-	json Serialize(const std::vector<std::string>& objects);
+	json Serialize(std::vector<Object*> v = {});
 };
 
 // to make sure scripts are added and loaded to objects make sure to update script registry before calling this function

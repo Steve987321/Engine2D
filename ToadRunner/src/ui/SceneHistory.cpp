@@ -28,7 +28,7 @@ namespace Toad
 		m_undoableStates.pop_front();
 		json last_state = m_undoableStates.front();
 
-		scene->objects_map.clear();
+		scene->objects_all.clear();
 
 		LoadSceneObjects(last_state, *scene, asset_folder);
 		
@@ -52,7 +52,7 @@ namespace Toad
 		json last_state = m_redoableStates.front();
 		m_redoableStates.pop_front();
 
-		scene->objects_map.clear();
+		scene->objects_all.clear();
 
 		LoadSceneObjects(last_state, *scene, asset_folder);
 

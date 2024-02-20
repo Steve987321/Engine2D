@@ -16,7 +16,7 @@ using json = nlohmann::json;
 
 void Scene::Start()
 {
-	for (auto& obj : objects_map)
+	for (auto& obj : objects_all)
 	{
 		obj->Start();
 	}
@@ -24,7 +24,7 @@ void Scene::Start()
 
 void Scene::Update()
 {
-	for (auto& obj : objects_map)
+	for (auto& obj : objects_all)
 	{
 		obj->Update();
 	}
@@ -32,7 +32,7 @@ void Scene::Update()
 
 void Scene::Render(sf::RenderTexture& texture)
 {
-	for (auto& obj : objects_map)
+	for (auto& obj : objects_all)
 	{
 		obj->Render(texture);
 	}
@@ -40,7 +40,7 @@ void Scene::Render(sf::RenderTexture& texture)
 
 void Scene::Render(sf::RenderWindow& window)
 {
-	for (auto& obj : objects_map)
+	for (auto& obj : objects_all)
 	{
 		obj->Render(window);
 	}
@@ -48,43 +48,29 @@ void Scene::Render(sf::RenderWindow& window)
 
 bool Scene::RemoveFromScene(std::string_view obj_name)
 {
-	uint32_t n = objects_map.size();
-	auto it = std::remove_if(objects_map.begin(), objects_map.end(), [&obj_name](const std::shared_ptr<Object>& obj) {
+	uint32_t n = objects_all.size();
+	auto it = std::remove_if(objects_all.begin(), objects_all.end(), [&obj_name](const std::shared_ptr<Object>& obj) {
 		return obj->name == obj_name;
 	});
 
-	objects_map.erase(it, objects_map.end());
+	objects_all.erase(it, objects_all.end());
 	
-	return n != objects_map.size();
+	return n != objects_all.size();
 }
 
-Object* Scene::GetSceneObject(std::string_view obj_name) 
+std::shared_ptr<Object> Scene::GetSceneObject(std::string_view obj_name) 
 {
-	for (auto& obj : objects_map)
+	for (auto& obj : objects_all)
 	{
 		if (obj->name == obj_name)
 		{
-			return obj.get();
+			return obj;
 		}
 	}
 	return nullptr;
 }
 
-json Scene::Serialize()
-{
-	std::vector<std::string> objects;
-	objects.reserve(objects_map.size());
-
-	for (const auto& obj: objects_map)
-	{
-		objects.emplace_back(obj->name);
-	}
-
-	json data = Serialize(objects);
-	return data;
-}
-
-json Scene::Serialize(const std::vector<std::string>& object_names)
+json Scene::Serialize(std::vector<Object*> v)
 {
 	json data; 
 
@@ -95,11 +81,16 @@ json Scene::Serialize(const std::vector<std::string>& object_names)
 	json audios;
 	json texts;
 	json cameras;
-	
-	for (const auto& name : object_names)
-	{
-		Object* object = GetSceneObject(name);
 
+	if (v.empty())
+	{
+		for (const auto& obj : objects_all)
+		{
+			v.push_back(obj.get());
+		}
+	}
+	for (const auto& object : v)
+	{
 		Circle* circle = dynamic_cast<Circle*>(object);
 		Sprite* sprite = dynamic_cast<Sprite*>(object);
 		Audio* audio = dynamic_cast<Audio*>(object);
@@ -108,23 +99,23 @@ json Scene::Serialize(const std::vector<std::string>& object_names)
 
 		if (circle != nullptr)
 		{
-			circles[name] = circle->Serialize();
+			circles[object->name] = circle->Serialize();
 		}
 		else if (sprite != nullptr)
 		{
-			sprites[name] = sprite->Serialize();
+			sprites[object->name] = sprite->Serialize();
 		}
 		else if (audio != nullptr)
 		{
-			audios[name] = audio->Serialize();
+			audios[object->name] = audio->Serialize();
 		}
 		else if (text != nullptr)
 		{
-			texts[name] = text->Serialize();
+			texts[object->name] = text->Serialize();
 		}
 		else if (cam != nullptr)
 		{
-			cameras[name] = cam->Serialize();
+			cameras[object->name] = cam->Serialize();
 		}
 	}
 
@@ -258,7 +249,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
 
-			Object* newobj = scene.AddToScene(T(object.key()));
+			Object* newobj = scene.AddToScene(T(object.key())).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
@@ -270,7 +261,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			std::string parent_name = props["parent"].get<std::string>();
 			if (!parent_name.empty())
 			{
-				Object* parent_obj = scene.GetSceneObject(parent_name);
+				Object* parent_obj = scene.GetSceneObject(parent_name).get();
 				if (parent_obj != nullptr)
 				{
 					newobj->SetParent(parent_obj);
@@ -594,8 +585,8 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 	while (!set_object_parents_queue.empty())
 	{
 		const auto& [child, parent] = set_object_parents_queue.front();
-		Object* child_obj = scene.GetSceneObject(child);
-		Object* parent_obj = scene.GetSceneObject(parent);
+		Object* child_obj = scene.GetSceneObject(child).get();
+		Object* parent_obj = scene.GetSceneObject(parent).get();
 
 		child_obj->SetParent(parent_obj);
 

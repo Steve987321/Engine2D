@@ -49,7 +49,7 @@ namespace Toad
 
 		for (const std::string& child : m_children)
 		{
-			Object* obj = m_currentScene.GetSceneObject(child);
+			Object* obj = m_currentScene.GetSceneObject(child).get();
 			obj->SetPosition(obj->GetPosition() + (position - current_position));
 		}
 	}
@@ -68,7 +68,7 @@ namespace Toad
 
 		for (const std::string& child : m_children)
 		{
-			Object* obj = m_currentScene.GetSceneObject(child);
+			Object* obj = m_currentScene.GetSceneObject(child).get();
 
 			Vec2f relative_position = obj->GetPosition() - pos;
 
@@ -93,7 +93,7 @@ namespace Toad
 
 		for (const std::string& child_name : m_children)
 		{
-			Object* obj = m_currentScene.GetSceneObject(child_name);
+			Object* obj = m_currentScene.GetSceneObject(child_name).get();
 			if (obj != nullptr)
 			{
 				res.push_back(obj);
@@ -131,7 +131,7 @@ namespace Toad
 	{
 		if (!m_parent.empty())
 		{
-			Object* parent_obj = m_currentScene.GetSceneObject(m_parent);
+			Object* parent_obj = m_currentScene.GetSceneObject(m_parent).get();
 			parent_obj->RemoveChild(name);
 			m_parent.clear();
 		}
@@ -150,7 +150,7 @@ namespace Toad
 
 	void Object::Destroy(bool destroy_children)
 	{
-		Object* parent_obj = m_currentScene.GetSceneObject(m_parent);
+		Object* parent_obj = m_currentScene.GetSceneObject(m_parent).get();
 
 		for (Object* child : GetChildrenAsObjects())
 		{
