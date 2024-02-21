@@ -9,6 +9,9 @@ Makefile
 *.vcxproj.user
 *.sln
 
+# Toad
+*.TSCENE
+
 # Bin directories
 bin/
 bin-intermediate/
