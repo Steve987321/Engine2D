@@ -374,7 +374,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 
-			package.CreatePackage(proj_file, output_path, misc::current_editor.path);
+			package.CreatePackage(proj_file, output_path, misc::current_editor.path, settings.engine_path);
 		}
 		ImGui::EndDisabled();
 

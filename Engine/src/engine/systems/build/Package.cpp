@@ -19,29 +19,10 @@ namespace Toad
 	{
 	}
 
-	bool Package::CreatePackage(const fs::path& project_file, const fs::path& output_path, const fs::path& build_system_path)
+	bool Package::CreatePackage(const fs::path& project_file, const fs::path& output_path, const fs::path& build_system_path, const fs::path& engine_path)
 	{
 		const fs::path proj_dir = project_file.parent_path();
-		fs::path proj_engine_dir;
-		std::ifstream proj_file(project_file);
-
-		if (proj_file.is_open())
-		{
-			try
-			{
-				json data = json::parse(proj_file);
-
-				proj_engine_dir = fs::path(std::string(data["engine_path"]));
-			}
-			catch (json::parse_error& e)
-			{
-				proj_file.close();
-				LOGERRORF("Parse error at {}, {}. While parsing {}", e.byte, e.what(), project_file);
-				return false;
-			}
-
-			proj_file.close();
-		}
+		const fs::path& proj_engine_dir = engine_path;
 		
 		fs::path slnfile_dir;
 
@@ -95,12 +76,14 @@ namespace Toad
 				std::string line;
 				while (std::getline(buildlog, line))
 				{
-					if (line.find("========== Build started at") != std::string::npos)
+					if (line.find("========== Build: 3 succeeded") != std::string::npos 
+						&& line.find("0 failed") != std::string::npos)
 					{
 						build_done = true;
 						break;
 					}
 				}
+				LOGDEBUGF("[Package] {}", line);
 				buildlog.clear();
 				buildlog.seekg(0);
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));

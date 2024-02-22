@@ -313,7 +313,6 @@ namespace project {
 
 		json data = json::object();
 		data["name"] = settings.name;
-		data["engine_path"] = settings.engine_path;
 
 		std::ofstream engine_file(fs::path(settings.project_path) / (settings.name + ".TOADPROJECT"));
 
@@ -397,7 +396,6 @@ namespace project {
 					json data = json::parse(project_file);
 
 					settings.name = data["name"];
-					settings.engine_path = data["engine_path"];
                     settings.project_path = fs::path(path).parent_path().string();
 				}
 				catch(json::parse_error& e)
@@ -445,7 +443,6 @@ namespace project {
 				{
                     json data = json::parse(project_file);
 					settings.name = data["name"];
-					settings.engine_path = data["engine_path"];
                     settings.project_path = fs::path(path).parent_path().string();
 				}
 				catch (json::parse_error& e)

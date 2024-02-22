@@ -104,7 +104,6 @@ namespace project {
 			nlohmann::json data;
 			data["name"] = name;
 			data["project_path"] = project_path;
-			data["engine_path"] = engine_path;
 			return data;
 		}
 	};
