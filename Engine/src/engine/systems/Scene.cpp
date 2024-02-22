@@ -332,13 +332,16 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				// props
 				sf::Color fill_col = {};
 				sf::Vector2f scale = {};
+				sf::Vector2f origin = {};
 				uint32_t u32fill_col = 0;
 				float rotation = 0;
 				bool has_texture = false;
 
 				GET_JSON_ELEMENT(u32fill_col, props, "fill_col");
 				GET_JSON_ELEMENT(scale.x, props, "scalex");
-				GET_JSON_ELEMENT(scale.y, props, "scaley");
+				GET_JSON_ELEMENT(scale.y, props, "scaley"); 
+				GET_JSON_ELEMENT(origin.x, props, "originx");
+				GET_JSON_ELEMENT(origin.y, props, "originy");
 				GET_JSON_ELEMENT(rotation, props, "rotation");
 				GET_JSON_ELEMENT(has_texture, props, "has_texture");
 
@@ -372,6 +375,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				sprite.setRotation(rotation);
 				sprite.setColor(fill_col);
 				sprite.setScale(scale);
+				sprite.setOrigin(origin);
 			}
 			else if (audioobj != nullptr)
 			{

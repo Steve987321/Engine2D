@@ -72,6 +72,8 @@ json Sprite::Serialize()
 	sprite_properties["fill_col"] = s.getColor().toInteger();
 	sprite_properties["scalex"] = s.getScale().x;
 	sprite_properties["scaley"] = s.getScale().y;
+	sprite_properties["originx"] = s.getOrigin().x;
+	sprite_properties["originy"] = s.getOrigin().y;
 	bool has_texture = s.getTexture() != nullptr;
 	if (has_texture)
 	{

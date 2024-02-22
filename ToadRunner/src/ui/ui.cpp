@@ -1222,6 +1222,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					sprite.setScale(scale);
 				}
+
+				Vec2f origin = sprite.getOrigin();
+				if (ImGui::DragFloat("origin x", &origin.x))
+				{
+					sprite.setOrigin(origin);
+				}
+				if (ImGui::DragFloat("origin y", &origin.y))
+				{
+					sprite.setOrigin(origin);
+				}
 			}
 
 			else if (circle_obj != nullptr)
