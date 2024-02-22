@@ -9,7 +9,7 @@ namespace Toad
 
 using json = nlohmann::json;
 
-#define GET_JSON_ELEMENT(val, data, key) assert(data.contains(key)); val = data[key]; 
+#define GET_JSON_ELEMENT(val, data, key) if (data.contains(key)) val = data[key]; else LOGERRORF("[Scene] Failed to load property: {}", key);
 
 struct ENGINE_API Scene
 {
