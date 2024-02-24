@@ -122,6 +122,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::BeginDisabled(project::current_project.name.empty());
 			if (ImGui::MenuItem("Reload"))
 			{
+				if (Toad::Engine::Get().GameStateIsPlaying())
+				{
+					Toad::Engine::Get().StopGameSession();
+				}
+
 				Toad::Engine::Get().LoadGameScripts();
 			}
 			ImGui::EndDisabled();
