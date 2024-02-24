@@ -28,6 +28,11 @@ void Scene::Update()
 	{
 		obj->Update();
 	}
+	
+	for (auto& obj : objects_all)
+	{
+		obj->LateUpdate();
+	}
 }
 
 void Scene::Render(sf::RenderTexture& texture)

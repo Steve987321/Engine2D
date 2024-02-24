@@ -28,6 +28,8 @@ public:
 	
 	virtual void OnCreate();
 
+	virtual void OnDestroy();
+
 	virtual void Start();
 
 	virtual void Render(sf::RenderWindow& window);
@@ -36,6 +38,8 @@ public:
 	virtual void Render(sf::RenderTexture& texture);
 
 	virtual void Update();
+
+	virtual void LateUpdate();
 
 	virtual const Vec2f& GetPosition() const;
 	virtual void SetPosition(const Vec2f& position);
@@ -86,7 +90,7 @@ public:
 	{
 		for (const auto& script : m_attachedScripts | std::views::values)
 		{
-			auto res = dynamic_cast<T*>(script);
+			auto res = dynamic_cast<T*>(script.get());
 			if (res != nullptr)
 				return res;
 		}

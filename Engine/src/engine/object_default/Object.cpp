@@ -16,6 +16,9 @@ namespace Toad
 	void Object::OnCreate()
 	{}
 
+	void Object::OnDestroy()
+	{}
+
 	void Object::Start()
 	{
 		for (auto& script : m_attachedScripts | std::views::values)
@@ -35,6 +38,14 @@ namespace Toad
 		for (auto& script : m_attachedScripts | std::views::values)
 		{
 			script->OnUpdate(this);
+		}
+	}
+
+	void Object::LateUpdate()
+	{
+		for (auto& script : m_attachedScripts | std::views::values)
+		{
+			script->OnLateUpdate(this);
 		}
 	}
 
@@ -150,8 +161,8 @@ namespace Toad
 
 	void Object::Destroy(bool destroy_children)
 	{
+		OnDestroy();
 		Object* parent_obj = m_currentScene.GetSceneObject(m_parent).get();
-
 		for (Object* child : GetChildrenAsObjects())
 		{
 			if (destroy_children)
@@ -240,6 +251,7 @@ namespace Toad
 		auto it = m_attachedScripts.find(script_name.data());
 		if (it != m_attachedScripts.end())
 		{
+			//it->second->OnRemove(this);
 			m_attachedScripts.erase(it);
 			return true;
 		}
@@ -250,6 +262,7 @@ namespace Toad
 	void Object::AddScript(std::shared_ptr<Script> script)
 	{
 		m_attachedScripts[script->GetName()] = script;
+		//script->OnAttach(this);
 	}
 
 	const std::unordered_map<std::string, std::shared_ptr<Script>>& Object::GetAttachedScripts() const

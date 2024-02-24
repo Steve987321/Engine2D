@@ -21,11 +21,11 @@ void Script::OnUpdate(Object* obj)
 {
 }
 
-void Script::OnStart(Object* obj)
+void Script::OnLateUpdate(Object* obj)
 {
 }
 
-void Script::OnDestroy(Object* obj)
+void Script::OnStart(Object* obj)
 {
 }
 
