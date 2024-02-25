@@ -61,437 +61,446 @@ void GameAssetsBrowser::Show()
 {
 	loaded_scene = false;
 
-	if (!m_assetsPath.empty())
-		list_dir_contents(m_assetsPath);
-
-	ImGui::Begin("second");
-
-	if (m_assetsPath.empty())
+	if (m_styleBlocks)
 	{
-		ImGui::Text("nothing to show");
-		ImGui::End();
-		return;
-	}
-
-	auto& droppedFilesQueue = Engine::Get().GetDroppedFilesQueue();
-	while (!droppedFilesQueue.empty())
-	{
-		const fs::path& queued_file = droppedFilesQueue.front();
-
-		if (!fs::copy_file(queued_file, m_currentPath / queued_file.filename()))
+		if (ImGui::Begin("Game Assets"))
 		{
-			LOGERRORF("Failed to copy {} to {}", queued_file, m_currentPath / queued_file.filename());
-		}
-
-		droppedFilesQueue.pop();
-	}
-
-	static bool is_dragging_file = false;
-
-	if (is_dragging_file)
-	{
-
-	}
-	else
-	{
-		if (m_currentPath != m_assetsPath && ImGui::ArrowButton("##back", ImGuiDir_Left))
-		{
-			m_currentPath = m_currentPath.parent_path();
-		}
-	}
-
-	if (ImGui::Button("Open .sln"))
-	{
-		auto editors = misc::FindEditors();
-		if (editors.empty())
-		{
-			LOGERROR("No visual studio found to open .sln");
-		}
-		else
-		{
-			for (const auto& editor : editors)
+			if (m_assetsPath.empty())
 			{
-				if (editor.name.find("Visual Studio") != std::string::npos)
+				ImGui::Text("nothing to show");
+				ImGui::End();
+				return;
+			}
+
+			auto& droppedFilesQueue = Engine::Get().GetDroppedFilesQueue();
+			while (!droppedFilesQueue.empty())
+			{
+				const fs::path& queued_file = droppedFilesQueue.front();
+
+				if (!fs::copy_file(queued_file, m_currentPath / queued_file.filename()))
 				{
-					// get .sln file
-					// TODO: temp
-					auto temp = m_assetsPath.parent_path().parent_path().parent_path();
-					fs::path slnpath;
-					for (const auto& entry : fs::recursive_directory_iterator(temp))
-					{
-						if (entry.is_regular_file())
-						{
-							if (entry.path().extension() == ".sln")
-							{
-								slnpath = entry;
-								break;
-							}
-						}
-					}
-
-					if (slnpath.empty())
-					{
-						LOGERRORF("can't find .sln file in {}", temp);
-						break;
-					}
-
-#ifdef _WIN32
-					if (!project::OpenSln(slnpath, editor))
-					{
-						LOGERRORF("Failed to open {} with {}", slnpath, editor.name);
-					}
-#endif
-					misc::current_editor = editor;
-
-					break;
-				}
-			}
-		}
-	}
-
-	static fs::path selected;
-	static bool renaming = false;
-	static char renaming_buf[100];
-
-	static bool focus_on_popup_once = false;
-	const ImGuiID create_cpp_script_popup = ImHashStr("create C++ script");
-
-	// pop ups
-	if (ImGui::BeginPopupModal("replace file warning"))
-	{
-		if (!focus_on_popup_once)
-			ImGui::SetKeyboardFocusHere(-1);
-
-		// re-rename
-		ImGui::Text("This file already exists, do you wish to override this file?");
-		ImGui::Separator();
-		if (ImGui::Button("Yes"))
-		{
-			fs::rename(selected, selected.parent_path() / renaming_buf);
-			renaming = false;
-			ignore_rename_warning = false;
-			ImGui::CloseCurrentPopup();
-		}
-		if (ImGui::Button("No"))
-		{
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::EndPopup();
-	}
-
-	ImGui::PushOverrideID(create_cpp_script_popup);
-	if (ImGui::BeginPopupModal("create C++ script"))
-	{
-		static char script_name[50];
-
-		if (ImGui::Button("Close"))
-		{
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::InputText("Name", script_name, sizeof(script_name));
-
-		if (ImGui::Button("Create"))
-		{
-			if (CreateCPPScript(script_name))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-		}
-
-		ImGui::EndPopup();
-	}
-	ImGui::PopID();
-
-	focus_on_popup_once = ImGui::IsPopupOpen("replace file warning");
-
-	if (ImGui::BeginPopup("creation menu"))
-	{
-		ImGui::SeparatorText("Add");
-
-		if (ImGui::MenuItem("Directory"))
-		{
-			std::string dir_name = "new_directory";
-			while (exists(m_currentPath / dir_name))
-			{
-				dir_name += "_1";
-			}
-			create_directory(m_currentPath / dir_name);
-
-			selected = m_currentPath / dir_name;
-            strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
-			ignore_rename_warning = true;
-			renaming = true;
-
-			ImGui::CloseCurrentPopup();
-		}
-
-		if (ImGui::MenuItem("Scene"))
-		{
-			std::string scene_name = "Scene";
-			std::string file_ext = ".TSCENE";
-			while (exists(m_currentPath / (scene_name + file_ext)))
-			{
-				scene_name += "_1";
-			}
-
-			scene_name += file_ext;
-
-			std::ofstream f(m_currentPath / scene_name);
-			nlohmann::json da;
-			f << da;
-			f.close();
-
-			selected = m_currentPath / scene_name;
-            strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
-			renaming = true;
-			ignore_rename_warning = true;
-
-			ImGui::CloseCurrentPopup();
-		}
-		if (ImGui::MenuItem("C++ Script"))
-		{
-			if (!ImGui::IsPopupOpen("create C++ script"))
-			{
-				ImGui::PushOverrideID(create_cpp_script_popup);
-				ImGui::OpenPopup("create C++ script");
-				ImGui::PopID();
-			}
-		}
-
-		ImGui::EndPopup();
-	}
-
-	else if (ImGui::BeginPopup("modify menu"))
-	{
-		ImGui::SeparatorText(selected.filename().string().c_str());
-
-		// TODO: Copy Cut Paste & Shortcuts
-		if (ImGui::MenuItem("Copy", "CTRL+C"))
-		{
-
-			ImGui::CloseCurrentPopup();
-		}
-		if (ImGui::MenuItem("Cut", "CTRL+X"))
-		{
-
-			ImGui::CloseCurrentPopup();
-		}
-
-		if (ImGui::MenuItem("Delete"))
-		{
-			if (selected.has_extension() && (selected.extension() == ".h" || selected.extension() == ".cpp"))
-			{
-				do
-				{
-					if (!VerifyPaths())
-					{
-						LOGERROR("Failed to verify paths");
-						break;
-					}
-					if (!RemoveFromScriptRegistry(selected))
-					{
-						LOGERRORF("Failed to remove {} from project", selected.filename().replace_extension("").string());
-						break;
-					}
-					if (!ExcludeToProjectFile(selected))
-					{
-						LOGERRORF("Failed to remove {} from project", selected.filename());
-						break;
-					}
-				} while (false);
-			}
-			if (selected.has_extension() && (selected.extension() == ".png" || selected.extension() == ".jpg"))
-			{
-				fs::path relative = fs::relative(selected, m_assetsPath);
-				Engine::Get().GetResourceManager().RemoveTexture(relative.string());
-			}
-			if (selected.has_extension() && (selected.extension() == ".mp3" || selected.extension() == ".wav" || selected.extension() == ".org"))
-			{
-				fs::path relative = fs::relative(selected, m_assetsPath);
-				Engine::Get().GetResourceManager().RemoveAudioSource(relative.string());
-			}
-
-			fs::remove(selected);
-
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::EndPopup();
-	}
-
-	if (is_dragging_file && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
-	{
-		is_dragging_file = false;
-	}
-
-	int id = 0;
-	int counter = 0;
-	float child_size = 90.f;
-	int max_columns = (int)(ImGui::GetWindowWidth() / (child_size + ImGui::GetStyle().FramePadding.x));
-	bool open_modify_popup = false;
-
-	for (const auto& entry : fs::directory_iterator(m_currentPath))
-	{
-		id++;
-		counter++;
-
-		ImGui::BeginChild(id, { child_size, child_size }, false);
-
-		if (!selected.empty())
-		{
-			// rename
-			if (!renaming && selected == entry.path() && ImGui::IsKeyPressed(ImGuiKey_F2))
-			{
-				strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
-				renaming = true;
-			}
-		}
-
-		if (entry.is_directory())
-		{
-			ImGui::PushID(id);
-			if (ImGui::Selectable("D", selected == entry.path(), 0, { 50, 50 }))
-			{
-				selected = entry.path();
-			}
-			ImGui::PopID();
-
-			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
-			{
-				m_currentPath = entry.path();
-			}
-		}
-		else
-		{
-			ImGui::PushID(id);
-
-			fs::path ext = entry.path().extension();
-			
-			if (entry.path().has_extension() && (ext == ".png" || ext == ".jpg"))
-			{
-				fs::path relative = fs::relative(entry.path(), m_assetsPath);
-				sf::Texture* texture = Engine::Get().GetResourceManager().GetTexture(relative.string());
-
-				if (texture == nullptr)
-				{
-					sf::Texture new_texture;
-					new_texture.loadFromFile(entry.path().string());
-					texture = Engine::Get().GetResourceManager().AddTexture(relative.string(), new_texture);
+					LOGERRORF("Failed to copy {} to {}", queued_file, m_currentPath / queued_file.filename());
 				}
 
-				ImGui::Image(*texture, { 50, 50 });
+				droppedFilesQueue.pop();
+			}
+
+			static bool is_dragging_file = false;
+
+			if (is_dragging_file)
+			{
+
 			}
 			else
 			{
-				if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
+				if (m_currentPath != m_assetsPath && ImGui::ArrowButton("##back", ImGuiDir_Left))
 				{
-					if (ext == ".TSCENE")
-					{
-						Engine::Get().SetScene(LoadScene(selected, m_assetsPath));
-						loaded_scene = true;
-					}
-					selected = entry.path();
+					m_currentPath = m_currentPath.parent_path();
 				}
 			}
 
-			ImGui::PopID();
-		}
-
-		ImGuiDragDropFlags src_flags = 0;
-		src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
-		src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
-		src_flags |= ImGuiDragDropFlags_SourceAllowNullID;
-		//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
-		if (ImGui::BeginDragDropSource(src_flags))
-		{
-			std::string* buf = new std::string(entry.path().string());
-			is_dragging_file = true;
-
-			ImGui::SetDragDropPayload("move file", buf, buf->length());
-			ImGui::BeginTooltip();
-			ImGui::Text(fs::path(*buf).filename().string().c_str());
-			ImGui::EndTooltip();
-			ImGui::EndDragDropSource();
-		}
-		if (ImGui::BeginDragDropTarget() && entry.is_directory())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+			if (ImGui::Button("Open .sln"))
 			{
-				fs::path src = *(std::string*)payload->Data;
-				std::error_code e;
-				fs::rename(src, entry.path() / src.filename(), e);
-				LOGDEBUGF("error code message: {} {}", e.message(), e.value());
-			}
-
-			ImGui::EndDragDropTarget();
-		}
-
-		// options
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())
-		{
-			selected = entry.path();
-			open_modify_popup = true;
-		}
-		if (renaming && selected == entry.path())
-		{
-			if (!ImGui::IsPopupOpen("replace file warning"))
-				ImGui::SetKeyboardFocusHere();
-
-			if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, reinterpret_cast<ImGuiInputTextCallback>(rename_input_callback)))
-			{
-				if (!ignore_rename_warning && exists(entry.path().parent_path() / renaming_buf))
+				auto editors = misc::FindEditors();
+				if (editors.empty())
 				{
-					ImGui::OpenPopup("replace file warning");
+					LOGERROR("No visual studio found to open .sln");
 				}
 				else
 				{
-					fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
-					renaming = false;
+					for (const auto& editor : editors)
+					{
+						if (editor.name.find("Visual Studio") != std::string::npos)
+						{
+							// get .sln file
+							// TODO: temp
+							auto temp = m_assetsPath.parent_path().parent_path().parent_path();
+							fs::path slnpath;
+							for (const auto& entry : fs::recursive_directory_iterator(temp))
+							{
+								if (entry.is_regular_file())
+								{
+									if (entry.path().extension() == ".sln")
+									{
+										slnpath = entry;
+										break;
+									}
+								}
+							}
+
+							if (slnpath.empty())
+							{
+								LOGERRORF("can't find .sln file in {}", temp);
+								break;
+							}
+
+#ifdef _WIN32
+							if (!project::OpenSln(slnpath, editor))
+							{
+								LOGERRORF("Failed to open {} with {}", slnpath, editor.name);
+							}
+#endif
+							misc::current_editor = editor;
+
+							break;
+						}
+					}
 				}
 			}
-			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+
+			static fs::path selected;
+			static bool renaming = false;
+			static char renaming_buf[100];
+
+			static bool focus_on_popup_once = false;
+			const ImGuiID create_cpp_script_popup = ImHashStr("create C++ script");
+
+			// pop ups
+			if (ImGui::BeginPopupModal("replace file warning"))
 			{
-				strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
-				renaming = false;
+				if (!focus_on_popup_once)
+					ImGui::SetKeyboardFocusHere(-1);
+
+				// re-rename
+				ImGui::Text("This file already exists, do you wish to override this file?");
+				ImGui::Separator();
+				if (ImGui::Button("Yes"))
+				{
+					fs::rename(selected, selected.parent_path() / renaming_buf);
+					renaming = false;
+					ignore_rename_warning = false;
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::Button("No"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
 			}
-		}
-		else
-		{
-			ImGui::Text(entry.path().filename().string().c_str());
-		}
 
-		ImGui::EndChild();
+			ImGui::PushOverrideID(create_cpp_script_popup);
+			if (ImGui::BeginPopupModal("create C++ script"))
+			{
+				static char script_name[50];
 
-		if (counter < max_columns)
-		{
-			ImGui::SameLine();
-		}
-		else
-		{
-			counter = 0;
-		}
-	}
+				if (ImGui::Button("Close"))
+				{
+					ImGui::CloseCurrentPopup();
+				}
 
-	if (open_modify_popup)
-	{
-		ImGui::OpenPopup("modify menu");
-		open_modify_popup = false;
+				ImGui::InputText("Name", script_name, sizeof(script_name));
+
+				if (ImGui::Button("Create"))
+				{
+					if (CreateCPPScript(script_name))
+					{
+						ImGui::CloseCurrentPopup();
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+			ImGui::PopID();
+
+			focus_on_popup_once = ImGui::IsPopupOpen("replace file warning");
+
+			if (ImGui::BeginPopup("creation menu"))
+			{
+				ImGui::SeparatorText("Add");
+
+				if (ImGui::MenuItem("Directory"))
+				{
+					std::string dir_name = "new_directory";
+					while (exists(m_currentPath / dir_name))
+					{
+						dir_name += "_1";
+					}
+					create_directory(m_currentPath / dir_name);
+
+					selected = m_currentPath / dir_name;
+					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
+					ignore_rename_warning = true;
+					renaming = true;
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Scene"))
+				{
+					std::string scene_name = "Scene";
+					std::string file_ext = ".TSCENE";
+					while (exists(m_currentPath / (scene_name + file_ext)))
+					{
+						scene_name += "_1";
+					}
+
+					scene_name += file_ext;
+
+					std::ofstream f(m_currentPath / scene_name);
+					nlohmann::json da;
+					f << da;
+					f.close();
+
+					selected = m_currentPath / scene_name;
+					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
+					renaming = true;
+					ignore_rename_warning = true;
+
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("C++ Script"))
+				{
+					if (!ImGui::IsPopupOpen("create C++ script"))
+					{
+						ImGui::PushOverrideID(create_cpp_script_popup);
+						ImGui::OpenPopup("create C++ script");
+						ImGui::PopID();
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+
+			else if (ImGui::BeginPopup("modify menu"))
+			{
+				ImGui::SeparatorText(selected.filename().string().c_str());
+
+				// TODO: Copy Cut Paste & Shortcuts
+				if (ImGui::MenuItem("Copy", "CTRL+C"))
+				{
+
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Cut", "CTRL+X"))
+				{
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				if (ImGui::MenuItem("Delete"))
+				{
+					if (selected.has_extension() && (selected.extension() == ".h" || selected.extension() == ".cpp"))
+					{
+						do
+						{
+							if (!VerifyPaths())
+							{
+								LOGERROR("Failed to verify paths");
+								break;
+							}
+							if (!RemoveFromScriptRegistry(selected))
+							{
+								LOGERRORF("Failed to remove {} from project", selected.filename().replace_extension("").string());
+								break;
+							}
+							if (!ExcludeToProjectFile(selected))
+							{
+								LOGERRORF("Failed to remove {} from project", selected.filename());
+								break;
+							}
+						} while (false);
+					}
+					if (selected.has_extension() && (selected.extension() == ".png" || selected.extension() == ".jpg"))
+					{
+						fs::path relative = fs::relative(selected, m_assetsPath);
+						Engine::Get().GetResourceManager().RemoveTexture(relative.string());
+					}
+					if (selected.has_extension() && (selected.extension() == ".mp3" || selected.extension() == ".wav" || selected.extension() == ".org"))
+					{
+						fs::path relative = fs::relative(selected, m_assetsPath);
+						Engine::Get().GetResourceManager().RemoveAudioSource(relative.string());
+					}
+
+					fs::remove(selected);
+
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			if (is_dragging_file && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			{
+				is_dragging_file = false;
+			}
+
+			int id = 0;
+			int counter = 0;
+			float child_size = 90.f;
+			int max_columns = (int)(ImGui::GetWindowWidth() / (child_size + ImGui::GetStyle().FramePadding.x));
+			bool open_modify_popup = false;
+
+			for (const auto& entry : fs::directory_iterator(m_currentPath))
+			{
+				id++;
+				counter++;
+
+				ImGui::BeginChild(id, { child_size, child_size }, false);
+
+				if (!selected.empty())
+				{
+					// rename
+					if (!renaming && selected == entry.path() && ImGui::IsKeyPressed(ImGuiKey_F2))
+					{
+						strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
+						renaming = true;
+					}
+				}
+
+				if (entry.is_directory())
+				{
+					ImGui::PushID(id);
+					if (ImGui::Selectable("D", selected == entry.path(), 0, { 50, 50 }))
+					{
+						selected = entry.path();
+					}
+					ImGui::PopID();
+
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+					{
+						m_currentPath = entry.path();
+					}
+				}
+				else
+				{
+					ImGui::PushID(id);
+
+					fs::path ext = entry.path().extension();
+
+					if (entry.path().has_extension() && (ext == ".png" || ext == ".jpg"))
+					{
+						fs::path relative = fs::relative(entry.path(), m_assetsPath);
+						sf::Texture* texture = Engine::Get().GetResourceManager().GetTexture(relative.string());
+
+						if (texture == nullptr)
+						{
+							sf::Texture new_texture;
+							new_texture.loadFromFile(entry.path().string());
+							texture = Engine::Get().GetResourceManager().AddTexture(relative.string(), new_texture);
+						}
+
+						ImGui::Image(*texture, { 50, 50 });
+					}
+					else
+					{
+						if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
+						{
+							if (ext == ".TSCENE")
+							{
+								Engine::Get().SetScene(LoadScene(selected, m_assetsPath));
+								loaded_scene = true;
+							}
+							selected = entry.path();
+						}
+					}
+
+					ImGui::PopID();
+				}
+
+				ImGuiDragDropFlags src_flags = 0;
+				src_flags |= ImGuiDragDropFlags_SourceNoDisableHover;
+				src_flags |= ImGuiDragDropFlags_SourceNoHoldToOpenOthers;
+				src_flags |= ImGuiDragDropFlags_SourceAllowNullID;
+				//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
+				if (ImGui::BeginDragDropSource(src_flags))
+				{
+					std::string* buf = new std::string(entry.path().string());
+					is_dragging_file = true;
+
+					ImGui::SetDragDropPayload("move file", buf, buf->length());
+					ImGui::BeginTooltip();
+					ImGui::Text(fs::path(*buf).filename().string().c_str());
+					ImGui::EndTooltip();
+					ImGui::EndDragDropSource();
+				}
+				if (ImGui::BeginDragDropTarget() && entry.is_directory())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
+					{
+						fs::path src = *(std::string*)payload->Data;
+						std::error_code e;
+						fs::rename(src, entry.path() / src.filename(), e);
+						LOGDEBUGF("error code message: {} {}", e.message(), e.value());
+					}
+
+					ImGui::EndDragDropTarget();
+				}
+
+				// options
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())
+				{
+					selected = entry.path();
+					open_modify_popup = true;
+				}
+				if (renaming && selected == entry.path())
+				{
+					if (!ImGui::IsPopupOpen("replace file warning"))
+						ImGui::SetKeyboardFocusHere();
+
+					if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, reinterpret_cast<ImGuiInputTextCallback>(rename_input_callback)))
+					{
+						if (!ignore_rename_warning && exists(entry.path().parent_path() / renaming_buf))
+						{
+							ImGui::OpenPopup("replace file warning");
+						}
+						else
+						{
+							fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
+							renaming = false;
+						}
+					}
+					if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+					{
+						strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
+						renaming = false;
+					}
+				}
+				else
+				{
+					ImGui::Text(entry.path().filename().string().c_str());
+				}
+
+				ImGui::EndChild();
+
+				if (counter < max_columns)
+				{
+					ImGui::SameLine();
+				}
+				else
+				{
+					counter = 0;
+				}
+			}
+
+			if (open_modify_popup)
+			{
+				ImGui::OpenPopup("modify menu");
+				open_modify_popup = false;
+			}
+			else
+			{
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
+					{
+						if (!ImGui::IsPopupOpen("modify menu"))
+							ImGui::OpenPopup("creation menu");
+					}
+				}
+			}
+
+		}
+		ImGui::End();
 	}
 	else
 	{
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		if (ImGui::Begin("Game Assets"))
 		{
-			if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
-			{
-				if (!ImGui::IsPopupOpen("modify menu"))
-					ImGui::OpenPopup("creation menu");
-			}
+			if (!m_assetsPath.empty())
+				list_dir_contents(m_assetsPath);
 		}
 	}
-
-	ImGui::End();
 }
 
 void GameAssetsBrowser::SetAssetPath(std::string_view path)

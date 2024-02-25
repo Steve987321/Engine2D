@@ -22,6 +22,8 @@ namespace Toad
 		fs::path m_gameVsprojFile;
 		fs::path m_gameScriptRegisterFile;
 
+		bool m_styleBlocks = true;
+
 		bool CreateCPPScript(std::string_view script_name);
 		bool AddToScriptRegistry(const fs::path& script_path) const;
 		bool RemoveFromScriptRegistry(const fs::path& script_path) const;

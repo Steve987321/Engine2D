@@ -2701,41 +2701,40 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-    ImGui::Begin("File Browser", nullptr);
-    fBrowser.Show();
-
-	if (fBrowser.IsDoubleClicked())
+	if (ImGui::Begin("File Browser"))
 	{
-		auto file = std::filesystem::path(fBrowser.GetSelectedFile());
-		if (file.has_extension())
-		{
-			auto ext = file.extension().string();
+		fBrowser.Show();
 
-			if (ext == ".TSCENE")
+		if (fBrowser.IsDoubleClicked())
+		{
+			auto file = std::filesystem::path(fBrowser.GetSelectedFile());
+			if (file.has_extension())
 			{
-				if (asset_browser.GetAssetPath().empty())
+				auto ext = file.extension().string();
+
+				if (ext == ".TSCENE")
 				{
-					Toad::Engine::Get().SetScene(Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
-					scene_history.asset_folder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-					scene_history.scene = &Toad::Engine::Get().GetScene();
-					scene_history.SaveState();
+					if (asset_browser.GetAssetPath().empty())
+					{
+						Toad::Engine::Get().SetScene(Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+						scene_history.asset_folder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+						scene_history.scene = &Toad::Engine::Get().GetScene();
+						scene_history.SaveState();
+					}
+					else
+					{
+						Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
+						scene_history.asset_folder = asset_browser.GetAssetPath();
+						scene_history.scene = &Toad::Engine::Get().GetScene();
+						scene_history.SaveState();
+					}
+					is_scene_loaded = true;
+					selected_obj = nullptr;
 				}
-				else
-				{
-					Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
-					scene_history.asset_folder = asset_browser.GetAssetPath();
-					scene_history.scene = &Toad::Engine::Get().GetScene();
-					scene_history.SaveState();
-				}
-				is_scene_loaded = true;
-				selected_obj = nullptr;
 			}
 		}
 	}
-	
     ImGui::End();
-
-	ImGui::Begin("Game Assets");
 
 	asset_browser.Show();
 	if (asset_browser.loaded_scene)
@@ -2746,7 +2745,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 		scene_history.SaveState();
 		is_scene_loaded = true;
 	}
-	ImGui::End();
 
 	if (view_text_editor)
 	{

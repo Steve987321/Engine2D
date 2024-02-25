@@ -29,7 +29,6 @@ const Vec2f& Sprite::GetPosition() const
 void Sprite::SetPosition(const Vec2f& position)
 {
 	Object::SetPosition(position);
-
 	m_sprite.setPosition(position);
 }
 
