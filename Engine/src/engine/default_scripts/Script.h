@@ -6,6 +6,10 @@
 
 #include <functional>
 
+#ifdef TOAD_EDITOR
+#include "imgui/imgui.h"
+#endif
+
 #define EXPOSE_VAR(T) m_reflection.Add(#T, &(T))
 
 #define SCRIPT_CONSTRUCT(T)											\
@@ -35,8 +39,7 @@ public:
 	virtual void OnUpdate(Object* obj);
 	virtual void OnLateUpdate(Object* obj);
 	virtual void OnStart(Object* obj);
-	virtual void OnEditorUI(Object* obj);
-
+	virtual void OnEditorUI(Object* obj, ImGuiContext* ctx);
 	virtual void ExposeVars();
 
 	virtual std::shared_ptr<Script> Clone() = 0;

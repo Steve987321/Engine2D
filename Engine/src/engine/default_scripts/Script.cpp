@@ -29,7 +29,7 @@ void Script::OnStart(Object* obj)
 {
 }
 
-void Script::OnEditorUI(Object* obj)
+void Script::OnEditorUI(Object* obj, ImGuiContext* ctx)
 {
 }
 
