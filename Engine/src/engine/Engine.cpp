@@ -131,6 +131,9 @@ void Engine::Run()
 		// update deltatime
 		m_deltaTime = m_deltaClock.restart();
 
+		// handle events 
+		EventHandler();
+
 #ifdef TOAD_EDITOR
 		// update imgui sfml
 		ImGui::SFML::Update(m_window, m_deltaTime);
@@ -144,8 +147,6 @@ void Engine::Run()
 		m_currentScene.Update();
 #endif
 
-		// handle events 
-		EventHandler();
 		// render the window and contents
 		Render();
 	}
@@ -223,16 +224,24 @@ void Engine::EventHandler()
 
 		case sf::Event::KeyPressed:
 		{
+			Input::InvokeKeyPressCallbacks(e.key.code);
 			break;
 		}
 
 		case sf::Event::KeyReleased:
 		{
+			Input::InvokeKeyReleaseCallbacks(e.key.code);
 			break;
 		}
 
 		case sf::Event::MouseButtonPressed:
 		{
+			Input::InvokeMousePressCallbacks(e.mouseButton.button);
+			break;
+		}	
+		case sf::Event::MouseButtonReleased:
+		{
+			Input::InvokeMouseReleaseCallbacks(e.mouseButton.button);
 			break;
 		}
 
