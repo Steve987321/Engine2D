@@ -465,7 +465,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 
 						if (!arial.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
 						{
-							LOGWARN("Can't find C:\\Windows\\Fonts\\Arial.ttf");
+							LOGWARN("[Scene] Can't find C:\\Windows\\Fonts\\Arial.ttf");
 						}
 						else
 						{
@@ -525,7 +525,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				auto gscripts = Engine::Get().GetGameScriptsRegister();
 				if (gscripts.empty())
 				{
-					LOGWARN("Scripts register is empty");
+					LOGWARN("[Scene] Scripts register is empty");
 				}
 				if (auto it = gscripts.find(script.key()); it != gscripts.end())
 				{
@@ -540,37 +540,67 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 						case (int)TypesMap::b:
 							for (const auto& j : script_vars.value().items())
 							{
-								*vars.b[j.key()] = j.value().get<bool>();
+								if (vars.b[j.key()])
+									*vars.b[j.key()] = j.value().get<bool>();
+								else
+								{
+									LOGWARNF("[Scene] Script variable (bool) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
+								}
 							}
 							break;
 						case (int)TypesMap::flt:
 							for (const auto& j : script_vars.value().items())
 							{
-								*vars.flt[j.key()] = j.value().get<float>();
+								if (vars.flt[j.key()])
+									*vars.flt[j.key()] = j.value().get<float>();
+								else
+								{
+									LOGWARNF("[Scene] Script variable (float) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
+								}
 							}
 							break;
 						case (int)TypesMap::i8:
 							for (const auto& j : script_vars.value().items())
 							{
-								*vars.i8[j.key()] = j.value().get<int8_t>();
+								if (vars.i8[j.key()])
+									*vars.i8[j.key()] = j.value().get<int8_t>();
+								else
+								{
+									LOGWARNF("[Scene] Script variable (int8) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
+								}
 							}
 							break;
 						case (int)TypesMap::i16:
 							for (const auto& j : script_vars.value().items())
 							{
-								*vars.i16[j.key()] = j.value().get<int16_t>();
+								if (vars.i16[j.key()])
+									*vars.i16[j.key()] = j.value().get<int16_t>();
+								else
+								{
+									LOGWARNF("[Scene] Script variable (int16) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
+								}
 							}
 							break;
 						case (int)TypesMap::i32:
 							for (const auto& j : script_vars.value().items())
 							{
-								*vars.i32[j.key()] = j.value().get<int32_t>();
+								if (vars.i32[j.key()])
+									*vars.i32[j.key()] = j.value().get<int32_t>();
+								else
+								{
+									LOGWARNF("[Scene] Script variable (int32) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
+								}
 							}
 							break;
 						case (int)TypesMap::str:
 							for (const auto& j : script_vars.value().items())
 							{
-								*vars.str[j.key()] = j.value().get<std::string>();
+								if (vars.str[j.key()])
+									*vars.str[j.key()] = j.value().get<std::string>();
+								else
+								{
+									LOGWARNF("[Scene] Script variable (string) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
+								}
 							}
 							break;
 						default:
