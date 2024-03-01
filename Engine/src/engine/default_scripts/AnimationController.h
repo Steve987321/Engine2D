@@ -19,7 +19,7 @@ public:
 public:
 	void OnStart(Object* obj) override;
 	void OnUpdate(Object* obj) override;
-	void OnEditorUI(Object* obj) override;
+	void OnEditorUI(Object* obj, ImGuiContext* ctx) override;
 
 private: 
 	Animation* m_attachedAnimation = nullptr;

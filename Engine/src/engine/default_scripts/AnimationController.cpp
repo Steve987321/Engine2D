@@ -30,9 +30,9 @@ void AnimationController::OnUpdate(Object* obj)
 	}
 }
 
-void AnimationController::OnEditorUI(Object* obj)
+void AnimationController::OnEditorUI(Object* obj, ImGuiContext* ctx)
 {
-	Script::OnEditorUI(obj);
+	Script::OnEditorUI(obj, ctx);
 	if (m_attachedAnimation)
 	{
 		ImGui::Text(m_attachedAnimation->name.c_str());
