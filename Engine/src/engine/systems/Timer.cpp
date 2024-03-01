@@ -4,11 +4,6 @@
 namespace Toad
 {
 
-Timer::Timer(std::chrono::time_point<TClock> starting_point)
-{
-	m_start = starting_point;
-}
-
 Timer::Timer(bool start)
 {
 	if (start)
@@ -16,8 +11,6 @@ Timer::Timer(bool start)
 		Start();
 	}
 }
-
-Timer::Timer() = default;
 
 Timer::~Timer() = default;
 

@@ -10,10 +10,8 @@ class ENGINE_API Timer
 public:
 	using TClock = std::chrono::high_resolution_clock;
 
-	explicit Timer(std::chrono::time_point<TClock> starting_point);
-	explicit Timer(bool start);
+	explicit Timer(bool start = false);
 
-	Timer();
 	~Timer();
 
 	void Start();
