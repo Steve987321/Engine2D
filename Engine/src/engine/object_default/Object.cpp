@@ -53,7 +53,7 @@ namespace Toad
 	{
 		return { 0, 0 };
 	}
-
+		
 	void Object::SetPosition(const Vec2f& position)
 	{
 		const Vec2f& current_position = GetPosition();
@@ -195,32 +195,50 @@ namespace Toad
 			json bs_data;
 			for (const auto& [name, val] : bs)
 			{
-				bs_data[name] = *val;
+				if (val)
+					bs_data[name] = *val;
+				else
+					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
 			}
 			json flts_data;
 			for (const auto& [name, val] : flts)
 			{
-				flts_data[name] = *val;
+				if (val)
+					flts_data[name] = *val;
+				else
+					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
 			}
 			json i8s_data;
 			for (const auto& [name, val] : i8s)
 			{
-				i8s_data[name] = *val;
+				if (val)
+					i8s_data[name] = *val;
+				else
+					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
 			}
 			json i16s_data;
 			for (const auto& [name, val] : i16s)
 			{
-				i16s_data[name] = *val;
+				if (val)
+					i16s_data[name] = *val;
+				else
+					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
 			}
 			json i32s_data;
 			for (const auto& [name, val] : i32s)
 			{
-				i32s_data[name] = *val;
+				if (val)
+					i32s_data[name] = *val;
+				else
+					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
 			}
 			json strs_data;
 			for (const auto& [name, val] : strs)
 			{
-				strs_data[name] = *val;
+				if (val)
+					strs_data[name] = *val;
+				else
+					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
 			}
 			attached_scripts[it.first] =
 			{
