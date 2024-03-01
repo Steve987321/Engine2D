@@ -4,6 +4,7 @@
 #include "engine/Helpers.h"
 #include "engine/Types.h"
 
+#include "engine/systems/Input.h"
 #include "engine/systems/Scene.h"
 #include "engine/systems/ResourceManager.h"
 
