@@ -33,6 +33,9 @@ namespace ui
 	void event_callback(const sf::Event& e);
 	void editor_texture_draw_callback(sf::RenderTexture& texture);
 
+	template<typename T>
+	void show_script_var(T* variable);
+
 	void HelpMarker(const char* desc);
 }
 

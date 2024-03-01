@@ -1758,52 +1758,109 @@ void ui::engine_ui(ImGuiContext* ctx)
 						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script.get());
 
 						auto script_vars = script->GetReflection().Get();
-
+						const char* no_var_found_msg = "This variable is not found/exposed in this script, Resave the scene or re-expose the variable";
 						for (auto& [name, var] : script_vars.str)
 						{
-							char buf[100];
-							strncpy(buf, var->c_str(), sizeof buf);
-							if (ImGui::InputText(name.c_str(), buf, sizeof buf))
+							if (var)
 							{
-								*var = buf;
+								char buf[100];
+								strncpy(buf, var->c_str(), sizeof buf);
+								if (ImGui::InputText(name.c_str(), buf, sizeof buf))
+								{
+									*var = buf;
+								}
+								ImGui::SameLine();
+								ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
 							}
-							ImGui::SameLine();
-							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							else
+							{
+								ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
+								ImGui::SameLine();
+								HelpMarker(no_var_found_msg);
+							}
 						}
 						for (auto& [name, var] : script_vars.b)
 						{
-							ImGui::Checkbox(name.c_str(), var);
-							ImGui::SameLine();
-							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							if (var)
+							{
+								ImGui::Checkbox(name.c_str(), var);
+								ImGui::SameLine();
+								ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							}
+							else
+							{
+								ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
+								ImGui::SameLine();
+								HelpMarker(no_var_found_msg);
+							}
 						}
 						for (auto& [name, var] : script_vars.flt)
 						{
-							ImGui::DragFloat(name.c_str(), var);
-							ImGui::SameLine();
-							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							if (var)
+							{
+								ImGui::DragFloat(name.c_str(), var);
+								ImGui::SameLine();
+								ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							}
+							else
+							{
+								ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
+								ImGui::SameLine();
+								HelpMarker(no_var_found_msg);
+							}
+
 						}
 						for (auto& [name, var] : script_vars.i8)
 						{
-							ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i8_min, i8_max);
-							ImGui::SameLine();
-							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							if (var)
+							{
+								ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i8_min, i8_max);
+								ImGui::SameLine();
+								ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							}
+							else
+							{
+								ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
+								ImGui::SameLine();
+								HelpMarker(no_var_found_msg);
+							}
 						}
 						for (auto& [name, var] : script_vars.i16)
 						{
-							ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i16_min, i16_max);
-							ImGui::SameLine();
-							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							if (var)
+							{
+								ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i16_min, i16_max);
+								ImGui::SameLine();
+								ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							} 
+							else
+							{
+								ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
+								ImGui::SameLine();
+								HelpMarker(no_var_found_msg);
+							}
 						}
 						for (auto& [name, var] : script_vars.i32)
 						{
-							ImGui::DragInt(name.c_str(), var);
-							ImGui::SameLine();
-							ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							if (var)
+							{
+								ImGui::DragInt(name.c_str(), var);
+								ImGui::SameLine();
+								ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+							} 
+							else
+							{
+								ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
+								ImGui::SameLine();
+								HelpMarker(no_var_found_msg);
+							}
 						}
 
 						ImGui::SeparatorText("OnEditorUI");
+						
+						static bool once = false;
 
-						script->OnEditorUI(selected_obj);
+						script->OnEditorUI(selected_obj, ImGui::GetCurrentContext());
 
 						ImGui::TreePop();
 					}
