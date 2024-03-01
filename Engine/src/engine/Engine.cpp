@@ -474,6 +474,9 @@ void Engine::LoadGameScripts()
 		}
 	}
 
+	// clear Input callbacks 
+	Input::Clear();
+
 	if (m_currDLL)
 	{
 #ifdef _WIN32

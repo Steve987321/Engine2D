@@ -25,6 +25,7 @@ namespace Toad
 		static void AddKeyReleaseCallback(FKEY_CALLBACK callback);
 		static void AddMouseReleaseCallback(FMOUSE_CALLBACK callback);
 
+		static void Clear();
 	private:
 		static void InvokeKeyPressCallbacks(sf::Keyboard::Key key);
 		static void InvokeMousePressCallbacks(sf::Mouse::Button button);

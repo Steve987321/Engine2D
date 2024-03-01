@@ -34,6 +34,14 @@ namespace Toad
 		m_mouseUpCallbacks.emplace_back(callback);
 	}
 
+	void Input::Clear()
+	{
+		m_keyPressCallbacks.clear();
+		m_keyUpCallbacks.clear();
+		m_mousePressCallbacks.clear();
+		m_mouseUpCallbacks.clear();
+	}
+
 	void Input::InvokeKeyPressCallbacks(sf::Keyboard::Key key)
 	{
 		for (const auto& c : m_keyPressCallbacks)
