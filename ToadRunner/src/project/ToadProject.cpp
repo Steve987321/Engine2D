@@ -314,7 +314,7 @@ namespace project {
 		json data = json::object();
 		data["name"] = settings.name;
 
-		std::ofstream engine_file(fs::path(settings.project_path) / (settings.name + ".TOADPROJECT"));
+		std::ofstream engine_file(fs::path(settings.project_path) / (settings.name + FILE_EXT_TOADPROJECT));
 
 		if (engine_file.is_open())
 		{
@@ -378,7 +378,7 @@ namespace project {
 
 		if (fs::is_regular_file(path))
 		{
-			if (fs::path(path).extension() != ".TOADPROJECT")
+			if (fs::path(path).extension() != FILE_EXT_TOADPROJECT)
 			{
 				return
 				{
@@ -419,7 +419,7 @@ namespace project {
 
 			for (const auto& entry : fs::directory_iterator(path))
 			{
-				if (entry.path().extension() == ".TOADPROJECT")
+				if (entry.path().extension() == FILE_EXT_TOADPROJECT)
 				{
 					path_to_file = entry.path();
 					break;
@@ -470,7 +470,46 @@ namespace project {
 		};
 	}
 
-    std::string ProjectTypeAsStr(PROJECT_TYPE r)
+	bool Update(const ProjectSettings& settings, const std::filesystem::path& path)
+	{
+		if (!fs::exists(path))
+		{
+			LOGERRORF("[Project] {} doesn't exist", path);
+			return false;
+		}
+
+		fs::path project_file = path;
+
+		if (fs::is_directory(path))
+		{
+			for (const auto& entry : fs::directory_iterator(path))
+			{
+				if (entry.path().extension() == FILE_EXT_TOADPROJECT)
+				{
+					project_file = entry.path();
+					break;
+				}
+			}
+		}
+
+		if (fs::is_directory(project_file))
+		{
+			LOGERRORF("[Project] Can't find project file in {}", path);
+			return false;
+		}
+
+		// parse project json for name 
+
+		// setup parameters for premake 
+
+		// find premake 
+
+		// run premake with parameters --enginepath= --projectname=
+		settings.engine_path;
+		
+	}
+
+	std::string ProjectTypeAsStr(PROJECT_TYPE r)
     {
         switch(r){
             case PROJECT_TYPE::VS_2022:

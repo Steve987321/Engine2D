@@ -24,6 +24,9 @@
 #pragma warning (disable: 4996)     // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
 #endif
 
+#define FILE_EXT_TOADPROJECT ".TOADPROJECT"
+#define FILE_EXT_TOADSCENE ".TSCENE"
+
 #ifdef __APPLE__
 #include <sys/syslimits.h>
 #include <dlfcn.h>

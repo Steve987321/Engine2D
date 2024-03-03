@@ -358,7 +358,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			std::filesystem::path proj_file;
 			for (const auto& entry : std::filesystem::directory_iterator(project::current_project.project_path))
 			{
-				if (entry.path().has_extension() && entry.path().extension() == ".TOADPROJECT")
+				if (entry.path().has_extension() && entry.path().extension() == FILE_EXT_TOADPROJECT)
 				{
 					proj_file = entry.path();
 					break;

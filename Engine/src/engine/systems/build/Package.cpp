@@ -37,7 +37,7 @@ namespace Toad
 
 		const fs::path out_dir = output_path / "packaged_game";
 
-		if (project_file.extension() != ".TOADPROJECT")
+		if (project_file.extension() != FILE_EXT_TOADPROJECT)
 		{
 			LOGERRORF("Create package project file is invalid: {}", project_file);
 			return false;

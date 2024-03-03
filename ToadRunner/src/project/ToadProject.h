@@ -120,4 +120,7 @@ namespace project {
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 
 	LOAD_PROJECT_RES_INFO Load(const std::string_view path);
+
+	// rerun premake 
+	bool Update(const ProjectSettings& settings, const std::filesystem::path& path);
 }
