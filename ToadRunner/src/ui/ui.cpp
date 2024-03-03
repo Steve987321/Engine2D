@@ -2825,12 +2825,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
 			{
+				if (Toad::Engine::Get().GameStateIsPlaying())
+					Toad::Engine::Get().StopGameSession();
+
 				selected_obj = nullptr;
 				selected_objects.clear();
 				scene_history.Redo();
 			}
 			else
 			{
+				if (Toad::Engine::Get().GameStateIsPlaying())
+					Toad::Engine::Get().StopGameSession();
+
 				selected_obj = nullptr;
 				selected_objects.clear();
 				scene_history.Undo();
