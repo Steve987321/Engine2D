@@ -2,6 +2,8 @@
 #include "imgui.h"
 #include "AnimationController.h"
 
+#include <engine/Engine.h>
+
 namespace Toad
 {
 
@@ -20,13 +22,21 @@ void AnimationController::OnStart(Object* obj)
 	
 }
 
-void AnimationController::OnUpdate(Object* obj)
+void AnimationController::OnLateUpdate(Object* obj)
 {
 	// #TODO tie to the animation frames rate 
 
+	if (Engine::Get().GetObjectAsType<Toad::Sprite>(obj))
+
 	if (m_isPlaying)
 	{
-
+		if (m_attachedAnimation)
+		{
+			for (const auto& frame : m_attachedAnimation->frames)
+			{
+				//obj->
+			}
+		}
 	}
 }
 

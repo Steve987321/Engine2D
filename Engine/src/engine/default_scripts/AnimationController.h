@@ -18,7 +18,7 @@ public:
 
 public:
 	void OnStart(Object* obj) override;
-	void OnUpdate(Object* obj) override;
+	void OnLateUpdate(Object* obj) override;
 	void OnEditorUI(Object* obj, ImGuiContext* ctx) override;
 
 private: 
