@@ -46,7 +46,8 @@ namespace Toad
 	{
 		for (const auto& c : m_keyPressCallbacks)
 		{
-			c(key);
+			if (c)
+				c(key);
 		}
 	}
 
@@ -54,7 +55,8 @@ namespace Toad
 	{
 		for (const auto& c : m_mousePressCallbacks)
 		{
-			c(button);
+			if (c)
+				c(button);
 		}
 	}
 
@@ -62,7 +64,8 @@ namespace Toad
 	{
 		for (const auto& c : m_keyUpCallbacks)
 		{
-			c(key);
+			if (c)
+				c(key);
 		}
 	}
 
@@ -70,7 +73,8 @@ namespace Toad
 	{
 		for (const auto& c : m_mouseUpCallbacks)
 		{
-			c(button);
+			if (c)
+				c(button);
 		}
 	}
 
