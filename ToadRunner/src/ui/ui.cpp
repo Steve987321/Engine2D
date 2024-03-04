@@ -13,13 +13,11 @@
 #include "FileBrowser.h"
 #include "GameAssetsBrowser.h"
 #include "TextEditor.h"
-
 #include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
 #include "SceneHistory.h"
-
 #include "utils/FileDialog.h"
-
+#include "engine/Helpers.h"
 #include "engine/systems/Animation.h"
 
 using json = nlohmann::json;
@@ -2163,31 +2161,42 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 						for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
 						{
+							const auto& pos = obj->GetPosition();
+
+							/*if (Toad::distance(pos, selected_obj->GetPosition()) > 10.f)
+							{
+								continue;
+							}*/
+
 							Toad::Sprite* sprite = Toad::Engine::GetObjectAsType<Toad::Sprite>(obj.get());
 							Toad::Circle* circle = Toad::Engine::GetObjectAsType<Toad::Circle>(obj.get());
 							Vec2f scale = {};
 							if (sprite)
 							{
-								scale = sprite->GetSprite().getScale();
+								scale = {
+									sprite->GetSprite().getScale().x * (float)sprite->GetSprite().getTextureRect().getSize().x,
+									sprite->GetSprite().getScale().y * (float)sprite->GetSprite().getTextureRect().getSize().y, 
+								};
 							}
 							else if (circle)
 							{
 								float radius = circle->GetCircle().getRadius();
-								scale = { radius, radius };
+								scale = { 
+									radius * (float)circle->GetCircle().getTextureRect().getSize().x,
+									radius * (float)circle->GetCircle().getTextureRect().getSize().y
+								};
 							}
 							else
 							{
 								continue;
 							}
 
-							const auto& pos = obj->GetPosition();
-
 							ImRect snap_bounds = { {pos.x, pos.y}, {pos.x + scale.x, pos.y + scale.y} };
-							snap_bounds.Expand(10.f);
+							snap_bounds.Expand(50.f);
 
-							if (snap_bounds.Contains({drag_pos.x, drag_pos.y}))
+							if (snap_bounds.Contains({selected_obj->GetPosition().x, selected_obj->GetPosition().y}))
 							{
-								snap_bounds.Expand(-10.f);
+								snap_bounds.Expand(-50.f);
 								drag_pos.x = std::clamp(drag_pos.x, snap_bounds.Min.x, snap_bounds.Max.x);
 								drag_pos.y = std::clamp(drag_pos.y, snap_bounds.Min.y, snap_bounds.Max.y);
 								selected_obj->SetPosition(drag_pos);
@@ -2246,6 +2255,19 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
 			g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
 			editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x, d.y));
+		}
+
+		float mwheel = ImGui::GetIO().MouseWheel;
+		if (mwheel)
+		{
+;			if (mwheel < 0)
+			{
+				editor_cam.Zoom(1.2f);
+			}
+			else
+			{
+				editor_cam.Zoom(0.8f);
+			}
 		}
 
 		if (ImGui::IsItemHovered())
