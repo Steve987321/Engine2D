@@ -1944,15 +1944,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 		const auto content_size = ImGui::GetContentRegionAvail();
 
 		Toad::Camera& editor_cam = Toad::Engine::Get().GetEditorCamera();
-		//Toad::Camera* cam = Toad::Camera::GetActiveCamera();
-		//if (cam)
-		//{
-		//	//editor_cam.SetSize(cam->GetSize());
-		//}
+		static Vec2f initial_editor_cam_size = editor_cam.GetSize();
 
 		constexpr float ar = 16.f / 9.f;
 		float image_width = content_size.x;
 		float image_height = content_size.x / ar;
+
+		float fscale_x = image_width / editor_cam.GetSize().x;
+		float fscale_y = image_height / editor_cam.GetSize().y;
 
 		if (image_height > content_size.y)
 		{
@@ -2005,7 +2004,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			ImGui::EndDragDropTarget();
 		}
-		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 10 }, IM_COL32_WHITE, Toad::format_str("W:{}\nH:{}", content_size.x, content_size.y).c_str());
+		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 10 }, IM_COL32_WHITE, Toad::format_str("CW:{}\nCH:{}", content_size.x, content_size.y).c_str());
+		ImGui::GetWindowDrawList()->AddText({ pos.x + content_size.x - 70, pos.y + 40 }, IM_COL32_WHITE, Toad::format_str("IW:{}\nIH:{}", image_width, image_height).c_str());
 
 		std::vector<ImVec2> positions;
 		static bool always_show_object_names = true;
@@ -2015,10 +2015,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (obj)
 				{
 					auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
-					//obj_pos_px.x /= (texture.getSize().x / editor_cam.GetSize().x);
-					//obj_pos_px.y /= (texture.getSize().y / editor_cam.GetSize().y);
-					obj_pos_px.x /= (editor_cam.GetSize().x / image_width);
-					obj_pos_px.y /= (editor_cam.GetSize().y / image_height);
+					float scale_x = image_width / initial_editor_cam_size.x;
+					float scale_y = image_height / initial_editor_cam_size.y;
+
+					obj_pos_px.x *= scale_x;
+					obj_pos_px.y *= scale_y;
 					obj_pos_px.x += pos.x;
 					obj_pos_px.y += pos.y;
 
@@ -2258,12 +2259,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
 
-					float fx = editor_cam.GetSize().x / image_width;
-					float fy = editor_cam.GetSize().y / image_height;
-					float x1 = select_begin_relative.x * fx;
-					float y1 = select_begin_relative.y * fy;
-					float x2 = curr_pos.x * fx;
-					float y2 = curr_pos.y * fy;
+					//float fx = editor_cam.GetSize().x / image_width;
+					//float fy = editor_cam.GetSize().y / image_height;
+					float x1 = select_begin_relative.x + pos.x;
+					float y1 = select_begin_relative.y + pos.y;
+					float x2 = curr_pos.x + pos.x;
+					float y2 = curr_pos.y + pos.y;
 
 					//LOGDEBUGF("{} {}  {} {}", x1, y1, x2, y2);
 					
@@ -2273,6 +2274,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 					{
 						auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
 						
+						float scale_x = image_width / initial_editor_cam_size.x;
+						float scale_y = image_height / initial_editor_cam_size.y;
+
+						a.x *= scale_x;
+						a.y *= scale_y;
+						a.x += pos.x;
+						a.y += pos.y;
+
 						//LOGDEBUGF("{} {} ", a.x, a.y);
 						if (rect.Contains({ (float)a.x, (float)a.y })) {
 							if (selected_obj != obj.get())
