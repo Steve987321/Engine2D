@@ -38,4 +38,10 @@ namespace Toad
 		ss << std::put_time(&newtime, format.data());
 		return ss.str();
 	}
+
+	ENGINE_API float distance(const Vec2f& a, const Vec2f& b)
+	{
+		return std::sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
+	}
+
 }

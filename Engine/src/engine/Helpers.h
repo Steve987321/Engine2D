@@ -4,6 +4,7 @@
 #include <imgui/imgui.h>
 
 #include "EngineCore.h"
+#include "Types.h"
 
 namespace Toad
 {
@@ -17,4 +18,6 @@ namespace Toad
 
 	/// Returns the date as a string with the given format
 	ENGINE_API std::string get_date_str(std::string_view format);
+
+	ENGINE_API float distance(const Vec2f& a, const Vec2f& b);
 }
