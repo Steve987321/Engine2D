@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "Wrappers.h"
 
+#ifdef __APPLE__
+#include <CoreGraphics/CGDisplayConfiguration.h>
+#endif
 namespace Toad
 {
 
@@ -13,7 +16,9 @@ namespace Toad
 		width = r.right - r.left;
 		height = r.bottom - r.top;
 #else
-	
+		CGDirectDisplayID id = CGMainDisplayID();
+		width = CGDisplayPixelsWide(id);
+		height = CGDisplayPixelsHigh(id);
 #endif
 	}
 
