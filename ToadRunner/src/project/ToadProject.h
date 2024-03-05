@@ -19,6 +19,8 @@ inline ENUMTYPE &operator ^= (ENUMTYPE &a, ENUMTYPE b) noexcept { return (ENUMTY
 #endif
 
 #include "Misc.h"
+#include "EngineCore.h"
+#include "engine/Types.h"
 #include "nlohmann/json.hpp"
 
 namespace misc
@@ -85,20 +87,13 @@ namespace project {
 		INVALID_PROJECT_FILE,
 	};
 	
-	struct LOAD_PROJECT_RES_INFO 
-	{
-		LOAD_PROJECT_RES res;
-		std::string description;
-		ProjectSettings settings;
-	};
-
 	struct ProjectSettings
 	{
 		std::string name;
 		std::string project_path;
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
-        PROJECT_TYPE project_gen_type;
+		PROJECT_TYPE project_gen_type;
 		Vec2f editor_cam_size = {};
 
 		nlohmann::json to_json() const
@@ -110,6 +105,13 @@ namespace project {
 			data["editor_cam_y"] = editor_cam_size.y;
 			return data;
 		}
+	};
+
+	struct LOAD_PROJECT_RES_INFO 
+	{
+		LOAD_PROJECT_RES res;
+		std::string description;
+		ProjectSettings settings;
 	};
 
 	// active project 
