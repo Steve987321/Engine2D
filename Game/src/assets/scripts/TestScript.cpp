@@ -89,3 +89,4 @@ void TestScript::ExposeVars()
 	EXPOSE_VAR(start_direction_Y);
 	EXPOSE_VAR(speed_mult);
 }
+

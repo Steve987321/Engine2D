@@ -89,6 +89,7 @@ namespace project {
 	{
 		LOAD_PROJECT_RES res;
 		std::string description;
+		ProjectSettings settings;
 	};
 
 	struct ProjectSettings
@@ -98,12 +99,15 @@ namespace project {
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
         PROJECT_TYPE project_gen_type;
+		Vec2f editor_cam_size = {};
 
 		nlohmann::json to_json() const
 		{
 			nlohmann::json data;
 			data["name"] = name;
 			data["project_path"] = project_path;
+			data["editor_cam_x"] = editor_cam_size.x;
+			data["editor_cam_y"] = editor_cam_size.y;
 			return data;
 		}
 	};
