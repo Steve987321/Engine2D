@@ -24,8 +24,13 @@ Engine::Engine()
 
 	m_currentScene = Scene();
 
+	GetDesktopDimensions(m_width, m_height);
+
+	m_width = (int)((float)m_width * 0.7f);
+	m_height = (int)((float)m_height * 0.7f);
+
 	m_editorCam.SetPosition({ 0, 0 });
-	m_editorCam.SetSize({ 1280, 720});
+	m_editorCam.SetSize({ (float)m_width, (float)m_height});
 }
 
 Engine::~Engine() = default;
@@ -160,9 +165,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 #ifdef TOAD_EDITOR
 	LOGDEBUG("Loading editor window");
 
-	int width, height;
-	GetDesktopDimensions(width, height);
-	m_window.create(sf::VideoMode((int)(width * 0.7f), (int)(height * 0.7f)), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
+	m_window.create(sf::VideoMode(m_width, m_height), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
 	m_window.setFramerateLimit(60);
 
 #ifdef _WIN32

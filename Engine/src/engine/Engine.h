@@ -89,6 +89,7 @@ namespace Toad
 
 	private:
 		float m_tickps = 1000.f / 50.f;
+		int m_width = 500, m_height = 500;
 		sf::Time m_deltaTime;
 		sf::Time m_fixedDeltaTime;
 
