@@ -10,6 +10,7 @@
 #include "game_core/Game.h"
 
 #include "engine/systems/Timer.h"
+#include "Wrappers.h"
 
 #include <imgui/imgui.h>
 #include <imgui-SFML.h>
@@ -158,13 +159,20 @@ bool Engine::InitWindow(const AppSettings& settings)
 {
 #ifdef TOAD_EDITOR
 	LOGDEBUG("Loading editor window");
-	m_window.create(sf::VideoMode(1280, 720), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
+
+	int width, height;
+	GetDesktopDimensions(width, height);
+	m_window.create(sf::VideoMode((int)(width * 0.7f), (int)(height * 0.7f)), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
 	m_window.setFramerateLimit(60);
 
 #ifdef _WIN32
+	// drag drop 
 	HWND window_handle = m_window.getSystemHandle();
     DragAcceptFiles(window_handle, TRUE);
 	s_originalWndProc = SetWindowLongPtrA(window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc));
+
+	// maximize 
+	ShowWindow(window_handle, SW_MAXIMIZE);
 #else
     void* window_handle = m_window.getSystemHandle();
 #endif
@@ -479,11 +487,7 @@ void Engine::LoadGameScripts()
 
 	if (m_currDLL)
 	{
-#ifdef _WIN32
-		FreeLibrary(m_currDLL);
-#else
-        dlclose(m_currDLL);
-#endif
+		DLibFree(m_currDLL);
 	}
 
 	fs::path game_dll_path = game_bin_directory + game_bin_file;
@@ -494,7 +498,7 @@ void Engine::LoadGameScripts()
     fs::path current_game_dll = game_bin_directory + game_bin_file;
 #endif
 
-#if defined TOAD_EDITOR && _WIN32
+#if defined TOAD_EDITOR
 	if (fs::exists(current_game_dll))
 	{
 		if (fs::exists(game_dll_path))
@@ -507,7 +511,7 @@ void Engine::LoadGameScripts()
 	}
 #endif
 
-#ifdef _WIN32
+//#ifdef _WIN32
 //#ifdef __APPLE__
 //    if (!game_bin_directory.empty())
 //    {
@@ -525,11 +529,10 @@ void Engine::LoadGameScripts()
         }
 //#ifdef __APPLE__
 //    }
-#endif
+//#endif
 //#endif
 
-#ifdef _WIN32
-	auto dll = LoadLibraryA(current_game_dll.string().c_str());
+	auto dll = DLibOpen(current_game_dll.string());
 	if (!dll)
 	{
 		LOGERRORF("Couldn't load game dll file, {}", current_game_dll);
@@ -538,8 +541,8 @@ void Engine::LoadGameScripts()
 
 	m_currDLL = dll;
 
-	auto registerScripts = reinterpret_cast<register_scripts_t*>(GetProcAddress(dll, "register_scripts"));
-	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(GetProcAddress(dll, "get_registered_scripts"));
+	auto registerScripts = reinterpret_cast<register_scripts_t*>(DLibGetAddress(dll, "register_scripts"));
+	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(DLibGetAddress(dll, "get_registered_scripts"));
 
 	registerScripts();
 
@@ -601,95 +604,6 @@ void Engine::LoadGameScripts()
 
 		objects_with_scripts.erase(obj->name);
 	}
-
-#else
-	LOGDEBUG("getting game lib");
-	auto dll = dlopen(current_game_dll.c_str(), RTLD_LOCAL | RTLD_NOW);
-	if (dll == nullptr)
-	{
-		LOGERRORF("dll is nullptr: {} PATH: {}", dlerror(), current_game_dll);
-		return;
-	}
-
-    m_currDLL = dll;
-	LOGERROR("found dll");
-
-	auto registerScripts = reinterpret_cast<register_scripts_t*>(dlsym(dll, "register_scripts"));
-	LOGDEBUGF("registerScripts: {}", (void*)registerScripts);
-	if (!registerScripts)
-		return;
-	registerScripts();
-
-	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(dlsym(dll, "get_registered_scripts"));
-	LOGDEBUGF("getScripts: {}", (void*)getScripts);
-	if (getScripts == nullptr)
-		return;
-
-	// null previous scripts
-	for (auto& script : m_gameScripts | std::views::values)
-	{
-		script = nullptr;
-	}
-
-	for (const auto& script : getScripts())
-	{
-		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
-
-		m_gameScripts[script->GetName()] = script;
-	}
-
-    // update scripts on object if it has an old version
-    for (auto& [obj_name, obj] : m_currentScene.objects_all)
-    {
-        if (!objects_with_scripts.contains(obj_name))
-        {
-            continue;
-        }
-
-        const auto& prev_obj_state = objects_with_scripts[obj_name];
-
-        for (auto& [attached_script_name, old_reflection_vars] : prev_obj_state)
-        {
-            auto it = m_gameScripts.find(attached_script_name);
-            if (it != m_gameScripts.end())
-            {
-                // update exposed vars if they exist
-                obj->AddScript(it->second->Clone());
-
-                auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection().Get();
-
-                for (auto& [name, v] : new_reflection_vars.str)
-                    for (auto& [newname, newv] : old_reflection_vars.str)
-                        if (newname == name)
-                            *v = newv;
-                for (auto& [name, v] : new_reflection_vars.b)
-                    for (auto& [newname, newv] : old_reflection_vars.b)
-                        if (newname == name)
-                            *v = newv;
-                for (auto& [name, v] : new_reflection_vars.flt)
-                    for (auto& [newname, newv] : old_reflection_vars.flt)
-                        if (newname == name)
-                            *v = newv;
-                for (auto& [name, v] : new_reflection_vars.i8)
-                    for (auto& [newname, newv] : old_reflection_vars.i8)
-                        if (newname == name)
-                            *v = newv;
-                for (auto& [name, v] : new_reflection_vars.i16)
-                    for (auto& [newname, newv] : old_reflection_vars.i16)
-                        if (newname == name)
-                            *v = newv;
-                for (auto& [name, v] : new_reflection_vars.i32)
-                    for (auto& [newname, newv] : old_reflection_vars.i32)
-                        if (newname == name)
-                            *v = newv;
-
-                LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj_name);
-            }
-        }
-
-        objects_with_scripts.erase(obj_name);
-    }
-#endif
 
 #ifdef _DEBUG
 	for (const auto& [name, script] : m_gameScripts)
