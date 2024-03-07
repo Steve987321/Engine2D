@@ -49,7 +49,7 @@ namespace Toad
 			fs::remove(proj_dir / "buildlog.txt");
 		}
 
-		if (!RunBuildSystemWithArgs(build_system_path, format_str("{} /build Release /out buildlog.txt", slnfile_dir.string())))
+		if (!RunBuildSystemWithArgs(build_system_path, format_str("{} /build ReleaseNoEditor /out buildlog.txt", slnfile_dir.string())))
 		{
 			LOGERROR("Failed to run build system");
 			return false;
@@ -104,7 +104,7 @@ namespace Toad
 
 		fs::create_directory(out_dir);
 
-		for (const auto& entry : fs::directory_iterator(proj_dir / "bin" / "Release-windows-x86_64"))
+		for (const auto& entry : fs::directory_iterator(proj_dir / "bin" / "ReleaseNoEditor-windows-x86_64"))
 		{
 			if (entry.path().extension() == ".exe" || entry.path().extension() == ".dll")
 			{
