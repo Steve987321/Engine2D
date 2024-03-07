@@ -59,21 +59,7 @@ project "Engine"
         "vendor/SFML-2.6.0/lib"
     }
 
-    filter "system:macosx"
-         links {
-            "OpenGL.framework",
-            "Cocoa.framework",
-            "IOKit.framework",
-            "CoreVideo.framework",
-        }
-    filter "system:windows"
-        links {
-            "opengl32"
-        }
-
-    filter "system:windows"
-        staticruntime "On"
-        systemversion "latest"
+    -- configurations 
 
     filter "configurations:Release"
         defines{
@@ -87,9 +73,11 @@ project "Engine"
             "sfml-graphics",
             "sfml-audio",
         }
-        staticruntime "on"
+
+        staticruntime "On"
         runtime "Release"
         optimize "On"
+        symbols "Off"
 
     filter "configurations:Dev"
         defines{
@@ -99,7 +87,7 @@ project "Engine"
             "TOAD_EDITOR"
         }
 
-        staticruntime "off"
+        staticruntime "Off"
         runtime "Debug"
         symbols "On"
 
@@ -117,6 +105,25 @@ project "Engine"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
+
+    -- platform 
+
+    filter "system:macosx"
+         links {
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+         }
+
+    filter "system:windows"
+        links {
+            "opengl32"
+        }
+
+        staticruntime "On"
+        systemversion "latest"
+
 
 project(game_project_name)
     location(game_project_name)
@@ -146,24 +153,6 @@ project(game_project_name)
         "vendor/SFML-2.6.0/lib"
     }
 
-    filter "system:macosx"
-         links {
-            "Engine",
-            "OpenGL.framework",
-            "Cocoa.framework",
-            "IOKit.framework",
-            "CoreVideo.framework",
-        }
-
-    filter "system:windows"
-        links {
-            "Engine",
-            "opengl32"
-        }
-
-        staticruntime "On"
-        systemversion "latest"
-
     filter "configurations:Release"
         defines{
             "NDEBUG",
@@ -177,8 +166,10 @@ project(game_project_name)
             "sfml-graphics",
             "sfml-audio",
         }
-        staticruntime "on"
+
+        staticruntime "On"
         runtime "Release"
+        symbols "Off"
         optimize "On"
 
     filter "configurations:Dev"
@@ -190,7 +181,7 @@ project(game_project_name)
             "_USRDLL"
         }
 
-        staticruntime "off"
+        staticruntime "Off"
         runtime "Debug"
         symbols "Off"
 
@@ -208,6 +199,26 @@ project(game_project_name)
                "sfml-graphics-d",
                "sfml-audio-d",
            }
+
+    -- platform 
+
+    filter "system:macosx"
+        links {
+        "Engine",
+        "OpenGL.framework",
+        "Cocoa.framework",
+        "IOKit.framework",
+        "CoreVideo.framework",
+    }
+
+    filter "system:windows"
+        links {
+            "Engine",
+            "opengl32"
+        }
+
+        staticruntime "On"
+        systemversion "latest"
 
 project "ToadRunner"
     location "ToadRunner"
@@ -269,6 +280,9 @@ project "ToadRunner"
             "sfml-graphics",
             "sfml-audio",
         }
+
+        runtime "Release"
+        symbols "Off"
         optimize "On"
 
     filter "configurations:Dev"
@@ -277,8 +291,6 @@ project "ToadRunner"
             "_CONSOLE",
             "TOAD_EDITOR"
         }
-
-        symbols "On"
 
         filter "system:macosx"
             links {
@@ -294,3 +306,6 @@ project "ToadRunner"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
+            
+        symbols "On"
+        runtime "Debug"

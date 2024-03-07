@@ -242,6 +242,7 @@ project "Game"
         }
 
         runtime "Release"
+        symbols "Off"
         optimize "On"
 
         links {
