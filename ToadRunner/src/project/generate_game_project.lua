@@ -153,6 +153,9 @@ project(game_project_name)
         "vendor/SFML-2.6.0/lib"
     }
 
+    staticruntime "Off"
+    -- configurations
+
     filter "configurations:Release"
         defines{
             "NDEBUG",
@@ -167,7 +170,6 @@ project(game_project_name)
             "sfml-audio",
         }
 
-        staticruntime "On"
         runtime "Release"
         symbols "Off"
         optimize "On"
@@ -181,7 +183,6 @@ project(game_project_name)
             "_USRDLL"
         }
 
-        staticruntime "Off"
         runtime "Debug"
         symbols "Off"
 
@@ -216,9 +217,6 @@ project(game_project_name)
             "Engine",
             "opengl32"
         }
-
-        staticruntime "On"
-        systemversion "latest"
 
 project "ToadRunner"
     location "ToadRunner"
