@@ -5,7 +5,8 @@ workspace "Onion"
     configurations { 
         "Debug", 
         "Release", 
-        "Dev"
+        "ReleaseNoEditor",
+        "DebugNoEditor",
     }
 
     startproject "ToadRunner"
@@ -47,15 +48,15 @@ project "Engine"
                 "Cocoa.framework",
                 "IOKit.framework",
                 "CoreVideo.framework",
-        }
+         }
 
     filter "system:windows"
         links {
             "opengl32"
         }
 
-    pchheader "pch.h"
-    pchsource "%{prj.name}/src/pch.cpp"
+        pchheader "pch.h"
+        pchsource "%{prj.name}/src/pch.cpp"
 
     filter "files:Engine/src/imgui_impl/**.cpp"
         flags {"NoPCH"}
@@ -64,35 +65,36 @@ project "Engine"
         staticruntime "Off"
         systemversion "latest"
 
+    -- configurations 
+
     filter "configurations:Debug" 
         defines {
             "_DEBUG",
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
+            "TOAD_EDITOR"
         }
-
         runtime "Debug"
         symbols "On"
-
-        filter "system:macosx"
-            links {
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links {
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
     
     filter "configurations:Release" 
         defines {
             "NDEBUG",
-            "_CONSOLE",
+            "ENGINE_IS_EXPORT",
+            "TOAD_EDITOR"
+        }
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+        runtime "Release"
+        optimize "On"
+
+    filter "configurations:ReleaseNoEditor"
+        defines {
+            "NDEBUG",
             "ENGINE_IS_EXPORT"
         }
         links {
@@ -103,32 +105,34 @@ project "Engine"
         }
         runtime "Release"
         optimize "On"
-    
-    filter "configurations:Dev" 
+
+    filter "configurations:DebugNoEditor"
         defines {
             "_DEBUG",
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
-            "TOAD_EDITOR"
         }
 
         runtime "Debug"
         symbols "On"
 
-        filter "system:macosx"
-            links {
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links {
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
+    -- platform 
+
+    filter "system:macosx"
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter "system:windows"
+        links {
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
+        }
 
 project "Game"
     location "Game"
@@ -180,50 +184,9 @@ project "Game"
         staticruntime "off"
         systemversion "latest"
 
+    -- configurations
+    
     filter "configurations:Debug" 
-        defines {
-            "_DEBUG",
-            "_WINDOWS",
-            "_USRDLL"
-        }
-
-        runtime "Debug"
-        symbols "On"
-
-        filter "system:macosx"
-           links {
-               "sfml-system",
-               "sfml-window",
-               "sfml-graphics",
-               "sfml-audio",
-           }
-        filter "system:windows"
-           links {
-               "sfml-system-d",
-               "sfml-window-d",
-               "sfml-graphics-d",
-               "sfml-audio-d",
-           }
-    
-    filter "configurations:Release" 
-        defines {
-            "NDEBUG",
-            "_WINDOWS",
-            "_USRDLL",
-            "GAME_IS_EXPORT"
-        }
-
-        runtime "Release"
-        optimize "On"
-
-        links {
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
-        }
-    
-    filter "configurations:Dev" 
         defines {
             "_DEBUG",
             "_WINDOWS",
@@ -249,6 +212,70 @@ project "Game"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
+    
+    filter "configurations:Release" 
+        defines {
+            "NDEBUG",
+            "_WINDOWS",
+            "GAME_IS_EXPORT",
+            "TOAD_EDITOR",
+            "_USRDLL"
+        }
+
+        runtime "Release"
+        optimize "On"
+
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter "configurations:ReleaseNoEditor"
+        defines {
+            "NDEBUG",
+            "_WINDOWS",
+            "_USRDLL",
+            "GAME_IS_EXPORT"
+        }
+
+        runtime "Release"
+        optimize "On"
+
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter "configurations:DebugNoEditor"
+        defines {
+                "_DEBUG",
+                "_WINDOWS",
+                "GAME_IS_EXPORT",
+                "_USRDLL"
+        }
+
+        runtime "Debug"
+        symbols "On"
+
+        filter "system:macosx"
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
+
 
 project "ToadRunner"
     location "ToadRunner"
@@ -310,10 +337,13 @@ project "ToadRunner"
         staticruntime "Off"
         systemversion "latest"
 
+    -- configurations 
+
     filter "configurations:Debug" 
         defines {
             "_DEBUG",
             "_CONSOLE",
+            "TOAD_EDITOR"
         }
 
         runtime "Debug"
@@ -338,6 +368,7 @@ project "ToadRunner"
         defines {
             "NDEBUG",
             "_CONSOLE",
+            "TOAD_EDITOR",
         }
 
         runtime "Release"
@@ -350,27 +381,42 @@ project "ToadRunner"
             "sfml-audio",
         }
 
-    filter "configurations:Dev" 
+    filter "configurations:ReleaseNoEditor"
+        defines {
+            "NDEBUG",
+            "_CONSOLE",
+        }
+
+        runtime "Release"
+        symbols "Off"
+
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter "configurations:DebugNoEditor"
         defines {
             "_DEBUG",
             "_CONSOLE",
-            "TOAD_EDITOR"
         }
 
         runtime "Debug"
         symbols "On"
 
         filter "system:macosx"
-           links {
-               "sfml-system",
-               "sfml-window",
-               "sfml-graphics",
-               "sfml-audio",
-           }
+            links {
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
         filter "system:windows"
-           links {
-               "sfml-system-d",
-               "sfml-window-d",
-               "sfml-graphics-d",
-               "sfml-audio-d",
-           }
+            links {
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
