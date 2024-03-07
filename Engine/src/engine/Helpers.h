@@ -6,6 +6,8 @@
 #include "EngineCore.h"
 #include "Types.h"
 
+#define GET_JSON_ELEMENT(val, data, key) if (data.contains(key)) val = data[key]; else LOGERRORF("Failed to load property: {}", key);
+
 namespace Toad
 {
 	/// @brief fast random number generator with bounds

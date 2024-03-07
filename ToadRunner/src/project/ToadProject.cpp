@@ -6,6 +6,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include "engine/Helpers.h"
+
 #include <filesystem>
 #include <fstream>
 
@@ -372,7 +374,8 @@ namespace project {
 			return
 			{
 				 LOAD_PROJECT_RES::DOESNT_EXIST,
-				 Toad::format_str("{} doesn't exist", path)
+				 Toad::format_str("{} doesn't exist", path),
+				 settings
 			};
 		}
 
@@ -383,7 +386,8 @@ namespace project {
 				return
 				{
 					LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
-					Toad::format_str("{} isn't a valid project file extension", path)
+					Toad::format_str("{} isn't a valid project file extension", path),
+					settings
 				};
 			}
 
@@ -397,6 +401,11 @@ namespace project {
 
 					settings.name = data["name"];
                     settings.project_path = fs::path(path).parent_path().string();
+					
+					GET_JSON_ELEMENT(settings.editor_cam_pos.x, data, "editor_cam_posx");
+					GET_JSON_ELEMENT(settings.editor_cam_pos.y, data, "editor_cam_posy");
+					GET_JSON_ELEMENT(settings.editor_cam_size.x, data, "editor_cam_sizex");
+					GET_JSON_ELEMENT(settings.editor_cam_size.y, data, "editor_cam_sizex");
 				}
 				catch(json::parse_error& e)
 				{
@@ -444,6 +453,11 @@ namespace project {
                     json data = json::parse(project_file);
 					settings.name = data["name"];
                     settings.project_path = fs::path(path).parent_path().string();
+
+					GET_JSON_ELEMENT(settings.editor_cam_pos.x, data, "editor_cam_posx");
+					GET_JSON_ELEMENT(settings.editor_cam_pos.y, data, "editor_cam_posy");
+					GET_JSON_ELEMENT(settings.editor_cam_size.x, data, "editor_cam_sizex");
+					GET_JSON_ELEMENT(settings.editor_cam_size.y, data, "editor_cam_sizex");
 				}
 				catch (json::parse_error& e)
 				{
@@ -498,6 +512,7 @@ namespace project {
 			return false;
 		}
 
+		// #TODO finis
 		// parse project json for name 
 
 		// setup parameters for premake 

@@ -9,6 +9,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include "engine/Helpers.h"
+
 namespace Toad
 {
 

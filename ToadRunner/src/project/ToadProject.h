@@ -94,15 +94,18 @@ namespace project {
 		std::string engine_path;
 		PROJECT_FLAGS project_flags;
 		PROJECT_TYPE project_gen_type;
-		Vec2f editor_cam_size = {};
+		Vec2f editor_cam_size = {1280, 720};
+		Vec2f editor_cam_pos = {0, 0};
 
 		nlohmann::json to_json() const
 		{
 			nlohmann::json data;
 			data["name"] = name;
 			data["project_path"] = project_path;
-			data["editor_cam_x"] = editor_cam_size.x;
-			data["editor_cam_y"] = editor_cam_size.y;
+			data["editor_cam_sizex"] = editor_cam_size.x;
+			data["editor_cam_sizey"] = editor_cam_size.y;	
+			data["editor_cam_posx"] = editor_cam_pos.x;
+			data["editor_cam_posy"] = editor_cam_pos.y;
 			return data;
 		}
 	};

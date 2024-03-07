@@ -577,9 +577,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 				static bool skip = false;
 
 				const auto drag_drop = [](bool& skip, Toad::Object* obj) {
+
 					if (ImGui::BeginDragDropTarget())
 					{
-						if (ImGui::AcceptDragDropPayload("move object") != nullptr)
+						if (selected_obj && obj)
+							LOGDEBUGF("dragging {1} to {0}", obj->name, selected_obj->name);
+
+						if (ImGui::AcceptDragDropPayload("move object"))
 						{
 							if (selected_obj != nullptr)
 							{

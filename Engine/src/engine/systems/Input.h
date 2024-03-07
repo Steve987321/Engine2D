@@ -4,8 +4,6 @@
 
 // interface for scripts to handle inputs 
 
-// also handles added callbacks for key presses or releases 
-
 namespace Toad
 {
 
@@ -26,6 +24,7 @@ namespace Toad
 		static void AddMouseReleaseCallback(FMOUSE_CALLBACK callback);
 
 		static void Clear();
+
 	private:
 		static void InvokeKeyPressCallbacks(sf::Keyboard::Key key);
 		static void InvokeMousePressCallbacks(sf::Mouse::Button button);
