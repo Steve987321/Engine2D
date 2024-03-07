@@ -81,31 +81,23 @@ project "Engine"
 
     filter "configurations:Dev"
         defines{
-            "_DEBUG",
+            "NDEBUG",
             "_CONSOLE",
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
         }
+        links{
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
 
-        staticruntime "Off"
-        runtime "Debug"
-        symbols "On"
-
-        filter "system:macosx"
-            links {
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links {
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
-
+        staticruntime "On"
+        runtime "Release"
+        optimize "On"
+        symbols "Off"
+       
     -- platform 
 
     filter "system:macosx"
@@ -176,31 +168,23 @@ project(game_project_name)
 
     filter "configurations:Dev"
         defines{
-            "_DEBUG",
+            "NDEBUG",
             "_WINDOWS",
+            "_USRDLL",
             "GAME_IS_EXPORT",
             "TOAD_EDITOR",
-            "_USRDLL"
+        }
+        links{
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
 
-        runtime "Debug"
+        runtime "Release"
         symbols "Off"
-
-        filter "system:macosx"
-           links {
-               "sfml-system",
-               "sfml-window",
-               "sfml-graphics",
-               "sfml-audio",
-           }
-        filter "system:windows"
-           links {
-               "sfml-system-d",
-               "sfml-window-d",
-               "sfml-graphics-d",
-               "sfml-audio-d",
-           }
-
+        optimize "On"
+       
     -- platform 
 
     filter "system:macosx"
