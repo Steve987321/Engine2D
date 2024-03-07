@@ -181,7 +181,7 @@ project "Game"
     pchsource "%{prj.name}/src/pch.cpp"
 
     filter "system:windows"
-        staticruntime "off"
+        staticruntime "Off"
         systemversion "latest"
 
     -- configurations
@@ -223,6 +223,7 @@ project "Game"
         }
 
         runtime "Release"
+        symbols "Off"
         optimize "On"
 
         links {
@@ -373,6 +374,7 @@ project "ToadRunner"
 
         runtime "Release"
         symbols "Off"
+        optimize "On"
 
         links {
             "sfml-system",
@@ -389,6 +391,7 @@ project "ToadRunner"
 
         runtime "Release"
         symbols "Off"
+        optimize "On"
 
         links {
             "sfml-system",
