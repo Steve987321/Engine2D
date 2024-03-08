@@ -26,7 +26,8 @@ workspace(_OPTIONS["projectname"])
     architecture "x64"
     configurations{
         "Release",
-        "Dev"
+        "Dev", -- same as release but defines TOAD_EDITOR
+        "DevDebug", -- with debugging symbols and debugging runtime library
     }
     
     startproject (game_project_name)
@@ -98,6 +99,34 @@ project "Engine"
         optimize "On"
         symbols "Off"
        
+    filter "configurations:DevDebug"
+        defines{
+            "_DEBUG",
+            "_CONSOLE",
+            "ENGINE_IS_EXPORT",
+            "TOAD_EDITOR"
+        }
+
+        staticruntime "On"
+        runtime "Debug"
+        optimize "Off"
+        symbols "On"
+
+        filter "system:macosx"
+            links{
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links{
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
+
     -- platform 
 
     filter "system:macosx"
@@ -184,6 +213,32 @@ project(game_project_name)
         runtime "Release"
         symbols "Off"
         optimize "On"
+
+    filter "configurations:DevDebug"
+        defines{
+            "_DEBUG",
+            "_WINDOWS",
+            "GAME_IS_EXPORT",
+            "TOAD_EDITOR",
+        }
+
+        runtime "Debug"
+        symbols "On"
+
+        filter "system:macosx"
+            links{
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
+        filter "system:windows"
+            links{
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
        
     -- platform 
 
@@ -201,6 +256,8 @@ project(game_project_name)
             "Engine",
             "opengl32"
         }
+
+        systemversion "latest"
 
 project "ToadRunner"
     location "ToadRunner"
@@ -267,7 +324,7 @@ project "ToadRunner"
         symbols "Off"
         optimize "On"
 
-    filter "configurations:Dev"
+    filter "configurations:Dev or configurations:DevDebug"
         defines{
             "_DEBUG",
             "_CONSOLE",
@@ -291,3 +348,4 @@ project "ToadRunner"
             
         symbols "On"
         runtime "Debug"
+ 
