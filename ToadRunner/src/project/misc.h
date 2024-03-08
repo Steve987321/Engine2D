@@ -14,4 +14,5 @@ inline Editor current_editor;
 
 std::vector<Editor> FindEditors();
 
+std::filesystem::path GetExePath();
 }
