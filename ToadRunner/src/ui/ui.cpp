@@ -3046,7 +3046,7 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
         {
             for (const auto& entry2 : std::filesystem::directory_iterator(entry.path()))
             {
-                if (entry2.path().filename().string().find("Dev") != std::string::npos)
+                if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
                 {
                     return entry2.path();
                 }
