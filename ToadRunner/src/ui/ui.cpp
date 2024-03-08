@@ -87,7 +87,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				Toad::Engine::Get().AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
 			}
-			if (ImGui::MenuItem("Create Project"))
+			if (ImGui::MenuItem("Create Project.."))
 			{
 				settings.engine_path = GetEnginePath().string();
 
@@ -96,7 +96,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::PopID();
 
 			}
-			if (ImGui::MenuItem("Load Project"))
+			if (ImGui::MenuItem("Load Project.."))
 			{
 				project_load_popup_select = true;
 
@@ -105,7 +105,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::PopID();
 			}
 			ImGui::BeginDisabled(project::current_project.name.empty());
-			if (ImGui::MenuItem("Package"))
+			if (ImGui::MenuItem("Update Project"))
+			{
+				if (settings.engine_path.empty())
+					settings.engine_path = GetEnginePath().string();
+
+				if (!project::Update(settings, project::current_project.project_path))
+					LOGERRORF("Failed to update project {}", project::current_project.project_path);
+			}
+			if (ImGui::MenuItem("Package.."))
 			{
 				ImGui::PushOverrideID(project_package_popup_id);
 				ImGui::OpenPopup("PackageProject");
@@ -3006,17 +3014,18 @@ bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 std::filesystem::path GetEnginePath()
 {
     std::filesystem::path res;
-    res = (std::filesystem::current_path().parent_path() / "Engine").string();
+	res = misc::GetExePath();
 
-    if (!std::filesystem::exists(res))
+    if (!std::filesystem::exists(res) || !std::filesystem::is_directory(res))
     {
-        res = std::filesystem::current_path();
-
         std::filesystem::path parent;
         do{
             parent = res.parent_path();
             for (auto entry : std::filesystem::directory_iterator(parent))
             {
+				if (!std::filesystem::is_directory(entry.path()))
+					continue;
+
                 if (entry.path().filename().string().find("Engine") != std::string::npos)
                 {
                     return entry.path();

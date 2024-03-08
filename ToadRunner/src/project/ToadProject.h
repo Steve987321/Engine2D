@@ -130,6 +130,8 @@ namespace project {
 
 	LOAD_PROJECT_RES_INFO Load(const std::string_view path);
 
+	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
+
 	// rerun premake 
 	bool Update(const ProjectSettings& settings, const std::filesystem::path& path);
 }

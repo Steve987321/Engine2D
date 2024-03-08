@@ -484,11 +484,37 @@ namespace project {
 		};
 	}
 
+	project::PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir)
+	{
+		for (const auto& entry : fs::recursive_directory_iterator(proj_dir))
+		{
+			if (fs::is_directory(entry.path()))
+				continue;
+
+			if (entry.path().extension() == ".sln")
+				return project::PROJECT_TYPE::VS_2022;
+			if (entry.path().filename() == "Makefile")
+				return project::PROJECT_TYPE::Makefile;
+		}
+
+#ifdef _WIN32
+		return project::PROJECT_TYPE::VS_2022;
+#elif __APPLE__
+		return project::PROJECT_TYPE::Makefile;
+#endif
+	}
+
 	bool Update(const ProjectSettings& settings, const std::filesystem::path& path)
 	{
 		if (!fs::exists(path))
 		{
 			LOGERRORF("[Project] {} doesn't exist", path);
+			return false;
+		}
+
+		if (!fs::exists(settings.engine_path))
+		{
+			LOGERRORF("[Project] {} doesn't exist", settings.engine_path);
 			return false;
 		}
 
@@ -512,16 +538,57 @@ namespace project {
 			return false;
 		}
 
-		// #TODO finis
-		// parse project json for name 
+		std::ifstream project_file_contents(project_file);
 
-		// setup parameters for premake 
+		if (!project_file_contents)
+		{
+			LOGERRORF("[Project] Can't read {}", path);
+			return false;
+		}
 
-		// find premake 
-
-		// run premake with parameters --enginepath= --projectname=
-		settings.engine_path;
+		json data;
+		try {
+			data = json::parse(project_file_contents);
+		}
+		catch (json::parse_error& e) {
+			LOGERRORF("[Project] Failed to parse {}, {}", path, e.what());
+			return false;
+		}
 		
+		std::string project_name;
+		GET_JSON_ELEMENT(project_name, data, "name");
+
+		if (project_name.empty())
+		{
+			LOGERRORF("[Project] Invalid project name in {}", project_file);
+			return false;
+		}
+
+		std::string premake5;
+#ifdef _WIN32
+		// in project 
+		premake5 = (project_file.parent_path() / "premake5.exe").string();
+		if (!fs::exists(premake5))
+		{
+			LOGERRORF("[Project] Can't find premake5.exe in {}", project_file.parent_path());
+			return false;
+		}
+#else
+		premake5 = "premake5";
+#endif
+
+		PROJECT_TYPE proj_type = DetectProjectType(project_file.parent_path());
+
+		std::string full_command = Toad::format_str(
+			"{} {} --enginepath={} --projectname={}",
+			premake5,
+			ProjectTypeAsStr(proj_type),
+			settings.engine_path,
+			project_name);
+
+		LOGDEBUGF("Running command: {}", full_command);
+		system(full_command.c_str());
+		return true;
 	}
 
 	std::string ProjectTypeAsStr(PROJECT_TYPE r)
