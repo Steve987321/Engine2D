@@ -7,6 +7,7 @@ workspace "Onion"
         "Release", 
         "ReleaseNoEditor",
         "DebugNoEditor",
+        "Distro",
     }
 
     startproject "ToadRunner"
@@ -82,6 +83,22 @@ project "Engine"
             "NDEBUG",
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
+        }
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+        runtime "Release"
+        optimize "On"
+
+    filter "configurations:Distro"
+        defines {
+            "NDEBUG",
+            "ENGINE_IS_EXPORT",
+            "TOAD_EDITOR",
+            "TOAD_DISTRO",
         }
         links {
             "sfml-system",
@@ -219,6 +236,27 @@ project "Game"
             "_WINDOWS",
             "GAME_IS_EXPORT",
             "TOAD_EDITOR",
+            "_USRDLL"
+        }
+
+        runtime "Release"
+        symbols "Off"
+        optimize "On"
+
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter "configurations:Distro" 
+        defines {
+            "NDEBUG",
+            "_WINDOWS",
+            "GAME_IS_EXPORT",
+            "TOAD_EDITOR",
+            "TOAD_DISTRO",
             "_USRDLL"
         }
 
@@ -384,6 +422,25 @@ project "ToadRunner"
             "sfml-audio",
         }
 
+    filter "configurations:Distro" 
+        defines {
+            "NDEBUG",
+            "_CONSOLE",
+            "TOAD_EDITOR",
+            "TOAD_DISTRO",
+        }
+
+        runtime "Release"
+        symbols "Off"
+        optimize "On"
+
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+    
     filter "configurations:ReleaseNoEditor"
         defines {
             "NDEBUG",
