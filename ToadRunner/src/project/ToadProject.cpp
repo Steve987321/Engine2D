@@ -55,14 +55,14 @@ namespace project {
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
 	{
 #ifdef _WIN32
-        std::string premake5 = "premake5.exe";
+		std::string premake5 = "premake5.exe";
 #else
-        std::string premake5 = "premake5";
+		std::string premake5 = "premake5";
 #endif
 		// verify settings paths 
 		if (!fs::is_directory(settings.project_path))
 		{
-			return 
+			return
 			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Directory {} doesn't exist for project", settings.project_path)
@@ -73,32 +73,32 @@ namespace project {
 		if (!fs::is_empty(settings.project_path))
 		{
 			// change to warning, choose to add/overwrite directory contents
-			return 
+			return
 			{
 				CREATE_PROJECT_RES::ERROR,
 				Toad::format_str("Project directory isn't empty {}", settings.project_path)
 			};
 		}
 #else
-        if (!fs::is_empty(settings.project_path))
-        {
-            for (const auto& entry : fs::directory_iterator(settings.project_path))
-            {
-                if (entry.is_directory())
-                {
-                    // change to warning, choose to add/overwrite directory contents
-                    return
-                    {
-                        CREATE_PROJECT_RES::ERROR,
-                        Toad::format_str("Project directory isn't empty {}", settings.project_path)
-                    };
-                }
-            }
-        }
+		if (!fs::is_empty(settings.project_path))
+		{
+			for (const auto& entry : fs::directory_iterator(settings.project_path))
+			{
+				if (entry.is_directory())
+				{
+					// change to warning, choose to add/overwrite directory contents
+					return
+					{
+						CREATE_PROJECT_RES::ERROR,
+						Toad::format_str("Project directory isn't empty {}", settings.project_path)
+					};
+				}
+			}
+		}
 #endif
 		if (!fs::is_directory(settings.engine_path))
 		{
-			return 
+			return
 			{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
 				Toad::format_str("Directory {} doesn't exist for engine path", settings.engine_path)
@@ -165,6 +165,7 @@ namespace project {
 		}
 
 		std::string project_path_backslash;
+		std::string engine_path_forwardslash;
 		for (char c : settings.project_path)
 		{
 			if (c == '/')
@@ -174,23 +175,39 @@ namespace project {
 			}
 			project_path_backslash += c;
 		}
+		for (char c : settings.engine_path)
+		{
+			if (c == '\\')
+			{
+				engine_path_forwardslash += '/';
+			}
+			engine_path_forwardslash += c;
+		}
 #else
         std::string project_path_backslash = settings.project_path;
 #endif // _WIN32
         std::string proj_type_str = ProjectTypeAsStr(settings.project_gen_type);
-		std::string command1 = Toad::format_str("cd {}", project_path_backslash);
 #ifdef TOAD_DISTRO
-		std::string command2 = Toad::format_str("{0} {3} --enginepath={1} --projectname={2}", premake5, settings.engine_path, settings.name, proj_type_str);
+		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={}", 
+			settings.project_path + '/' + premake5,
+			proj_type_str, settings.project_path + "/premake5.lua",
+			engine_path_forwardslash,
+			settings.name);
 #else
-		std::string command2 = Toad::format_str("{0} {3} --enginepath={1} --projectname={2} --usesrc", premake5, settings.engine_path, settings.name, proj_type_str);
+		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} --usesrc",
+			settings.project_path + '/' + premake5,
+			proj_type_str, settings.project_path + "/premake5.lua",
+			engine_path_forwardslash,
+			settings.name);
 #endif
-		int res = system(Toad::format_str("{} && {}", command1, command2).c_str());
+		LOGDEBUG(command.c_str());
+		int res = system(command.c_str());
 		if (res == -1)
 		{
 			return 
 			{
 				CREATE_PROJECT_RES::ERROR,
-				("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2))
+				("Failed to execute command {}", command)
 			};
 		}
 
@@ -209,7 +226,7 @@ namespace project {
 		}
 
 		fs::copy(engine_path_fs / "game_template" / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
-		fs::copy(engine_path_fs / "game_template" / "vendor", settings.project_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+		fs::copy(engine_path_fs / "game_template" / "vendor", settings.project_path + "/vendor", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 #else
 		std::string runner_src_path = settings.project_path + "/ToadRunner/src";
 		std::string engine_src_path = settings.project_path + "/Engine/src";
@@ -301,13 +318,13 @@ namespace project {
 		}
 #endif
 		// run premake again for new files 
-		res = system(Toad::format_str("{} && {}", command1, command2).c_str());
+		res = system(command.c_str());
 		if (res == -1)
 		{
 			return 
 			{
 				CREATE_PROJECT_RES::ERROR,
-				Toad::format_str("Failed to execute command {}", Toad::format_str("{} && {}", command1, command2))
+				Toad::format_str("Failed to execute command {}", command)
 			};
 		}
 
