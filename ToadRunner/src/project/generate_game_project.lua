@@ -2,12 +2,17 @@
 
 newoption{
     trigger = "enginepath",
-    description = "set the main engine PROJECT path"
+    description = "Set the engine installation path"
 }
 
 newoption{
     trigger = "projectname",
     description = "The name of the game project"
+}
+
+newoption{
+    trigger = "usesrc"
+    description = "Set if using a version of the engine that has the source code"
 }
 
 if not _OPTIONS["enginepath"] then
@@ -32,6 +37,7 @@ workspace(_OPTIONS["projectname"])
     
     startproject (game_project_name)
 
+if _OPTIONS["usesrc"] then 
 project "Engine"
     location "Engine"
     kind "SharedLib"
@@ -144,7 +150,7 @@ project "Engine"
 
         staticruntime "On"
         systemversion "latest"
-
+end 
 
 project(game_project_name)
     location(game_project_name)
@@ -160,6 +166,20 @@ project(game_project_name)
         "%{prj.name}/src/**.h"
     }
 
+if _OPTIONS["usesrc"] then 
+    includedirs{
+        engine_path .. "/script_api",
+        "vendor",
+        "vendor/imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
+        "%{prj.name}/src",
+        "%{prj.name}/src/scripts"
+    }
+    libdirs{
+        engine_path .. "/libs"
+    }
+else
     includedirs{
         engine_path .. "/src",
         "vendor",
@@ -169,10 +189,10 @@ project(game_project_name)
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
-
     libdirs{
         "vendor/SFML-2.6.0/lib"
     }
+end 
 
     staticruntime "Off"
     -- configurations
@@ -244,12 +264,12 @@ project(game_project_name)
 
     filter "system:macosx"
         links {
-        "Engine",
-        "OpenGL.framework",
-        "Cocoa.framework",
-        "IOKit.framework",
-        "CoreVideo.framework",
-    }
+            "Engine",
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+        }
 
     filter "system:windows"
         links {
@@ -259,6 +279,7 @@ project(game_project_name)
 
         systemversion "latest"
 
+if _OPTIONS["usesrc"] then 
 project "ToadRunner"
     location "ToadRunner"
     kind "ConsoleApp"
@@ -348,4 +369,4 @@ project "ToadRunner"
             
         symbols "On"
         runtime "Debug"
- 
+end 
