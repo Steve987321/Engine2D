@@ -5,6 +5,7 @@
 namespace Toad
 {
 
+	// only for Windows Visual Studio projects 
 class ENGINE_API Package
 {
 public:

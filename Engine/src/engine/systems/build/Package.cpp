@@ -70,20 +70,27 @@ namespace Toad
 
 		std::thread check_build_done([&]
 		{
-
 			while (!build_done)
 			{
 				std::string line;
 				while (std::getline(buildlog, line))
 				{
-					if (line.find("========== Build: 3 succeeded") != std::string::npos 
+#ifdef TOAD_DISTRO
+					if (line.find("========== Build: 1 succeeded") != std::string::npos 
 						&& line.find("0 failed") != std::string::npos)
+#else
+					if (line.find("========== Build: 3 succeeded") != std::string::npos
+						&& line.find("0 failed") != std::string::npos)
+#endif 
 					{
 						build_done = true;
 						break;
 					}
 				}
-				LOGDEBUGF("[Package] {}", line);
+				static std::string line_last;
+				if (line_last != line)
+					LOGDEBUGF("[Package] {}", line);
+				line_last = line;
 				buildlog.clear();
 				buildlog.seekg(0);
 				std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -104,14 +111,6 @@ namespace Toad
 
 		fs::create_directory(out_dir);
 
-		for (const auto& entry : fs::directory_iterator(proj_dir / "bin" / "Release-windows-x86_64"))
-		{
-			if (entry.path().extension() == ".exe" || entry.path().extension() == ".dll")
-			{
-				fs::copy(entry.path(), out_dir);
-			}
-		}
-
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
 			if (!entry.is_directory())
@@ -124,6 +123,48 @@ namespace Toad
 				fs::copy(entry.path() / "src" / "assets", out_dir, fs::copy_options::recursive);
 
 				break;
+			}
+		}
+
+#ifdef TOAD_DISTRO
+		for (const auto& entry : fs::directory_iterator(proj_dir / "bin" / "Release-windows-x86_64"))
+		{
+			if (entry.path().extension() == ".dll")
+			{
+				fs::copy(entry.path(), out_dir);
+			}
+		}
+
+		fs::path bin = proj_engine_dir / "bin";
+
+		std::ifstream proj_file_f(project_file);
+		try {
+			json data = json::parse(proj_file_f);
+			std::string gamename = data["name"];
+			fs::copy_file(bin / "ToadRunnerNoEditor.exe", out_dir / gamename);
+		}
+		catch (json::parse_error& e)
+		{
+			LOGWARNF("Failed to read project file {}", project_file);
+			fs::copy_file(bin / "ToadRunnerNoEditor.exe", out_dir / "ToadRunnerNoEditor.exe");
+		}
+
+		for (const auto& entry : fs::directory_iterator(proj_engine_dir))
+		{
+			if (entry.path().filename().extension() == ".dll")
+			{
+				if (entry.path().filename().find("GameCurrent") != std::string::npos) 
+					continue;
+
+				fs::copy_file(entry.path(), out_dir / entry.path().filename(), filesystem::copy_options::skip_existing);
+			}
+		}
+#else 
+		for (const auto& entry : fs::directory_iterator(proj_dir / "bin" / "Release-windows-x86_64"))
+		{
+			if (entry.path().extension() == ".exe" || entry.path().extension() == ".dll")
+			{
+				fs::copy(entry.path(), out_dir);
 			}
 		}
 
@@ -150,7 +191,7 @@ namespace Toad
 				fs::remove(entry.path());
 			}
 		}
-
+#endif 
 
 		return true;
 	}
