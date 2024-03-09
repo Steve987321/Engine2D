@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef TOAD_EDITOR
 
 #include <algorithm>
 
@@ -3016,24 +3017,28 @@ std::filesystem::path GetEnginePath()
     std::filesystem::path res;
 	res = misc::GetExePath();
 
-    if (!std::filesystem::exists(res) || !std::filesystem::is_directory(res))
-    {
-        std::filesystem::path parent;
-        do{
-            parent = res.parent_path();
-            for (auto entry : std::filesystem::directory_iterator(parent))
-            {
+#ifdef TOAD_DISTRO
+	return res.parent_path();
+#else
+	if (!std::filesystem::exists(res) || !std::filesystem::is_directory(res))
+	{
+		std::filesystem::path parent;
+		do {
+			parent = res.parent_path();
+			for (const auto& entry : std::filesystem::directory_iterator(parent))
+			{
 				if (!std::filesystem::is_directory(entry.path()))
 					continue;
 
-                if (entry.path().filename().string().find("Engine") != std::string::npos)
-                {
-                    return entry.path();
-                }
-            }
-            res = parent;
-        } while(parent.has_parent_path());
-    }
+				if (entry.path().filename().string().find("Engine") != std::string::npos)
+				{
+					return entry.path();
+				}
+			}
+			res = parent;
+		} while (parent.has_parent_path());
+	}
+#endif
 
     return res;
 }
@@ -3057,3 +3062,4 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
     LOGWARNF("Can't find binary directory in {}", settings.project_path);
     return "";
 }
+#endif 
