@@ -194,9 +194,6 @@ project "Game"
             "opengl32"
         }
 
-    pchheader "pch.h"
-    pchsource "%{prj.name}/src/pch.cpp"
-
     filter "system:windows"
         staticruntime "Off"
         systemversion "latest"
