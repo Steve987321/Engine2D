@@ -153,10 +153,10 @@ namespace Toad
 		{
 			if (entry.path().filename().extension() == ".dll")
 			{
-				if (entry.path().filename().find("GameCurrent") != std::string::npos) 
+				if (entry.path().filename().string().find("GameCurrent") != std::string::npos) 
 					continue;
 
-				fs::copy_file(entry.path(), out_dir / entry.path().filename(), filesystem::copy_options::skip_existing);
+				fs::copy_file(entry.path(), out_dir / entry.path().filename(), fs::copy_options::skip_existing);
 			}
 		}
 #else 
