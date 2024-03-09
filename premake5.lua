@@ -441,7 +441,6 @@ project "ToadRunner"
     filter "configurations:ReleaseNoEditor"
         defines {
             "NDEBUG",
-            "_CONSOLE",
         }
 
         runtime "Release"
