@@ -23,7 +23,12 @@ namespace Toad
 	{
 		const fs::path proj_dir = project_file.parent_path();
 		const fs::path& proj_engine_dir = engine_path;
-		
+		if (proj_engine_dir.empty())
+		{
+			LOGERROR("[Package] engine path is empty");
+			return false;
+		}
+
 		fs::path slnfile_dir;
 
 		for (const auto& entry : fs::directory_iterator(proj_dir))
@@ -76,8 +81,19 @@ namespace Toad
 				while (std::getline(buildlog, line))
 				{
 #ifdef TOAD_DISTRO
-					if (line.find("========== Build: 1 succeeded") != std::string::npos 
-						&& line.find("0 failed") != std::string::npos)
+					if (line.find("1 up-to-date") != std::string::npos)
+					{
+						build_done = true;
+						break;
+					}
+					if (line.find("========== Build: 0 succeeded, 1 failed") != std::string::npos)
+					{
+						build_done = true;
+						return false;
+					}
+
+					if (line.find("========== Build: 1 succeeded") != std::string::npos
+						&& line.find("0 failed") != std::string::npos)					
 #else
 					if (line.find("========== Build: 3 succeeded") != std::string::npos
 						&& line.find("0 failed") != std::string::npos)
@@ -101,7 +117,7 @@ namespace Toad
 		while (!build_done)
 		{
 			// building status ..
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
 		if (check_build_done.joinable())
@@ -131,7 +147,7 @@ namespace Toad
 		{
 			if (entry.path().extension() == ".dll")
 			{
-				fs::copy(entry.path(), out_dir);
+				fs::copy_file(entry.path(), out_dir / entry.path().filename());
 			}
 		}
 
@@ -141,7 +157,7 @@ namespace Toad
 		try {
 			json data = json::parse(proj_file_f);
 			std::string gamename = data["name"];
-			fs::copy_file(bin / "ToadRunnerNoEditor.exe", out_dir / gamename);
+			fs::copy_file(bin / "ToadRunnerNoEditor.exe", out_dir / (gamename + ".exe"));
 		}
 		catch (json::parse_error& e)
 		{
