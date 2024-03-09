@@ -39,7 +39,9 @@ public:
 	virtual void OnUpdate(Object* obj);
 	virtual void OnLateUpdate(Object* obj);
 	virtual void OnStart(Object* obj);
+#ifdef TOAD_EDITOR
 	virtual void OnEditorUI(Object* obj, ImGuiContext* ctx);
+#endif 
 	virtual void ExposeVars();
 
 	virtual std::shared_ptr<Script> Clone() = 0;
