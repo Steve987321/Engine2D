@@ -151,8 +151,18 @@ namespace Toad
 			}
 		}
 
+		// others in bin (Engine) 
+		for (const auto& entry : fs::directory_iterator(proj_engine_dir / "bin"))
+		{
+			if (entry.path().extension() == ".dll")
+			{
+				fs::copy_file(entry.path(), out_dir / entry.path().filename());
+			}
+		}
+
 		fs::path bin = proj_engine_dir / "bin";
 
+		// copy Runner No Editor
 		std::ifstream proj_file_f(project_file);
 		try {
 			json data = json::parse(proj_file_f);
@@ -165,6 +175,7 @@ namespace Toad
 			fs::copy_file(bin / "ToadRunnerNoEditor.exe", out_dir / "ToadRunnerNoEditor.exe");
 		}
 
+		// sfml
 		for (const auto& entry : fs::directory_iterator(proj_engine_dir))
 		{
 			if (entry.path().filename().extension() == ".dll")
