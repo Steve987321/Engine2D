@@ -1,4 +1,3 @@
-#include "pch.h" 
 #include "framework/Framework.h"
 #include "TestScript.h"
 
@@ -6,7 +5,6 @@
 
 using namespace Toad;
 using namespace sf;
-
 
 Circle* circle;
 

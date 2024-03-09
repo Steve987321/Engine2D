@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Game.h"
 
 AppSettings get_game_settings()

@@ -8,11 +8,8 @@
 #define GAME_API 
 #endif
 
-#include "engine/systems/Scene.h" 
-#include "engine/Types.h"
-
-#include "engine/Engine.h"
-#include "engine/systems/ResourceManager.h"
+#include "pch.h"
+#include <EngineCore.h>
 
 struct AppSettings
 {

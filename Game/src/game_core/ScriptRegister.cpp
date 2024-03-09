@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "ScriptRegister.h"
 
 #include "assets/scripts/TestScript.h"
