@@ -386,6 +386,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 
+			if (settings.engine_path.empty())
+			{
+				settings.engine_path = GetEnginePath().string();
+			}
 			package.CreatePackage(proj_file, output_path, misc::current_editor.path, settings.engine_path);
 		}
 		ImGui::EndDisabled();
