@@ -71,7 +71,6 @@ project "Engine"
     filter "configurations:Release"
         defines{
             "NDEBUG",
-            "_CONSOLE",
             "ENGINE_IS_EXPORT"
         }
         links{
@@ -333,7 +332,6 @@ project "ToadRunner"
     filter "configurations:Release"
         defines{
             "NDEBUG",
-            "_CONSOLE",
         }
         links{
             "sfml-system",
