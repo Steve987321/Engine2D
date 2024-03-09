@@ -11,7 +11,7 @@ newoption{
 }
 
 newoption{
-    trigger = "usesrc"
+    trigger = "usesrc",
     description = "Set if using a version of the engine that has the source code"
 }
 
