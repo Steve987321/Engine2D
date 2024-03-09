@@ -168,19 +168,6 @@ project(game_project_name)
 
 if _OPTIONS["usesrc"] then 
     includedirs{
-        engine_path .. "/script_api",
-        "vendor",
-        "vendor/imgui",
-        "vendor/SFML-2.6.0/include",
-        "vendor/json/include",
-        "%{prj.name}/src",
-        "%{prj.name}/src/scripts"
-    }
-    libdirs{
-        engine_path .. "/libs"
-    }
-else
-    includedirs{
         engine_path .. "/src",
         "vendor",
         "vendor/imgui",
@@ -190,6 +177,20 @@ else
         "%{prj.name}/src/scripts"
     }
     libdirs{
+        "vendor/SFML-2.6.0/lib"
+    }
+else
+    includedirs{
+        engine_path .. "/script_api",
+        "vendor",
+        "vendor/imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
+        "%{prj.name}/src",
+        "%{prj.name}/src/scripts"
+    }
+    libdirs{
+        engine_path .. "/libs",
         "vendor/SFML-2.6.0/lib"
     }
 end 
