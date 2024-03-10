@@ -168,7 +168,7 @@ namespace Toad
 			return false;
 		}
 
-		if (!fs::exists(proj_dir / "assets"))
+		if (!fs::exists(proj_assets_path))
 		{
 			LOGERRORF("[Package] No assets folder in {}", proj_dir);
 			return false;
@@ -184,9 +184,22 @@ namespace Toad
 			if (entry.path().extension() == ".cpp" || entry.path().extension() == ".h")
 				continue;
 
-			if (!fs::copy_file(entry.path(), out_dir / fs::relative(entry.path(), proj_assets_path)))
+			fs::path destination = out_dir / fs::relative(entry.path(), proj_assets_path);
+
+			if (fs::is_directory(entry))
 			{
-				LOGERRORF("[Package] Failed to copy {} to {}", entry.path(), out_dir / out_dir / fs::relative(entry.path(), proj_assets_path));
+				fs::create_directories(destination);
+			}
+			else
+			{
+				try
+				{
+					fs::copy_file(entry.path(), destination, fs::copy_options::overwrite_existing);
+				}
+				catch (fs::filesystem_error& e)
+				{
+					LOGERRORF("[Package] Failed to copy {} to {} : {}", entry.path(), destination, e.what());
+				}
 			}
 		}
 
