@@ -2379,6 +2379,26 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::Engine::Get().StopGameSession();
 			}
 
+			static int fps = 60;
+			static bool fps_unlocked = false;
+			ImGui::BeginDisabled(fps_unlocked);
+			if (ImGui::DragInt("FPS", &fps, 1, 10, 100000))
+			{
+				Toad::Engine::Get().GetWindow().setFramerateLimit(std::clamp(fps, 10, 100000));
+			}
+			ImGui::EndDisabled();
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Unlock", &fps_unlocked))
+			{
+				if (fps_unlocked)
+				{
+					Toad::Engine::Get().GetWindow().setFramerateLimit(0);
+				}
+				else
+				{
+					Toad::Engine::Get().GetWindow().setFramerateLimit(fps);
+				}
+			}
 			if (ImGui::TreeNode("Editor Camera Settings"))
 			{
 				Vec2f pos = editor_cam.GetPosition();
