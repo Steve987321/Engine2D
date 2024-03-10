@@ -30,6 +30,15 @@ files = [
     (("vendor", "sfml-imgui"), ("game_template", "vendor"), ""),
 ]
 
+# files and folders to ignore 
+ignore = [
+    "examples",
+    "cmake",
+    "docs",
+    "doc",
+]
+
+# not needed but should be copied if possible
 optional_files = [
     "imgui.ini",
 ]
@@ -55,6 +64,9 @@ os.makedirs(os.path.join(dir_out, "script_api"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "scripts"), exist_ok=True)
 os.path.join(proj_dir, "bin", "Release-windows-x86_64")
 
+def Ignore(dir, files): 
+    return [os.path.join(dir, ignore_file) for ignore_file in ignore]
+
 for relative, relative_dest, rename in files: 
     path_src = os.path.join(proj_dir, *relative)
     path_dst = os.path.join(dir_out, *relative_dest)
@@ -72,7 +84,7 @@ for relative, relative_dest, rename in files:
     print(f"Copy: {path_src} to {path_dst}")
 
     if os.path.isdir(path_src): 
-        shutil.copytree(path_src, os.path.join(path_dst, rename), dirs_exist_ok=True)
+        shutil.copytree(path_src, os.path.join(path_dst, rename), dirs_exist_ok=True, ignore=Ignore)
     else: 
         shutil.copy2(path_src, os.path.join(path_dst, rename))
 
