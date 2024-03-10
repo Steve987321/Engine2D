@@ -54,11 +54,42 @@ namespace project {
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
 	{
+		std::string project_path_backslash;
+		std::string engine_path_forwardslash;
+		std::string proj_type_str = ProjectTypeAsStr(settings.project_gen_type);
+		for (char c : settings.project_path)
+		{
+			if (c == '/')
+			{
+				project_path_backslash += '\\';
+				continue;
+			}
+			project_path_backslash += c;
+	}
+		for (char c : settings.engine_path)
+		{
+			if (c == '\\')
+			{
+				engine_path_forwardslash += '/';
+			}
+			engine_path_forwardslash += c;
+		}
+
 #ifdef _WIN32
-		std::string premake5 = "premake5.exe";
+		const std::string premake5 = "premake5.exe";
 #else
-		std::string premake5 = "premake5";
+		const std::string premake5 = "premake5";
 #endif
+		const fs::path engine_path_fs = settings.engine_path;
+
+#ifdef TOAD_DISTRO
+		const fs::path generate_game_lua = engine_path_fs / "scripts" / "generate_game_project.lua";
+		const fs::path bin_path = engine_path_fs.string() + "/bin/" + premake5;
+#else
+		const fs::path generate_game_lua = engine_path_fs.parent_path() / "ToadRunner" / "src" / "project" / "generate_game_project.lua";
+		const fs::path bin_path = engine_path_fs.parent_path().string() + "/vendor/bin/" + premake5;
+#endif
+
 		// verify settings paths 
 		if (!fs::is_directory(settings.project_path))
 		{
@@ -105,88 +136,25 @@ namespace project {
 			};
 		}
 
-		fs::path engine_path_fs = settings.engine_path;
-
 		CREATE_PROJECT_RES_INFO ri;
 		if (!VerifyEnginePathContents(settings.engine_path, ri))
 		{
 			return ri;
 		}
 
-
-#ifdef TOAD_DISTRO
-		//std::ifstream generate_game_project_lua(engine_path_fs / "scripts" / "generate_game_project.lua");
-		fs::copy_file(engine_path_fs / "scripts" / "generate_game_project.lua", settings.project_path + "/premake5.lua");
-#else
-		//std::ifstream generate_game_project_lua(engine_path_fs.parent_path() / "ToadRunner" / "src" / "project" / "generate_game_project.lua");
-		fs::copy_file(engine_path_fs / "scripts" / "generate_game_project.lua", settings.project_path + "/premake5.lua");
-#endif
-		//if (!generate_game_project_lua)
-		//{
-		//	return 
-		//	{
-		//		   CREATE_PROJECT_RES::ERROR,
-		//		   ("Failed to open premake file")
-		//	};
-		//}
-
-		//std::stringstream generate_game_project_str;
-		//generate_game_project_str << generate_game_project_lua.rdbuf();
-
-		//generate_game_project_lua.close();
-
-		//// create premake lua file 
-		//std::ofstream premake_lua_file(settings.project_path + "/premake5.lua");
-
-		//if (!premake_lua_file)
-		//{
-		//	return 
-		//	{
-		//		CREATE_PROJECT_RES::ERROR,
-		//		("Failed to create premake file")
-		//	};
-		//}
-
-		//premake_lua_file << generate_game_project_str.str();
-		//premake_lua_file.close();
-
+		fs::copy_file(generate_game_lua, settings.project_path + "/premake5.lua");
+		
 		// copy premake executable, only needed for windows
 #ifdef _WIN32
-#ifdef TOAD_DISTRO
-		if (!fs::copy_file(engine_path_fs.string() + "/bin/" + premake5, settings.project_path + "/" + premake5))
-#else
-		if (!fs::copy_file(engine_path_fs.parent_path().string() + "/bin/" + premake5, settings.project_path + "/" + premake5))
-#endif
+		if (!fs::copy_file(bin_path, settings.project_path + '/' + premake5))
 		{
 			return {
 				CREATE_PROJECT_RES::ERROR,
 				Toad::format_str("Failed to copy {} to {}", premake5, settings.project_path)
 			};
 		}
-
-		std::string project_path_backslash;
-		std::string engine_path_forwardslash;
-		for (char c : settings.project_path)
-		{
-			if (c == '/')
-			{
-				project_path_backslash += '\\';
-				continue;
-			}
-			project_path_backslash += c;
-		}
-		for (char c : settings.engine_path)
-		{
-			if (c == '\\')
-			{
-				engine_path_forwardslash += '/';
-			}
-			engine_path_forwardslash += c;
-		}
-#else
-        std::string project_path_backslash = settings.project_path;
 #endif // _WIN32
-        std::string proj_type_str = ProjectTypeAsStr(settings.project_gen_type);
+
 #ifdef TOAD_DISTRO
 		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={}", 
 			settings.project_path + '/' + premake5,
@@ -214,7 +182,6 @@ namespace project {
 		// create/copy default game/engine files 
 
 		std::string game_path = settings.project_path + "/" + settings.name + "_Game/src";
-
 #ifdef TOAD_DISTRO
 		try
 		{
@@ -258,28 +225,6 @@ namespace project {
 
 		// ToadRunner
 		fs::copy(engine_path_fs.parent_path().string() + "/ToadRunner/src", runner_src_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
-
-		// TODO: Test 
-		// #TODO: Test again because this is unnecessary? ??  ??? 
-		/*for (const auto& entry : fs::recursive_directory_iterator(runner_src_path))
-		{
-			if (entry.path().filename() == "entry.cpp")
-			{
-				std::fstream f(entry.path().string());
-				std::string s;
-				while (std::getline(f, s))
-				{
-					if (s.find("#include ") != std::string::npos)
-					{
-						if (auto pos = s.find("/Game/"); pos != std::string::npos)
-						{
-							s.replace(pos, std::string("/Game/").length(), '/' + settings.name + "_Game/");
-							break;
-						}
-					}
-				}
-			}
-		}*/
 
 		// Vendor
 		for (const auto& entry : fs::recursive_directory_iterator(fs::path(engine_path_fs.parent_path() / "vendor")))
@@ -329,7 +274,6 @@ namespace project {
 		}
 
 		// project file 
-
 		json data = json::object();
 		data["name"] = settings.name;
 
