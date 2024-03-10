@@ -231,11 +231,11 @@ namespace project {
 		{
 			// ignore /vendor/bin /examples /imgui/misc /docs /doc
 			auto strpath = entry.path().string();
-			if (strpath.find(fs::path("/vendor/bin").string()) != std::string::npos ||
-				strpath.find(fs::path("/examples").string()) != std::string::npos ||
-				strpath.find(fs::path("/imgui/misc").string()) != std::string::npos ||
-				strpath.find(fs::path("/docs").string()) != std::string::npos ||
-				strpath.find(fs::path("/doc").string()) != std::string::npos
+			if (strpath.find(Toad::format_str("vendor{}bin", PATH_SEPARATOR)) != std::string::npos ||
+				strpath.find("examples") != std::string::npos ||
+				strpath.find(Toad::format_str("imgui{}misc", PATH_SEPARATOR)) != std::string::npos ||
+				strpath.find("docs") != std::string::npos ||
+				strpath.find("doc") != std::string::npos
 				)
 			{
 				continue;
@@ -243,21 +243,22 @@ namespace project {
 
 			if (entry.is_directory())
 			{
-				auto pos = entry.path().string().find(fs::path("/vendor").string());
+				// very weird?
+				auto pos = entry.path().string().find("vendor");
 				if (pos != std::string::npos)
 				{
 					std::string relative = entry.path().string().substr(pos);
-					fs::create_directories(settings.project_path + relative);
+					fs::create_directories(settings.project_path + PATH_SEPARATOR + relative);
 				}
 
 			}
 			else if (entry.is_regular_file())
 			{
-				auto pos = entry.path().string().find(fs::path("/vendor").string());
+				auto pos = entry.path().string().find("vendor");
 				if (pos != std::string::npos)
 				{
 					std::string relative = entry.path().string().substr(pos);
-					fs::copy_file(entry.path(), settings.project_path + relative, fs::copy_options::overwrite_existing);
+					fs::copy_file(entry.path(), settings.project_path + PATH_SEPARATOR + relative, fs::copy_options::overwrite_existing);
 				}
 			}
 		}
