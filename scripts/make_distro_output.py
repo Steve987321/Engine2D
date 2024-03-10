@@ -24,10 +24,10 @@ files = [
     (("Game", "src", ), ("game_template", "src"), ""),
     (("vendor", "bin", "premake5.exe"), ("bin",), ""),
     (("vendor", "bin", "LICENSE.txt"), ("bin",), ""),
-    (("vendor", "imgui"), ("game_template", "vendor"), ""),
-    (("vendor", "json"), ("game_template", "vendor"), ""),
-    (("vendor", "SFML-2.6.0"), ("game_template", "vendor"), ""),
-    (("vendor", "sfml-imgui"), ("game_template", "vendor"), ""),
+    (("vendor", "imgui"), ("game_template", "vendor", "imgui"), ""),
+    (("vendor", "json"), ("game_template", "vendor", "json"), ""),
+    (("vendor", "SFML-2.6.0"), ("game_template", "vendor", "SFML-2.6.0"), ""),
+    (("vendor", "sfml-imgui"), ("game_template", "vendor", "sfml-imgui"), ""),
 ]
 
 # files and folders to ignore 
@@ -64,9 +64,6 @@ os.makedirs(os.path.join(dir_out, "script_api"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "scripts"), exist_ok=True)
 os.path.join(proj_dir, "bin", "Release-windows-x86_64")
 
-def Ignore(dir, files): 
-    return [os.path.join(dir, ignore_file) for ignore_file in ignore]
-
 for relative, relative_dest, rename in files: 
     path_src = os.path.join(proj_dir, *relative)
     path_dst = os.path.join(dir_out, *relative_dest)
@@ -84,7 +81,7 @@ for relative, relative_dest, rename in files:
     print(f"Copy: {path_src} to {path_dst}")
 
     if os.path.isdir(path_src): 
-        shutil.copytree(path_src, os.path.join(path_dst, rename), dirs_exist_ok=True, ignore=Ignore)
+        shutil.copytree(path_src, os.path.join(path_dst, rename), dirs_exist_ok=True, ignore=shutil.ignore_patterns(*ignore))
     else: 
         shutil.copy2(path_src, os.path.join(path_dst, rename))
 
