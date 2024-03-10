@@ -543,14 +543,14 @@ namespace project {
 
 #ifdef TOAD_DISTRO
 		std::string full_command = Toad::format_str(
-			"{} {} --enginepath={} --projectname={} --usesrc",
+			"{} {} --enginepath={} --projectname={}",
 			premake5,
 			ProjectTypeAsStr(proj_type),
 			settings.engine_path,
 			project_name);
 #else
 		std::string full_command = Toad::format_str(
-			"{} {} --enginepath={} --projectname={}",
+			"{} {} --enginepath={} --projectname={} --usesrc",
 			premake5,
 			ProjectTypeAsStr(proj_type),
 			settings.engine_path,
