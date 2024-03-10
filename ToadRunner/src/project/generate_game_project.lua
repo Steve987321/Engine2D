@@ -282,7 +282,12 @@ end
 if _OPTIONS["usesrc"] then 
 project "ToadRunner"
     location "ToadRunner"
-    kind "ConsoleApp"
+    filter "configurations:Dev or configurations:DevDebug"
+        kind "ConsoleApp"
+    filter "configurations:Release"
+        kind "WindowedApp"
+    filter {}
+    
     language "C++"
 
     targetdir("bin/" ..output_dir .. "/")
