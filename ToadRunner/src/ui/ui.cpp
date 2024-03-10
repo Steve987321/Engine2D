@@ -32,7 +32,9 @@ constexpr int i32_max = std::numeric_limits<int32_t>::max();
 Toad::SceneHistory scene_history{};
 bool is_scene_loaded = false;
 
-extern std::filesystem::path GetEnginePath();
+// get installed directory (distro)
+// get engine project directory (source)
+extern std::filesystem::path GetEngineDirectory();
 extern std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings);
 
 void ui::engine_ui(ImGuiContext* ctx)
@@ -90,7 +92,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			if (ImGui::MenuItem("Create Project.."))
 			{
-				settings.engine_path = GetEnginePath().string();
+				settings.engine_path = GetEngineDirectory().string();
 
 				ImGui::PushOverrideID(project_creation_popup_id);
 				ImGui::OpenPopup("CreateProject");
@@ -109,7 +111,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::MenuItem("Update Project"))
 			{
 				if (settings.engine_path.empty())
-					settings.engine_path = GetEnginePath().string();
+					settings.engine_path = GetEngineDirectory().string();
 
 				if (!project::Update(settings, project::current_project.project_path))
 					LOGERRORF("Failed to update project {}", project::current_project.project_path);
@@ -388,7 +390,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (settings.engine_path.empty())
 			{
-				settings.engine_path = GetEnginePath().string();
+				settings.engine_path = GetEngineDirectory().string();
 			}
 			package.CreatePackage(proj_file, output_path, misc::current_editor.path, settings.engine_path);
 		}
@@ -3016,7 +3018,7 @@ bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 	return ImGui::SliderVec2(label, &v->x, &v->y, min, max);
 }
 
-std::filesystem::path GetEnginePath()
+std::filesystem::path GetEngineDirectory()
 {
     std::filesystem::path res;
 	res = misc::GetExePath();
