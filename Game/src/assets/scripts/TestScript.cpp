@@ -6,7 +6,6 @@
 using namespace Toad;
 using namespace sf;
 
-Circle* circle;
 
 void TestScript::OnStart(Object* obj)
 {
@@ -26,13 +25,16 @@ void TestScript::OnStart(Object* obj)
 void TestScript::OnUpdate(Object* obj)
 {
 	Script::OnUpdate(obj);
+}
 
-	// sick dvd logo screen hitting script for circle objects 
+
+void TestScript::OnFixedUpdate(Toad::Object* obj)
+{
 	if (circle != nullptr)
 	{
-		float dt = static_cast<float>(Engine::Get().GetDeltaTime().asMilliseconds()) / 1000.f;
+		float dt = Engine::Get().GetDeltaTime().asSeconds();
 
-		const auto change_c_col = []
+		const auto change_c_col = [this]
 			{
 				auto rand_r = rand_int(0, 255);
 				auto rand_g = rand_int(0, 255);
@@ -40,12 +42,12 @@ void TestScript::OnUpdate(Object* obj)
 				circle->GetCircle().setFillColor(Color(rand_r, rand_g, rand_b));
 			};
 
-		auto c_bounds = circle->GetCircle().getGlobalBounds();
+		FloatRect c_bounds = circle->GetCircle().getGlobalBounds();
 
 		if (Camera::GetActiveCamera())
 		{
-			auto campos = Camera::GetActiveCamera()->GetPosition();
-			auto camsize = Camera::GetActiveCamera()->GetSize();
+			const Vec2f& campos = Camera::GetActiveCamera()->GetPosition();
+			const Vec2f camsize = Camera::GetActiveCamera()->GetSize();
 			auto camposlefttop = Vec2f{ campos.x - camsize.x / 2.f, campos.y - camsize.y / 2.f };
 
 			if (c_bounds.left < camposlefttop.x)
@@ -74,10 +76,9 @@ void TestScript::OnUpdate(Object* obj)
 				}
 		}
 
-		circle->SetPosition(circle->GetPosition() + Vec2f{velx * dt, vely * dt} * speed_mult);
+		circle->SetPosition(circle->GetPosition() + Vec2f{ velx * dt, vely * dt } *speed_mult);
 	}
 }
-
 
 void TestScript::ExposeVars()
 {
@@ -87,4 +88,13 @@ void TestScript::ExposeVars()
 	EXPOSE_VAR(start_direction_Y);
 	EXPOSE_VAR(speed_mult);
 }
+
+#ifdef TOAD_EDITOR
+void TestScript::OnEditorUI(ImGuiContext* ctx)
+{
+	ImGui::SetCurrentContext(ctx);
+
+	ImGui::Text("Velocity: %f %f", velx, vely);
+}
+#endif // TOAD_EDITOR
 

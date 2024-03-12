@@ -316,7 +316,11 @@ project "Game"
 
 project "ToadRunner"
     location "ToadRunner"
+    -- filter "configurations:ReleaseNoEditor"
+        -- kind "WindowedApp"
+    -- filter "configurations:DebugNoEditor or configurations:Debug or configurations:Release or configurations:Distro"
     kind "ConsoleApp"
+    -- filter {}
     language "C++"
     cppdialect "C++20"
 
