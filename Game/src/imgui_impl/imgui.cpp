@@ -948,7 +948,7 @@ CODE
 
 #include "imgui/imgui.h"
 #ifndef IMGUI_DISABLE
-#include "imgui_internal.h"
+#include "imgui/imgui_internal.h"
 
 // System includes
 #include <stdio.h>      // vsnprintf, sscanf, printf
