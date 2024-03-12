@@ -39,6 +39,8 @@ public:
 
 	virtual void Update();
 
+	virtual void FixedUpdate();
+
 	virtual void LateUpdate();
 
 	virtual const Vec2f& GetPosition() const;

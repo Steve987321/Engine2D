@@ -28,7 +28,7 @@ struct ENGINE_API Scene
 	void Start();
 
 	///
-	/// Calls Update on all object instances in this scene.
+	/// Calls all Update functions in correct order on all object instances in this scene.
 	///
 	void Update();
 

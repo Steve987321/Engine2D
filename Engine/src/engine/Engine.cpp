@@ -281,12 +281,12 @@ void Engine::Render()
 
 	Camera* cam = Camera::GetActiveCamera();
 
-#if defined(_DEBUG) && !defined(TOAD_EDITOR)
-	ImDrawList* draw = ImGui::GetWindowDrawList();
-	const char* err_msg = "NO CAMERA'S IN SCENE ARE AVAILABLE FOR RENDERING";
-	ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
-	draw->AddText({ m_window.getSize().x / 2 - size.x, m_window.getSize().y / 2 - size.y }, IM_COL32(255, 0, 0, 255), err_msg);
-#endif
+//#if defined(_DEBUG) && !defined(TOAD_EDITOR)
+//	ImDrawList* draw = ImGui::GetWindowDrawList();
+//	const char* err_msg = "NO CAMERA'S IN SCENE ARE AVAILABLE FOR RENDERING";
+//	ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
+//	draw->AddText({ m_window.getSize().x / 2 - size.x, m_window.getSize().y / 2 - size.y }, IM_COL32(255, 0, 0, 255), err_msg);
+//#endif
 
 #if defined(TOAD_EDITOR)
 	m_windowTexture.clear();
@@ -551,7 +551,7 @@ void Engine::LoadGameScripts()
 	auto dll = DLibOpen(current_game_dll.string());
 	if (!dll)
 	{
-		LOGERRORF("Couldn't load game dll file, {}", current_game_dll);
+		LOGERRORF("Couldn't load game dll file, {} : {}", current_game_dll, GetLastError());
 		return;
 	}
 

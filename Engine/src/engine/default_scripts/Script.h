@@ -37,6 +37,7 @@ public:
 	const std::string& GetName() const;
 
 	virtual void OnUpdate(Object* obj);
+	virtual void OnFixedUpdate(Object* obj);
 	virtual void OnLateUpdate(Object* obj);
 	virtual void OnStart(Object* obj);
 #ifdef TOAD_EDITOR

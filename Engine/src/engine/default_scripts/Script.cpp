@@ -21,6 +21,11 @@ void Script::OnUpdate(Object* obj)
 {
 }
 
+void Script::OnFixedUpdate(Object* obj)
+{
+
+}
+
 void Script::OnLateUpdate(Object* obj)
 {
 }

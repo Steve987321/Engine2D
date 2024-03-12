@@ -4,6 +4,7 @@
 #ifdef __APPLE__
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #endif
+
 namespace Toad
 {
 
