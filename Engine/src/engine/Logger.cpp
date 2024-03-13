@@ -9,8 +9,18 @@ namespace Toad
 {
 	Logger::Logger()
 	{
-		#ifdef _WIN32
+	#ifdef _WIN32
 		// AllocConsole(); _CONSOLE is already defined
+		
+		HWND console_window = GetConsoleWindow();
+		if (console_window)
+		{
+#ifdef TOAD_NO_CONSOLE_LOG
+			ShowWindow(console_window, SW_HIDE);
+#else 
+			ShowWindow(console_window, SW_NORMAL)
+#endif 
+		}
 
 		m_stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
@@ -18,12 +28,12 @@ namespace Toad
 		{
 			// create log file in the documents folder
 			std::string logFileName = "Toad.log";
-			m_logFile.open(GetDocumentsFolder() + "\\" + logFileName, std::fstream::out);
+			m_logFile.open(GetDocumentsFolder() + "\\" + logFileName);
 
 			// log the date in the beginning
 			LogToFile(get_date_str("%Y %d %b \n"));
 		}
-		#endif
+	#endif
 	}
 
 	Logger::~Logger()

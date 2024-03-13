@@ -503,10 +503,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 					for (const auto& [namescript, script] : obj->GetAttachedScripts())
 					{
 						ImGui::Text("script %s %p", namescript.c_str(), script.get());
-						for (const auto& [varname, pvar] : script->GetReflection().vars.b)
-						{
-							ImGui::Text("bool %s %p", varname.c_str(), pvar);
-						}
 					}
 				}
 
@@ -586,6 +582,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
 
+		// #TODO: fix drag and drop 
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{
 				index++;

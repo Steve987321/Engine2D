@@ -112,7 +112,7 @@ project "Engine"
     filter "configurations:ReleaseNoEditor"
         defines {
             "NDEBUG",
-            "ENGINE_IS_EXPORT"
+            "ENGINE_IS_EXPORT",
         }
         links {
             "sfml-system",
