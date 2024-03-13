@@ -10,8 +10,6 @@ namespace Toad
 	Logger::Logger()
 	{
 	#ifdef _WIN32
-		// AllocConsole(); _CONSOLE is already defined
-		
 		HWND console_window = GetConsoleWindow();
 		if (console_window)
 		{
@@ -22,8 +20,9 @@ namespace Toad
 #endif 
 		}
 
+#ifndef TOAD_NO_CONSOLE_LOG
 		m_stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-
+#endif 
 		if (create_log_file)
 		{
 			// create log file in the documents folder
@@ -48,16 +47,13 @@ namespace Toad
 		if (m_logFile.is_open())
 			m_logFile.close();
 
-		if (m_isConsoleClosed) 
-			return;
 #ifdef _WIN32
-		CloseHandle(m_stdoutHandle);
-		m_stdoutHandle = nullptr;
-
-		FreeConsole();
+		if (m_stdoutHandle)
+		{
+			CloseHandle(m_stdoutHandle);
+			m_stdoutHandle = nullptr;
+		}
 #endif
-
-		m_isConsoleClosed = true;
 	}
 
 	std::string Logger::GetDocumentsFolder()

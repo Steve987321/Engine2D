@@ -140,13 +140,11 @@ private:
 
 private:
 #ifdef _WIN32
-	HANDLE m_stdoutHandle{};
+	HANDLE m_stdoutHandle = nullptr;
 #endif
 
 	std::mutex m_mutex{};
 	std::mutex m_closeMutex{};
-
-	std::atomic_bool m_isConsoleClosed = false;
 
 	std::ofstream m_logFile{};
 };
