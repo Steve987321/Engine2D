@@ -31,16 +31,17 @@ void Scene::Update()
 		obj->Update();
 	}
 	
-	static float time = 0.04f; 
+	float fixed_dt = Toad::Engine::Get().GetFixedDeltaTime().asSeconds();
+	static float time = fixed_dt;
 	time += Toad::Engine::Get().GetDeltaTime().asSeconds();
-	while (time >= 0.04f) {
-
+	while (time >= fixed_dt) 
+	{
 		for (auto& obj : objects_all)
 		{
 			obj->FixedUpdate();
 		}
 
-		time -= 0.04f;
+		time -= fixed_dt;
 	}
 
 	for (auto& obj : objects_all)

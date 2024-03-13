@@ -39,6 +39,8 @@ namespace Toad
 		sf::Time GetDeltaTime() const;
 		sf::Time GetFixedDeltaTime() const;
 
+		void AdjustFixedTimeStep(float seconds);
+
 		sf::RenderWindow& GetWindow();
 
 		sf::RenderTexture& GetWindowTexture();
@@ -89,7 +91,7 @@ namespace Toad
 		float m_tickps = 1000.f / 50.f;
 		int m_width = 500, m_height = 500;
 		sf::Time m_deltaTime;
-		const sf::Time m_fixedDeltaTime = sf::seconds(0.04f);
+		sf::Time m_fixedDeltaTime = sf::seconds(0.04f);
 
 		sf::RenderWindow m_window;
 		sf::Clock m_deltaClock;

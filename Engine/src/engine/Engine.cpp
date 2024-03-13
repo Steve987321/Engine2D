@@ -388,6 +388,11 @@ sf::Time Engine::GetFixedDeltaTime() const
 	return m_fixedDeltaTime;
 }
 
+void Engine::AdjustFixedTimeStep(float seconds)
+{
+	m_fixedDeltaTime = sf::seconds(seconds);
+}
+
 sf::RenderWindow& Engine::GetWindow()
 {
 	return m_window;
