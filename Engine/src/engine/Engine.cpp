@@ -67,6 +67,7 @@ bool Engine::Init()
 #ifndef TOAD_EDITOR
 	std::vector<Scene> found_scenes;
 
+	// get start scene and get game dl
 	for (const auto& e : std::filesystem::recursive_directory_iterator(m_current_path))
 	{
 		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
@@ -106,6 +107,7 @@ bool Engine::Init()
 
 #endif
 
+	// #TODO: change to a .ini 
 	AppSettings gsettings;
 	if (m_currDLL != nullptr)
 	{

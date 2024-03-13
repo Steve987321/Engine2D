@@ -52,6 +52,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
 	ImGuiID project_load_popup_id = ImHashStr("LoadProject");
 	ImGuiID project_package_popup_id = ImHashStr("PackageProject");
+	ImGuiID project_settings_popup_id = ImHashStr("ProjectSettings");
 	ImGuiID save_scene_popup_id = ImHashStr("SaveScene");
 	ImGuiID scene_modify_popup_id = ImHashStr("SceneModifyPopup");
 	static bool project_load_popup_select = false;
@@ -120,6 +121,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				ImGui::PushOverrideID(project_package_popup_id);
 				ImGui::OpenPopup("PackageProject");
+				ImGui::PopID();
+			}
+			if (ImGui::MenuItem("Project Settings.."))
+			{
+				ImGui::PushOverrideID(project_settings_popup_id);
+				ImGui::OpenPopup("ProjectSettings");
 				ImGui::PopID();
 			}
 			ImGui::EndDisabled();
@@ -400,6 +407,29 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 	ImGui::PopID();
 
+	ImGui::PushOverrideID(project_package_popup_id);
+	if (ImGui::BeginPopupModal("ProjectSettings"))
+	{
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+
+		// #TODO: implement these
+
+		// application name 
+		// application fps 
+		// application resolution
+		// application window flags
+
+		// Time fixed time step
+
+		// Package options 
+
+		// etc 
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
 	ImGui::PushOverrideID(save_scene_popup_id);
 	if (ImGui::BeginPopupModal("SaveScene"))
 	{
@@ -515,6 +545,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static std::set<std::string> selected_objects = {};
 
 	// SCENE/HIERARCHY
+	// #TODO: needs fixing: scene.objects_map changed to scene.objects_all
 	ImGui::Begin("Scene", nullptr);
 	{
 		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
