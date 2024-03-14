@@ -2,12 +2,17 @@
 
 newoption{
     trigger = "enginepath",
-    description = "set the main engine PROJECT path"
+    description = "Set the engine installation path"
 }
 
 newoption{
     trigger = "projectname",
     description = "The name of the game project"
+}
+
+newoption{
+    trigger = "usesrc",
+    description = "Set if using a version of the engine that has the source code"
 }
 
 if not _OPTIONS["enginepath"] then
@@ -26,11 +31,13 @@ workspace(_OPTIONS["projectname"])
     architecture "x64"
     configurations{
         "Release",
-        "Dev"
+        "Dev", -- same as release but defines TOAD_EDITOR
+        "DevDebug", -- with debugging symbols and debugging runtime library
     }
     
     startproject (game_project_name)
 
+if _OPTIONS["usesrc"] then 
 project "Engine"
     location "Engine"
     kind "SharedLib"
@@ -59,26 +66,11 @@ project "Engine"
         "vendor/SFML-2.6.0/lib"
     }
 
-    filter "system:macosx"
-         links {
-            "OpenGL.framework",
-            "Cocoa.framework",
-            "IOKit.framework",
-            "CoreVideo.framework",
-        }
-    filter "system:windows"
-        links {
-            "opengl32"
-        }
-
-    filter "system:windows"
-        staticruntime "On"
-        systemversion "latest"
+    -- configurations 
 
     filter "configurations:Release"
         defines{
             "NDEBUG",
-            "_CONSOLE",
             "ENGINE_IS_EXPORT"
         }
         links{
@@ -87,11 +79,32 @@ project "Engine"
             "sfml-graphics",
             "sfml-audio",
         }
-        staticruntime "on"
+
+        staticruntime "On"
         runtime "Release"
         optimize "On"
+        symbols "Off"
 
     filter "configurations:Dev"
+        defines{
+            "NDEBUG",
+            "_CONSOLE",
+            "ENGINE_IS_EXPORT",
+            "TOAD_EDITOR"
+        }
+        links{
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+        staticruntime "On"
+        runtime "Release"
+        optimize "On"
+        symbols "Off"
+       
+    filter "configurations:DevDebug"
         defines{
             "_DEBUG",
             "_CONSOLE",
@@ -99,24 +112,44 @@ project "Engine"
             "TOAD_EDITOR"
         }
 
-        staticruntime "off"
+        staticruntime "On"
         runtime "Debug"
+        optimize "Off"
         symbols "On"
 
         filter "system:macosx"
-            links {
+            links{
                 "sfml-system",
                 "sfml-window",
                 "sfml-graphics",
                 "sfml-audio",
             }
         filter "system:windows"
-            links {
+            links{
                 "sfml-system-d",
                 "sfml-window-d",
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
+
+    -- platform 
+
+    filter "system:macosx"
+         links {
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+         }
+
+    filter "system:windows"
+        links {
+            "opengl32"
+        }
+
+        staticruntime "On"
+        systemversion "latest"
+end 
 
 project(game_project_name)
     location(game_project_name)
@@ -132,6 +165,7 @@ project(game_project_name)
         "%{prj.name}/src/**.h"
     }
 
+if _OPTIONS["usesrc"] then 
     includedirs{
         engine_path .. "/src",
         "vendor",
@@ -141,28 +175,27 @@ project(game_project_name)
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
-
     libdirs{
         "vendor/SFML-2.6.0/lib"
     }
+else
+    includedirs{
+        engine_path .. "/script_api",
+        "vendor",
+        "vendor/imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
+        "%{prj.name}/src",
+        "%{prj.name}/src/scripts"
+    }
+    libdirs{
+        engine_path .. "/libs",
+        "vendor/SFML-2.6.0/lib"
+    }
+end 
 
-    filter "system:macosx"
-         links {
-            "Engine",
-            "OpenGL.framework",
-            "Cocoa.framework",
-            "IOKit.framework",
-            "CoreVideo.framework",
-        }
-
-    filter "system:windows"
-        links {
-            "Engine",
-            "opengl32"
-        }
-
-        staticruntime "On"
-        systemversion "latest"
+    staticruntime "Off"
+    -- configurations
 
     filter "configurations:Release"
         defines{
@@ -177,41 +210,84 @@ project(game_project_name)
             "sfml-graphics",
             "sfml-audio",
         }
-        staticruntime "on"
+
         runtime "Release"
+        symbols "Off"
         optimize "On"
 
     filter "configurations:Dev"
+        defines{
+            "NDEBUG",
+            "_WINDOWS",
+            "_USRDLL",
+            "GAME_IS_EXPORT",
+            "TOAD_EDITOR",
+        }
+        links{
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+        runtime "Release"
+        symbols "Off"
+        optimize "On"
+
+    filter "configurations:DevDebug"
         defines{
             "_DEBUG",
             "_WINDOWS",
             "GAME_IS_EXPORT",
             "TOAD_EDITOR",
-            "_USRDLL"
         }
 
-        staticruntime "off"
         runtime "Debug"
-        symbols "Off"
+        symbols "On"
 
         filter "system:macosx"
-           links {
-               "sfml-system",
-               "sfml-window",
-               "sfml-graphics",
-               "sfml-audio",
-           }
+            links{
+                "sfml-system",
+                "sfml-window",
+                "sfml-graphics",
+                "sfml-audio",
+            }
         filter "system:windows"
-           links {
-               "sfml-system-d",
-               "sfml-window-d",
-               "sfml-graphics-d",
-               "sfml-audio-d",
-           }
+            links{
+                "sfml-system-d",
+                "sfml-window-d",
+                "sfml-graphics-d",
+                "sfml-audio-d",
+            }
+       
+    -- platform 
 
+    filter "system:macosx"
+        links {
+            "Engine",
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+        }
+
+    filter "system:windows"
+        links {
+            "Engine",
+            "opengl32"
+        }
+
+        systemversion "latest"
+
+if _OPTIONS["usesrc"] then 
 project "ToadRunner"
     location "ToadRunner"
-    kind "ConsoleApp"
+    filter "configurations:Dev or configurations:DevDebug"
+        kind "ConsoleApp"
+    filter "configurations:Release"
+        kind "WindowedApp"
+    filter {}
+    
     language "C++"
 
     targetdir("bin/" ..output_dir .. "/")
@@ -261,7 +337,6 @@ project "ToadRunner"
     filter "configurations:Release"
         defines{
             "NDEBUG",
-            "_CONSOLE",
         }
         links{
             "sfml-system",
@@ -269,16 +344,17 @@ project "ToadRunner"
             "sfml-graphics",
             "sfml-audio",
         }
+
+        runtime "Release"
+        symbols "Off"
         optimize "On"
 
-    filter "configurations:Dev"
+    filter "configurations:Dev or configurations:DevDebug"
         defines{
             "_DEBUG",
             "_CONSOLE",
             "TOAD_EDITOR"
         }
-
-        symbols "On"
 
         filter "system:macosx"
             links {
@@ -294,3 +370,7 @@ project "ToadRunner"
                 "sfml-graphics-d",
                 "sfml-audio-d",
             }
+            
+        symbols "On"
+        runtime "Debug"
+end 

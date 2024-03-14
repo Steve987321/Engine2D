@@ -1,4 +1,5 @@
 #include "pch.h"
+#ifdef TOAD_EDITOR
 
 #include <algorithm>
 
@@ -31,7 +32,9 @@ constexpr int i32_max = std::numeric_limits<int32_t>::max();
 Toad::SceneHistory scene_history{};
 bool is_scene_loaded = false;
 
-extern std::filesystem::path GetEnginePath();
+// get installed directory (distro)
+// get engine project directory (source)
+extern std::filesystem::path GetEngineDirectory();
 extern std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings);
 
 void ui::engine_ui(ImGuiContext* ctx)
@@ -49,6 +52,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGuiID project_creation_popup_id = ImHashStr("CreateProject");
 	ImGuiID project_load_popup_id = ImHashStr("LoadProject");
 	ImGuiID project_package_popup_id = ImHashStr("PackageProject");
+	ImGuiID project_settings_popup_id = ImHashStr("ProjectSettings");
 	ImGuiID save_scene_popup_id = ImHashStr("SaveScene");
 	ImGuiID scene_modify_popup_id = ImHashStr("SceneModifyPopup");
 	static bool project_load_popup_select = false;
@@ -87,16 +91,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				Toad::Engine::Get().AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
 			}
-			if (ImGui::MenuItem("Create Project"))
+			if (ImGui::MenuItem("Create Project.."))
 			{
-				settings.engine_path = GetEnginePath().string();
+				settings.engine_path = GetEngineDirectory().string();
 
 				ImGui::PushOverrideID(project_creation_popup_id);
 				ImGui::OpenPopup("CreateProject");
 				ImGui::PopID();
 
 			}
-			if (ImGui::MenuItem("Load Project"))
+			if (ImGui::MenuItem("Load Project.."))
 			{
 				project_load_popup_select = true;
 
@@ -105,10 +109,24 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::PopID();
 			}
 			ImGui::BeginDisabled(project::current_project.name.empty());
-			if (ImGui::MenuItem("Package"))
+			if (ImGui::MenuItem("Update Project"))
+			{
+				if (settings.engine_path.empty())
+					settings.engine_path = GetEngineDirectory().string();
+
+				if (!project::Update(settings, project::current_project.project_path))
+					LOGERRORF("Failed to update project {}", project::current_project.project_path);
+			}
+			if (ImGui::MenuItem("Package.."))
 			{
 				ImGui::PushOverrideID(project_package_popup_id);
 				ImGui::OpenPopup("PackageProject");
+				ImGui::PopID();
+			}
+			if (ImGui::MenuItem("Project Settings.."))
+			{
+				ImGui::PushOverrideID(project_settings_popup_id);
+				ImGui::OpenPopup("ProjectSettings");
 				ImGui::PopID();
 			}
 			ImGui::EndDisabled();
@@ -377,9 +395,36 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 
+			if (settings.engine_path.empty())
+			{
+				settings.engine_path = GetEngineDirectory().string();
+			}
 			package.CreatePackage(proj_file, output_path, misc::current_editor.path, settings.engine_path);
 		}
 		ImGui::EndDisabled();
+
+		ImGui::EndPopup();
+	}
+	ImGui::PopID();
+
+	ImGui::PushOverrideID(project_package_popup_id);
+	if (ImGui::BeginPopupModal("ProjectSettings"))
+	{
+		if (ImGui::Button("Close"))
+			ImGui::CloseCurrentPopup();
+
+		// #TODO: implement these
+
+		// application name 
+		// application fps 
+		// application resolution
+		// application window flags
+
+		// Time fixed time step
+
+		// Package options 
+
+		// etc 
 
 		ImGui::EndPopup();
 	}
@@ -488,10 +533,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 					for (const auto& [namescript, script] : obj->GetAttachedScripts())
 					{
 						ImGui::Text("script %s %p", namescript.c_str(), script.get());
-						for (const auto& [varname, pvar] : script->GetReflection().vars.b)
-						{
-							ImGui::Text("bool %s %p", varname.c_str(), pvar);
-						}
 					}
 				}
 
@@ -504,6 +545,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static std::set<std::string> selected_objects = {};
 
 	// SCENE/HIERARCHY
+	// #TODO: needs fixing: scene.objects_map changed to scene.objects_all
 	ImGui::Begin("Scene", nullptr);
 	{
 		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
@@ -571,15 +613,20 @@ void ui::engine_ui(ImGuiContext* ctx)
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
 
+		// #TODO: fix drag and drop 
 		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
 			{
 				index++;
 				static bool skip = false;
 
 				const auto drag_drop = [](bool& skip, Toad::Object* obj) {
+
 					if (ImGui::BeginDragDropTarget())
 					{
-						if (ImGui::AcceptDragDropPayload("move object") != nullptr)
+						if (selected_obj && obj)
+							LOGDEBUGF("dragging {1} to {0}", obj->name, selected_obj->name);
+
+						if (ImGui::AcceptDragDropPayload("move object"))
 						{
 							if (selected_obj != nullptr)
 							{
@@ -2360,6 +2407,26 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::Engine::Get().StopGameSession();
 			}
 
+			static int fps = 60;
+			static bool fps_unlocked = false;
+			ImGui::BeginDisabled(fps_unlocked);
+			if (ImGui::DragInt("FPS", &fps, 1, 10, 100000))
+			{
+				Toad::Engine::Get().GetWindow().setFramerateLimit(std::clamp(fps, 10, 100000));
+			}
+			ImGui::EndDisabled();
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Unlock", &fps_unlocked))
+			{
+				if (fps_unlocked)
+				{
+					Toad::Engine::Get().GetWindow().setFramerateLimit(0);
+				}
+				else
+				{
+					Toad::Engine::Get().GetWindow().setFramerateLimit(fps);
+				}
+			}
 			if (ImGui::TreeNode("Editor Camera Settings"))
 			{
 				Vec2f pos = editor_cam.GetPosition();
@@ -2999,28 +3066,33 @@ bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 	return ImGui::SliderVec2(label, &v->x, &v->y, min, max);
 }
 
-std::filesystem::path GetEnginePath()
+std::filesystem::path GetEngineDirectory()
 {
     std::filesystem::path res;
-    res = (std::filesystem::current_path().parent_path() / "Engine").string();
+	res = misc::GetExePath();
 
-    if (!std::filesystem::exists(res))
-    {
-        res = std::filesystem::current_path();
+#ifdef TOAD_DISTRO
+	return res.parent_path();
+#else
+	if (!std::filesystem::exists(res) || !std::filesystem::is_directory(res))
+	{
+		std::filesystem::path parent;
+		do {
+			parent = res.parent_path();
+			for (const auto& entry : std::filesystem::directory_iterator(parent))
+			{
+				if (!std::filesystem::is_directory(entry.path()))
+					continue;
 
-        std::filesystem::path parent;
-        do{
-            parent = res.parent_path();
-            for (auto entry : std::filesystem::directory_iterator(parent))
-            {
-                if (entry.path().filename().string().find("Engine") != std::string::npos)
-                {
-                    return entry.path();
-                }
-            }
-            res = parent;
-        } while(parent.has_parent_path());
-    }
+				if (entry.path().filename().string().find("Engine") != std::string::npos)
+				{
+					return entry.path();
+				}
+			}
+			res = parent;
+		} while (parent.has_parent_path());
+	}
+#endif
 
     return res;
 }
@@ -3033,7 +3105,7 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
         {
             for (const auto& entry2 : std::filesystem::directory_iterator(entry.path()))
             {
-                if (entry2.path().filename().string().find("Dev") != std::string::npos)
+                if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
                 {
                     return entry2.path();
                 }
@@ -3044,3 +3116,4 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
     LOGWARNF("Can't find binary directory in {}", settings.project_path);
     return "";
 }
+#endif 

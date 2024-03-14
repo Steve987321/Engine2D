@@ -12,7 +12,7 @@
 #undef ERROR
 #endif
 
-static bool create_log_file = false;
+static bool create_log_file = true;
 
 namespace Toad
 {
@@ -133,24 +133,23 @@ private:
 		if (create_log_file)
 			LogToFile(get_date_str("[%T]") + ' ' + formattedStr);
 
+#ifdef TOAD_NO_CONSOLE_LOG
 		Print(formattedStr, log_type);
+#endif 
 	}
 
 private:
 #ifdef _WIN32
-	HANDLE m_stdoutHandle{};
+	HANDLE m_stdoutHandle = nullptr;
 #endif
 
 	std::mutex m_mutex{};
 	std::mutex m_closeMutex{};
 
-	std::atomic_bool m_isConsoleClosed = false;
-
 	std::ofstream m_logFile{};
 };
 
 }
-
 
 #define LOGDEBUGF(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
 #define LOGERRORF(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 

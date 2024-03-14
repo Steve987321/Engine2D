@@ -41,6 +41,14 @@ namespace Toad
 		}
 	}
 
+	void Object::FixedUpdate()
+	{
+		for (auto& script : m_attachedScripts | std::views::values)
+		{
+			script->OnFixedUpdate(this);
+		}
+	}
+
 	void Object::LateUpdate()
 	{
 		for (auto& script : m_attachedScripts | std::views::values)

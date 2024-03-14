@@ -18,6 +18,19 @@
 namespace Toad
 {
 
+	std::filesystem::path get_exe_path()
+	{
+#ifdef _WIN32
+		char path[MAX_PATH] = { 0 };
+		GetModuleFileNameA(NULL, path, MAX_PATH);
+		return path;
+#else
+		char result[PATH_MAX];
+		ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+		return std::string(result, (count > 0) ? count : 0);
+#endif
+	}
+
 Engine::Engine()
 {
 	s_Instance = this;
@@ -39,7 +52,9 @@ bool Engine::Init()
 {
 	LOGDEBUG("Initializing Engine");
 
-	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
+	m_current_path = get_exe_path().parent_path();
+
+	for (const auto& e : std::filesystem::recursive_directory_iterator(m_current_path))
 	{
 		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
 		{
@@ -47,15 +62,13 @@ bool Engine::Init()
 		}
 	}
 
-	m_current_path = std::filesystem::current_path();
 	LoadGameScripts();
 
 #ifndef TOAD_EDITOR
 	std::vector<Scene> found_scenes;
 
-	LoadGameScripts();
-
-	for (const auto& e : std::filesystem::recursive_directory_iterator(std::filesystem::current_path()))
+	// get start scene and get game dl
+	for (const auto& e : std::filesystem::recursive_directory_iterator(m_current_path))
 	{
 		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
 		{
@@ -84,6 +97,8 @@ bool Engine::Init()
 		}
 	}
 
+	LoadGameScripts();
+
 	m_scenes.reserve(found_scenes.size());
 	for (const Scene& s : found_scenes)
 	{
@@ -92,10 +107,10 @@ bool Engine::Init()
 
 #endif
 
+	// #TODO: change to a .ini 
 	AppSettings gsettings;
 	if (m_currDLL != nullptr)
 	{
-
 #ifdef _WIN32
 		auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
 #else
@@ -268,12 +283,12 @@ void Engine::Render()
 
 	Camera* cam = Camera::GetActiveCamera();
 
-#if defined(_DEBUG) && !defined(TOAD_EDITOR)
-	ImDrawList* draw = ImGui::GetWindowDrawList();
-	const char* err_msg = "NO CAMERA'S IN SCENE ARE AVAILABLE FOR RENDERING";
-	ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
-	draw->AddText({ m_window.getSize().x / 2 - size.x, m_window.getSize().y / 2 - size.y }, IM_COL32(255, 0, 0, 255), err_msg);
-#endif
+//#if defined(_DEBUG) && !defined(TOAD_EDITOR)
+//	ImDrawList* draw = ImGui::GetWindowDrawList();
+//	const char* err_msg = "NO CAMERA'S IN SCENE ARE AVAILABLE FOR RENDERING";
+//	ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
+//	draw->AddText({ m_window.getSize().x / 2 - size.x, m_window.getSize().y / 2 - size.y }, IM_COL32(255, 0, 0, 255), err_msg);
+//#endif
 
 #if defined(TOAD_EDITOR)
 	m_windowTexture.clear();
@@ -373,6 +388,11 @@ sf::Time Engine::GetDeltaTime() const
 sf::Time Engine::GetFixedDeltaTime() const
 {
 	return m_fixedDeltaTime;
+}
+
+void Engine::AdjustFixedTimeStep(float seconds)
+{
+	m_fixedDeltaTime = sf::seconds(seconds);
 }
 
 sf::RenderWindow& Engine::GetWindow()
@@ -538,7 +558,7 @@ void Engine::LoadGameScripts()
 	auto dll = DLibOpen(current_game_dll.string());
 	if (!dll)
 	{
-		LOGERRORF("Couldn't load game dll file, {}", current_game_dll);
+		LOGERRORF("Couldn't load game dll file, {} : {}", current_game_dll, GetLastError());
 		return;
 	}
 

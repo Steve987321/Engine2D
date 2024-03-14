@@ -8,11 +8,8 @@
 #define GAME_API 
 #endif
 
-#include "engine/systems/Scene.h" 
-#include "engine/Types.h"
-
-#include "engine/Engine.h"
-#include "engine/systems/ResourceManager.h"
+#include "pch.h"
+#include <EngineCore.h>
 
 struct AppSettings
 {
@@ -26,8 +23,8 @@ struct AppSettings
 inline AppSettings game_settings
 {
 	"Test Game",
-	1920, 
-	1080,
+	500, 
+	500,
 	60,
 	sf::ContextSettings()
 };

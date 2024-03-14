@@ -40,6 +40,7 @@ void AnimationController::OnLateUpdate(Object* obj)
 	}
 }
 
+#ifdef TOAD_EDITOR
 void AnimationController::OnEditorUI(Object* obj, ImGuiContext* ctx)
 {
 	Script::OnEditorUI(obj, ctx);
@@ -53,5 +54,6 @@ void AnimationController::OnEditorUI(Object* obj, ImGuiContext* ctx)
 		ImGui::TextColored({ 1, 1, 0, 1 }, "No animation is attached to this controller");
 	}
 }
+#endif 
 
 }

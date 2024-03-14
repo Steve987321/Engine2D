@@ -19,8 +19,9 @@ public:
 public:
 	void OnStart(Object* obj) override;
 	void OnLateUpdate(Object* obj) override;
+#ifdef TOAD_EDITOR
 	void OnEditorUI(Object* obj, ImGuiContext* ctx) override;
-
+#endif
 private: 
 	Animation* m_attachedAnimation = nullptr;
 	bool m_isPlaying = false;

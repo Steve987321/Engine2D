@@ -21,6 +21,11 @@ void Script::OnUpdate(Object* obj)
 {
 }
 
+void Script::OnFixedUpdate(Object* obj)
+{
+
+}
+
 void Script::OnLateUpdate(Object* obj)
 {
 }
@@ -29,9 +34,11 @@ void Script::OnStart(Object* obj)
 {
 }
 
+#ifdef TOAD_EDITOR
 void Script::OnEditorUI(Object* obj, ImGuiContext* ctx)
 {
 }
+#endif
 
 void Script::ExposeVars()
 {

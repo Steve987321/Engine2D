@@ -9,6 +9,8 @@
 
 #include "nlohmann/json.hpp"
 
+#include "engine/Helpers.h"
+
 namespace Toad
 {
 
@@ -29,6 +31,19 @@ void Scene::Update()
 		obj->Update();
 	}
 	
+	float fixed_dt = Toad::Engine::Get().GetFixedDeltaTime().asSeconds();
+	static float time = fixed_dt;
+	time += Toad::Engine::Get().GetDeltaTime().asSeconds();
+	while (time >= fixed_dt) 
+	{
+		for (auto& obj : objects_all)
+		{
+			obj->FixedUpdate();
+		}
+
+		time -= fixed_dt;
+	}
+
 	for (auto& obj : objects_all)
 	{
 		obj->LateUpdate();

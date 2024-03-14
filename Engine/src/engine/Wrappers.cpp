@@ -5,6 +5,7 @@
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <dlfcn.h>
 #endif
+
 namespace Toad
 {
 

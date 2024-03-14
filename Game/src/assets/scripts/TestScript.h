@@ -1,5 +1,7 @@
 #pragma once
 
+#include "engine/object_default/Circle.h"
+
 class GAME_API TestScript : public Toad::Script
 {
 public:
@@ -14,5 +16,14 @@ public:
 
 	void OnStart(Toad::Object* obj) override;
 	void OnUpdate(Toad::Object* obj) override;
+	void OnFixedUpdate(Toad::Object* obj) override;
 	void ExposeVars() override;
+
+#ifdef TOAD_EDITOR
+	void OnEditorUI(ImGuiContext* ctx);
+#endif 
+
+private:
+	Toad::Circle* circle = nullptr;
+
 };

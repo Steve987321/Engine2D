@@ -20,12 +20,21 @@
 #endif
 #endif
 
+#if !defined(TOAD_EDITOR) && defined(NDEBUG) 
+#define TOAD_NO_CONSOLE_LOG
+#endif 
+
 #ifdef _MSC_VER
 #pragma warning (disable: 4996)     // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
 #endif
 
 #define FILE_EXT_TOADPROJECT ".TOADPROJECT"
 #define FILE_EXT_TOADSCENE ".TSCENE"
+#ifdef _DEBUG
+#define PROJECT_BIN_SEARCH_FOR "DevDebug"
+#else
+#define PROJECT_BIN_SEARCH_FOR "Dev"
+#endif
 
 #ifdef __APPLE__
 #include <sys/syslimits.h>
