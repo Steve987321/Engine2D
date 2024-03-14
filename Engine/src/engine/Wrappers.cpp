@@ -3,6 +3,7 @@
 
 #ifdef __APPLE__
 #include <CoreGraphics/CGDisplayConfiguration.h>
+#include <dlfcn.h>
 #endif
 namespace Toad
 {
@@ -26,8 +27,8 @@ namespace Toad
 	{
 #ifdef _WIN32
 		return LoadLibraryA(name.data());
-#else
-		return dlopen(name.data());
+#else	
+		return dlopen(name.data(), RTLD_NOW | RTLD_GLOBAL);
 #endif
 	}
 
@@ -45,7 +46,7 @@ namespace Toad
 #ifdef _WIN32
 		return GetProcAddress(handle, name.data());
 #else
-		return dlclose(handle, name.data());
+		return dlsym(handle, name.data());
 #endif
 	}
 
