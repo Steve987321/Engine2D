@@ -16,7 +16,7 @@ namespace Toad
 #ifdef TOAD_NO_CONSOLE_LOG
 			ShowWindow(console_window, SW_HIDE);
 #else 
-			ShowWindow(console_window, SW_NORMAL)
+			ShowWindow(console_window, SW_NORMAL);
 #endif 
 		}
 
