@@ -6,6 +6,7 @@ import sys
 script_dir = os.path.dirname(os.path.abspath(__file__))
 dir_out = os.path.join(script_dir, "output") 
 proj_dir = os.path.dirname(script_dir)
+copy_count = 0
 
 # everything except script_api
 files = [
@@ -71,10 +72,28 @@ for relative, relative_dest, rename in files:
     path_dst = os.path.join(dir_out, *relative_dest)
 
     skip = False 
+
+    # skip optional files if they don't exist
     if not os.path.exists(path_src):
         for optional_file in optional_files: 
             if optional_file in path_src: 
                 print(f"Skipping optional file: {path_src}")
+                skip = True 
+
+    # skip unmodified files 
+    if not skip: 
+        if len(rename) > 0: 
+            dst = os.path.join(path_dst, rename)
+        else:
+            dst = os.path.join(path_dst, relative[-1])
+        if os.path.isdir(path_src):
+            dst = path_dst
+
+        if os.path.exists(dst): 
+            last_modified_time_src = os.path.getmtime(path_src)
+            last_modified_time_dst = os.path.getmtime(dst)
+            if last_modified_time_src == last_modified_time_dst: 
+                print(f"Skipping unmodified file: {path_src}")
                 skip = True 
 
     if skip: 
@@ -87,6 +106,8 @@ for relative, relative_dest, rename in files:
     else: 
         shutil.copy2(path_src, os.path.join(path_dst, rename))
 
+    copy_count += 1
+
 # script_api
 engine_proj_dir = os.path.join(proj_dir, "Engine", "src")
 script_api_dir = os.path.join(dir_out, "script_api")
@@ -95,5 +116,19 @@ for root, _, files in os.walk(engine_proj_dir):
     for file in files: 
         if file.endswith(".h"): 
             dest_dir = os.path.join(script_api_dir, os.path.relpath(root, engine_proj_dir))
+            
+            file_src = os.path.join(root, file)
+
+            file_dst = os.path.join(dest_dir, file)
+            if os.path.exists(file_dst):
+                if os.path.getmtime(file_dst) == os.path.getmtime(file_src): 
+                    print(f"Skipping unmodified file: {file_src}")
+                    continue 
+
             os.makedirs(dest_dir, exist_ok=True)
-            shutil.copy2(os.path.join(root, file), dest_dir)
+
+            print(f"Copy: {file_src} to {dest_dir}")
+            shutil.copy2(file_src, dest_dir)
+            copy_count += 1
+
+print(f"Performed {copy_count} copies")
