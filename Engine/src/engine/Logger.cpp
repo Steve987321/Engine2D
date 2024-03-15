@@ -9,7 +9,7 @@ namespace Toad
 {
 	Logger::Logger()
 	{
-	#ifdef _WIN32
+#ifdef _WIN32
 		HWND console_window = GetConsoleWindow();
 		if (console_window)
 		{
@@ -32,7 +32,7 @@ namespace Toad
 			// log the date in the beginning
 			LogToFile(get_date_str("%Y %d %b \n"));
 		}
-	#endif
+#endif
 	}
 
 	Logger::~Logger()

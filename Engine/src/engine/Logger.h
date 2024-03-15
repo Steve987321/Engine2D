@@ -133,7 +133,7 @@ private:
 		if (create_log_file)
 			LogToFile(get_date_str("[%T]") + ' ' + formattedStr);
 
-#ifdef TOAD_NO_CONSOLE_LOG
+#ifndef TOAD_NO_CONSOLE_LOG
 		Print(formattedStr, log_type);
 #endif 
 	}
