@@ -351,6 +351,7 @@ project "ToadRunner"
         "%{prj.name}/src/**.mm",
         "vendor/imgui/**.cpp",
         "vendor/sfml-imgui/imgui-SFML.cpp",
+        "vendor/pugixml/**.cpp",
     }
 
     removefiles {

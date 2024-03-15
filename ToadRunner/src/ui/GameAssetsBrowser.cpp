@@ -11,7 +11,7 @@
 #include "project/ToadProject.h"
 #include "project/NewScriptClass.h"
 
-#include "xml_parser/pugixml.hpp"
+#include "pugixml/pugixml.hpp"
 
 namespace Toad
 {
