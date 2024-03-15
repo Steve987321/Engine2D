@@ -39,6 +39,7 @@
 #ifdef __APPLE__
 #include <sys/syslimits.h>
 #include <dlfcn.h>
+#include <mach-o/dyld.h> // _NSGetExecutablePath
 #define LIB_FILE_EXT ".dylib"
 #define PATH_SEPARATOR '/'
 #define MAX_PATH PATH_MAX

@@ -17,4 +17,6 @@ namespace Toad
 	void DLibFree(DllHandle handle);
 	
 	DllAddress DLibGetAddress(DllHandle handle, std::string_view name);
+
+	std::string DLGetError();
 }

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "misc.h"
 
+#include <EngineCore.h>
+
 #include <filesystem>
 
 namespace misc
@@ -29,14 +31,16 @@ std::vector<Editor> misc::FindEditors()
 
 std::filesystem::path GetExePath()
 {
+	
 #ifdef _WIN32
-	char path[MAX_PATH] = { 0 };
+	char path[MAX_PATH];
 	GetModuleFileNameA(NULL, path, MAX_PATH);
 	return path;
 #else
-	char result[PATH_MAX];
-	ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-	return std::string(result, (count > 0) ? count : 0);
+	char path[PATH_MAX];
+	uint32_t size = MAX_PATH;
+	_NSGetExecutablePath(path, &size);
+	return path; 
 #endif
 }
 

@@ -50,5 +50,16 @@ namespace Toad
 		return dlsym(handle, name.data());
 #endif
 	}
+	
+	std::string DLGetError()
+	{
+#ifdef _WIN32
+		// #TODO: look at FormatMessage
+		return std::to_string(GetLastError());
+#else
+		return dlerror();
+#endif  
+	}
+
 
 }
