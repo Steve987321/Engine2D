@@ -47,7 +47,7 @@ project "Engine"
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
 
-    files{
+    files {
         engine_path .. "/src/**.cpp",
         engine_path .. "/src/**.h",
         "vendor/imgui/**.cpp",
@@ -168,9 +168,17 @@ project(game_project_name)
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
 
-    files{
+    files {
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.h",
+        "vendor/imgui/**.cpp",
+        "vendor/sfml-imgui/imgui-SFML.cpp",
+    }
+
+    removefiles {
+        "vendor/imgui/examples/**",
+        "vendor/imgui/misc/**",
+        "vendor/imgui/backends/**",
     }
 
 if _OPTIONS["usesrc"] then 
@@ -301,9 +309,17 @@ project "ToadRunner"
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
 
-    files{
+    files {
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.h",
+        "vendor/imgui/**.cpp",
+        "vendor/sfml-imgui/imgui-SFML.cpp",
+    }
+
+    removefiles {
+        "vendor/imgui/examples/**",
+        "vendor/imgui/misc/**",
+        "vendor/imgui/backends/**",
     }
 
     includedirs{
