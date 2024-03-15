@@ -67,7 +67,7 @@ project "Engine"
         pchheader "pch.h"
         pchsource "%{prj.name}/src/pch.cpp"
 
-    filter "files:Engine/src/imgui_impl/**.cpp"
+    filter "files:vendor/**.cpp"
         flags {"NoPCH"}
 
     filter "system:windows"
@@ -395,7 +395,7 @@ project "ToadRunner"
     pchheader "pch.h"
     pchsource "%{prj.name}/src/pch.cpp"
 
-    filter "files:ToadRunner/src/imgui_impl/**.cpp"
+    filter "files:vendor/**.cpp"
         flags {"NoPCH"}
     
     filter "files:ToadRunner/src/**.mm"
