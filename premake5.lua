@@ -27,6 +27,14 @@ project "Engine"
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.mm",
+        "vendor/imgui/**.cpp",
+        "vendor/sfml-imgui/imgui-SFML.cpp",
+    }
+
+    removefiles {
+        "vendor/imgui/examples/**",
+        "vendor/imgui/misc/**",
+        "vendor/imgui/backends/**",
     }
 
     includedirs {
@@ -162,14 +170,23 @@ project "Game"
 
     files {
         "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h"
+        "%{prj.name}/src/**.h",
+        "vendor/imgui/**.cpp",
+        "vendor/sfml-imgui/imgui-SFML.cpp",
+    }
+
+    removefiles {
+        "vendor/imgui/examples/**",
+        "vendor/imgui/misc/**",
+        "vendor/imgui/backends/**",
     }
 
     includedirs {
         "Engine/src",
         "vendor",
+        "vendor/imgui",
         "vendor/SFML-2.6.0/include",
-        "vendor/json/include",
+        "vendor/json/include", 
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
@@ -181,13 +198,14 @@ project "Game"
     links {
         "Engine",
     }
+
     filter "system:macosx"
-         links {
-             "OpenGL.framework",
-             "Cocoa.framework",
-             "IOKit.framework",
-             "CoreVideo.framework",
-         }
+        links {
+            "OpenGL.framework",
+            "Cocoa.framework",
+            "IOKit.framework",
+            "CoreVideo.framework",
+        }
 
     filter "system:windows"
         links{
@@ -331,6 +349,14 @@ project "ToadRunner"
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/src/**.h",
         "%{prj.name}/src/**.mm",
+        "vendor/imgui/**.cpp",
+        "vendor/sfml-imgui/imgui-SFML.cpp",
+    }
+
+    removefiles {
+        "vendor/imgui/examples/**",
+        "vendor/imgui/misc/**",
+        "vendor/imgui/backends/**",
     }
 
     includedirs {

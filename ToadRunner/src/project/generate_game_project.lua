@@ -49,7 +49,15 @@ project "Engine"
 
     files{
         engine_path .. "/src/**.cpp",
-        engine_path .. "/src/**.h"
+        engine_path .. "/src/**.h",
+        "vendor/imgui/**.cpp",
+        "vendor/sfml-imgui/imgui-SFML.cpp",
+    }
+
+    removefiles {
+        "vendor/imgui/examples/**",
+        "vendor/imgui/misc/**",
+        "vendor/imgui/backends/**",
     }
 
     includedirs{
