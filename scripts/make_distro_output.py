@@ -24,7 +24,6 @@ files = [
     (("vendor", "SFML-2.6.0", "bin", "sfml-window-2.dll"), (""), ""),
     (("ToadRunner", "src", "project", "generate_game_project.lua"), ("scripts",), ""),
     (("Game", "src", ), ("game_template", "src"), ""),
-    (("ToadRunner", "src", "imgui_impl"), ("game_template", "imgui_impl"), ""),
     (("vendor", "bin", "premake5.exe"), ("bin",), ""),
     (("vendor", "bin", "LICENSE.txt"), ("bin",), ""),
     (("vendor", "imgui"), ("game_template", "vendor", "imgui"), ""),
