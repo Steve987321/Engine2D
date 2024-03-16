@@ -1,6 +1,6 @@
 #pragma once
 
-#include <EngineCore.h>
+#include "EngineCore.h"
 
 #include "engine/Types.h"
 #include "nlohmann/json.hpp"
@@ -64,6 +64,8 @@ public:
 	json SerializeScripts() const;
 
 	void AddScript(std::shared_ptr<Script> script);
+
+	void AddScript(std::string_view script_name);
 
 	std::shared_ptr<Script> GetScript(std::string_view name);
 

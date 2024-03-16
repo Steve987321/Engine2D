@@ -291,6 +291,19 @@ namespace Toad
 		//script->OnAttach(this);
 	}
 
+	void Object::AddScript(std::string_view script_name)
+	{
+		const auto& gscripts = Engine::Get().GetGameScriptsRegister();
+		if (auto it = gscripts.find(script_name.data()); it != gscripts.end())
+		{
+			auto script_instance = it->second->Clone();
+			AddScript(script_instance);
+			//return script_instance.get();
+		}
+
+		//return nullptr;
+	}
+
 	const std::unordered_map<std::string, std::shared_ptr<Script>>& Object::GetAttachedScripts() const
 	{
 		return m_attachedScripts;
