@@ -448,7 +448,7 @@ namespace project {
 
 	project::PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir)
 	{
-		for (const auto& entry : fs::recursive_directory_iterator(proj_dir))
+		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
 			if (fs::is_directory(entry.path()))
 				continue;

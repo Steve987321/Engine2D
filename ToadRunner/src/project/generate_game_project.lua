@@ -74,6 +74,10 @@ project "Engine"
         "vendor/SFML-2.6.0/lib"
     }
 
+    filter "system:windows"
+        staticruntime "Off"
+        systemversion "latest"
+        
     -- configurations 
 
     filter "configurations:Release"
@@ -81,14 +85,7 @@ project "Engine"
             "NDEBUG",
             "ENGINE_IS_EXPORT"
         }
-        links{
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
-        }
 
-        staticruntime "On"
         runtime "Release"
         optimize "On"
         symbols "Off"
@@ -100,14 +97,7 @@ project "Engine"
             "ENGINE_IS_EXPORT",
             "TOAD_EDITOR"
         }
-        links{
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
-        }
 
-        staticruntime "On"
         runtime "Release"
         optimize "On"
         symbols "Off"
@@ -120,26 +110,10 @@ project "Engine"
             "TOAD_EDITOR"
         }
 
-        staticruntime "On"
         runtime "Debug"
         optimize "Off"
         symbols "On"
-
-        filter "system:macosx"
-            links{
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links{
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
-
+        
     -- platform 
 
     filter "system:macosx"
@@ -155,8 +129,56 @@ project "Engine"
             "opengl32"
         }
 
-        staticruntime "On"
+        staticruntime "Off"
         systemversion "latest"
+
+    -- sfml 
+    filter "system:macosx"
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter {"system:windows", "configurations:DevDebug"}
+        defines {
+            "SFML_STATIC",
+        }
+        links {
+            "winmm",
+            "gdi32",
+            "freetype",
+            "flac",
+            "ogg",
+            "openal32",
+            "vorbis",
+            "vorbisenc",
+            "vorbisfile",
+            "sfml-system-s-d",
+            "sfml-window-s-d",
+            "sfml-graphics-s-d",
+            "sfml-audio-s-d",
+        }
+    filter {"system:windows", "configurations:Release or configurations:Dev"}
+        defines {
+            "SFML_STATIC",
+        }
+        links {
+            "winmm",
+            "gdi32",
+            "freetype",
+            "flac",
+            "ogg",
+            "openal32",
+            "vorbis",
+            "vorbisenc",
+            "vorbisfile",
+            "sfml-system-s",
+            "sfml-window-s",
+            "sfml-graphics-s",
+            "sfml-audio-s",
+        }
 end 
 
 project(game_project_name)
@@ -210,7 +232,10 @@ else
     }
 end 
 
-    staticruntime "Off"
+    filter "system:windows"
+        staticruntime "Off"
+        systemversion "latest"
+
     -- configurations
 
     filter "configurations:Release"
@@ -219,12 +244,6 @@ end
             "_WINDOWS",
             "_USRDLL",
             "GAME_IS_EXPORT"
-        }
-        links{
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
         }
 
         runtime "Release"
@@ -239,13 +258,7 @@ end
             "GAME_IS_EXPORT",
             "TOAD_EDITOR",
         }
-        links{
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
-        }
-
+        
         runtime "Release"
         symbols "Off"
         optimize "On"
@@ -260,22 +273,8 @@ end
 
         runtime "Debug"
         symbols "On"
+        optimize "Off"
 
-        filter "system:macosx"
-            links{
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links{
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
-       
     -- platform 
 
     filter "system:macosx"
@@ -293,7 +292,53 @@ end
             "opengl32"
         }
 
-        systemversion "latest"
+    -- sfml 
+    filter "system:macosx"
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+
+    filter {"system:windows", "configurations:DevDebug"}
+        defines {
+            "SFML_STATIC",
+        }
+        links {
+            "winmm",
+            "gdi32",
+            "freetype",
+            "flac",
+            "ogg",
+            "openal32",
+            "vorbis",
+            "vorbisenc",
+            "vorbisfile",
+            "sfml-system-s-d",
+            "sfml-window-s-d",
+            "sfml-graphics-s-d",
+            "sfml-audio-s-d",
+        }
+    filter {"system:windows", "configurations:Release or configurations:Dev"}
+        defines {
+            "SFML_STATIC",
+        }
+        links {
+            "winmm",
+            "gdi32",
+            "freetype",
+            "flac",
+            "ogg",
+            "openal32",
+            "vorbis",
+            "vorbisenc",
+            "vorbisfile",
+            "sfml-system-s",
+            "sfml-window-s",
+            "sfml-graphics-s",
+            "sfml-audio-s",
+        }
 
 if _OPTIONS["usesrc"] then 
 project "ToadRunner"
@@ -305,15 +350,18 @@ project "ToadRunner"
     filter {}
     
     language "C++"
+    cppdialect "C++20"
 
-    targetdir("bin/" ..output_dir .. "/")
-    objdir("bin-intermediate/" ..output_dir .. "/")
+    targetdir ("bin/" .. output_dir .. "/")
+    objdir ("bin-intermediate/" .. output_dir .. "/")
 
     files {
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/src/**.h",
+        "%{prj.name}/src/**.mm",
         "vendor/imgui/**.cpp",
         "vendor/sfml-imgui/imgui-SFML.cpp",
+        "vendor/pugixml/**.cpp",
     }
 
     removefiles {
@@ -322,10 +370,10 @@ project "ToadRunner"
         "vendor/imgui/backends/**",
     }
 
-    includedirs{
+    includedirs {
         "%{prj.name}/src",
         "%{prj.name}/src/scripts",
-        engine_path .. "/src",
+        "Engine/src",
         "vendor",
         "vendor/imgui",
         "vendor/sfml-imgui",
@@ -333,68 +381,115 @@ project "ToadRunner"
         "vendor/json/include",
     }
 
-    libdirs{
+    libdirs {
         "vendor/SFML-2.6.0/lib"
+    }
+
+    links {
+        "Engine",
+        "Game",
     }
 
     filter "system:macosx"
          links {
-                "Engine",
-                "OpenGL.framework",
-                "Cocoa.framework",
-                "IOKit.framework",
-                "CoreVideo.framework",
-        }
+             "OpenGL.framework",
+             "Cocoa.framework",
+             "IOKit.framework",
+             "CoreVideo.framework",
+         }
     filter "system:windows"
-        links {
-            "Engine",
+        links{
             "opengl32"
         }
 
-    cppdialect "C++20"
+        pchheader "pch.h"
+        pchsource "%{prj.name}/src/pch.cpp"
 
+    filter "files:vendor/**.cpp"
+        flags {"NoPCH"}
+    
+    filter "files:ToadRunner/src/**.mm"
+        flags {"NoPCH"}
+        
     filter "system:windows"
-        cppdialect "C++20"
-        staticruntime "On"
+        staticruntime "Off"
         systemversion "latest"
 
-    filter "configurations:Release"
-        defines{
+    -- configurations 
+
+    filter "configurations:Release" 
+        defines {
             "NDEBUG",
-        }
-        links{
-            "sfml-system",
-            "sfml-window",
-            "sfml-graphics",
-            "sfml-audio",
         }
 
         runtime "Release"
         symbols "Off"
         optimize "On"
 
-    filter "configurations:Dev or configurations:DevDebug"
-        defines{
-            "_DEBUG",
+    filter "configurations:Dev" 
+        defines {
+            "NDEBUG",
             "_CONSOLE",
-            "TOAD_EDITOR"
+            "TOAD_EDITOR",
         }
 
-        filter "system:macosx"
-            links {
-                "sfml-system",
-                "sfml-window",
-                "sfml-graphics",
-                "sfml-audio",
-            }
-        filter "system:windows"
-            links {
-                "sfml-system-d",
-                "sfml-window-d",
-                "sfml-graphics-d",
-                "sfml-audio-d",
-            }
-            
-        symbols "On"
+        runtime "Release"
+        symbols "Off"
+        optimize "On"
+
+    filter "configurations:DevDebug"
+        defines {
+            "_DEBUG",
+            "_CONSOLE",
+        }
+
         runtime "Debug"
-end 
+        symbols "On"
+
+    filter "system:macosx"
+        links {
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
+        }
+    
+    filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
+        defines {
+            "SFML_STATIC",
+        }
+        links {
+            "winmm",
+            "gdi32",
+            "freetype",
+            "flac",
+            "ogg",
+            "openal32",
+            "vorbis",
+            "vorbisenc",
+            "vorbisfile",
+            "sfml-system-s-d",
+            "sfml-window-s-d",
+            "sfml-graphics-s-d",
+            "sfml-audio-s-d",
+        }
+    filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
+        defines {
+            "SFML_STATIC",
+        }
+        links {
+            "winmm",
+            "gdi32",
+            "freetype",
+            "flac",
+            "ogg",
+            "openal32",
+            "vorbis",
+            "vorbisenc",
+            "vorbisfile",
+            "sfml-system-s",
+            "sfml-window-s",
+            "sfml-graphics-s",
+            "sfml-audio-s",
+        }
+end
