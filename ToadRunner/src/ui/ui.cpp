@@ -328,6 +328,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
 					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder).string());
+
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -896,12 +897,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (selected_obj != nullptr)
 			{
-				Toad::Engine::Get().GetScene().RemoveFromScene(selected_obj->name);
+				selected_obj->Destroy();
 				selected_obj = nullptr;
 			}
 			for (const std::string& s : selected_objects)
 			{
-				Toad::Engine::Get().GetScene().RemoveFromScene(s);
+				Toad::Engine::Get().GetScene().GetSceneObject(s)->Destroy();
 				remove_objects_queue.emplace(s);
 			}
 		}
@@ -977,23 +978,23 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (ImGui::MenuItem("Circle"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"));
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Sprite"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"));
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Audio"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Audio("Audio"));
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Audio("Audio"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Text"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Text("Text"));
+					Toad::Engine::Get().GetScene().AddToScene(Toad::Text("Text"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Camera"))
 				{
-					Toad::Camera* cam = Toad::Engine::Get().GetScene().AddToScene(Toad::Camera("Camera")).get();
+					Toad::Camera* cam = Toad::Engine::Get().GetScene().AddToScene(Toad::Camera("Camera"), Toad::Engine::Get().GameStateIsPlaying()).get();
 
 					cam->ActivateCamera();
 				}
@@ -1943,7 +1944,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		constexpr float ar = 16.f / 9.f;
 		float image_width = content_size.x;
 		float image_height = content_size.x / ar;
-
+		
 		Toad::Camera* cam = Toad::Camera::GetActiveCamera();
 
 		if (cam == nullptr)
@@ -1977,6 +1978,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				(content_size.y - image_height + pady) * 0.5f
 				});
 
+			Toad::Engine::Get().viewport_size = {(int)image_width, (int)image_height};
+			Toad::Engine::Get().relative_mouse_pos = {
+				(int)(ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x),
+				(int) (ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y) };
 			ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
 		}
 		
@@ -2030,13 +2035,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				else
 				{
-					Toad::Sprite* added_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite")).get();
+					Toad::Sprite* added_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying()).get();
 
 					added_obj->SetTexture(data.path, stex);
 					added_obj->GetSprite().setTextureRect(data.tex_rect);
 					added_obj->GetSprite().setScale(data.tex_size);
 					ImVec2 curr_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y };
-
 					float fx = editor_cam.GetSize().x / image_width;
 					float fy = editor_cam.GetSize().y / image_height;
 					Vec2f pos = { curr_pos.x * fx, curr_pos.y * fy };
