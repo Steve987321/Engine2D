@@ -22,6 +22,18 @@ namespace Toad
 			return dynamic_cast<T*>(obj);
 		}
 
+		template<class T> 
+		static T* GetScriptAsType(Script* script)
+		{
+			return dynamic_cast<T*>(script);
+		}
+
+		Vec2i relative_mouse_pos = {};
+#ifdef TOAD_EDITOR
+		// editor viewport size
+		Vec2i viewport_size = {};
+#endif
+
 		static Engine& Get();
 		static Logger& GetLogger();
 		
@@ -60,6 +72,9 @@ namespace Toad
 		void StopGameSession();
 
 		void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style = 0);
+
+		// Returns the world coordinates
+		Vec2f ScreenToWorld(const Vec2i& screen_pos);
 
 		void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path);
 		// load game.dll 
@@ -119,6 +134,7 @@ namespace Toad
 
 		// multiple windows
 		std::vector<std::shared_ptr<sf::RenderWindow>> m_viewports;
+		// mouse position relative to window/viewport 
 
 #ifdef _WIN32
         HMODULE m_currDLL{};

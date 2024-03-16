@@ -148,8 +148,10 @@ void Engine::Run()
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
-#endif
 
+#else 
+		relative_mouse_pos = sf::Mouse::getPosition(m_window);
+#endif
 		// update deltatime
 		m_deltaTime = m_deltaClock.restart();
 
@@ -463,6 +465,34 @@ void Engine::AddViewport(const sf::VideoMode& mode, std::string_view title, uint
 	bool res = ImGui::SFML::Init(*window, true);
 	LOGDEBUGF("[Engine::AddViewport] ImGui SFML Init result: {}", res);
 	m_viewports.emplace_back(window);
+}
+
+Vec2f Engine::ScreenToWorld(const Vec2i& screen_pos)
+{
+#ifdef TOAD_EDITOR
+	Camera* cam = Camera::GetActiveCamera();
+	if (cam)
+	{
+		float fx = cam->GetSize().x / viewport_size.x;
+		float fy = cam->GetSize().y / viewport_size.y;
+
+		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam->GetView());
+	}
+
+	return {-1 , -1};
+#else
+	Camera* cam = Camera::GetActiveCamera();
+
+	if (cam)
+	{
+		float fx = cam.GetSize().x / m_window.getSize().x;
+		float fy = cam.GetSize().y / m_window.getSize().y;
+
+		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam.GetView());
+	}
+
+	return { -1, -1 };
+#endif
 }
 
 void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
