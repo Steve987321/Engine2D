@@ -184,7 +184,7 @@ namespace Toad
 		}
 
 		SetParent(nullptr);
-		m_currentScene.RemoveFromScene(name);
+		m_currentScene.RemoveFromScene(name, Engine::Get().GameStateIsPlaying());
 	}
 
 	json Object::SerializeScripts() const

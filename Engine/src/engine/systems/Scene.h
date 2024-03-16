@@ -22,6 +22,12 @@ struct ENGINE_API Scene
 	// holds object instances in the scene
 	std::vector<std::shared_ptr<Object>> objects_all;
 
+	// objects that should get removed 
+	std::vector<std::string> remove_objects;
+
+	// objects that should be added 
+	std::vector<std::shared_ptr<Object>> add_objects;
+
 	///
 	/// Is called once when switching to or starting this scene.
 	///
@@ -44,43 +50,68 @@ struct ENGINE_API Scene
 	///	Also checks if name of object is already here.
 	///
 	template <class T>
-	std::shared_ptr<T> AddToScene(T&& object)
+	std::shared_ptr<T> AddToScene(T&& object, bool is_begin_play = true)
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
 		std::string obj_name = object.name;
 		bool found = false;
+		bool found_in_queue = false;
 		uint32_t count = 0;
-		for (auto& obj : objects_all)
-		{
-			if (obj->name == obj_name)
+
+		const auto check_name = [&](const std::vector<std::shared_ptr<Object>>& objects, bool& flag)
 			{
-				count++;
-				found = true;
-			}
-		}
+				for (auto& obj : objects)
+				{
+					if (obj->name == obj_name)
+					{
+						count++;
+						flag = true;
+					}
+				}
+			};
+
+		const auto adjust_name = [&](const std::vector<std::shared_ptr<Object>>& objects)
+			{
+				obj_name += " (" + std::to_string(count) + ')';
+				auto it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+				while (it != objects.end())
+				{
+					obj_name = object.name + " (" + std::to_string(++count) + ')';
+					it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+				}
+			};
+
+		check_name(objects_all, found);
+		check_name(add_objects, found_in_queue);
+	
 		if (found)
-		{
-			obj_name += " (" + std::to_string(count) + ')';
-			auto it = std::ranges::find_if(objects_all, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
-			while (it != objects_all.end())
-			{
-				obj_name = object.name + " (" + std::to_string(++count) + ')';
-				it = std::ranges::find_if(objects_all, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
-			}
-		}
+			adjust_name(objects_all);
+
+		else if (found_in_queue)
+			adjust_name(add_objects);
 
 		object.name = obj_name;
-		objects_all.emplace_back(std::make_shared<T>(object));
-		objects_all.back()->OnCreate();
-		return std::dynamic_pointer_cast<T>(objects_all.back());
+
+		if (is_begin_play)
+		{
+			add_objects.emplace_back(std::make_shared<T>(object));
+			add_objects.back()->OnCreate();
+			return std::dynamic_pointer_cast<T>(add_objects.back());
+		}
+		else
+		{
+			objects_all.emplace_back(std::make_shared<T>(object));
+			objects_all.back()->OnCreate();
+			return std::dynamic_pointer_cast<T>(objects_all.back());
+		}
+		
 	}
 
 	///
-	/// @returns
-	///	Whether an object has been removed with the given name.
+	/// Removes an object from the scene with the given name.
 	///
-	bool RemoveFromScene(std::string_view obj_name);
+	void RemoveFromScene(std::string_view obj_name, bool is_begin_play = true);
 
 	///
 	/// @returns 

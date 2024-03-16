@@ -48,6 +48,27 @@ void Scene::Update()
 	{
 		obj->LateUpdate();
 	}
+
+	for (const auto& obj_name : remove_objects)
+	{
+		auto it = std::remove_if(
+			objects_all.begin(),
+			objects_all.end(),
+			[&obj_name](const std::shared_ptr<Object>& obj) 
+			{
+				return obj->name == obj_name;
+			});
+
+		objects_all.erase(it, objects_all.end());
+	}
+
+	for (const auto& obj : add_objects)
+	{
+		objects_all.emplace_back(obj);
+	}
+
+	remove_objects.clear();
+	add_objects.clear();
 }
 
 void Scene::Render(sf::RenderTexture& texture)
@@ -66,16 +87,22 @@ void Scene::Render(sf::RenderWindow& window)
 	}
 }
 
-bool Scene::RemoveFromScene(std::string_view obj_name)
+void Scene::RemoveFromScene(std::string_view obj_name, bool is_begin_play)
 {
-	uint32_t n = objects_all.size();
-	auto it = std::remove_if(objects_all.begin(), objects_all.end(), [&obj_name](const std::shared_ptr<Object>& obj) {
-		return obj->name == obj_name;
-	});
+	if (is_begin_play)
+		remove_objects.emplace_back(obj_name);
+	else
+	{
+		auto it = std::remove_if(
+			objects_all.begin(),
+			objects_all.end(),
+			[&obj_name](const std::shared_ptr<Object>& obj)
+			{
+				return obj->name == obj_name;
+			});
 
-	objects_all.erase(it, objects_all.end());
-	
-	return n != objects_all.size();
+		objects_all.erase(it, objects_all.end());
+	}
 }
 
 std::shared_ptr<Object> Scene::GetSceneObject(std::string_view obj_name) 
@@ -269,7 +296,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
 
-			Object* newobj = scene.AddToScene(T(object.key())).get();
+			Object* newobj = scene.AddToScene(T(object.key()), Engine::Get().GameStateIsPlaying()).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
@@ -653,12 +680,27 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 {
 	if (objects.contains("objects"))
 	{
+		bool restart = false;
+		if (Engine::Get().GameStateIsPlaying())
+		{
+			restart = true;
+			Engine::Get().StopGameSession();
+		}
+		for (const auto& obj : Engine::Get().GetScene().objects_all)
+			if (obj)
+				obj->Destroy();
+		
 		auto& objectsall = objects["objects"];
 		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder);
 		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder);
 		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder);
 		LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder);
 		LoadSceneObjectsOfType<Camera>(objectsall["cameras"], scene, asset_folder);
+
+		if (restart) 
+		{
+			Engine::Get().StartGameSession();
+		}
 	}
 }
 
