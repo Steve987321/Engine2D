@@ -108,15 +108,11 @@ bool Engine::Init()
 
 #endif
 
-	// #TODO: change to a .ini 
+	// #TODO: change to a .ini or .json
 	AppSettings gsettings;
 	if (m_currDLL != nullptr)
 	{
-#ifdef _WIN32
-		auto get_game_settings = reinterpret_cast<get_game_settings_t*>(GetProcAddress(m_currDLL, "get_game_settings"));
-#else
-        auto get_game_settings = reinterpret_cast<get_game_settings_t*>(dlsym(m_currDLL, "get_game_settings"));
-#endif
+        auto get_game_settings = reinterpret_cast<get_game_settings_t*>(DLibGetAddress(m_currDLL, "get_game_settings"));
 		gsettings = get_game_settings();
 	}
 
