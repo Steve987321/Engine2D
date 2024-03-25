@@ -481,10 +481,10 @@ Vec2f Engine::ScreenToWorld(const Vec2i& screen_pos)
 
 	if (cam)
 	{
-		float fx = cam.GetSize().x / m_window.getSize().x;
-		float fy = cam.GetSize().y / m_window.getSize().y;
+		float fx = cam->GetSize().x / m_window.getSize().x;
+		float fy = cam->GetSize().y / m_window.getSize().y;
 
-		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam.GetView());
+		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam->GetView());
 	}
 
 	return { -1, -1 };
