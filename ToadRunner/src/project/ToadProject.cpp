@@ -158,13 +158,15 @@ namespace project {
 #ifdef TOAD_DISTRO
 		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={}", 
 			settings.project_path + '/' + premake5,
-			proj_type_str, settings.project_path + "/premake5.lua",
+			proj_type_str, 
+			settings.project_path + "/premake5.lua",
 			engine_path_forwardslash,
 			settings.name);
 #else
 		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} --usesrc",
 			settings.project_path + '/' + premake5,
-			proj_type_str, settings.project_path + "/premake5.lua",
+			proj_type_str, 
+			settings.project_path + "/premake5.lua",
 			engine_path_forwardslash,
 			settings.name);
 #endif
@@ -541,18 +543,21 @@ namespace project {
 
 		PROJECT_TYPE proj_type = DetectProjectType(project_file.parent_path());
 
+		// #TODO should it use the (updated) one in the engine directory or the one in the game directory which may be outdated ?
 #ifdef TOAD_DISTRO
 		std::string full_command = Toad::format_str(
-			"{} {} --enginepath={} --projectname={}",
+			"{} {} --file={} --enginepath={} --projectname={}",
 			premake5,
 			ProjectTypeAsStr(proj_type),
+			(project_file.parent_path() / "premake5.lua").string(),
 			settings.engine_path,
 			project_name);
 #else
 		std::string full_command = Toad::format_str(
-			"{} {} --enginepath={} --projectname={} --usesrc",
+			"{} {} --file={} --enginepath={} --projectname={} --usesrc",
 			premake5,
 			ProjectTypeAsStr(proj_type),
+			(project_file.parent_path() / "premake5.lua").string(),
 			settings.engine_path,
 			project_name);
 #endif

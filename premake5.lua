@@ -136,42 +136,18 @@ project "Engine"
         }
     
     filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
-        defines {
-            "SFML_STATIC",
-        }
         links {
-            "winmm",
-            "gdi32",
-            "freetype",
-            "flac",
-            "ogg",
-            "openal32",
-            "vorbis",
-            "vorbisenc",
-            "vorbisfile",
-            "sfml-system-s-d",
-            "sfml-window-s-d",
-            "sfml-graphics-s-d",
-            "sfml-audio-s-d",
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
         }
     filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
-        defines {
-            "SFML_STATIC",
-        }
         links {
-            "winmm",
-            "gdi32",
-            "freetype",
-            "flac",
-            "ogg",
-            "openal32",
-            "vorbis",
-            "vorbisenc",
-            "vorbisfile",
-            "sfml-system-s",
-            "sfml-window-s",
-            "sfml-graphics-s",
-            "sfml-audio-s",
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
 
 project "Game"
@@ -304,42 +280,18 @@ project "Game"
         }
     
     filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
-        defines {
-            "SFML_STATIC",
-        }
         links {
-            "winmm",
-            "gdi32",
-            "freetype",
-            "flac",
-            "ogg",
-            "openal32",
-            "vorbis",
-            "vorbisenc",
-            "vorbisfile",
-            "sfml-system-s-d",
-            "sfml-window-s-d",
-            "sfml-graphics-s-d",
-            "sfml-audio-s-d",
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
         }
     filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
-        defines {
-            "SFML_STATIC",
-        }
         links {
-            "winmm",
-            "gdi32",
-            "freetype",
-            "flac",
-            "ogg",
-            "openal32",
-            "vorbis",
-            "vorbisenc",
-            "vorbisfile",
-            "sfml-system-s",
-            "sfml-window-s",
-            "sfml-graphics-s",
-            "sfml-audio-s",
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
 
 project "ToadRunner"
@@ -477,40 +429,16 @@ project "ToadRunner"
         }
     
     filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
-        defines {
-            "SFML_STATIC",
-        }
         links {
-            "winmm",
-            "gdi32",
-            "freetype",
-            "flac",
-            "ogg",
-            "openal32",
-            "vorbis",
-            "vorbisenc",
-            "vorbisfile",
-            "sfml-system-s-d",
-            "sfml-window-s-d",
-            "sfml-graphics-s-d",
-            "sfml-audio-s-d",
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
         }
     filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
-        defines {
-            "SFML_STATIC",
-        }
         links {
-            "winmm",
-            "gdi32",
-            "freetype",
-            "flac",
-            "ogg",
-            "openal32",
-            "vorbis",
-            "vorbisenc",
-            "vorbisfile",
-            "sfml-system-s",
-            "sfml-window-s",
-            "sfml-graphics-s",
-            "sfml-audio-s",
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }

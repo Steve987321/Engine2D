@@ -221,6 +221,15 @@ namespace Toad
 			}
 		}
 
+		// sfml 
+		for (const auto& entry : fs::directory_iterator(proj_engine_dir))
+		{
+			if (entry.path().string().find("sfml") != std::string::npos && entry.path().extension() == ".dll")
+			{
+				fs::copy_file(entry.path(), out_dir / entry.path().filename());
+			}
+		}
+
 		fs::path bin = proj_engine_dir / "bin";
 
 		// copy Runner No Editor

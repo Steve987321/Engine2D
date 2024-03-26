@@ -23,6 +23,11 @@ files = [
     (("vendor", "imgui"), ("game_template", "vendor", "imgui"), ""),
     (("vendor", "json"), ("game_template", "vendor", "json"), ""),
     (("vendor", "SFML-2.6.0"), ("game_template", "vendor", "SFML-2.6.0"), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-audio-2.dll"), (""), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-system-2.dll"), (""), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-graphics-2.dll"), (""), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-network-2.dll"), (""), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-window-2.dll"), (""), ""),
     (("vendor", "sfml-imgui"), ("game_template", "vendor", "sfml-imgui"), ""),
 ]
 
