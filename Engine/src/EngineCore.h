@@ -30,8 +30,11 @@
 
 #define FILE_EXT_TOADPROJECT ".TOADPROJECT"
 #define FILE_EXT_TOADSCENE ".TSCENE"
+#ifdef NDEBUG
 #define PROJECT_BIN_SEARCH_FOR "Dev"
-
+#else
+#define PROJECT_BIN_SEARCH_FOR "DevDebug"
+#endif 
 #ifdef __APPLE__
 #include <sys/syslimits.h>
 #include <dlfcn.h>
