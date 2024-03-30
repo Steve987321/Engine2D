@@ -241,7 +241,6 @@ end
     filter "configurations:Release"
         defines{
             "NDEBUG",
-            "_WINDOWS",
             "_USRDLL",
             "GAME_IS_EXPORT"
         }
@@ -253,7 +252,6 @@ end
     filter "configurations:Dev"
         defines{
             "NDEBUG",
-            "_WINDOWS",
             "_USRDLL",
             "GAME_IS_EXPORT",
             "TOAD_EDITOR",
@@ -263,12 +261,22 @@ end
         symbols "Off"
         optimize "On"
 
+    -- ?? ??? ? DELET?? ?? ??
     filter "configurations:DevDebug"
         defines{
             "_DEBUG",
-            "_WINDOWS",
             "GAME_IS_EXPORT",
             "TOAD_EDITOR",
+        }
+
+        runtime "Debug"
+        symbols "On"
+        optimize "Off"
+
+    filter "configurations:Debug"
+        defines{
+            "_DEBUG",
+            "GAME_IS_EXPORT"
         }
 
         runtime "Debug"
@@ -290,6 +298,10 @@ end
         links {
             "Engine",
             "opengl32"
+        }
+
+        defines{
+            "_WINDOWS",
         }
 
     -- sfml 
