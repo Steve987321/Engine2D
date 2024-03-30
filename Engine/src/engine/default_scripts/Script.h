@@ -43,6 +43,9 @@ public:
 #ifdef TOAD_EDITOR
 	virtual void OnEditorUI(Object* obj, ImGuiContext* ctx);
 #endif 
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+	virtual void OnImGui(Object* obj, ImGuiContext* ctx);
+#endif 
 	virtual void ExposeVars();
 
 	virtual std::shared_ptr<Script> Clone() = 0;

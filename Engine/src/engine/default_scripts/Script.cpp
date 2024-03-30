@@ -40,6 +40,12 @@ void Script::OnEditorUI(Object* obj, ImGuiContext* ctx)
 }
 #endif
 
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+void Script::OnImGui(Object* obj, ImGuiContext* ctx)
+{
+}
+#endif
+
 void Script::ExposeVars()
 {
 }

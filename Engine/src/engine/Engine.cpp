@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
 #include "Engine.h"
@@ -144,7 +144,6 @@ void Engine::Run()
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
-
 #else 
 		relative_mouse_pos = sf::Mouse::getPosition(m_window);
 #endif
@@ -154,10 +153,11 @@ void Engine::Run()
 		// handle events 
 		EventHandler();
 
-#ifdef TOAD_EDITOR
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 		// update imgui sfml
 		ImGui::SFML::Update(m_window, m_deltaTime);
-
+#endif 
+#ifdef TOAD_EDITOR
 		// update objects 
 		if (m_beginPlay)
 		{
@@ -176,7 +176,7 @@ void Engine::Run()
 
 bool Engine::InitWindow(const AppSettings& settings)
 {
-#ifdef TOAD_EDITOR
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	LOGDEBUG("Loading editor window");
 
 	m_window.create(sf::VideoMode(m_width, m_height), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
@@ -220,7 +220,7 @@ void Engine::EventHandler()
 	sf::Event e;
 	while (m_window.pollEvent(e))
 	{
-#ifdef TOAD_EDITOR
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 		ImGui::SFML::ProcessEvent(m_window, e);
 		m_eventCallback(e);
 #endif
@@ -282,7 +282,7 @@ void Engine::Render()
 
 	Camera* cam = Camera::GetActiveCamera();
 
-//#if defined(_DEBUG) && !defined(TOAD_EDITOR)
+//#if !defined(NDEBUG) && !defined(TOAD_EDITOR)
 //	ImDrawList* draw = ImGui::GetWindowDrawList();
 //	const char* err_msg = "NO CAMERA'S IN SCENE ARE AVAILABLE FOR RENDERING";
 //	ImVec2 size = ImGui::CalcTextSize(err_msg) / 2;
@@ -314,8 +314,11 @@ void Engine::Render()
 	// imgui
 	m_renderUI(ImGui::GetCurrentContext());
 
-	ImGui::SFML::Render(m_window);
+	for (auto& obj : m_currentScene.objects_all)
+		for (auto& [name, script] : obj->GetAttachedScripts())
+			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
 
+	ImGui::SFML::Render(m_window);
 	auto it = m_viewports.begin();
 	while (it != m_viewports.end())
 	{
@@ -350,8 +353,12 @@ void Engine::Render()
 			++it;
 		}
 	}
-
 #else
+#ifndef NDEBUG
+	for (auto& obj : m_currentScene.objects_all)
+		for (auto& [name, script] : obj->GetAttachedScripts())
+			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
+#endif 
 	GetScene().Render(m_window);
 
 	if (cam != nullptr)
