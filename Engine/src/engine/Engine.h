@@ -15,6 +15,7 @@ namespace Toad
 		using FENGINE_UI = std::function<void(ImGuiContext* ctx)>;
 		using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
+		using TGAME_SCRIPTS = std::unordered_map<std::string, std::shared_ptr<Script>>;
 
 		template<class T> 
 		static T* GetObjectAsType(Object* obj)
@@ -125,7 +126,7 @@ namespace Toad
 		ResourceManager m_resourceManager;
 
 		// instances of all game scripts
-		std::unordered_map<std::string, std::shared_ptr<Script>> m_gameScripts = {};
+		TGAME_SCRIPTS m_gameScripts = {};
 
 		std::queue<std::filesystem::path> m_droppedFilesQueue;
 

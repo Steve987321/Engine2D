@@ -512,13 +512,14 @@ void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string
 void Engine::LoadGameScripts()
 {
 	namespace fs = std::filesystem;
+	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
+	std::unordered_map <std::string, std::vector<object_script>> objects_with_scripts{};
+
 	for (auto& script : m_gameScripts | std::views::values)
 	{
-		// TODO: save name and give warning about lost scripts 
+		// #TODO: save name and give warning about lost scripts 
 		script = nullptr;
 	}
-	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
-	std::unordered_map <std::string, std::vector<object_script >> objects_with_scripts{};
 
 	for (auto& obj : m_currentScene.objects_all)
 	{
@@ -606,8 +607,19 @@ void Engine::LoadGameScripts()
 	for (const auto& script : getScripts())
 	{
 		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
-
 		m_gameScripts[script->GetName()] = script;
+	}
+	for (TGAME_SCRIPTS::iterator it = m_gameScripts.begin(); it != m_gameScripts.end();)
+	{
+		if (!it->second)
+		{
+			LOGWARNF("Script {} is now null and is getting removed", it->first.c_str());
+			it = m_gameScripts.erase(it);
+		}
+		else 
+		{
+			++it;
+		}
 	}
 
 	// update scripts on object if it has an old version
@@ -663,11 +675,6 @@ void Engine::LoadGameScripts()
 	}
 
 #ifdef _DEBUG
-	for (const auto& [name, script] : m_gameScripts)
-	{
-		if (!script)
-			LOGWARNF("Script {} is now null", name.c_str());
-	}
 	for (const auto& [obj_name, info] : objects_with_scripts)
 	{
 		for (const auto& script : info)
