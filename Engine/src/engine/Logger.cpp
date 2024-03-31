@@ -7,6 +7,8 @@
 
 namespace Toad
 {
+	extern std::filesystem::path get_exe_path();
+
 	Logger::Logger()
 	{
 #ifdef _WIN32
@@ -27,7 +29,7 @@ namespace Toad
 		{
 			// create log file in the documents folder
 			std::string logFileName = "Toad.log";
-			m_logFile.open(GetDocumentsFolder() + "\\" + logFileName);
+			m_logFile.open(GetLogFolder() + "\\" + logFileName);
 
 			// log the date in the beginning
 			LogToFile(get_date_str("%Y %d %b \n"));
@@ -56,18 +58,9 @@ namespace Toad
 #endif
 	}
 
-	std::string Logger::GetDocumentsFolder()
+	std::string Logger::GetLogFolder()
 	{
-#ifdef _WIN32
-		CHAR documents[MAX_PATH];
-		HRESULT res = SHGetFolderPathA(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, documents);
-		if (res == S_OK)
-		{
-			return documents;
-		}
-#endif
-
-		return "";
+		return get_exe_path().string();
 	}
 
 	void Logger::LogToFile(const std::string_view str)

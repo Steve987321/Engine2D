@@ -85,7 +85,7 @@ public:
 
 private:
 	/// Returns the directory location to the Documents folder 
-	static std::string GetDocumentsFolder();
+	static std::string GetLogFolder();
 
 	/// Writes to created log file
 	void LogToFile(const std::string_view str);
