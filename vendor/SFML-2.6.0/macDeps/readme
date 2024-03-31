@@ -1,5 +1,0 @@
-frameworks: Copy the content of Frameworks to /Library/Frameworks.
-
-dylib: Copy the content of lib to /usr/local/lib and copy the content of include to /usr/local/include.
-
-SFML depends on a few external libraries on macOS. Copy the content of extlibs to /Library/Frameworks.
