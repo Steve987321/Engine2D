@@ -2,7 +2,7 @@
 #include <EngineCore.h>
 #include <engine/Engine.h>
 
-#include "ui/ui.h"
+#include "ui/UI.h"
 
 int main(int argc, char** argv)
 {

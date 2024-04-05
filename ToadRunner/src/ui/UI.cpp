@@ -8,7 +8,7 @@
 
 #include "EngineMeta.h"
 
-#include "ui.h"
+#include "UI.h"
 
 #include "imgui-SFML.h"
 #include "FileBrowser.h"
@@ -223,7 +223,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::TextDisabled("Engine path %s", settings.engine_path.c_str());
 			if (ImGui::InputText("name", name, 30))
 				settings.name = name;
-
 
             const char* project_types[] = {"Visual Studio 2022", "Visual Studio 2019", "Visual Studio 2015", "Makefile", "Codelite", "Xcode"};
 
