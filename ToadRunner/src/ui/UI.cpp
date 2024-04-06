@@ -143,6 +143,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::Engine::Get().StopGameSession();
 				}
 
+				Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
+
 				Toad::Engine::Get().LoadGameScripts();
 			}
 			ImGui::EndDisabled();
@@ -272,11 +274,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
-                    std::string lib_prefix;
-#ifdef __APPLE__
-                    lib_prefix = "lib";
-#endif
-                    Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
+                    Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
 
 			}
@@ -317,11 +315,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
-                    std::string lib_prefix;
-#ifdef __APPLE__
-                    lib_prefix = "lib";
-#endif
-					Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
+					Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
 					Toad::Engine::Get().LoadGameScripts();
 

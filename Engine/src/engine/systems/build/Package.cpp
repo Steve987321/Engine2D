@@ -258,7 +258,7 @@ namespace Toad
 		//	}
 		//}
 #else 
-		for (const auto& entry : fs::directory_iterator(proj_engine_dir.parent_path() / "Vendor"))
+		for (const auto& entry : fs::directory_iterator(proj_engine_dir.parent_path() / "vendor"))
 		{
 			if (entry.path().filename().string().find("SFML") != std::string::npos)
 			{
