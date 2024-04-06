@@ -66,6 +66,16 @@ bool Engine::Init()
 	LoadGameScripts();
 
 #ifndef TOAD_EDITOR
+
+	// load settings
+	for (const auto& e : std::filesystem::directory_iterator(m_current_path))
+	{
+		if (e.path().filename() == "settings" && e.path().extension() == ".json")
+		{
+			
+		}
+	}
+
 	std::vector<Scene> found_scenes;
 
 	// get start scene and get game dl

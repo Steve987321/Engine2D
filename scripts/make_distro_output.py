@@ -15,6 +15,8 @@ files = [
     (("bin", "Distro-windows-x86_64", "Engine.lib"), ("libs",), ""),
     (("bin", "ReleaseNoEditor-windows-x86_64", "Engine.dll"), ("bin",), ""),
     (("bin", "ReleaseNoEditor-windows-x86_64", "ToadRunner.exe"), ("bin",), "ToadRunnerNoEditor.exe"),
+    (("bin", "DebugNoEditor-windows-x86_64", "ToadRunner.exe"), ("bin", "debug"), "ToadRunnerNoEditorDebug.exe"),
+    (("bin", "DebugNoEditor-windows-x86_64", "Engine.dll"), ("bin", "debug"), ""),
     (("ToadRunner", "src", "project", "generate_game_project.lua"), ("scripts",), ""),
     (("ToadRunner", "imgui.ini"), ("",), ""),
     (("Game", "src", ), ("game_template", "src"), ""),
@@ -27,7 +29,12 @@ files = [
     (("vendor", "SFML-2.6.0", "bin", "sfml-system-2.dll"), (""), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-graphics-2.dll"), (""), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-network-2.dll"), (""), ""),
-    (("vendor", "SFML-2.6.0", "bin", "sfml-window-2.dll"), (""), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-window-2.dll"), (""), ""), 
+    (("vendor", "SFML-2.6.0", "bin", "sfml-audio-d-2.dll"), ("bin", "debug"), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-system-d-2.dll"), ("bin", "debug"), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-graphics-d-2.dll"), ("bin", "debug"), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-network-d-2.dll"), ("bin", "debug"), ""),
+    (("vendor", "SFML-2.6.0", "bin", "sfml-window-d-2.dll"), ("bin", "debug"), ""),
     (("vendor", "sfml-imgui"), ("game_template", "vendor", "sfml-imgui"), ""),
 ]
 
@@ -57,6 +64,7 @@ if not is_valid:
     sys.exit(1)
 
 os.makedirs(os.path.join(dir_out, "bin"), exist_ok=True)
+os.makedirs(os.path.join(dir_out, "bin/debug"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "game_template"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "game_template/src"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "game_template/vendor"), exist_ok=True)

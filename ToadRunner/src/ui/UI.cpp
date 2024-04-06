@@ -33,7 +33,7 @@ Toad::SceneHistory scene_history{};
 bool is_scene_loaded = false;
 
 // get installed directory (distro)
-// get engine project directory (source)
+// get engine solution directory (source)
 extern std::filesystem::path GetEngineDirectory();
 extern std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings);
 
@@ -360,12 +360,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::CloseCurrentPopup();
 		}
 		static std::string output_path;
+		static bool debug_build = false;
 
 		ImGui::Text("selected path: %s", output_path.c_str());
 		if (ImGui::Button("Select output directory"))
 		{			
 			output_path = Toad::GetPathDialog("select output directory", std::filesystem::current_path().string());
 		}
+		ImGui::Checkbox("Debug build", &debug_build);
 
 		ImGui::BeginDisabled(output_path.empty());
 		if (ImGui::Button("Create"))
@@ -399,7 +401,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				settings.engine_path = GetEngineDirectory().string();
 			}
-			package.CreatePackage(proj_file, output_path, misc::current_editor.path, settings.engine_path);
+			Toad::Package::CreatePackageParams p;
+			p.project_file_path = proj_file;
+			p.output_dir_path = output_path;
+			p.build_system_file_path = misc::current_editor.path;
+			p.engine_path = settings.engine_path;
+			p.is_debug = debug_build;
+			package.CreatePackage(p);
 		}
 		ImGui::EndDisabled();
 
@@ -3084,16 +3092,16 @@ std::filesystem::path GetEngineDirectory()
 			parent = res.parent_path();
 			for (const auto& entry : std::filesystem::directory_iterator(parent))
 			{
-				if (!std::filesystem::is_directory(entry.path()))
+				if (std::filesystem::is_directory(entry.path()))
 					continue;
 
-				if (entry.path().filename().string().find("Engine") != std::string::npos)
+				if (entry.path().filename().string().find("Onion.sln") != std::string::npos)
 				{
-					return entry.path();
+					return parent;
 				}
 			}
 			res = parent;
-		} while (parent.has_parent_path());
+		} while (parent.has_parent_path()); // #TODO always returns true 
 	}
 #endif
 
