@@ -15,6 +15,7 @@ namespace Toad
 		const fs::path& GetAssetPath();
 
 		bool loaded_scene = false;
+		bool refresh = false;
 
 	private:
 		fs::path m_assetsPath;
@@ -22,6 +23,7 @@ namespace Toad
 		fs::path m_gameVsprojFile;
 		fs::path m_gameScriptRegisterFile;
 
+		std::vector<fs::path> m_current_path_contents = {};
 		bool m_styleBlocks = true;
 
 		bool CreateCPPScript(std::string_view script_name);

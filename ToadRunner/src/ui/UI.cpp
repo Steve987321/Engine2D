@@ -30,6 +30,7 @@ constexpr int i16_max = std::numeric_limits<int16_t>::max();
 constexpr int i32_max = std::numeric_limits<int32_t>::max();
 
 Toad::SceneHistory scene_history{};
+Toad::GameAssetsBrowser* browser = nullptr; // #TODO: TEMP?
 bool is_scene_loaded = false;
 
 // get installed directory (distro)
@@ -76,6 +77,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 #else
         settings.project_gen_type = project::PROJECT_TYPE::Makefile;
 #endif
+
+		browser = &asset_browser;
         once = false;
     }
 
@@ -2950,15 +2953,17 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 void ui::event_callback(const sf::Event& e)
 {
-	if (!is_scene_loaded)
+	switch (e.type)
 	{
-		return;
-	}
-
-	switch (e.type) {
 	case sf::Event::KeyReleased:
 	case sf::Event::MouseButtonReleased:
-		scene_history.SaveState();
+		if (is_scene_loaded)
+			scene_history.SaveState();
+		break;
+	case sf::Event::GainedFocus:
+		if (browser)
+			browser->refresh = true;
+		break;
 	}
 }
 
