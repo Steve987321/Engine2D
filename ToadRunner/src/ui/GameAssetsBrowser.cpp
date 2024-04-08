@@ -96,6 +96,7 @@ void GameAssetsBrowser::Show()
 				if (m_currentPath != m_assetsPath && ImGui::ArrowButton("##back", ImGuiDir_Left))
 				{
 					m_currentPath = m_currentPath.parent_path();
+					refresh = true;
 				}
 			}
 
@@ -146,6 +147,13 @@ void GameAssetsBrowser::Show()
 						}
 					}
 				}
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Refresh"))
+			{
+				refresh = true;
 			}
 
 			static fs::path selected;
@@ -331,7 +339,17 @@ void GameAssetsBrowser::Show()
 			int max_columns = (int)(ImGui::GetWindowWidth() / (child_size + ImGui::GetStyle().FramePadding.x));
 			bool open_modify_popup = false;
 
-			for (const auto& entry : fs::directory_iterator(m_currentPath))
+			if (refresh)
+			{
+				m_current_path_contents.clear();
+
+				for (const auto& entry : fs::directory_iterator(m_currentPath))
+					m_current_path_contents.emplace_back(entry.path());
+
+				refresh = false;
+			}
+
+			for (const auto& path : m_current_path_contents)
 			{
 				id++;
 				counter++;
@@ -341,42 +359,43 @@ void GameAssetsBrowser::Show()
 				if (!selected.empty())
 				{
 					// rename
-					if (!renaming && selected == entry.path() && ImGui::IsKeyPressed(ImGuiKey_F2))
+					if (!renaming && selected == path && ImGui::IsKeyPressed(ImGuiKey_F2))
 					{
-						strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
+						strncpy(renaming_buf, path.filename().string().c_str(), path.filename().string().length() + 1);
 						renaming = true;
 					}
 				}
 
-				if (entry.is_directory())
+				if (fs::is_directory(path))
 				{
 					ImGui::PushID(id);
-					if (ImGui::Selectable("D", selected == entry.path(), 0, { 50, 50 }))
+					if (ImGui::Selectable("D", selected == path, 0, { 50, 50 }))
 					{
-						selected = entry.path();
+						selected = path;
 					}
 					ImGui::PopID();
 
 					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 					{
-						m_currentPath = entry.path();
+						m_currentPath = path;
+						refresh = true;
 					}
 				}
 				else
 				{
 					ImGui::PushID(id);
 
-					fs::path ext = entry.path().extension();
+					fs::path ext = path.extension();
 
-					if (entry.path().has_extension() && (ext == ".png" || ext == ".jpg"))
+					if (path.has_extension() && (ext == ".png" || ext == ".jpg"))
 					{
-						fs::path relative = fs::relative(entry.path(), m_assetsPath);
+						fs::path relative = fs::relative(path, m_assetsPath);
 						sf::Texture* texture = Engine::Get().GetResourceManager().GetTexture(relative.string());
 
 						if (texture == nullptr)
 						{
 							sf::Texture new_texture;
-							new_texture.loadFromFile(entry.path().string());
+							new_texture.loadFromFile(path.string());
 							texture = Engine::Get().GetResourceManager().AddTexture(relative.string(), new_texture);
 						}
 
@@ -384,14 +403,14 @@ void GameAssetsBrowser::Show()
 					}
 					else
 					{
-						if (ImGui::Selectable("F", selected == entry.path(), 0, { 50, 50 }))
+						if (ImGui::Selectable("F", selected == path, 0, { 50, 50 }))
 						{
 							if (ext == ".TSCENE")
 							{
 								Engine::Get().SetScene(LoadScene(selected, m_assetsPath));
 								loaded_scene = true;
 							}
-							selected = entry.path();
+							selected = path;
 						}
 					}
 
@@ -405,7 +424,7 @@ void GameAssetsBrowser::Show()
 				//src_flags |= ImGuiDragDropFlags_SourceNoPreviewTooltip;
 				if (ImGui::BeginDragDropSource(src_flags))
 				{
-					std::string* buf = new std::string(entry.path().string());
+					std::string* buf = new std::string(path.string());
 					is_dragging_file = true;
 
 					ImGui::SetDragDropPayload("move file", buf, buf->length());
@@ -414,13 +433,13 @@ void GameAssetsBrowser::Show()
 					ImGui::EndTooltip();
 					ImGui::EndDragDropSource();
 				}
-				if (ImGui::BeginDragDropTarget() && entry.is_directory())
+				if (ImGui::BeginDragDropTarget() && fs::is_directory(path))
 				{
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file"))
 					{
 						fs::path src = *(std::string*)payload->Data;
 						std::error_code e;
-						fs::rename(src, entry.path() / src.filename(), e);
+						fs::rename(src, path / src.filename(), e);
 						LOGDEBUGF("error code message: {} {}", e.message(), e.value());
 					}
 
@@ -430,35 +449,35 @@ void GameAssetsBrowser::Show()
 				// options
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsItemHovered())
 				{
-					selected = entry.path();
+					selected = path;
 					open_modify_popup = true;
 				}
-				if (renaming && selected == entry.path())
+				if (renaming && selected == path)
 				{
 					if (!ImGui::IsPopupOpen("replace file warning"))
 						ImGui::SetKeyboardFocusHere();
 
 					if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, reinterpret_cast<ImGuiInputTextCallback>(rename_input_callback)))
 					{
-						if (!ignore_rename_warning && exists(entry.path().parent_path() / renaming_buf))
+						if (!ignore_rename_warning && exists(path.parent_path() / renaming_buf))
 						{
 							ImGui::OpenPopup("replace file warning");
 						}
 						else
 						{
-							fs::rename(entry.path(), entry.path().parent_path() / renaming_buf);
+							fs::rename(path, path.parent_path() / renaming_buf);
 							renaming = false;
 						}
 					}
 					if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 					{
-						strncpy(renaming_buf, entry.path().filename().string().c_str(), entry.path().filename().string().length() + 1);
+						strncpy(renaming_buf, path.filename().string().c_str(), path.filename().string().length() + 1);
 						renaming = false;
 					}
 				}
 				else
 				{
-					ImGui::Text(entry.path().filename().string().c_str());
+					ImGui::Text(path.filename().string().c_str());
 				}
 
 				ImGui::EndChild();
@@ -507,6 +526,7 @@ void GameAssetsBrowser::SetAssetPath(std::string_view path)
 {
 	m_assetsPath = path;
 	m_currentPath = path;
+	refresh = true;
 }
 
 const fs::path& GameAssetsBrowser::GetAssetPath()

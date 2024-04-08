@@ -39,10 +39,12 @@
 #include <sys/syslimits.h>
 #include <dlfcn.h>
 #include <mach-o/dyld.h> // _NSGetExecutablePath
+#define LIB_FILE_PREFIX "lib"
 #define LIB_FILE_EXT ".dylib"
 #define PATH_SEPARATOR '/'
 #define MAX_PATH PATH_MAX
 #elif _WIN32
 #define PATH_SEPARATOR '\\'
 #define LIB_FILE_EXT ".dll"
+#define LIB_FILE_PREFIX ""
 #endif

@@ -21,8 +21,8 @@ namespace Toad
 
         int curr_args_as_str_index = 0;
         bool get_index = false;
-        std::string index_str = "";
-        std::string result = "";
+        std::string index_str;
+        std::string result;
 
         for (const auto c : format)
         {

@@ -11,8 +11,8 @@ newoption{
 }
 
 newoption{
-    trigger = "usesrc",
-    description = "Set if using a version of the engine that has the source code"
+   trigger = "usesrc",
+   description = "Set if using a version of the engine that has the source code"
 }
 
 if not _OPTIONS["enginepath"] then
@@ -36,6 +36,8 @@ workspace(_OPTIONS["projectname"])
     }
     
     startproject (game_project_name)
+
+--[[
 
 if _OPTIONS["usesrc"] then 
 project "Engine"
@@ -181,6 +183,8 @@ project "Engine"
         }
 end 
 
+]]--
+
 project(game_project_name)
     location(game_project_name)
     kind "SharedLib"
@@ -205,7 +209,7 @@ project(game_project_name)
 
 if _OPTIONS["usesrc"] then 
     includedirs{
-        engine_path .. "/src",
+        engine_path .. "/Engine/src",
         "vendor",
         "vendor/imgui",
         "vendor/SFML-2.6.0/include",
@@ -214,7 +218,8 @@ if _OPTIONS["usesrc"] then
         "%{prj.name}/src/scripts"
     }
     libdirs{
-        "vendor/SFML-2.6.0/lib"
+        engine_path .. "/bin/Release-windows-x86_64",
+        "vendor/SFML-2.6.0/lib",
     }
 else
     includedirs{
@@ -224,11 +229,11 @@ else
         "vendor/SFML-2.6.0/include",
         "vendor/json/include",
         "%{prj.name}/src",
-        "%{prj.name}/src/scripts"
+        "%{prj.name}/src/scripts",
     }
     libdirs{
         engine_path .. "/libs",
-        "vendor/SFML-2.6.0/lib"
+        "vendor/SFML-2.6.0/lib",
     }
 end 
 
@@ -242,7 +247,7 @@ end
         defines{
             "NDEBUG",
             "_USRDLL",
-            "GAME_IS_EXPORT"
+            "GAME_IS_EXPORT",
         }
 
         runtime "Release"
@@ -276,7 +281,7 @@ end
     filter "configurations:Debug"
         defines{
             "_DEBUG",
-            "GAME_IS_EXPORT"
+            "GAME_IS_EXPORT",
         }
 
         runtime "Debug"
@@ -352,6 +357,7 @@ end
             "sfml-audio-s",
         }
 
+--[[
 if _OPTIONS["usesrc"] then 
 project "ToadRunner"
     location "ToadRunner"
@@ -505,3 +511,5 @@ project "ToadRunner"
             "sfml-audio-s",
         }
 end
+
+]]--

@@ -675,7 +675,6 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 	}
 }
 
-
 ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder)
 {
 	if (objects.contains("objects"))

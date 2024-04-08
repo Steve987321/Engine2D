@@ -8,7 +8,7 @@
 
 #include "EngineMeta.h"
 
-#include "ui.h"
+#include "UI.h"
 
 #include "imgui-SFML.h"
 #include "FileBrowser.h"
@@ -30,10 +30,11 @@ constexpr int i16_max = std::numeric_limits<int16_t>::max();
 constexpr int i32_max = std::numeric_limits<int32_t>::max();
 
 Toad::SceneHistory scene_history{};
+Toad::GameAssetsBrowser* browser = nullptr; // #TODO: TEMP?
 bool is_scene_loaded = false;
 
 // get installed directory (distro)
-// get engine project directory (source)
+// get engine solution directory (source)
 extern std::filesystem::path GetEngineDirectory();
 extern std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings);
 
@@ -76,6 +77,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 #else
         settings.project_gen_type = project::PROJECT_TYPE::Makefile;
 #endif
+
+		browser = &asset_browser;
         once = false;
     }
 
@@ -142,6 +145,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Toad::Engine::Get().StopGameSession();
 				}
+
+				Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
 				Toad::Engine::Get().LoadGameScripts();
 			}
@@ -224,7 +229,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::InputText("name", name, 30))
 				settings.name = name;
 
-
             const char* project_types[] = {"Visual Studio 2022", "Visual Studio 2019", "Visual Studio 2015", "Makefile", "Codelite", "Xcode"};
 
 #ifdef _WIN32
@@ -273,11 +277,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
-                    std::string lib_prefix;
-#ifdef __APPLE__
-                    lib_prefix = "lib";
-#endif
-                    Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
+                    Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
 
 			}
@@ -318,11 +318,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
-                    std::string lib_prefix;
-#ifdef __APPLE__
-                    lib_prefix = "lib";
-#endif
-					Toad::Engine::Get().UpdateGameBinPaths(lib_prefix + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
+					Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
 					Toad::Engine::Get().LoadGameScripts();
 
@@ -361,12 +357,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::CloseCurrentPopup();
 		}
 		static std::string output_path;
+		static bool debug_build = false;
 
 		ImGui::Text("selected path: %s", output_path.c_str());
 		if (ImGui::Button("Select output directory"))
 		{			
 			output_path = Toad::GetPathDialog("select output directory", std::filesystem::current_path().string());
 		}
+		ImGui::Checkbox("Debug build", &debug_build);
 
 		ImGui::BeginDisabled(output_path.empty());
 		if (ImGui::Button("Create"))
@@ -400,7 +398,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				settings.engine_path = GetEngineDirectory().string();
 			}
-			package.CreatePackage(proj_file, output_path, misc::current_editor.path, settings.engine_path);
+			Toad::Package::CreatePackageParams p;
+			p.project_file_path = proj_file;
+			p.output_dir_path = output_path;
+			p.build_system_file_path = misc::current_editor.path;
+			p.engine_path = settings.engine_path;
+			p.is_debug = debug_build;
+			package.CreatePackage(p);
 		}
 		ImGui::EndDisabled();
 
@@ -2949,15 +2953,17 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 void ui::event_callback(const sf::Event& e)
 {
-	if (!is_scene_loaded)
+	switch (e.type)
 	{
-		return;
-	}
-
-	switch (e.type) {
 	case sf::Event::KeyReleased:
 	case sf::Event::MouseButtonReleased:
-		scene_history.SaveState();
+		if (is_scene_loaded)
+			scene_history.SaveState();
+		break;
+	case sf::Event::GainedFocus:
+		if (browser)
+			browser->refresh = true;
+		break;
 	}
 }
 
@@ -3085,16 +3091,16 @@ std::filesystem::path GetEngineDirectory()
 			parent = res.parent_path();
 			for (const auto& entry : std::filesystem::directory_iterator(parent))
 			{
-				if (!std::filesystem::is_directory(entry.path()))
+				if (std::filesystem::is_directory(entry.path()))
 					continue;
 
-				if (entry.path().filename().string().find("Engine") != std::string::npos)
+				if (entry.path().filename().string().find("Onion.sln") != std::string::npos)
 				{
-					return entry.path();
+					return parent;
 				}
 			}
 			res = parent;
-		} while (parent.has_parent_path());
+		} while (parent.has_parent_path()); // #TODO always returns true 
 	}
 #endif
 
