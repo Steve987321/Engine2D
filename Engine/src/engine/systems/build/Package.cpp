@@ -51,7 +51,7 @@ namespace Toad
 
 		if (proj_assets_path.empty())
 		{
-			LOGERRORF("[Package] No Game folder found in {}", proj_dir);
+			LOGERRORF("[Package] No assets found in {}", proj_dir);
 			return false;
 		}
 
@@ -210,8 +210,8 @@ namespace Toad
 				fs::copy_file(entry.path(), out_dir / entry.path().filename());
 			}
 		}
-#ifdef TOAD_DISTRO
 
+#ifdef TOAD_DISTRO
 		fs::path bin = params.is_debug ? proj_engine_dir / "bin" / "debug" : proj_engine_dir / "bin";
 		fs::path runner = params.is_debug ? "ToadRunnerNoEditorDebug.exe" : "ToadRunnerNoEditor.exe";
 
@@ -258,7 +258,36 @@ namespace Toad
 		//	}
 		//}
 #else 
-		for (const auto& entry : fs::directory_iterator(proj_engine_dir.parent_path() / "vendor"))
+		fs::path bin;
+		if (params.is_debug)
+			bin = proj_engine_dir / "bin" / "DebugNoEditor-windows-x86_64";
+		else
+			bin = proj_engine_dir / "bin" / "ReleaseNoEditor-windows-x86_64";
+
+		fs::path runner = bin / "ToadRunner.exe";
+		fs::path enginedll = bin / "Engine.dll";
+
+		if (!fs::exists(bin))
+		{
+			LOGERRORF("[Package] Path doesn't exist: {}", bin);
+			return false;
+		}
+		if (!fs::exists(runner))
+		{
+			LOGERRORF("[Package] Path doesn't exist: {}", runner);
+			return false;
+		}
+		if (!fs::exists(enginedll))
+		{
+			LOGERRORF("[Package] Path doesn't exist: {}", enginedll);
+			return false;
+		}
+
+		// #TODO rename runner to game project name
+		fs::copy_file(runner, out_dir / "ToadRunner.exe", fs::copy_options::overwrite_existing);
+		fs::copy_file(enginedll, out_dir / "Engine.dll", fs::copy_options::overwrite_existing);
+
+		for (const auto& entry : fs::directory_iterator(proj_engine_dir / "vendor"))
 		{
 			if (entry.path().filename().string().find("SFML") != std::string::npos)
 			{

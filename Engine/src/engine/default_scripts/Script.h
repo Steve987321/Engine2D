@@ -6,7 +6,7 @@
 
 #include <functional>
 
-#ifdef TOAD_EDITOR
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 #include "imgui/imgui.h"
 #endif
 
