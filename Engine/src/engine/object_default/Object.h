@@ -63,11 +63,11 @@ public:
 
 	json SerializeScripts() const;
 
-	void AddScript(std::shared_ptr<Script> script);
+	void AddScript(Script* script);
 
 	void AddScript(std::string_view script_name);
 
-	std::shared_ptr<Script> GetScript(std::string_view name);
+	Script* GetScript(std::string_view name);
 
 	// faster than removing by script type
 	bool RemoveScript(std::string_view script_name);
@@ -94,7 +94,7 @@ public:
 	{
 		for (const auto& script : m_attachedScripts | std::views::values)
 		{
-			auto res = dynamic_cast<T*>(script.get());
+			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
 				return res;
 		}
@@ -102,11 +102,11 @@ public:
 		return nullptr;
 	}
 
-	const std::unordered_map<std::string, std::shared_ptr<Script> >& GetAttachedScripts() const;
+	const std::unordered_map<std::string, Script* >& GetAttachedScripts() const;
 
 protected:
 	// attached scripts 
-	std::unordered_map<std::string, std::shared_ptr<Script> > m_attachedScripts {};
+	std::unordered_map<std::string, Script* > m_attachedScripts;
 
 	std::set<std::string> m_children{};
 	std::string m_parent;
