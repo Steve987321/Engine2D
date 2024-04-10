@@ -339,7 +339,7 @@ project "ToadRunner"
 
     links {
         "Engine",
-        "Game",
+        -- "Game",
     }
 
     filter "system:macosx"

@@ -528,6 +528,8 @@ void Engine::LoadGameScripts()
 	for (auto& script : m_gameScripts | std::views::values)
 	{
 		// #TODO: save name and give warning about lost scripts 
+		if (script)
+			free(script);
 		script = nullptr;
 	}
 
@@ -559,12 +561,8 @@ void Engine::LoadGameScripts()
 	}
 
 	fs::path game_dll_path = game_bin_directory + game_bin_file;
-#ifdef _WIN32
-	fs::path current_game_dll = game_bin_directory + "GameCurrent.dll";
-#else
-//    fs::path current_game_dll = game_bin_directory + "libGameCurrent.dylib";
-    fs::path current_game_dll = game_bin_directory + game_bin_file;
-#endif
+    fs::path current_game_dll = game_bin_directory + LIB_FILE_PREFIX + "GameCurrent" + LIB_FILE_EXT;
+    // fs::path current_game_dll = game_bin_directory + game_bin_file;
 
 #if defined TOAD_EDITOR
 	if (fs::exists(current_game_dll))
@@ -617,7 +615,9 @@ void Engine::LoadGameScripts()
 	for (const auto& script : getScripts())
 	{
 		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
-		m_gameScripts[script->GetName()] = script;
+		void* p = malloc(sizeof(*script));
+		memcpy(p, script.get(), sizeof(*script));
+		m_gameScripts[script->GetName()] = (Script*)p;
 	}
 	for (TGAME_SCRIPTS::iterator it = m_gameScripts.begin(); it != m_gameScripts.end();)
 	{
@@ -695,7 +695,7 @@ void Engine::LoadGameScripts()
 #endif
 }
 
-std::unordered_map<std::string, std::shared_ptr<Script>> & Engine::GetGameScriptsRegister()
+Engine::TGAME_SCRIPTS& Engine::GetGameScriptsRegister()
 {
 	return m_gameScripts;
 }

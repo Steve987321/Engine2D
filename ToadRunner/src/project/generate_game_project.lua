@@ -218,7 +218,7 @@ if _OPTIONS["usesrc"] then
         "%{prj.name}/src/scripts"
     }
     libdirs{
-        engine_path .. "/bin/Release-windows-x86_64",
+        engine_path .. "/bin/Release-%{cfg.system}-x86_64",
         "vendor/SFML-2.6.0/lib",
     }
 else

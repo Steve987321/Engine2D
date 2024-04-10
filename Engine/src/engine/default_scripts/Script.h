@@ -18,11 +18,11 @@ T(std::string_view name) : Script(name)								\
 	m_name = name;													\
 	ExposeVars();													\
 }																	\
-std::shared_ptr<Script> Clone() override							\
+Script* Clone() override											\
 {																	\
 	auto pScript = new T(*this);									\
 	pScript->ExposeVars();											\
-	return std::shared_ptr<Script>(dynamic_cast<Script*>(pScript));	\
+	return dynamic_cast<Script*>(pScript);							\
 }
 
 namespace Toad
@@ -48,8 +48,8 @@ public:
 #endif 
 	virtual void ExposeVars();
 
-	virtual std::shared_ptr<Script> Clone() = 0;
-
+	virtual Script* Clone() = 0;
+ 
 	Reflection& GetReflection();
 	
 protected:

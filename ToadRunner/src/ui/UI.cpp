@@ -537,7 +537,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					ImGui::Text("name %s %p", obj->name.c_str(), obj.get());
 					for (const auto& [namescript, script] : obj->GetAttachedScripts())
 					{
-						ImGui::Text("script %s %p", namescript.c_str(), script.get());
+						ImGui::Text("script %s %p", namescript.c_str(), script);
 					}
 				}
 
@@ -1783,7 +1783,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					if (ImGui::Button(name.c_str()))
 					{
-						selected_obj->AddScript(script->Clone());
+						void* p = malloc(sizeof(*script));
+						memcpy(p, script, sizeof(*script));
+						selected_obj->AddScript((Toad::Script*)p);
 					}					
 				}
 
@@ -1805,7 +1807,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					if (ImGui::TreeNode(("SCRIPT " + name).c_str()))
 					{
 						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script.get());
+						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", script);
 
 						auto script_vars = script->GetReflection().Get();
 						const char* no_var_found_msg = "This variable is not found/exposed in this script, Resave the scene or re-expose the variable";
@@ -3094,7 +3096,8 @@ std::filesystem::path GetEngineDirectory()
 				if (std::filesystem::is_directory(entry.path()))
 					continue;
 
-				if (entry.path().filename().string().find("Onion.sln") != std::string::npos)
+				if (entry.path().filename().string().find("Onion.sln") != std::string::npos || 
+					entry.path().filename().string().find("Makefile") != std::string::npos)
 				{
 					return parent;
 				}

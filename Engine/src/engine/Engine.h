@@ -16,7 +16,7 @@ namespace Toad
 		using FENGINE_UI = std::function<void(ImGuiContext* ctx)>;
 		using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
-		using TGAME_SCRIPTS = std::unordered_map<std::string, std::shared_ptr<Script>>;
+		using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
 		template<class T> 
 		static T* GetObjectAsType(Object* obj)
@@ -82,7 +82,7 @@ namespace Toad
 		// load game.dll 
 		void LoadGameScripts();
 		// returns a map of scripts with script name as key, some script could be nullptr
-		std::unordered_map<std::string, std::shared_ptr<Script>>& GetGameScriptsRegister();
+		TGAME_SCRIPTS& GetGameScriptsRegister();
 
 		std::queue<std::filesystem::path>& GetDroppedFilesQueue();
 

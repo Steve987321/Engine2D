@@ -262,7 +262,7 @@ namespace Toad
 		return attached_scripts;
 	}
 
-	std::shared_ptr<Script> Object::GetScript(std::string_view name)
+	Script* Object::GetScript(std::string_view name)
 	{
 		auto it = m_attachedScripts.find(name.data());
 		if (it != m_attachedScripts.end())
@@ -278,6 +278,7 @@ namespace Toad
 		if (it != m_attachedScripts.end())
 		{
 			//it->second->OnRemove(this);
+			free(it->second);
 			m_attachedScripts.erase(it);
 			return true;
 		}
@@ -285,7 +286,7 @@ namespace Toad
 		return false;
 	}
 
-	void Object::AddScript(std::shared_ptr<Script> script)
+	void Object::AddScript(Script* script)
 	{
 		m_attachedScripts[script->GetName()] = script;
 		//script->OnAttach(this);
@@ -296,15 +297,14 @@ namespace Toad
 		const auto& gscripts = Engine::Get().GetGameScriptsRegister();
 		if (auto it = gscripts.find(script_name.data()); it != gscripts.end())
 		{
-			auto script_instance = it->second->Clone();
-			AddScript(script_instance);
+			AddScript(it->second->Clone());
 			//return script_instance.get();
 		}
 
 		//return nullptr;
 	}
 
-	const std::unordered_map<std::string, std::shared_ptr<Script>>& Object::GetAttachedScripts() const
+	const std::unordered_map<std::string, Script*>& Object::GetAttachedScripts() const
 	{
 		return m_attachedScripts;
 	}
