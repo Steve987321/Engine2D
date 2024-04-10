@@ -18,11 +18,11 @@ T(std::string_view name) : Script(name)								\
 	m_name = name;													\
 	ExposeVars();													\
 }																	\
-Script* Clone() override							\
+Script* Clone() override											\
 {																	\
 	auto pScript = new T(*this);									\
 	pScript->ExposeVars();											\
-	return dynamic_cast<Script*>(pScript);	\
+	return dynamic_cast<Script*>(pScript);							\
 }
 
 namespace Toad
