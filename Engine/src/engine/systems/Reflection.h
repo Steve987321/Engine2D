@@ -1,7 +1,7 @@
 #pragma once
 
 // reflection for variables in scripts
-// variables need to be static or global
+// should be used on script class member variables
 
 // this will be used for the editor
 

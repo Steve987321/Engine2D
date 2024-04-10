@@ -20,7 +20,7 @@ public:
 	void ExposeVars() override;
 
 #ifdef TOAD_EDITOR
-	void OnEditorUI(ImGuiContext* ctx);
+	void OnEditorUI(Toad::Object* obj, ImGuiContext* ctx) override;
 #endif 
 
 private:

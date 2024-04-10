@@ -90,11 +90,10 @@ void TestScript::ExposeVars()
 }
 
 #ifdef TOAD_EDITOR
-void TestScript::OnEditorUI(ImGuiContext* ctx)
+void TestScript::OnEditorUI(Object* obj, ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
 
 	ImGui::Text("Velocity: %f %f", velx, vely);
 }
 #endif // TOAD_EDITOR
-
