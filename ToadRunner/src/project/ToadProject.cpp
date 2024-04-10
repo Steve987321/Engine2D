@@ -83,8 +83,10 @@ namespace project {
 
 #ifdef _WIN32
 		const std::string premake5 = "premake5.exe";
+		const std::string full_path_to_premake5 = project_path_forwardslash + '/' + premake5;
 #else
 		const std::string premake5 = "premake5";
+		const std::string& full_path_to_premake5 = premake5;
 #endif
 		const fs::path engine_path_fs = settings.engine_path;
 
@@ -183,7 +185,7 @@ namespace project {
 		std::string premake_use_src_arg = "--usesrc";
 #endif
 		const std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} {}",
-			project_path_forwardslash + '/' + premake5,
+			full_path_to_premake5,
 			proj_type_str,
 			project_path_forwardslash + "/premake5.lua",
 			engine_path_forwardslash,
@@ -720,9 +722,11 @@ namespace project {
 
 			return false;
 		}
-		if (!fs::exists(path / "bin" / "Release-windows-x86_64" / "Engine.lib"))
+		std::string bin_output = "Release-" + std::string(PLATFORM_AS_STRING) + "-x86_64";
+		std::string lib_file = LIB_FILE_PREFIX + std::string("Engine") + LIB_FILE_EXT;
+		if (!fs::exists(path / "bin" / bin_output / lib_file))
 		{
-			LOGWARNF("[Project] No lib files build in Release, which is needed for project. Please build the engine in Release : {} Doesn't exist", path / "bin" / "Release-windows-x86_64" / "Engine.lib");
+			LOGWARNF("[Project] No lib files build in Release, which is needed for project. Please build the engine in Release : {} Doesn't exist", path / "bin" / bin_output / lib_file);
 		}
 #endif
 		return true;
