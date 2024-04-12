@@ -23,8 +23,8 @@ struct AppSettings
 inline AppSettings game_settings
 {
 	"Game",
-	500,
-	500,
+	1280,
+	720,
 	60,
 	sf::ContextSettings()
 };
