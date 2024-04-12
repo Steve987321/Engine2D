@@ -3118,7 +3118,11 @@ std::filesystem::path GetEngineDirectory()
 
 std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings)
 {
-    for (const auto& entry : std::filesystem::directory_iterator(settings.project_path))
+	std::filesystem::path p = settings.project_path;
+	if (!std::filesystem::is_directory(p)) 
+		p = p.parent_path();
+		
+    for (const auto& entry : std::filesystem::directory_iterator(p))
     {
         if (entry.path().filename().string().find("bin") != std::string::npos)
         {
