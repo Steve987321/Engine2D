@@ -363,9 +363,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (ImGui::Button("Select output directory"))
 		{			
 			output_path = Toad::GetPathDialog("select output directory", std::filesystem::current_path().string());
-		}
+		} 
+#ifdef __APPLE__ 
+		ImGui::BeginDisabled();
 		ImGui::Checkbox("Debug build", &debug_build);
-
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		HelpMarker("Debug builds are currently only available on windows");
+#else 
+		ImGui::Checkbox("Debug build", &debug_build);
+#endif 
 		ImGui::BeginDisabled(output_path.empty());
 		if (ImGui::Button("Create"))
 		{
