@@ -117,7 +117,11 @@ void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
 		Engine::Get().AdjustFixedTimeStep(std::clamp(fixed_time_step, 0.00001f, 5.f));
 
 	ImGui::SeparatorText("Info");
-	ImGui::Text("Ball position: (%f, %f)", circle->GetPosition().x, circle->GetPosition().y);
+	if (circle)
+		ImGui::Text("Ball position: (%f, %f)", circle->GetPosition().x, circle->GetPosition().y);
+	else 
+		ImGui::Text("Ball position: ?");
+		
 	ImGui::Text("Frame per sec: %f", 1.f / Engine::Get().GetDeltaTime().asSeconds());
 
 	ImGui::End();
