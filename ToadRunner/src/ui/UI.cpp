@@ -1783,9 +1783,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					if (ImGui::Button(name.c_str()))
 					{
-						void* p = malloc(sizeof(*script));
-						memcpy(p, script, sizeof(*script));
-						selected_obj->AddScript((Toad::Script*)p);
+						selected_obj->AddScript(script->Clone());
+						selected_obj->GetScript(name)->ExposeVars();
 					}					
 				}
 

@@ -41,6 +41,7 @@
 #include <mach-o/dyld.h> // _NSGetExecutablePath
 #define LIB_FILE_PREFIX "lib"
 #define LIB_FILE_EXT ".dylib"
+#define EXE_FILE_EXT ""
 #define PATH_SEPARATOR '/'
 #define MAX_PATH PATH_MAX
 #define PLATFORM_AS_STRING "macosx"
@@ -48,5 +49,6 @@
 #define PATH_SEPARATOR '\\'
 #define LIB_FILE_EXT ".dll"
 #define LIB_FILE_PREFIX ""
+#define EXE_FILE_EXT ".exe"
 #define PLATFORM_AS_STRING "windows"
 #endif

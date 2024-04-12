@@ -170,6 +170,8 @@ namespace Toad
 	void Object::Destroy(bool destroy_children)
 	{
 		OnDestroy();
+		for (auto it : m_attachedScripts)
+			RemoveScript(it.first);
 		Object* parent_obj = m_currentScene.GetSceneObject(m_parent).get();
 		for (Object* child : GetChildrenAsObjects())
 		{
@@ -190,7 +192,7 @@ namespace Toad
 	json Object::SerializeScripts() const
 	{
 		json attached_scripts;
-		for (const auto& it : m_attachedScripts)
+		for (auto it : m_attachedScripts)
 		{
 			const auto& reflection_vars = it.second->GetReflection().Get();
 			const auto& bs = reflection_vars.b;

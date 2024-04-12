@@ -572,8 +572,10 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				if (auto it = gscripts.find(script.key()); it != gscripts.end())
 				{
 					newobj->AddScript(it->second->Clone());
+					newobj->GetScript(script.key())->ExposeVars();
 					auto new_attached_script = newobj->GetScript(it->first);
 					auto& vars = new_attached_script->GetReflection().Get();
+
 					int i = 0;
 					for (const auto& script_vars : script.value().items())
 					{
