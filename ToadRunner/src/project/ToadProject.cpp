@@ -416,7 +416,7 @@ namespace project {
 					json data = json::parse(project_file);
 
 					settings.name = data["name"];
-                    settings.project_path = fs::path(path).parent_path().string();
+                    settings.project_path = fs::path(path).string();
 					
 					GET_JSON_ELEMENT(settings.editor_cam_pos.x, data, "editor_cam_posx");
 					GET_JSON_ELEMENT(settings.editor_cam_pos.y, data, "editor_cam_posy");
@@ -468,7 +468,7 @@ namespace project {
 				{
                     json data = json::parse(project_file);
 					settings.name = data["name"];
-                    settings.project_path = fs::path(path).parent_path().string();
+                    settings.project_path = fs::path(path).string();
 
 					GET_JSON_ELEMENT(settings.editor_cam_pos.x, data, "editor_cam_posx");
 					GET_JSON_ELEMENT(settings.editor_cam_pos.y, data, "editor_cam_posy");
