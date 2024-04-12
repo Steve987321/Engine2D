@@ -421,11 +421,13 @@ namespace project {
 					GET_JSON_ELEMENT(settings.editor_cam_pos.x, data, "editor_cam_posx");
 					GET_JSON_ELEMENT(settings.editor_cam_pos.y, data, "editor_cam_posy");
 					GET_JSON_ELEMENT(settings.editor_cam_size.x, data, "editor_cam_sizex");
-					GET_JSON_ELEMENT(settings.editor_cam_size.y, data, "editor_cam_sizex");
+					GET_JSON_ELEMENT(settings.editor_cam_size.y, data, "editor_cam_sizex");					
 				}
 				catch(json::parse_error& e)
 				{
 					project_file.close();
+
+					current_project = settings;
 
 					return
 					{
@@ -479,6 +481,8 @@ namespace project {
 				{
 					project_file.close();
 
+					current_project = settings;
+
 					return
 					{
 						LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
@@ -492,7 +496,7 @@ namespace project {
 		}	
 
 		current_project = settings;
-
+		
 		return
 		{
 			LOAD_PROJECT_RES::OK,

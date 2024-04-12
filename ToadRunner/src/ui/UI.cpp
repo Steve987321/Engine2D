@@ -277,6 +277,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
+					if (!std::filesystem::exists(project::current_project.engine_path))
+						project::current_project.engine_path = GetEngineDirectory();
+						
                     Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
 
@@ -321,6 +324,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
 					Toad::Engine::Get().LoadGameScripts();
+
+					if (!std::filesystem::exists(project::current_project.engine_path))
+						project::current_project.engine_path = GetEngineDirectory();
 
 					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
 					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder).string());
@@ -3121,7 +3127,7 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
 	std::filesystem::path p = settings.project_path;
 	if (!std::filesystem::is_directory(p)) 
 		p = p.parent_path();
-		
+
     for (const auto& entry : std::filesystem::directory_iterator(p))
     {
         if (entry.path().filename().string().find("bin") != std::string::npos)
