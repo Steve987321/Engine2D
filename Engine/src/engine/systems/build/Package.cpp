@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "package.h"
+#include "Package.h"
 
 #include "engine/Engine.h"
 
@@ -22,8 +22,10 @@ namespace Toad
 	bool Package::CreatePackage(const CreatePackageParams& params)
 	{
 		const std::string build_config_arg = params.is_debug ? "DevDebug" : "Release";
+		const std::string build_config_arg_lower = params.is_debug ? "devdebug" : "release";
+
 		const fs::path proj_dir = params.project_file_path.parent_path();
-		const fs::path proj_bin_path = proj_dir / "bin" / Toad::format_str("{}-windows-x86_64", build_config_arg);
+		const fs::path proj_bin_path = proj_dir / "bin" / Toad::format_str("{}-{}-x86_64", build_config_arg, PLATFORM_AS_STRING);
 		const fs::path out_dir = params.output_dir_path / "packaged_game";
 		const fs::path& proj_engine_dir = params.engine_path;
 
@@ -33,6 +35,7 @@ namespace Toad
 			return false;
 		}
 
+		// get assets path 
 		fs::path proj_assets_path;
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
@@ -55,22 +58,42 @@ namespace Toad
 			return false;
 		}
 
-		fs::path slnfile_path;
+		fs::path project_file_path;
+#ifdef _WIN32
+		// look for sln 
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
 			if (entry.path().has_extension() && entry.path().extension() == ".sln")
 			{
-				slnfile_path = entry;
+				project_file_path = entry;
 				break;
 			}
 		}
 
-		if (slnfile_path.empty())
+		if (project_file_path.empty())
 		{
 			LOGERRORF("[Package] No .sln file found in {}", params.project_file_path.parent_path());
 			return false;
 		}
+#else
+		// look for makefile
+		for (const auto& entry : fs::directory_iterator(proj_dir))
+		{
+			if (entry.path().filename().string() == "Makefile")
+			{
+				project_file_path = entry;
+				break;
+			}
+		}
 
+		if (project_file_path.empty())
+		{
+			LOGERRORF("[Package] No Makefile file found in {}", params.project_file_path.parent_path());
+			return false;
+		}
+#endif 
+
+#ifdef _WIN32
 		if (params.project_file_path.extension() != FILE_EXT_TOADPROJECT)
 		{
 			LOGERRORF("[Package] Create package project file is invalid: {}", params.project_file_path);
@@ -83,8 +106,8 @@ namespace Toad
 			fs::remove(proj_dir / "buildlog.txt");
 		}
 
-		LOGDEBUGF("[Package] Running build for {}", slnfile_path);
-		if (!RunBuildSystemWithArgs(params.build_system_file_path, format_str("{} /build {} /out buildlog.txt", slnfile_path.string(), build_config_arg)))
+		LOGDEBUGF("[Package] Running build for {}", project_file_path);
+		if (!RunBuildSystemWithArgs(params.build_system_file_path, format_str("{} /build {} /out buildlog.txt", project_file_path.string(), build_config_arg)))
 		{
 			LOGERROR("Failed to run build system");
 			return false;
@@ -148,15 +171,23 @@ namespace Toad
 		// check build status 
 		if (build_finish_status.find("0 failed") == std::string::npos)
 		{
-			LOGERRORF("[Package] Experienced errors while building {}", slnfile_path);
+			LOGERRORF("[Package] Experienced errors while building {}", project_file_path);
 			return false;
 		}
+#else 
+		int build_res = system(Toad::format_str("cd {} && make config={}", project_file_path.parent_path(), build_config_arg_lower).c_str());
 
+		if (build_res != 0)
+		{
+			LOGERRORF("[Package] Experienced errors while building {}", project_file_path);
+			return false;
+		}
+#endif 
 		// check output binaries 
 		bool has_dll = false;
 		for (const auto& entry : fs::directory_iterator(proj_bin_path))
 		{
-			if (entry.path().extension() == ".dll")
+			if (entry.path().extension() == LIB_FILE_EXT)
 			{
 				has_dll = true;
 				break;
@@ -165,7 +196,7 @@ namespace Toad
 
 		if (!has_dll)
 		{
-			LOGERRORF("[Package] No game dll found in {}", proj_bin_path);
+			LOGERRORF("[Package] No game dl file found in {}", proj_bin_path);
 			return false;
 		}
 
@@ -205,7 +236,7 @@ namespace Toad
 		}
 		for (const auto& entry : fs::directory_iterator(proj_bin_path))
 		{
-			if (entry.path().extension() == ".dll")
+			if (entry.path().extension() == LIB_FILE_EXT)
 			{
 				fs::copy_file(entry.path(), out_dir / entry.path().filename());
 			}
@@ -260,12 +291,14 @@ namespace Toad
 #else 
 		fs::path bin;
 		if (params.is_debug)
-			bin = proj_engine_dir / "bin" / "DebugNoEditor-windows-x86_64";
+			bin = proj_engine_dir / "bin" / format_str("DebugNoEditor-{}-x86_64", PLATFORM_AS_STRING);
 		else
-			bin = proj_engine_dir / "bin" / "ReleaseNoEditor-windows-x86_64";
+			bin = proj_engine_dir / "bin" / format_str("ReleaseNoEditor-{}-x86_64", PLATFORM_AS_STRING);
 
-		fs::path runner = bin / "ToadRunner.exe";
-		fs::path enginedll = bin / "Engine.dll";
+		std::string runner_name = format_str("ToadRunner{}", EXE_FILE_EXT);
+		std::string engine_dl_name = format_str("{}Engine{}", LIB_FILE_PREFIX, LIB_FILE_EXT);
+		fs::path runner = bin / runner_name;
+		fs::path enginedll = bin / engine_dl_name;
 
 		if (!fs::exists(bin))
 		{
@@ -284,13 +317,14 @@ namespace Toad
 		}
 
 		// #TODO rename runner to game project name
-		fs::copy_file(runner, out_dir / "ToadRunner.exe", fs::copy_options::overwrite_existing);
-		fs::copy_file(enginedll, out_dir / "Engine.dll", fs::copy_options::overwrite_existing);
+		fs::copy_file(runner, out_dir / runner_name, fs::copy_options::overwrite_existing);
+		fs::copy_file(enginedll, out_dir / engine_dl_name, fs::copy_options::overwrite_existing);
 
 		for (const auto& entry : fs::directory_iterator(proj_engine_dir / "vendor"))
 		{
 			if (entry.path().filename().string().find("SFML") != std::string::npos)
 			{
+#ifdef _WIN32
 				for (const auto& entry2 : fs::directory_iterator(entry.path() / "bin"))
 				{
 					if (params.is_debug) 
@@ -308,6 +342,15 @@ namespace Toad
 						}
 					}
 				}
+#else
+				for (const auto& entry2 : fs::directory_iterator(entry.path() / "lib"))
+				{
+					if (entry2.path().filename().string().find("sfml-") != std::string::npos && entry2.path().filename().extension() == ".dylib")
+					{
+						fs::copy_file(entry2.path(), out_dir / entry2.path().filename());
+					}
+				}
+#endif
 
 				break;
 			}

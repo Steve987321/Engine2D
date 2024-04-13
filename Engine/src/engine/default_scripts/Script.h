@@ -20,7 +20,7 @@ T(std::string_view name) : Script(name)								\
 }																	\
 Script* Clone() override											\
 {																	\
-	auto pScript = new T(*this);									\
+	T* pScript = new T(*this);										\
 	pScript->ExposeVars();											\
 	return dynamic_cast<Script*>(pScript);							\
 }
@@ -33,7 +33,7 @@ class ENGINE_API Script
 {
 public:
 	Script(std::string_view name);
-	
+
 	const std::string& GetName() const;
 
 	virtual void OnUpdate(Object* obj);

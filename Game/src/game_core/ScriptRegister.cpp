@@ -12,19 +12,20 @@ void register_scripts()
 {
 	get_registered_scripts().clear();
 
+	std::cout << sizeof(TestScript) << std::endl;
 	SCRIPT_REGISTER(TestScript);
 
 	SCRIPT_REGISTER(AnimationController);
 }
 
-void register_script(const std::shared_ptr<Script>& instance)
+void register_script(void* instance, size_t size)
 {
-	get_registered_scripts().emplace_back(instance);
+	get_registered_scripts().emplace_back(instance, size);
 }
 
-std::vector<std::shared_ptr<Script>>& get_registered_scripts()
+std::vector<SBuf>& get_registered_scripts()
 {
-	static std::vector<std::shared_ptr<Script>> scripts{};
+	static std::vector<SBuf> scripts{};
 	return scripts;
 }
 

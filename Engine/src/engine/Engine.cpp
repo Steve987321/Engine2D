@@ -66,7 +66,6 @@ bool Engine::Init()
 	LoadGameScripts();
 
 #ifndef TOAD_EDITOR
-
 	// load settings
 	for (const auto& e : std::filesystem::directory_iterator(m_current_path))
 	{
@@ -108,14 +107,11 @@ bool Engine::Init()
 		}
 	}
 
-	LoadGameScripts();
-
 	m_scenes.reserve(found_scenes.size());
 	for (const Scene& s : found_scenes)
 	{
 		m_scenes.push_back(s);
 	}
-
 #endif
 
 	// #TODO: change to a .ini or .json
@@ -186,7 +182,7 @@ void Engine::Run()
 
 bool Engine::InitWindow(const AppSettings& settings)
 {
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#if defined(TOAD_EDITOR)
 	LOGDEBUG("Loading editor window");
 
 	m_window.create(sf::VideoMode(m_width, m_height), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
@@ -216,11 +212,24 @@ bool Engine::InitWindow(const AppSettings& settings)
 	ImGui::SFML::UpdateFontTexture();
 
 	return res;
-#else	
+#else
 	// TODO: CHENGE DEEZZ
 	LOGDEBUG("Creating window");
 	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings.ctx_settings);
 	m_window.setFramerateLimit(settings.frame_limit);
+
+#ifndef NDEBUG // imgui
+	bool res = ImGui::SFML::Init(m_window, false);
+	LOGDEBUGF("ImGui SFML Init result: {}", res);
+	m_io = &ImGui::GetIO();
+	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	// m_io->Fonts->Clear();
+	m_io->Fonts->AddFontDefault();
+	// m_io->Fonts->Build();
+	ImGui::SFML::UpdateFontTexture();
+#endif
 	return true;
 #endif
 }
@@ -232,9 +241,10 @@ void Engine::EventHandler()
 	{
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 		ImGui::SFML::ProcessEvent(m_window, e);
+#endif
+#if defined(TOAD_EDITOR)
 		m_eventCallback(e);
 #endif
-
 		switch (e.type)
 		{
 		
@@ -368,6 +378,8 @@ void Engine::Render()
 	for (auto& obj : m_currentScene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
+
+	ImGui::SFML::Render(m_window);
 #endif 
 	GetScene().Render(m_window);
 
@@ -564,7 +576,7 @@ void Engine::LoadGameScripts()
     fs::path current_game_dll = game_bin_directory + LIB_FILE_PREFIX + "GameCurrent" + LIB_FILE_EXT;
     // fs::path current_game_dll = game_bin_directory + game_bin_file;
 
-#if defined TOAD_EDITOR
+#ifdef TOAD_EDITOR
 	if (fs::exists(current_game_dll))
 	{
 		if (fs::exists(game_dll_path))
@@ -612,12 +624,18 @@ void Engine::LoadGameScripts()
 
 	registerScripts();
 
-	for (const auto& script : getScripts())
+	for (const auto& [b, n] : getScripts())
 	{
+		Script* script = (Script*)(b);
 		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
-		void* p = malloc(sizeof(*script));
-		memcpy(p, script.get(), sizeof(*script));
+		LOGDEBUGF("[Engine] Alloc for script {} with size {}. Base size {}: n: {}", script->GetName(), sizeof(*script), sizeof(Toad::Script), n);
+		void* p = malloc(n);
+		memcpy(p, b, n);
+
+		// this can be deleted after 
+		assert(p && "Allocation failed for script, please rebuild script to be updated");
 		m_gameScripts[script->GetName()] = (Script*)p;
+		m_gameScripts[script->GetName()]->ExposeVars();
 	}
 	for (TGAME_SCRIPTS::iterator it = m_gameScripts.begin(); it != m_gameScripts.end();)
 	{
@@ -648,8 +666,11 @@ void Engine::LoadGameScripts()
 			if (it != m_gameScripts.end())
 			{
 				// update exposed vars if they exist 
+				// LOGDEBUGF("[Engine] Alloc for script {} with size {}", it->first, sizeof(*it->second));
+				// void* p = malloc(sizeof(*it->second));
+				// memcpy(p, it->second, sizeof(*it->second));
 				obj->AddScript(it->second->Clone());
-
+				obj->GetScript(it->first)->ExposeVars();
 				auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection().Get();
 
 				for (auto& [name, v] : new_reflection_vars.str)

@@ -13,6 +13,8 @@ void TestScript::OnStart(Object* obj)
 
 	circle = dynamic_cast<Circle*>(obj);
 
+	Engine::Get().AdjustFixedTimeStep(0.01f);
+
 	if (circle == nullptr)
 	{
 		LOGERROR("CIRCLE IS NULL");
@@ -32,7 +34,7 @@ void TestScript::OnFixedUpdate(Toad::Object* obj)
 {
 	if (circle != nullptr)
 	{
-		float dt = Engine::Get().GetDeltaTime().asSeconds();
+		float dt = Engine::Get().GetFixedDeltaTime().asSeconds();
 
 		const auto change_c_col = [this]
 			{
@@ -56,7 +58,7 @@ void TestScript::OnFixedUpdate(Toad::Object* obj)
 					change_c_col();
 					velx *= -1;
 				}
-			if (c_bounds.left + c_bounds.width > camposlefttop.x + camsize.x / 2)
+			if (c_bounds.left + c_bounds.width > camposlefttop.x + camsize.x)
 				if (velx > 0)
 				{
 					change_c_col();
@@ -68,7 +70,7 @@ void TestScript::OnFixedUpdate(Toad::Object* obj)
 					change_c_col();
 					vely *= -1;
 				}
-			if (c_bounds.top + c_bounds.height > camposlefttop.y + camsize.y / 2)
+			if (c_bounds.top + c_bounds.height > camposlefttop.y + camsize.y)
 				if (vely > 0)
 				{
 					change_c_col();
@@ -76,7 +78,7 @@ void TestScript::OnFixedUpdate(Toad::Object* obj)
 				}
 		}
 
-		circle->SetPosition(circle->GetPosition() + Vec2f{ velx * dt, vely * dt } *speed_mult);
+		circle->SetPosition(circle->GetPosition() + Vec2f{ velx, vely } *speed_mult * dt);
 	}
 }
 
@@ -90,10 +92,38 @@ void TestScript::ExposeVars()
 }
 
 #ifdef TOAD_EDITOR
-void TestScript::OnEditorUI(Object* obj, ImGuiContext* ctx)
+void TestScript::OnEditorUI(Toad::Object* obj, ImGuiContext* ctx)
 {
 	ImGui::SetCurrentContext(ctx);
 
 	ImGui::Text("Velocity: %f %f", velx, vely);
 }
-#endif // TOAD_EDITOR
+#endif
+
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
+{
+	ImGui::SetCurrentContext(ctx);
+
+	ImGui::Begin("[TestScript] Controller menu");
+
+	static int fps = 60;
+	static float fixed_time_step = Engine::Get().GetFixedDeltaTime().asSeconds();
+	ImGui::DragFloat("Ball Speed Mult", &speed_mult);
+	if (ImGui::DragInt("FPS Lock", &fps))
+		Engine::Get().GetWindow().setFramerateLimit(fps);
+	
+	if (ImGui::InputFloat("Fixed Step Delta", &fixed_time_step, 0.001f, 0.005f, "%.7f"))
+		Engine::Get().AdjustFixedTimeStep(std::clamp(fixed_time_step, 0.00001f, 5.f));
+
+	ImGui::SeparatorText("Info");
+	if (circle)
+		ImGui::Text("Ball position: (%f, %f)", circle->GetPosition().x, circle->GetPosition().y);
+	else 
+		ImGui::Text("Ball position: ?");
+		
+	ImGui::Text("Frame per sec: %f", 1.f / Engine::Get().GetDeltaTime().asSeconds());
+
+	ImGui::End();
+}
+#endif 

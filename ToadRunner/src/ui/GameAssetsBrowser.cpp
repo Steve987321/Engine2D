@@ -82,6 +82,8 @@ void GameAssetsBrowser::Show()
 					LOGERRORF("Failed to copy {} to {}", queued_file, m_currentPath / queued_file.filename());
 				}
 
+				refresh = true;
+
 				droppedFilesQueue.pop();
 			}
 
@@ -177,6 +179,7 @@ void GameAssetsBrowser::Show()
 					fs::rename(selected, selected.parent_path() / renaming_buf);
 					renaming = false;
 					ignore_rename_warning = false;
+					refresh = true;
 					ImGui::CloseCurrentPopup();
 				}
 				if (ImGui::Button("No"))
@@ -205,6 +208,8 @@ void GameAssetsBrowser::Show()
 					{
 						ImGui::CloseCurrentPopup();
 					}
+
+					refresh = true;
 				}
 
 				ImGui::EndPopup();
@@ -226,6 +231,7 @@ void GameAssetsBrowser::Show()
 					}
 					create_directory(m_currentPath / dir_name);
 
+					refresh = true;
 					selected = m_currentPath / dir_name;
 					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 					ignore_rename_warning = true;
@@ -249,7 +255,8 @@ void GameAssetsBrowser::Show()
 					nlohmann::json da;
 					f << da;
 					f.close();
-
+					
+					refresh = true;
 					selected = m_currentPath / scene_name;
 					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 					renaming = true;
@@ -321,6 +328,7 @@ void GameAssetsBrowser::Show()
 					}
 
 					fs::remove(selected);
+					refresh = true;
 
 					ImGui::CloseCurrentPopup();
 				}
@@ -440,6 +448,7 @@ void GameAssetsBrowser::Show()
 						fs::path src = *(std::string*)payload->Data;
 						std::error_code e;
 						fs::rename(src, path / src.filename(), e);
+						refresh = true;
 						LOGDEBUGF("error code message: {} {}", e.message(), e.value());
 					}
 
@@ -466,6 +475,7 @@ void GameAssetsBrowser::Show()
 						else
 						{
 							fs::rename(path, path.parent_path() / renaming_buf);
+							refresh = true; 
 							renaming = false;
 						}
 					}

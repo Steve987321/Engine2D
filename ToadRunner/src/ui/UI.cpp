@@ -277,6 +277,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
 					}
 
+					if (!std::filesystem::exists(project::current_project.engine_path))
+						project::current_project.engine_path = GetEngineDirectory().string();
+						
                     Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
 
@@ -322,6 +325,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					Toad::Engine::Get().LoadGameScripts();
 
+					if (!std::filesystem::exists(project::current_project.engine_path))
+						project::current_project.engine_path = GetEngineDirectory().string();
+
 					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
 					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder).string());
 
@@ -363,9 +369,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 		if (ImGui::Button("Select output directory"))
 		{			
 			output_path = Toad::GetPathDialog("select output directory", std::filesystem::current_path().string());
-		}
+		} 
+#ifdef __APPLE__ 
+		ImGui::BeginDisabled();
 		ImGui::Checkbox("Debug build", &debug_build);
-
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		HelpMarker("Debug builds are currently only available on windows");
+#else 
+		ImGui::Checkbox("Debug build", &debug_build);
+#endif 
 		ImGui::BeginDisabled(output_path.empty());
 		if (ImGui::Button("Create"))
 		{
@@ -1783,9 +1796,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					if (ImGui::Button(name.c_str()))
 					{
-						void* p = malloc(sizeof(*script));
-						memcpy(p, script, sizeof(*script));
-						selected_obj->AddScript((Toad::Script*)p);
+						selected_obj->AddScript(script->Clone());
+						selected_obj->GetScript(name)->ExposeVars();
 					}					
 				}
 
@@ -3112,7 +3124,11 @@ std::filesystem::path GetEngineDirectory()
 
 std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings)
 {
-    for (const auto& entry : std::filesystem::directory_iterator(settings.project_path))
+	std::filesystem::path p = settings.project_path;
+	if (!std::filesystem::is_directory(p)) 
+		p = p.parent_path();
+
+    for (const auto& entry : std::filesystem::directory_iterator(p))
     {
         if (entry.path().filename().string().find("bin") != std::string::npos)
         {

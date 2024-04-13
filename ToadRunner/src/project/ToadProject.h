@@ -132,6 +132,6 @@ namespace project {
 
 	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
 
-	// rerun premake 
+	// rerun premake path=projectpath
 	bool Update(const ProjectSettings& settings, const std::filesystem::path& path);
 }
