@@ -278,7 +278,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 
 					if (!std::filesystem::exists(project::current_project.engine_path))
-						project::current_project.engine_path = GetEngineDirectory();
+						project::current_project.engine_path = GetEngineDirectory().string();
 						
                     Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
@@ -326,7 +326,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::Engine::Get().LoadGameScripts();
 
 					if (!std::filesystem::exists(project::current_project.engine_path))
-						project::current_project.engine_path = GetEngineDirectory();
+						project::current_project.engine_path = GetEngineDirectory().string();
 
 					asset_browser.SetAssetPath((std::filesystem::path(path).parent_path() / game_folder / "src" / "assets").string());
 					fBrowser.SetPath((std::filesystem::path(path).parent_path() / game_folder).string());

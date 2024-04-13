@@ -631,6 +631,9 @@ void Engine::LoadGameScripts()
 		LOGDEBUGF("[Engine] Alloc for script {} with size {}. Base size {}: n: {}", script->GetName(), sizeof(*script), sizeof(Toad::Script), n);
 		void* p = malloc(n);
 		memcpy(p, b, n);
+
+		// this can be deleted after 
+		assert(p && "Allocation failed for script, please rebuild script to be updated");
 		m_gameScripts[script->GetName()] = (Script*)p;
 		m_gameScripts[script->GetName()]->ExposeVars();
 	}
