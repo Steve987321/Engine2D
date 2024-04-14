@@ -170,8 +170,11 @@ namespace Toad
 	void Object::Destroy(bool destroy_children)
 	{
 		OnDestroy();
-		for (auto it : m_attachedScripts)
+
+		auto attached_scripts_temp = m_attachedScripts;
+		for (const auto& it : attached_scripts_temp)
 			RemoveScript(it.first);
+		
 		Object* parent_obj = m_currentScene.GetSceneObject(m_parent).get();
 		for (Object* child : GetChildrenAsObjects())
 		{
