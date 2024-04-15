@@ -113,8 +113,8 @@ void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
 	if (ImGui::DragInt("FPS Lock", &fps))
 		Engine::Get().GetWindow().setFramerateLimit(fps);
 	
-	if (ImGui::InputFloat("Fixed Step Delta", &fixed_time_step, 0.001f, 0.005f, "%.7f"))
-		Engine::Get().AdjustFixedTimeStep(std::clamp(fixed_time_step, 0.00001f, 5.f));
+	if (ImGui::InputFloat("Fixed Step Delta", &fixed_time_step, 1.0e-7f, 5.f, "%.7f"))
+		Engine::Get().AdjustFixedTimeStep(std::clamp(fixed_time_step, 1.0e-7f, 5.f));
 
 	ImGui::SeparatorText("Info");
 	if (circle)
