@@ -278,7 +278,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 
 					if (!std::filesystem::exists(project::current_project.engine_path))
-						project::current_project.engine_path = GetEngineDirectory();
+						project::current_project.engine_path = GetEngineDirectory().string();
 						
                     Toad::Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
@@ -576,7 +576,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		std::vector<std::string> scene_objects{};
 		std::set<std::string> scene_objects_set{};
 
-		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))
 		{
 			Toad::Scene& scene = Toad::Engine::Get().GetScene();
 

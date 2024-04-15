@@ -102,6 +102,7 @@ void GameAssetsBrowser::Show()
 				}
 			}
 
+#ifdef _WIN32
 			if (ImGui::Button("Open .sln"))
 			{
 				auto editors = misc::FindEditors();
@@ -137,12 +138,10 @@ void GameAssetsBrowser::Show()
 								break;
 							}
 
-#ifdef _WIN32
 							if (!project::OpenSln(slnpath, editor))
 							{
 								LOGERRORF("Failed to open {} with {}", slnpath, editor.name);
 							}
-#endif
 							misc::current_editor = editor;
 
 							break;
@@ -150,6 +149,7 @@ void GameAssetsBrowser::Show()
 					}
 				}
 			}
+#endif		
 
 			ImGui::SameLine();
 
@@ -274,6 +274,13 @@ void GameAssetsBrowser::Show()
 					}
 				}
 
+				ImGui::SeparatorText("Other");
+
+				if (ImGui::MenuItem("Copy path"))
+				{
+					ImGui::SetClipboardText(m_currentPath.string().c_str());
+				}
+				
 				ImGui::EndPopup();
 			}
 
@@ -309,11 +316,18 @@ void GameAssetsBrowser::Show()
 								LOGERRORF("Failed to remove {} from project", selected.filename().replace_extension("").string());
 								break;
 							}
+#ifdef _WIN32
 							if (!ExcludeToProjectFile(selected))
 							{
 								LOGERRORF("Failed to remove {} from project", selected.filename());
 								break;
 							}
+#else 
+							if (!project::Update(project::current_project, project::current_project.project_path))
+							{
+								LOGERROR("Failed to update project after adding scripts");
+							}
+#endif 
 						} while (false);
 					}
 					if (selected.has_extension() && (selected.extension() == ".png" || selected.extension() == ".jpg"))
@@ -574,6 +588,8 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 		LOGERRORF("Failed to add {} to script registry", script_name);
 		return false;
 	}
+
+#ifdef _WIN32
 	if (!IncludeToProjectFile(cpp_file))
 	{
 		LOGERRORF("Failed to add {} to project file", cpp_file);
@@ -584,6 +600,13 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 		LOGERRORF("Failed to add {} to project file", header_file);
 		return false;
 	}
+#else 
+	if (!project::Update(project::current_project, project::current_project.project_path))
+	{
+		LOGERROR("Failed to update project after adding scripts");
+		return false;
+	}
+#endif 
 
 	return true;
 }
@@ -780,6 +803,8 @@ bool GameAssetsBrowser::IncludeToProjectFile(const fs::path& file_path_full)
 
 bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 {
+	// rerun premake bruv? 
+
 	fs::path file_relative = fs::relative(file_path_full, m_gameVsprojFile.parent_path());
 	bool is_header = file_relative.extension() == ".h";
 
@@ -824,11 +849,16 @@ bool GameAssetsBrowser::ExcludeToProjectFile(const fs::path& file_path_full)
 
 bool GameAssetsBrowser::VerifyPaths()
 {
+	fs::path pp = project::current_project.project_path;
+	if (!fs::is_directory(pp)) 
+		pp = pp.parent_path();
+
 	if (m_gameVsprojFile.empty())
 	{
-		for (const auto& entry : fs::recursive_directory_iterator(project::current_project.project_path))
+		for (const auto& entry : fs::recursive_directory_iterator(pp))
 		{
-			if (entry.path().has_extension() && entry.path().extension() == ".vcxproj")
+#ifdef _WIN32
+			if (entry.path().has_extension() && (entry.path().extension() == ".vcxproj"))
 			{
 				if (entry.path().filename().string().find("_Game") != std::string::npos)
 				{
@@ -836,12 +866,21 @@ bool GameAssetsBrowser::VerifyPaths()
 					break;
 				}
 			}
+#else
+			if (entry.path().filename() == "Makefile")
+			{
+				if (entry.path().parent_path().filename().string().find("_Game") != std::string::npos && fs::exists(entry.path().parent_path() / "src"))
+				{
+					m_gameVsprojFile = entry.path();
+				}
+			}
+#endif 
 		}
 	}
 
 	if (m_gameVsprojFile.empty())
 	{
-		LOGERRORF("Failed to find game vcxproj file in {}", project::current_project.project_path);
+		LOGERRORF("Failed to find game code project file in {}", pp);
 		return false;
 	}
 
