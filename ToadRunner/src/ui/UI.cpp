@@ -576,7 +576,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		std::vector<std::string> scene_objects{};
 		std::set<std::string> scene_objects_set{};
 
-		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))
 		{
 			Toad::Scene& scene = Toad::Engine::Get().GetScene();
 
