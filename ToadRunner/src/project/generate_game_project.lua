@@ -31,6 +31,7 @@ workspace(_OPTIONS["projectname"])
     architecture "x64"
     configurations{
         "Release",
+        "Debug", 
         "Dev", -- same as release but defines TOAD_EDITOR
         "DevDebug", -- with debugging symbols and debugging runtime library
     }
@@ -318,7 +319,7 @@ end
             "sfml-audio",
         }
 
-    filter {"system:windows", "configurations:DevDebug"}
+    filter {"system:windows", "configurations:DevDebug or configurations:Debug"}
         defines {
             "SFML_STATIC",
         }

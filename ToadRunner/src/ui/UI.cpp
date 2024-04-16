@@ -370,21 +370,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{			
 			output_path = Toad::GetPathDialog("select output directory", std::filesystem::current_path().string());
 		} 
-#ifdef __APPLE__ 
-		ImGui::BeginDisabled();
 		ImGui::Checkbox("Debug build", &debug_build);
-		ImGui::EndDisabled();
-		ImGui::SameLine();
-		HelpMarker("Debug builds are currently only available on windows");
-#else 
-		ImGui::Checkbox("Debug build", &debug_build);
-#endif 
 		ImGui::BeginDisabled(output_path.empty());
 		if (ImGui::Button("Create"))
 		{
 			static Toad::Package package;
 			std::filesystem::path proj_file;
-			for (const auto& entry : std::filesystem::directory_iterator(project::current_project.project_path))
+
+			std::filesystem::path project_directory = project::current_project.project_path;
+			if (!std::filesystem::is_directory(project_directory))
+				project_directory = project_directory.parent_path();
+
+			for (const auto& entry : std::filesystem::directory_iterator(project_directory))
 			{
 				if (entry.path().has_extension() && entry.path().extension() == FILE_EXT_TOADPROJECT)
 				{

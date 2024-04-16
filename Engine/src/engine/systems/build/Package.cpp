@@ -21,8 +21,8 @@ namespace Toad
 
 	bool Package::CreatePackage(const CreatePackageParams& params)
 	{
-		const std::string build_config_arg = params.is_debug ? "DevDebug" : "Release";
-		const std::string build_config_arg_lower = params.is_debug ? "devdebug" : "release";
+		const std::string build_config_arg = params.is_debug ? "Debug" : "Release";
+		const std::string build_config_arg_lower = params.is_debug ? "debug" : "release";
 
 		const fs::path proj_dir = params.project_file_path.parent_path();
 		const fs::path proj_bin_path = proj_dir / "bin" / Toad::format_str("{}-{}-x86_64", build_config_arg, PLATFORM_AS_STRING);

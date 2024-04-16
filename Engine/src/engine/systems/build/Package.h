@@ -5,7 +5,6 @@
 namespace Toad
 {
 
-	// only for Windows Visual Studio projects 
 class ENGINE_API Package
 {
 public:
@@ -19,8 +18,9 @@ public:
 		std::filesystem::path engine_path;
 		bool is_debug = false;
 	};
-
-	// bool CreateDebugPackage() or PackageFlags & IsDebugBuild
+	
+	// When distributing on mac make sure the required Frameworks are also available on the users computer 
+	// manually add frameworks to the rpath Library/Frameworks or ../Frameworks
 	bool CreatePackage(const CreatePackageParams& params);
 
 private:
