@@ -130,6 +130,6 @@ ENGINE_API Scene LoadScene(const std::filesystem::path& path, const std::filesys
 // for path specify only the folder to save to 
 ENGINE_API void SaveScene(Scene& scene, const std::filesystem::path& path);
 
-ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {});
+ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {}, bool delete_old_objects = true);
 
 }

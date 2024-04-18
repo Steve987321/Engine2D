@@ -677,7 +677,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 	}
 }
 
-ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder)
+ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder, bool delete_old_objects)
 {
 	if (objects.contains("objects"))
 	{
@@ -687,10 +687,12 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 			restart = true;
 			Engine::Get().StopGameSession();
 		}
-		for (const auto& obj : Engine::Get().GetScene().objects_all)
-			if (obj)
-				obj->Destroy();
-		
+
+		if (delete_old_objects)
+			for (const auto& obj : Engine::Get().GetScene().objects_all)
+				if (obj)
+					obj->Destroy();
+			
 		auto& objectsall = objects["objects"];
 		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder);
 		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder);

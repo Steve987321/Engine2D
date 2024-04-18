@@ -615,7 +615,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				try
 				{
 					json data_json = json::parse(data);
-					Toad::LoadSceneObjects(data_json, scene, "asset_browser.GetAssetPath()");
+					Toad::LoadSceneObjects(data_json, scene, "asset_browser.GetAssetPath()", false);
 				}
 				catch (const json::parse_error& e)
 				{
@@ -689,7 +689,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					if (ImGui::Selectable(obj->name.c_str(), selected_objects.contains(obj->name) || (selected_obj != nullptr && selected_obj->name == obj->name)))
 					{
-						if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
+						if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != obj->name)
 						{
 							if (selected_objects.contains(obj->name))
 							{
@@ -759,7 +759,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 							else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
+								if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != obj->name)
 								{
 									if (selected_objects.contains(obj->name))
 									{
@@ -817,7 +817,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 								}
 								else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 								{
-									if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != child->name)
+									if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != child->name)
 									{
 										if (selected_objects.contains(child->name))
 										{
@@ -871,7 +871,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 							else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 							{
-								if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) && selected_obj != nullptr && selected_obj->name != obj->name)
+								if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))  && selected_obj != nullptr && selected_obj->name != obj->name)
 								{
 									if (selected_objects.contains(obj->name))
 									{
@@ -2936,7 +2936,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl))
+	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))
 	{
 		if (ImGui::IsKeyPressed(ImGuiKey_Z))
 		{
