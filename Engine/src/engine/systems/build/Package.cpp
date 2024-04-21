@@ -238,7 +238,7 @@ namespace Toad
 		{
 			if (entry.path().extension() == LIB_FILE_EXT)
 			{
-				fs::copy_file(entry.path(), out_dir / entry.path().filename());
+				fs::copy_file(entry.path(), out_dir / entry.path().filename(), fs::copy_options::overwrite_existing);
 			}
 		}
 
