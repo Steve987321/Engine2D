@@ -569,6 +569,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 		static size_t cursor_index = 0;
 		static bool cursor_index_is_under = false;
 		static bool check_range = false;
+		static std::string drag_drop_extra_check_parent;
+		static std::string drag_drop_extra_check_child;
 
 		std::vector<std::string> scene_objects{};
 		std::set<std::string> scene_objects_set{};
@@ -628,19 +630,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
 
-		// #TODO: fix drag and drop 
-		const std::function<void(Toad::Object*) > recursive_iterate_children = [&](Toad::Object* obj)
+		// #TODO: fix drag and drop ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#&(*^!@(*&$^!(*&@$^*!(@
+		const std::function<void(Toad::Object*, bool) > recursive_iterate_children = [&](Toad::Object* obj, bool dontchangeskip)
 			{
 				index++;
 				static bool skip = false;
 
 				const auto drag_drop = [](bool& skip, Toad::Object* obj) {
-
 					if (ImGui::BeginDragDropTarget())
 					{
 						if (selected_obj && obj)
 							LOGDEBUGF("dragging {1} to {0}", obj->name, selected_obj->name);
-
+	
+						drag_drop_extra_check_parent = obj->name;
+						drag_drop_extra_check_child = selected_obj->name;
+						
 						if (ImGui::AcceptDragDropPayload("move object"))
 						{
 							if (selected_obj != nullptr)
@@ -661,20 +665,23 @@ void ui::engine_ui(ImGuiContext* ctx)
 					}
 					if (ImGui::BeginDragDropSource())
 					{
-						skip = true;
-						if (selected_obj != nullptr)
+						if (!skip)
 						{
-							if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
+							if (selected_obj != nullptr)
 							{
-								selected_objects.clear();
+								if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
+								{
+									selected_objects.clear();
+									selected_obj = obj;
+								}
+								ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
+							}
+							else
+							{
 								selected_obj = obj;
 							}
-							ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
 						}
-						else
-						{
-							selected_obj = obj;
-						}
+						skip = true;
 						ImGui::EndDragDropSource();
 					}
 				};
@@ -796,7 +803,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 								scene_objects_set.emplace(child->name);
 							}
 
-							recursive_iterate_children(child);
+							recursive_iterate_children(child, true);
 							
 							if (ImGui::IsItemHovered())
 							{
@@ -904,7 +911,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 					drag_drop(skip, obj);
 				}
 
-				skip = false;
+				if (!dontchangeskip)
+					skip = false;
 			};
 
 		if (ImGui::IsKeyPressed(ImGuiKey_Delete))
@@ -929,8 +937,32 @@ void ui::engine_ui(ImGuiContext* ctx)
 				continue;
 			}
 
-			recursive_iterate_children(obj.get());
+			recursive_iterate_children(obj.get(), false);
 		}
+
+		// do some extra checks beucase the recursive_iterate_children is not good 
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+		{
+			if (!drag_drop_extra_check_parent.empty() || !drag_drop_extra_check_child.empty())
+			{
+				// get them as objects 
+				auto child_obj = Toad::Engine::Get().GetScene().GetSceneObject(drag_drop_extra_check_child);
+				auto parent_obj = Toad::Engine::Get().GetScene().GetSceneObject(drag_drop_extra_check_parent);
+				if (!child_obj || !parent_obj)
+				{
+					drag_drop_extra_check_parent.clear();
+					drag_drop_extra_check_child.clear();
+				}
+				if (child_obj->GetParent() == drag_drop_extra_check_parent)
+				{
+					drag_drop_extra_check_parent.clear();
+					drag_drop_extra_check_child.clear();
+				}
+
+				child_obj->SetParent(parent_obj.get());
+			}
+		}
+
 		if (check_range)
 		{
 			std::vector<std::string> keys;
