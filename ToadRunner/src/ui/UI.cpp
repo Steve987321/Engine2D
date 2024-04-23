@@ -84,14 +84,15 @@ void ui::engine_ui(ImGuiContext* ctx)
     }
 
 		if (Toad::Engine::Get().GetScene().removed_from_scene)
-	{
-		if (!Toad::Engine::Get().GetScene().GetSceneObject(selected_obj->name))
 		{
-			selected_obj = nullptr;
+			if (selected_obj)
+				if (!Toad::Engine::Get().GetScene().GetSceneObject(selected_obj->name))
+				{
+					selected_obj = nullptr;
+				}
+			selected_objects.clear(); // #TODO: lilazy
+			Toad::Engine::Get().GetScene().removed_from_scene = false;
 		}
-		selected_objects.clear(); // #TODO: lilazy
-		Toad::Engine::Get().GetScene().removed_from_scene = false;
-	}
 
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
