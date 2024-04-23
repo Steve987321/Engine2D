@@ -2244,7 +2244,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 
-			if (d.x && d.y)
+			if (d.x || d.y)
 			{
 				if (selected_gizmo.x)
 				{
