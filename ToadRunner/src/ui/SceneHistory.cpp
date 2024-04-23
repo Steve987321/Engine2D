@@ -73,7 +73,7 @@ namespace Toad
 		{
 			if (m_undoableStates.front() == data)
 			{
-				LOGDEBUGF("[SceneHistory][Scene:{}] same data & is getting skipped", scene->name);
+				// LOGDEBUGF("[SceneHistory][Scene:{}] same data & is getting skipped", scene->name);
 				return;
 			}
 		}
