@@ -67,6 +67,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static bool view_text_editor = false;
 
 	static Toad::Object* selected_obj = nullptr;
+	static std::set<std::string> selected_objects = {};
 
     // set default project settings
     static bool once = true;
@@ -81,6 +82,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 		browser = &asset_browser;
         once = false;
     }
+
+		if (Toad::Engine::Get().GetScene().removed_from_scene)
+	{
+		if (!Toad::Engine::Get().GetScene().GetSceneObject(selected_obj->name))
+		{
+			selected_obj = nullptr;
+		}
+		selected_objects.clear(); // #TODO: lilazy
+		Toad::Engine::Get().GetScene().removed_from_scene = false;
+	}
 
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
@@ -556,8 +567,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::End();
 		}
 	}
-
-	static std::set<std::string> selected_objects = {};
 
 	// SCENE/HIERARCHY
 	// #TODO: needs fixing: scene.objects_map changed to scene.objects_all

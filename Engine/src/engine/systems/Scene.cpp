@@ -103,6 +103,8 @@ void Scene::RemoveFromScene(std::string_view obj_name, bool is_begin_play)
 
 		objects_all.erase(it, objects_all.end());
 	}
+
+	removed_from_scene = true;
 }
 
 std::shared_ptr<Object> Scene::GetSceneObject(std::string_view obj_name) 

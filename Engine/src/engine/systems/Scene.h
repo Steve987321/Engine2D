@@ -28,6 +28,9 @@ struct ENGINE_API Scene
 	// objects that should be added 
 	std::vector<std::shared_ptr<Object>> add_objects;
 
+	// set when something has been removed from the scene, needs to be manually set back to its default value
+	bool removed_from_scene = false;
+
 	///
 	/// Is called once when switching to or starting this scene.
 	///
