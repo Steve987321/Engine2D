@@ -161,7 +161,7 @@ void GameAssetsBrowser::Show()
 			static fs::path selected;
 			static bool renaming = false;
 			static char renaming_buf[100];
-
+			static size_t text_in_select_end = 0;
 			static bool focus_on_popup_once = false;
 			const ImGuiID create_cpp_script_popup = ImHashStr("create C++ script");
 
@@ -385,6 +385,7 @@ void GameAssetsBrowser::Show()
 					{
 						strncpy(renaming_buf, path.filename().string().c_str(), path.filename().string().length() + 1);
 						renaming = true;
+						text_in_select_end = path.filename().string().find_last_of(".");
 					}
 				}
 
@@ -480,7 +481,7 @@ void GameAssetsBrowser::Show()
 					if (!ImGui::IsPopupOpen("replace file warning"))
 						ImGui::SetKeyboardFocusHere();
 
-					if (ImGui::InputText("##", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, reinterpret_cast<ImGuiInputTextCallback>(rename_input_callback)))
+					if (ImGui::InputText("##renameinput", renaming_buf, 100, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackEdit, reinterpret_cast<ImGuiInputTextCallback>(rename_input_callback)))
 					{
 						if (!ignore_rename_warning && exists(path.parent_path() / renaming_buf))
 						{
@@ -493,6 +494,35 @@ void GameAssetsBrowser::Show()
 							renaming = false;
 						}
 					}
+
+					if (text_in_select_end != std::string::npos)
+					{
+						// ActivateItemByID is queued till next frame
+						static bool wait = false;
+
+						if (wait)
+						{
+							auto id = ImGui::GetID("##renameinput");
+
+							ImGui::ActivateItemByID(id);
+
+							// #TODO: sometimes when text is clipped focus is not on the selected text
+							ImGuiInputTextState* state = ImGui::GetInputTextState(id);
+							//LOGDEBUGF("{}", state->());
+							//for (; state->Stb.cursor > 0; state->Stb.cursor--);
+							state->Stb.cursor = 0;
+							state->Stb.has_preferred_x = 0;
+							state->Stb.select_end = std::min((int)text_in_select_end, state->CurLenW);
+							state->Stb.select_start = 0;
+
+							text_in_select_end = -1;
+						}
+
+						wait = !wait;
+
+						ImGui::ClearActiveID();
+					}
+
 					if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 					{
 						strncpy(renaming_buf, path.filename().string().c_str(), path.filename().string().length() + 1);
