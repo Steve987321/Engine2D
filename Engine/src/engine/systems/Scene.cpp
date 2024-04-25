@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "Scene.h"
 
-#include "engine/object_default/Object.h"
-#include "engine/object_default/Sprite.h"
-#include "engine/object_default/Circle.h"
+#include "engine/default_objects/Object.h"
+#include "engine/default_objects/Sprite.h"
+#include "engine/default_objects/Circle.h"
 
 #include "Engine/Engine.h"
 

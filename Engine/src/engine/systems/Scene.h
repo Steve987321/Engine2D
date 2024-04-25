@@ -2,7 +2,7 @@
 
 #include <EngineCore.h>
 #include "nlohmann/json.hpp"
-#include "engine/object_default/Object.h"
+#include "engine/default_objects/Object.h"
 
 namespace Toad
 {

@@ -3,7 +3,7 @@
 // reflection for variables in scripts
 // should be used on script class member variables
 
-// this will be used for the editor
+// this will be used for the editor, and scenes to serialize variables
 
 // bool, int8, int16, int32, float, string
 
