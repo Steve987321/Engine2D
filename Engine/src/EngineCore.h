@@ -21,6 +21,7 @@
 #endif
 
 #if !defined(TOAD_EDITOR) && defined(NDEBUG) 
+// Whether to allocate a console window
 #define TOAD_NO_CONSOLE_LOG
 #endif 
 

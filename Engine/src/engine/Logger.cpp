@@ -13,16 +13,15 @@ namespace Toad
 	{
 #ifdef _WIN32
 		HWND console_window = GetConsoleWindow();
-		if (console_window)
+#ifndef TOAD_NO_CONSOLE_LOG
+		if (!console_window)
 		{
-#ifdef TOAD_NO_CONSOLE_LOG
-			ShowWindow(console_window, SW_HIDE);
-#else 
-			ShowWindow(console_window, SW_NORMAL);
-#endif 
+			AllocConsole();
+			FILE* f;
+			freopen_s(&f, "CONOUT$", "w", stdout);
+			console_window = GetConsoleWindow();
 		}
 
-#ifndef TOAD_NO_CONSOLE_LOG
 		m_stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 #endif 
 		if (create_log_file)
