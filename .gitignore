@@ -2,12 +2,17 @@
 .vs/
 .vscode/
 .idea/
-Makefile
 *.ini
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 *.sln
+Makefile
+
+*.xcworkspace
+*.xcworkspacedata
+*.plist
+*pbxproj
 
 # Toad
 *.TSCENE
