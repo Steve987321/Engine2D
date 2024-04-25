@@ -2269,6 +2269,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 						for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
 						{
+							if (selected_obj == obj.get()) 
+								continue;
+
 							const auto& pos = obj->GetPosition();
 
 							/*if (Toad::distance(pos, selected_obj->GetPosition()) > 10.f)

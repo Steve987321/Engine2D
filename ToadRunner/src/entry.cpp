@@ -4,7 +4,11 @@
 
 #include "ui/UI.h"
 
+#ifdef _WIN32
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)
+#else
 int main(int argc, char** argv)
+#endif 
 {
 	Toad::Engine engine;
 	
