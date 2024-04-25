@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/object_default/Circle.h"
+#include "engine/default_objects/Circle.h"
 
 class GAME_API TestScript : public Toad::Script
 {
