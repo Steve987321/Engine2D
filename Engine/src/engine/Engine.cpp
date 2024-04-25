@@ -343,7 +343,6 @@ void Engine::Render()
 	while (it != m_viewports.end())
 	{
 		bool erased = false;
-		ImGui::SFML::Update(*(*it), m_deltaTime);
 
 		sf::Event e2;
 		while (!erased && (*it)->pollEvent(e2))
@@ -363,6 +362,8 @@ void Engine::Render()
 
 		if (!erased)
 		{
+			ImGui::SFML::Update(*(*it), m_deltaTime);
+
 			(*it)->clear(sf::Color::Black);
 			ImGui::Begin("abc");
 			ImGui::Text("ABC");
