@@ -37,6 +37,17 @@ project "Engine"
         "vendor/imgui/backends/**",
     }
 
+if _ACTION == "xcode4" then
+    externalincludedirs {
+        "%{prj.name}/src",
+        "Game/src",
+        "vendor",
+        "vendor/imgui",
+        "vendor/sfml-imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include"
+    }
+else 
     includedirs {
         "%{prj.name}/src",
         "Game/src",
@@ -46,7 +57,7 @@ project "Engine"
         "vendor/SFML-2.6.0/include",
         "vendor/json/include"
     }
-
+end 
     libdirs {
         "vendor/SFML-2.6.0/lib"
     }
@@ -172,6 +183,17 @@ project "Game"
         "vendor/imgui/backends/**",
     }
 
+if _ACTION == "xcode4" then
+    externalincludedirs {
+        "Engine/src",
+        "vendor",
+        "vendor/imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include", 
+        "%{prj.name}/src",
+        "%{prj.name}/src/scripts"
+    }
+else 
     includedirs {
         "Engine/src",
         "vendor",
@@ -181,7 +203,7 @@ project "Game"
         "%{prj.name}/src",
         "%{prj.name}/src/scripts"
     }
-
+end 
     libdirs {
         "vendor/SFML-2.6.0/lib"
     }
@@ -299,7 +321,7 @@ project "ToadRunner"
     -- filter "configurations:ReleaseNoEditor"
         -- kind "WindowedApp"
     -- filter "configurations:DebugNoEditor or configurations:Debug or configurations:Release or configurations:Distro"
-    kind "ConsoleApp"
+    kind "WindowedApp"
     -- filter {}
     language "C++"
     cppdialect "C++20"
@@ -322,6 +344,18 @@ project "ToadRunner"
         "vendor/imgui/backends/**",
     }
 
+if _ACTION == "xcode4" then
+    externalincludedirs {
+        "%{prj.name}/src",
+        "%{prj.name}/src/scripts",
+        "Engine/src",
+        "vendor",
+        "vendor/imgui",
+        "vendor/sfml-imgui",
+        "vendor/SFML-2.6.0/include",
+        "vendor/json/include",
+    }
+else 
     includedirs {
         "%{prj.name}/src",
         "%{prj.name}/src/scripts",
@@ -332,7 +366,7 @@ project "ToadRunner"
         "vendor/SFML-2.6.0/include",
         "vendor/json/include",
     }
-
+end
     libdirs {
         "vendor/SFML-2.6.0/lib"
     }
