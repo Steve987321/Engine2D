@@ -10,8 +10,8 @@
 #include "game_core/Game.h"
 
 #include "engine/systems/Timer.h"
-#include "Wrappers.h"
-
+#include "utils/Wrappers.h"
+#include "utils/DLib.h"
 #include <imgui/imgui.h>
 #include <imgui-SFML.h>
 
@@ -353,6 +353,7 @@ void Engine::Render()
 			switch (e2.type)
 			{
 			case e2.Closed:
+				ImGui::SFML::Shutdown(*(*it));
 				(*it)->close();
 				it = m_viewports.erase(it);
 				erased = true;

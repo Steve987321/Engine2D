@@ -18,7 +18,7 @@
 #include "project/ToadProject.h"
 #include "SceneHistory.h"
 #include "utils/FileDialog.h"
-#include "engine/Helpers.h"
+#include "utils/Helpers.h"
 #include "engine/systems/Animation.h"
 
 using json = nlohmann::json;

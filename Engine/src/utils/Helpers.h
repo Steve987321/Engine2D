@@ -4,7 +4,7 @@
 #include <imgui/imgui.h>
 
 #include "EngineCore.h"
-#include "Types.h"
+#include "engine/Types.h"
 
 #define GET_JSON_ELEMENT(val, data, key) if (data.contains(key)) val = data[key]; else LOGERRORF("Failed to load property: {}", key);
 
