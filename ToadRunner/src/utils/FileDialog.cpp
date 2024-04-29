@@ -21,7 +21,6 @@ namespace Toad {
         bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
         bi.lpfn = ProjectBrowseFolderCallback;
         bi.lParam = (LPARAM)path.data();
-
         auto item = SHBrowseForFolderA(&bi);
 
         char selected_path[MAX_PATH]{};
@@ -37,7 +36,58 @@ namespace Toad {
         return "";
     }
 
-    std::string GetPathFile(std::string_view path, std::string_view file_types)
+	std::vector<std::string> GetPathFiles(std::string_view path, std::string_view file_types)
+	{
+#ifdef _WIN32
+		OPENFILENAMEA ofn = { 0 };
+		char selected_file[MAX_PATH]{};
+		ofn.lStructSize = sizeof(ofn);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = selected_file;
+		ofn.nMaxFile = MAX_PATH;
+		ofn.lpstrFilter = file_types.data();
+
+		DWORD f = 0;
+		f |= OFN_ALLOWMULTISELECT;
+		f |= OFN_EXPLORER; // modern style 
+		ofn.Flags = f;
+
+		ofn.lpstrInitialDir = fs::path(path).string().c_str();
+
+		std::vector <std::string> files{};
+
+		if (!GetOpenFileNameA(&ofn))
+            return files;
+        
+        // on modern style everything is null seperated 
+		if (*ofn.lpstrFile == '\0')
+            return files;
+        
+        const char* p = ofn.lpstrFile;
+        std::string s;
+        do 
+		{
+			if (*(p + 1) != '\0')
+			{
+				s += *p++;
+			}
+			else
+			{
+                s += *(p);
+				files.emplace_back(s);
+				s.clear();
+                p += 2;
+			}
+        } while (*(p) != '\0');
+
+		return files;
+#else
+        // #TODO: TEST
+		return OpenMultipleFilesDialogMac();
+#endif
+	}
+
+	std::string GetPathFile(std::string_view path, std::string_view file_types)
     {
 #ifdef _WIN32
         OPENFILENAMEA ofn = { 0 };
@@ -47,6 +97,11 @@ namespace Toad {
         ofn.lpstrFile = selected_file;
         ofn.nMaxFile = MAX_PATH;
         ofn.lpstrFilter = file_types.data();
+
+        //DWORD f = 0;
+        //f |= (bool)(flags & FileDialogFlags::ALLOW_MULTIPLE_SELECTION) ? OFN_ALLOWMULTISELECT : 0;
+        //f |= OFN_EXPLORER; // better style 
+        //ofn.Flags = f;
 
         ofn.lpstrInitialDir = fs::path(path).string().c_str();
 

@@ -24,6 +24,30 @@ namespace Toad
 
         return [result UTF8String];
     }
+     
+    std::vector<std::string> OpenMultipleFilesDialogMac()
+    {
+        NSString *result = @"";
+        std::vector<std::string> files;
+
+        NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+        [openPanel setCanChooseFiles:YES];
+        [openPanel setCanChooseDirectories:NO];
+        [openPanel setAllowsMultipleSelection:YES];
+        [openPanel setCanCreateDirectories:YES];
+
+        NSInteger clicked = [openPanel runModal];
+        if (clicked == NSModalResponseOK)
+        {
+            NSArray<NSURL *> *urls = [openPanel URLs];
+            for (NSURL *url in urls) 
+            {
+                files.push_back([url.path UTF8String]);
+            }
+        }
+
+        return files;
+    }
 
     std::string OpenFolderDialogMac()
     {
