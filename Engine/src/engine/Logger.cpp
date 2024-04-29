@@ -7,8 +7,6 @@
 
 namespace Toad
 {
-	extern std::filesystem::path get_exe_path();
-
 	Logger::Logger()
 	{
 #ifdef _WIN32

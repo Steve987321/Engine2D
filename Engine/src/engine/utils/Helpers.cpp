@@ -38,6 +38,20 @@ namespace Toad
 		return ss.str();
 	}
 
+	std::filesystem::path get_exe_path()
+	{
+#ifdef _WIN32
+		char path[MAX_PATH];
+		GetModuleFileNameA(NULL, path, MAX_PATH);
+		return path;
+#else
+		char path[MAX_PATH];
+		uint32_t size = MAX_PATH;
+		_NSGetExecutablePath(path, &size);
+		return path;
+#endif
+	}
+
 	float distance(const Vec2f& a, const Vec2f& b)
 	{
 		return std::sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
