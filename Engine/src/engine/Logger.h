@@ -12,7 +12,7 @@
 #undef ERROR
 #endif
 
-static bool create_log_file = true;
+static bool create_log_file = false;
 
 namespace Toad
 {

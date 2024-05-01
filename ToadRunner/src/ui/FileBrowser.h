@@ -2,38 +2,39 @@
 
 #include <filesystem>
 
-namespace Toad {
+namespace Toad
+{
 
-    namespace fs = std::filesystem;
+namespace fs = std::filesystem;
 
-    class FileBrowser {
-    public:
-        explicit FileBrowser(std::string_view starting_directory);
-        ~FileBrowser();
+class FileBrowser {
+public:
+    explicit FileBrowser(std::string_view starting_directory);
+    ~FileBrowser();
 
-        void Show();
-        std::string& GetSelectedFileContent();
+    void Show();
+    std::string& GetSelectedFileContent();
 
-        std::string& GetSelectedFile();
+    std::string& GetSelectedFile();
 
-        void SetPath(std::string_view path);
-        const std::string& GetPath() const;
+    void SetPath(std::string_view path);
+    const std::string& GetPath() const;
 
-        void Refresh();
+    void Refresh();
 
-        bool IsDoubleClicked();
-    private:
-        void IterateDir(const fs::directory_iterator& dir_it);
+    bool IsDoubleClicked();
+private:
+    void IterateDir(const fs::directory_iterator& dir_it);
 
-        std::vector<std::string> SplitPath(std::string_view path);
+    std::vector<std::string> SplitPath(std::string_view path);
 
-        std::string m_selectedFileBuffer;
-        std::string m_currPath;
-        std::string m_selectedFile;
+    std::string m_selectedFileBuffer;
+    std::string m_currPath;
+    std::string m_selectedFile;
 
-        std::vector<std::filesystem::path> m_pathContents;
+    std::vector<std::filesystem::path> m_pathContents;
 
-        bool m_isDoubleClicked = false;
-    };
+    bool m_isDoubleClicked = false;
+};
 
 } // Toad
