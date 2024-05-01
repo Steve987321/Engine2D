@@ -28,13 +28,15 @@ namespace ui
 	inline bool drag_snap = false;
 	inline Vec2i grid_size = {80, 80};
 
+	// function that will be called in the inspector window 
+	// - will only be called when no objects are selected
+	// - when using it needs to be set every frame so it doesn't reset 
+	inline std::function<void()> inspector_ui;
+	
 	void engine_ui(ImGuiContext* ctx);
 
 	void event_callback(const sf::Event& e);
 	void editor_texture_draw_callback(sf::RenderTexture& texture);
-
-	template<typename T>
-	void show_script_var(T* variable);
 
 	void HelpMarker(const char* desc);
 }

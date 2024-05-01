@@ -7,9 +7,9 @@
 namespace Toad
 {
 
-	using json = nlohmann::json;
+using json = nlohmann::json;
 
-	//using FAnimTransition = std::function<void(int)>;
+//using FAnimTransition = std::function<void(int)>;
 
 struct AnimationFrame
 {
@@ -25,11 +25,12 @@ struct AnimationFrame
 
 struct Animation
 {
-	std::string name;
-	std::vector<AnimationFrame> frames;
+	std::string name = "unnamed";
+	std::vector<AnimationFrame> frames{};
 	//std::vector<FAnimTransition> frames;
 
 	int frame_rate = 5;
+	int frame_length = 0;
 	bool is_looping = false;
 
 	json Serialize() const;

@@ -16,6 +16,7 @@ namespace Toad {
     std::string GetPathDialog(std::string_view title, std::string_view path);
 
     // Return multiple files 
+    // First element should be the path as the rest of the elements are the filenames on Windows 
     // file_types is only used on Windows
     std::vector<std::string> GetPathFiles(std::string_view path, std::string_view file_types);
 

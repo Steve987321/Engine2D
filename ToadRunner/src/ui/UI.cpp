@@ -12,6 +12,7 @@
 
 #include "imgui-SFML.h"
 #include "FileBrowser.h"
+#include "AnimationEditor.h"
 #include "GameAssetsBrowser.h"
 #include "TextEditor.h"
 #include "engine/systems/build/package.h"
@@ -62,6 +63,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::FileBrowser fBrowser(std::filesystem::current_path().string());
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
+	static Toad::AnimationEditor anim_editor;
 
 	static bool view_settings = false;
 	static bool view_text_editor = false;
@@ -1990,7 +1992,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::TreePop();
 			}
 		}
-
+		else if (inspector_ui)
+		{
+			inspector_ui();
+			inspector_ui = {};
+		}
 		ImGui::End();
 	}
 
@@ -2718,205 +2724,207 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		static Toad::Object* selected_animation_obj = nullptr;
 		static Toad::Animation anim;
-
 		if (is_animator)
 		{
-			//ImGui::SetCursorPosY(pos.y + image_height);
-			ImGui::Begin("Anim Editor", nullptr, ImGuiWindowFlags_NoBackground);
-			{
-				if (selected_animation_obj)
-				{
-					static int timeline = 0;
-					bool update_all_frames = false;
-					static int anim_length = anim.frames.size();
-					
-					int spacex = anim_length / ImGui::GetWindowSize().x;
-					int cursorposx = ImGui::GetCursorPosX();
-
-					ImGui::PushItemWidth(ImGui::GetWindowSize().x);
-					ImGui::SliderInt("time", &timeline, 0, anim_length - 1);
-
-					Toad::AnimationFrame& current_frame = anim.frames[timeline];
-
-					ImGui::BeginDisabled(current_frame.is_key);
-					if (ImGui::Button("KEY ADD"))
-					{
-						current_frame.is_key = true;
-					}
-					ImGui::EndDisabled();
-					ImGui::BeginDisabled(!current_frame.is_key);
-					ImGui::SameLine();
-					if (ImGui::Button("KEY REMOVE"))
-					{
-						current_frame.is_key = false;
-					}
-					ImGui::EndDisabled();
-					ImGui::SameLine();
-					if (ImGui::Button("FRAMES UPDATE"))
-					{
-						update_all_frames = true;
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("SET LENGTH.."))
-					{
-						anim_length = anim.frames.size();
-						ImGui::OpenPopup("AnimLengthPopUp");
-					}
-					ImGui::SameLine();
-					if (ImGui::Button("SAVE.."))
-					{
-
-					}
-
-					if (ImGui::BeginPopupModal("AnimLengthPopUp", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-					{
-						static int new_size = anim_length; 
-						ImGui::DragInt("size", &new_size);
-						if (new_size < anim_length)
-						{
-							ImGui::TextColored({ 1, 1, 0, 1 }, "Will remove old frames: new:%d < old:%d", new_size, anim_length);
-						}
-						if (ImGui::Button("ok"))
-						{
-							anim.frames.resize((size_t)new_size);
-							anim_length = new_size;
-							ImGui::CloseCurrentPopup();
-						}
-						ImGui::EndPopup();
-					}
-					
-					ImGui::BeginChild("properties", {0, 100}, true);
-					{
-						ImGui::SliderVec2("position", &current_frame.position);
-						ImGui::SliderVec2("scale   ", &current_frame.scale);
-						ImGui::DragFloat("rotation", &current_frame.rotation);
-
-						ImGui::EndChild();
-					}
-					if (update_all_frames)
-					{
-						// interpolation between key frames 
-
-						for (int i = 0; i < anim.frames.size(); i++)
-						{
-							int start = 0;
-							int end = 0;
-
-							if (anim.frames[i].is_key || i == 0)
-							{
-								start = i;
-								for (int j = i + 1; j < anim.frames.size(); j++)
-								{
-									if (anim.frames[j].is_key)
-									{
-										end = j;
-										for (int k = start; k < end; k++)
-										{
-											float t = (float)(k - start) / (float)(end - start);
-											float posx = std::lerp(anim.frames[i].position.x, anim.frames[j].position.x, t);
-											float posy = std::lerp(anim.frames[i].position.y, anim.frames[j].position.y, t);
-											float scalex = std::lerp(anim.frames[i].scale.x, anim.frames[j].scale.x, t);
-											float scaley = std::lerp(anim.frames[i].scale.y, anim.frames[j].scale.y, t);
-											float rotation = std::lerp(anim.frames[i].rotation, anim.frames[j].rotation, t);
-
-											anim.frames[k].position = { posx, posy };
-											anim.frames[k].scale = { scalex, scaley };
-											anim.frames[k].rotation = rotation;
-										}
-
-										start = end;
-										i = start;
-									}
-								}
-							}
-						}
-					}
-					for (int i = 0; i < anim.frames.size(); i++)
-					{
-						Toad::AnimationFrame& frame = anim.frames[i];
-
-						cursorposx += spacex * 2 + ImGui::GetStyle().FramePadding.x;
-						if (frame.is_key)
-						{
-							ImGui::SetCursorPosX(cursorposx);
-							if (timeline == i)
-							{
-								ImGui::TextColored({ 1, 1, 1, 1, }, "O");
-							}
-							else
-							{
-								ImGui::TextColored({ 1, 1, 1, 0.6f, }, "O");
-							}
-							cursorposx += ImGui::CalcTextSize("O").x;
-							ImGui::SameLine();
-						}
-						else 
-						{
-							ImGui::SetCursorPosX(cursorposx);
-							if (timeline == i)
-							{
-								ImGui::TextColored({ 1, 1, 1, 1, }, "_");
-							}
-							else
-							{
-								ImGui::TextColored({ 1, 1, 1, 0.6f, }, "_");
-							}
-							cursorposx += ImGui::CalcTextSize("_").x;
-							ImGui::SameLine();
-						}
-
-						ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-						ImGui::SameLine();
-					}
-					ImGui::PopItemWidth();
-				}
-				else
-				{
-					ImGui::TextColored({ 1, 1, 0, 1 }, "Select an object in the scene to animate");
-
-					char input[256] = "";
-					std::vector<std::pair<std::string, Toad::Object*>> matches;
-					auto& scene = Toad::Engine::Get().GetScene();
-					matches.reserve(scene.objects_all.size());
-
-					if (ImGui::InputText("search", input, 256))
-					{
-						for (const auto& obj : scene.objects_all)
-						{
-							if (obj->name.find(input) != std::string::npos)
-							{
-								matches.emplace_back(obj->name, obj.get());
-							}
-						}
-					}
-
-					if (strlen(input) == 0)
-					{
-						for (const auto& obj : scene.objects_all)
-						{
-							matches.emplace_back(obj->name, obj.get());
-						}
-					}
-
-					static Toad::Object* selected = nullptr;
-					for (const auto& [name, obj] : matches)
-					{
-						if (ImGui::Selectable(name.c_str(), selected == obj))
-						{
-							selected = obj;
-						}
-						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-						{
-							selected_animation_obj = selected;
-							anim.frames.resize(10);
-							selected = nullptr;
-						}
-					}
-				}
-				ImGui::End();
-			}
+			anim_editor.Show(&is_animator);
 		}
-		
+			//ImGui::SetCursorPosY(pos.y + image_height);
+		//	ImGui::Begin("Anim Editor", nullptr, ImGuiWindowFlags_NoBackground);
+		//	{
+		//		if (selected_animation_obj)
+		//		{
+		//			static int timeline = 0;
+		//			bool update_all_frames = false;
+		//			static int anim_length = anim.frames.size();
+		//			
+		//			int spacex = anim_length / ImGui::GetWindowSize().x;
+		//			int cursorposx = ImGui::GetCursorPosX();
+
+		//			ImGui::PushItemWidth(ImGui::GetWindowSize().x);
+		//			ImGui::SliderInt("time", &timeline, 0, anim_length - 1);
+
+		//			Toad::AnimationFrame& current_frame = anim.frames[timeline];
+
+		//			ImGui::BeginDisabled(current_frame.is_key);
+		//			if (ImGui::Button("KEY ADD"))
+		//			{
+		//				current_frame.is_key = true;
+		//			}
+		//			ImGui::EndDisabled();
+		//			ImGui::BeginDisabled(!current_frame.is_key);
+		//			ImGui::SameLine();
+		//			if (ImGui::Button("KEY REMOVE"))
+		//			{
+		//				current_frame.is_key = false;
+		//			}
+		//			ImGui::EndDisabled();
+		//			ImGui::SameLine();
+		//			if (ImGui::Button("FRAMES UPDATE"))
+		//			{
+		//				update_all_frames = true;
+		//			}
+		//			ImGui::SameLine();
+		//			if (ImGui::Button("SET LENGTH.."))
+		//			{
+		//				anim_length = anim.frames.size();
+		//				ImGui::OpenPopup("AnimLengthPopUp");
+		//			}
+		//			ImGui::SameLine();
+		//			if (ImGui::Button("SAVE.."))
+		//			{
+
+		//			}
+
+		//			if (ImGui::BeginPopupModal("AnimLengthPopUp", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		//			{
+		//				static int new_size = anim_length; 
+		//				ImGui::DragInt("size", &new_size);
+		//				if (new_size < anim_length)
+		//				{
+		//					ImGui::TextColored({ 1, 1, 0, 1 }, "Will remove old frames: new:%d < old:%d", new_size, anim_length);
+		//				}
+		//				if (ImGui::Button("ok"))
+		//				{
+		//					anim.frames.resize((size_t)new_size);
+		//					anim_length = new_size;
+		//					ImGui::CloseCurrentPopup();
+		//				}
+		//				ImGui::EndPopup();
+		//			}
+		//			
+		//			ImGui::BeginChild("properties", {0, 100}, true);
+		//			{
+		//				ImGui::SliderVec2("position", &current_frame.position);
+		//				ImGui::SliderVec2("scale   ", &current_frame.scale);
+		//				ImGui::DragFloat("rotation", &current_frame.rotation);
+
+		//				ImGui::EndChild();
+		//			}
+		//			if (update_all_frames)
+		//			{
+		//				// interpolation between key frames 
+
+		//				for (int i = 0; i < anim.frames.size(); i++)
+		//				{
+		//					int start = 0;
+		//					int end = 0;
+
+		//					if (anim.frames[i].is_key || i == 0)
+		//					{
+		//						start = i;
+		//						for (int j = i + 1; j < anim.frames.size(); j++)
+		//						{
+		//							if (anim.frames[j].is_key)
+		//							{
+		//								end = j;
+		//								for (int k = start; k < end; k++)
+		//								{
+		//									float t = (float)(k - start) / (float)(end - start);
+		//									float posx = std::lerp(anim.frames[i].position.x, anim.frames[j].position.x, t);
+		//									float posy = std::lerp(anim.frames[i].position.y, anim.frames[j].position.y, t);
+		//									float scalex = std::lerp(anim.frames[i].scale.x, anim.frames[j].scale.x, t);
+		//									float scaley = std::lerp(anim.frames[i].scale.y, anim.frames[j].scale.y, t);
+		//									float rotation = std::lerp(anim.frames[i].rotation, anim.frames[j].rotation, t);
+
+		//									anim.frames[k].position = { posx, posy };
+		//									anim.frames[k].scale = { scalex, scaley };
+		//									anim.frames[k].rotation = rotation;
+		//								}
+
+		//								start = end;
+		//								i = start;
+		//							}
+		//						}
+		//					}
+		//				}
+		//			}
+		//			for (int i = 0; i < anim.frames.size(); i++)
+		//			{
+		//				Toad::AnimationFrame& frame = anim.frames[i];
+
+		//				cursorposx += spacex * 2 + ImGui::GetStyle().FramePadding.x;
+		//				if (frame.is_key)
+		//				{
+		//					ImGui::SetCursorPosX(cursorposx);
+		//					if (timeline == i)
+		//					{
+		//						ImGui::TextColored({ 1, 1, 1, 1, }, "O");
+		//					}
+		//					else
+		//					{
+		//						ImGui::TextColored({ 1, 1, 1, 0.6f, }, "O");
+		//					}
+		//					cursorposx += ImGui::CalcTextSize("O").x;
+		//					ImGui::SameLine();
+		//				}
+		//				else 
+		//				{
+		//					ImGui::SetCursorPosX(cursorposx);
+		//					if (timeline == i)
+		//					{
+		//						ImGui::TextColored({ 1, 1, 1, 1, }, "_");
+		//					}
+		//					else
+		//					{
+		//						ImGui::TextColored({ 1, 1, 1, 0.6f, }, "_");
+		//					}
+		//					cursorposx += ImGui::CalcTextSize("_").x;
+		//					ImGui::SameLine();
+		//				}
+
+		//				ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+		//				ImGui::SameLine();
+		//			}
+		//			ImGui::PopItemWidth();
+		//		}
+		//		else
+		//		{
+		//			ImGui::TextColored({ 1, 1, 0, 1 }, "Select an object in the scene to animate");
+
+		//			char input[256] = "";
+		//			std::vector<std::pair<std::string, Toad::Object*>> matches;
+		//			auto& scene = Toad::Engine::Get().GetScene();
+		//			matches.reserve(scene.objects_all.size());
+
+		//			if (ImGui::InputText("search", input, 256))
+		//			{
+		//				for (const auto& obj : scene.objects_all)
+		//				{
+		//					if (obj->name.find(input) != std::string::npos)
+		//					{
+		//						matches.emplace_back(obj->name, obj.get());
+		//					}
+		//				}
+		//			}
+
+		//			if (strlen(input) == 0)
+		//			{
+		//				for (const auto& obj : scene.objects_all)
+		//				{
+		//					matches.emplace_back(obj->name, obj.get());
+		//				}
+		//			}
+
+		//			static Toad::Object* selected = nullptr;
+		//			for (const auto& [name, obj] : matches)
+		//			{
+		//				if (ImGui::Selectable(name.c_str(), selected == obj))
+		//				{
+		//					selected = obj;
+		//				}
+		//				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		//				{
+		//					selected_animation_obj = selected;
+		//					anim.frames.resize(10);
+		//					selected = nullptr;
+		//				}
+		//			}
+		//		}
+		//		ImGui::End();
+		//	}
+		//}
+		//
+
 		ImGui::End();
 	}
 
