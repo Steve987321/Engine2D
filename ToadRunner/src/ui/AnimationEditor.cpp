@@ -31,8 +31,17 @@ namespace Toad
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
 			ImGui::TextColored({ 1, 1, 1, 0.7f }, info_title.c_str());
 
+			ResourceManager& resource_manager = Engine::Get().GetResourceManager();
+
+			// #TODO: add sequence converter (to tilesheet) and finish this behavior
 			if (ImGui::Button("LOAD SEQUENCE"))
 			{
+				for (const auto& s : m_textureIds)
+				{
+					resource_manager.RemoveTexture(s);
+				}
+				m_textureIds.clear();
+
 				std::vector<std::string> files = GetPathFiles(get_exe_path().string(), "PNG or JPG (*.png;*.jpg)\0*.png;*.jpg\0 PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
 				if (!files.empty())
 				{
@@ -47,31 +56,62 @@ namespace Toad
 						std::string path = files[i];
 #endif
 						LOGDEBUGF("[AnimationEditor] Loading texture from: {}", path);
-						sf::Texture t;
-						if (t.loadFromFile(path))
+
+						sf::Texture* managed_texture = resource_manager.GetTexture(path);
+
+						if (managed_texture)
 						{
-							sf::Sprite s(t);
-							s.setPosition(t.getSize().x * i / 2.f, 50);
+							sf::Sprite s(*managed_texture);
+							s.setPosition(managed_texture->getSize().x * i / 2.f, 50);
 							m_sequence.emplace_back(s);
+							m_textureIds.emplace_back(path);
 						}
 						else
-							LOGERRORF("[AnimationEditor] Failed to load: {}", path);
+						{
+							sf::Texture t;
+							if (t.loadFromFile(path))
+							{
+								managed_texture = resource_manager.AddTexture(path, t);
+								sf::Sprite s(*managed_texture);
+								s.setPosition(managed_texture->getSize().x * i / 2.f, 50);
+								m_sequence.emplace_back(s);
+								m_textureIds.emplace_back(path);
+							}
+							else
+								LOGERRORF("[AnimationEditor] Failed to load: {}", path);
+						}
 					}
 				}
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("LOAD TILESHEET"))
 			{
-				std::string file = GetPathFile(get_exe_path().string(), "PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
-
-				sf::Texture t;
-				if (t.loadFromFile(file))
+				for (const auto& s : m_textureIds)
 				{
-					m_spriteSheet = sf::Sprite(t);
-					m_sequence.clear();
+					resource_manager.RemoveTexture(s);
+				}
+				m_sequence.clear();
+				m_textureIds.clear();
+
+				std::string file = GetPathFile(get_exe_path().string(), "PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
+				sf::Texture* managed_texture = resource_manager.GetTexture(file);
+				if (managed_texture)
+				{
+					m_spriteSheet = sf::Sprite(*managed_texture);
+					m_textureIds.emplace_back(file);
 				}
 				else
-					LOGERRORF("[AnimationEditor] Failed to load: {}", file);
+				{
+					sf::Texture t;
+					if (t.loadFromFile(file))
+					{
+						managed_texture = resource_manager.AddTexture(file, t);
+						m_spriteSheet = sf::Sprite(*managed_texture);
+						m_textureIds.emplace_back(file);
+					}
+					else
+						LOGERRORF("[AnimationEditor] Failed to load: {}", file);
+				}
 			}
 
 			if (ImGui::Button("CHANGE TEXTURE RES"))
@@ -110,32 +150,13 @@ namespace Toad
 
 			ImGui::BeginChild("PreviewScreen", { 0,0 }, true);
 			{
-				const auto content_size = ImGui::GetContentRegionAvail();
-				static Vec2f initial_editor_cam_size = m_cam.GetSize();
-
-				constexpr float ar = 16.f / 9.f;
-				float image_width = content_size.x;
-				float image_height = content_size.x / ar;
-
-				float fscale_x = image_width / m_cam.GetSize().x;
-				float fscale_y = image_height / m_cam.GetSize().y;
-
-				if (image_height > content_size.y)
-				{
-					image_height = content_size.y;
-					image_width = content_size.y * ar;
-				}
-
-				float pady = 25; // #TODO: find the actual imgui style property 
-				ImGui::SetCursorPos({
-					(content_size.x - image_width) * 0.5f,
-					(content_size.y - image_height + pady) * 0.5f
-					});
-
-				const auto pos = ImGui::GetCursorScreenPos();
-
-				ImVec2 image_cursor_pos = ImGui::GetCursorPos();
-				ImGui::Image(m_previewTexture, { image_width, image_height }, sf::Color::White);
+				ImGui::Image(m_previewTexture, { ImGui::GetContentRegionAvail().x,  ImGui::GetContentRegionAvail().y }, sf::Color::White);
+			}
+			ImGui::SameLine();
+			ImGui::Begin("PreviewOutputAnimation");
+			{
+				ImGui::Image(m_previewOutputAnimationTexture, { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y });
+				ImGui::End();
 			}
 			ImGui::EndChild();
 
@@ -164,7 +185,8 @@ namespace Toad
 
 		ImGui::Begin("Timeline");
 		{
-
+			ImGui::BeginChild("TimelineMenuBar", { 0, 0 }, true);
+			ImGui::EndChild();
 		}
 		ImGui::End();
 	}

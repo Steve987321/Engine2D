@@ -32,12 +32,15 @@ private:
 	Animation m_selectedAnimation;
 
 	sf::RenderTexture m_previewTexture;
+	sf::RenderTexture m_previewOutputAnimationTexture;
 
 	Toad::Camera m_cam{"AnimEditorCam"};
+	Toad::Camera m_camOutput{"AnimOutputCam"};
 
 	// for inspector 
 	std::function<void()> m_inspectorUI;
 
+	std::vector<std::string> m_textureIds{};
 	std::vector<sf::Sprite> m_sequence{};
 	sf::Sprite m_spriteSheet;
 

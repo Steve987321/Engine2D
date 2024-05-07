@@ -11,6 +11,15 @@ using json = nlohmann::json;
 
 //using FAnimTransition = std::function<void(int)>;
 
+enum class AnimationForType
+{
+	SPRITE,
+	CIRCLE,
+	CAMERA,
+	AUDIO,
+	UITEXT,
+};
+
 struct AnimationFrame
 {
 	Vec2f position{};
@@ -18,6 +27,7 @@ struct AnimationFrame
 	float rotation = 0; 
 
 	std::pair<std::string, std::string> script_prop;
+	std::pair<std::string, std::string> obj_prop;
 
 	// ui 
 	bool is_key = false;
