@@ -185,8 +185,44 @@ namespace Toad
 
 		ImGui::Begin("Timeline");
 		{
-			ImGui::BeginChild("TimelineMenuBar", { 0, 0 }, true);
-			ImGui::EndChild();
+			/*ImGui::BeginChild("TimelineMenuBar", { 0, 0 }, true);
+
+			ImGui::EndChild();*/
+
+			static int current_frame = 0;
+			auto draw = ImGui::GetWindowDrawList();
+			auto current_pos = ImGui::GetCursorPos();
+
+			for (size_t i = 0; i < m_selectedAnimation.frames.size(); i++)
+			{
+				float pos_x = current_pos.x + (float)i * 10.f;
+				if (pos_x > current_pos.x + ImGui::GetContentRegionAvail().x) // #TODO: fix check
+					break;
+
+				draw->AddCircleFilled(ImGui::GetCursorScreenPos() + ImVec2{ pos_x, current_pos.y }, 2.f, IM_COL32_WHITE);
+			}
+
+			// timeline dragger 
+			ImVec2 pos = { current_pos.x + current_frame * 1.2f, current_pos.y };
+			ImRect time_cursor_rect(current_pos, current_pos + ImVec2{ 2, ImGui::GetContentRegionAvail().y } );
+			draw->AddRectFilled(time_cursor_rect.Min, time_cursor_rect.Max, IM_COL32_WHITE);
+
+			if (ImGui::IsMouseHoveringRect(time_cursor_rect.Min, time_cursor_rect.Max))
+			{
+				if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				{
+					// #TODO: Change mouse cursor to vertical thing
+					int drag_x = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 5.f).x;
+					if (drag_x < 0)
+					{
+						current_frame--;
+					}
+					else if (drag_x > 0)
+					{
+						current_frame++;
+					}
+				}
+			}
 		}
 		ImGui::End();
 	}
@@ -204,6 +240,16 @@ namespace Toad
 	void AnimationEditor::ShowAnimationPropsUI()
 	{
 		ImGui::Text((m_selectedAnimation.name + FILE_EXT_TOADANIMATION).c_str());
+
+		ImGui::DragInt("Animation Frames", &m_selectedAnimation.frame_length);
+		if (m_selectedAnimation.frame_length != m_selectedAnimation.frames.size())
+		{
+			ImGui::TextColored({ 1, 1, 0, 1 }, "The animation frames in the array are %d", (int)m_selectedAnimation.frames.size());
+			if (ImGui::Button("resize animation frame length"))
+			{
+				m_selectedAnimation.frames.resize(m_selectedAnimation.frame_length);
+			}
+		}
 
 		if (!m_sequence.empty())
 		{

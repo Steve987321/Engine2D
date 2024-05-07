@@ -40,7 +40,7 @@ struct Animation
 	//std::vector<FAnimTransition> frames;
 
 	int frame_rate = 5;
-	int frame_length = 0;
+	int frame_length = 0; // should be same as frames.size()
 	bool is_looping = false;
 
 	json Serialize() const;
