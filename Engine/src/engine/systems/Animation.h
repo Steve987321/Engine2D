@@ -26,8 +26,8 @@ struct AnimationFrame
 	Vec2f scale{};
 	float rotation = 0; 
 
-	std::pair<std::string, std::string> script_prop;
-	std::pair<std::string, std::string> obj_prop;
+	std::vector<std::pair<std::string, json>> scripts;
+	json obj_prop;
 
 	// ui 
 	bool is_key = false;

@@ -185,43 +185,124 @@ namespace Toad
 
 		ImGui::Begin("Timeline");
 		{
-			/*ImGui::BeginChild("TimelineMenuBar", { 0, 0 }, true);
-
-			ImGui::EndChild();*/
-
 			static int current_frame = 0;
+
+			ImGui::BeginChild("TimelineMenuBar", { 0, 50 }, true);
+			{
+				ImGui::PushItemWidth(30);
+
+				if (ImGui::DragInt("pos", &current_frame))
+					current_frame = std::clamp(current_frame, 0, m_selectedAnimation.frame_length);
+
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				{
+					if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
+					{
+						ImGui::BeginPopup("AddObjectToTimeLine");
+					}
+				}
+
+				ImGui::PopItemWidth();
+			}
+			ImGui::EndChild();
+
+			if (ImGui::BeginPopup("AddObjectToTimeLine"))
+			{
+				if (ImGui::BeginMenu("Create"))
+				{
+					if (ImGui::MenuItem("Circle"))
+					{
+						m_selectedAnimation.frames[0].is_key = true;
+					}
+					if (ImGui::MenuItem("Sprite"))
+					{
+					}
+					if (ImGui::MenuItem("Audio"))
+					{
+					}
+					if (ImGui::MenuItem("Text"))
+					{
+					}
+					if (ImGui::MenuItem("Camera"))
+					{
+					}
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndPopup();
+			}
+
+			ImGui::BeginChild("TimelineList", { 50, 0 }, true);
+			{
+				
+			}
+			ImGui::EndChild();
+
 			auto draw = ImGui::GetWindowDrawList();
 			auto current_pos = ImGui::GetCursorPos();
 
 			for (size_t i = 0; i < m_selectedAnimation.frames.size(); i++)
 			{
 				float pos_x = current_pos.x + (float)i * 10.f;
-				if (pos_x > current_pos.x + ImGui::GetContentRegionAvail().x) // #TODO: fix check
-					break;
+				//if (pos_x > current_pos.x + ImGui::GetContentRegionAvail().x) // #TODO: fix check
+				//	break;
 
 				draw->AddCircleFilled(ImGui::GetCursorScreenPos() + ImVec2{ pos_x, current_pos.y }, 2.f, IM_COL32_WHITE);
 			}
 
 			// timeline dragger 
-			ImVec2 pos = { current_pos.x + current_frame * 1.2f, current_pos.y };
-			ImRect time_cursor_rect(current_pos, current_pos + ImVec2{ 2, ImGui::GetContentRegionAvail().y } );
-			draw->AddRectFilled(time_cursor_rect.Min, time_cursor_rect.Max, IM_COL32_WHITE);
+			ImVec2 pos = ImGui::GetCursorScreenPos() + ImVec2{ current_pos.x + current_frame * 10.f - 1, current_pos.y + 5};
 
-			if (ImGui::IsMouseHoveringRect(time_cursor_rect.Min, time_cursor_rect.Max))
+			static ImU32 timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.4f });
+			// dragger
+			const int triangle_size = 5;
+			ImRect triangle_rect(pos + ImVec2{ -triangle_size, -triangle_size }, pos + ImVec2{ triangle_size, triangle_size });
+			triangle_rect.Expand(5);
+			draw->AddTriangleFilled(pos + ImVec2{ -triangle_size + 1, -triangle_size + 1}, pos + ImVec2{ triangle_size + 1, -triangle_size + 1 }, pos + ImVec2{1, triangle_size + 1}, timeline_drag_col);
+
+			// line 
+			ImRect time_cursor_rect(pos, pos + ImVec2{ 2, ImGui::GetContentRegionAvail().y } );
+			draw->AddRectFilled(time_cursor_rect.Min, time_cursor_rect.Max, timeline_drag_col);
+
+			static bool time_cursor_dragging = false;
+
+			if (ImGui::IsMouseHoveringRect(triangle_rect.Min, triangle_rect.Max))
 			{
+				timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.6f });
 				if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				{
-					// #TODO: Change mouse cursor to vertical thing
-					int drag_x = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 5.f).x;
-					if (drag_x < 0)
-					{
-						current_frame--;
-					}
-					else if (drag_x > 0)
-					{
-						current_frame++;
-					}
+					timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.2f });
+					time_cursor_dragging = true; 
 				}
+			}
+			else if (!time_cursor_dragging)
+			{
+				timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.4f });
+			}
+
+			if (time_cursor_dragging)
+			{
+				// #TODO: Change mouse cursor to vertical thing
+				int drag_x = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 10.f).x;
+				if (drag_x <= -10)
+				{
+					current_frame -= round((float)abs(drag_x) / 10.f);
+					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
+				}
+				else if (drag_x >= 10)
+				{
+					current_frame += round((float)drag_x / 10.f);
+					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
+				}
+
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+				{
+					time_cursor_dragging = false;
+					timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.4f });
+				}
+
+				current_frame = std::clamp(current_frame, 0, m_selectedAnimation.frame_length);
 			}
 		}
 		ImGui::End();
