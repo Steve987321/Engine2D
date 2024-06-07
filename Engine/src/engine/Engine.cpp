@@ -255,24 +255,28 @@ void Engine::EventHandler()
 
 		case sf::Event::KeyPressed:
 		{
-			Input::InvokeKeyPressCallbacks(e.key.code);
+			if (m_beginPlay)
+				Input::InvokeKeyPressCallbacks(e.key.code);
 			break;
 		}
 
 		case sf::Event::KeyReleased:
 		{
-			Input::InvokeKeyReleaseCallbacks(e.key.code);
+			if (m_beginPlay)
+				Input::InvokeKeyReleaseCallbacks(e.key.code);
 			break;
 		}
 
 		case sf::Event::MouseButtonPressed:
 		{
-			Input::InvokeMousePressCallbacks(e.mouseButton.button);
+			if (m_beginPlay)
+				Input::InvokeMousePressCallbacks(e.mouseButton.button);
 			break;
 		}	
 		case sf::Event::MouseButtonReleased:
 		{
-			Input::InvokeMouseReleaseCallbacks(e.mouseButton.button);
+			if (m_beginPlay)
+				Input::InvokeMouseReleaseCallbacks(e.mouseButton.button);
 			break;
 		}
 
