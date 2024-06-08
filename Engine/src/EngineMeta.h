@@ -13,5 +13,5 @@
 #include "engine/default_objects/Sprite.h"
 #include "engine/default_objects/Circle.h"
 #include "engine/default_objects/Audio.h"
-#include "engine/default_objects/Text.h"
 #include "engine/default_objects/Camera.h"
+#include "engine/default_objects/UI/Text.h"
