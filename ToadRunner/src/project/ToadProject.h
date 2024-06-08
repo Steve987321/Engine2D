@@ -7,6 +7,7 @@
 #include "Misc.h"
 #include "EngineCore.h"
 #include "engine/Types.h"
+#include "engine/utils/Helpers.h"
 #include "nlohmann/json.hpp"
 
 namespace misc

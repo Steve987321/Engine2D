@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "DLib.h"
+#include <EngineCore.h>
 
 namespace Toad
 {
