@@ -6,7 +6,6 @@
 
 namespace Toad
 {
-    // temp: current active directory workspace
 #ifdef __APPLE__
 inline std::string game_bin_directory = std::filesystem::current_path();
 #else

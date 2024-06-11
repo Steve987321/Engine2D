@@ -17,6 +17,7 @@ struct AppSettings
 	int window_width;
 	int window_height;
 	int frame_limit;
+	uint32_t style;
 	sf::ContextSettings ctx_settings;
 };
 
@@ -26,6 +27,7 @@ inline AppSettings game_settings
 	1280,
 	720,
 	60,
+	sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize,
 	sf::ContextSettings()
 };
 

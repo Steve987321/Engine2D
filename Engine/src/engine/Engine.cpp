@@ -201,7 +201,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 #else
 	// TODO: CHENGE DEEZZ
 	LOGDEBUG("Creating window");
-	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, settings.ctx_settings);
+	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, settings.style, settings.ctx_settings);
 	m_window.setFramerateLimit(settings.frame_limit);
 
 #ifndef NDEBUG // imgui
