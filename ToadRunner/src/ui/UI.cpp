@@ -2051,7 +2051,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::End();
 	}
 
-	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+	bool viewport_opened = ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 	{
 		auto& texture = Toad::Engine::Get().GetEditorCameraTexture();
 		const auto content_size = ImGui::GetContentRegionAvail();
@@ -2366,26 +2366,30 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+		if (viewport_opened)
 		{
-			ImGuiContext* g = ImGui::GetCurrentContext();
-			ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
-			g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
-			editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x, d.y));
+			if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+			{
+				ImGuiContext* g = ImGui::GetCurrentContext();
+				ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
+				g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
+				editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x, d.y));
+			}
+
+			float mwheel = ImGui::GetIO().MouseWheel;
+			if (mwheel)
+			{
+				if (mwheel < 0)
+				{
+					editor_cam.Zoom(1.2f);
+				}
+				else
+				{
+					editor_cam.Zoom(0.8f);
+				}
+			}
 		}
 
-		float mwheel = ImGui::GetIO().MouseWheel;
-		if (mwheel)
-		{
-;			if (mwheel < 0)
-			{
-				editor_cam.Zoom(1.2f);
-			}
-			else
-			{
-				editor_cam.Zoom(0.8f);
-			}
-		}
 
 		if (ImGui::IsItemHovered())
 		{

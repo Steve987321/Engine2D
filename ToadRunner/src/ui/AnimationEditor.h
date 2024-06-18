@@ -8,7 +8,7 @@ namespace Toad
 
 namespace fs = std::filesystem;
 
-// Used as an overlay for the viewport to edit/save/load animations
+// edit, load and save animations 
 class AnimationEditor
 {
 public:

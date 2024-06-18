@@ -26,7 +26,7 @@ namespace Toad
 	{
 		ui::inspector_ui = m_inspectorUI;
 
-		ImGui::Begin("AnimationEditor", show);
+		bool animation_editor_opened = ImGui::Begin("AnimationEditor", show);
 		{
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
 			ImGui::TextColored({ 1, 1, 1, 0.7f }, info_title.c_str());
@@ -34,6 +34,7 @@ namespace Toad
 			ResourceManager& resource_manager = Engine::Get().GetResourceManager();
 
 			// #TODO: add sequence converter (to tilesheet) and finish this behavior
+			ImGui::BeginDisabled();
 			if (ImGui::Button("LOAD SEQUENCE"))
 			{
 				for (const auto& s : m_textureIds)
@@ -83,6 +84,8 @@ namespace Toad
 					}
 				}
 			}
+			ImGui::EndDisabled();
+
 			ImGui::SameLine();
 			if (ImGui::Button("LOAD TILESHEET"))
 			{
@@ -134,6 +137,8 @@ namespace Toad
 				ImGui::EndPopup();
 			}
 
+			m_previewTexture.setView(m_cam.GetView());
+
 			m_previewTexture.clear(sf::Color::Black);
 
 			for (const auto & s : m_sequence)
@@ -160,24 +165,27 @@ namespace Toad
 			}
 			ImGui::EndChild();
 
-			if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
+			if (animation_editor_opened)
 			{
-				ImGuiContext* g = ImGui::GetCurrentContext();
-				ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
-				g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
-				m_cam.SetPosition(m_cam.GetPosition() - Vec2f(d.x, d.y));
-			}
-
-			float mwheel = ImGui::GetIO().MouseWheel;
-			if (mwheel)
-			{
-				if (mwheel < 0)
+				if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
 				{
-					m_cam.Zoom(1.2f);
+					ImGuiContext* g = ImGui::GetCurrentContext();
+					ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
+					g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
+					m_cam.SetPosition(m_cam.GetPosition() - Vec2f(d.x, d.y));
 				}
-				else
+
+				float mwheel = ImGui::GetIO().MouseWheel;
+				if (mwheel)
 				{
-					m_cam.Zoom(0.8f);
+					if (mwheel < 0)
+					{
+						m_cam.Zoom(1.2f);
+					}
+					else
+					{
+						m_cam.Zoom(0.8f);
+					}
 				}
 			}
 		}
