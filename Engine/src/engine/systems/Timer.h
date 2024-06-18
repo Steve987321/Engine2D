@@ -11,7 +11,6 @@ public:
 	using TClock = std::chrono::high_resolution_clock;
 
 	explicit Timer(bool start = false);
-
 	~Timer();
 
 	void Start();

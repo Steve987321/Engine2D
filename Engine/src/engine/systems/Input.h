@@ -6,7 +6,6 @@
 
 namespace Toad
 {
-
 	class ENGINE_API Input
 	{
 	public:

@@ -126,8 +126,9 @@ struct ENGINE_API Scene
 	json Serialize(std::vector<Object*> v = {});
 };
 
-// to make sure scripts are added and loaded to objects make sure to update script registry before calling this function
-// supply asset_folder only when in editor so it nows where to search for textures in the project 
+// make sure scripts are added and loaded to objects 
+// make sure to update script registry before calling this function
+// supply asset_folder only when in editor so it knows where to search for textures in the project 
 ENGINE_API Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder = {});
 
 // for path specify only the folder to save to 
