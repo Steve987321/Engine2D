@@ -13,8 +13,7 @@ public:
 	~Audio() override;
 
 	void Start() override;
-	void Render(sf::RenderWindow& window) override;
-	void Render(sf::RenderTexture& texture) override;
+	void Render(sf::RenderTarget& target) override;
 	void Update() override;
 
 	AudioSource* GetAudioSource() const;

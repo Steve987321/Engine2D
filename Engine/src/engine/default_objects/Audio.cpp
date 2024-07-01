@@ -32,14 +32,9 @@ void Audio::Start()
 	Object::Start();
 }
 
-void Audio::Render(sf::RenderWindow& window)
+void Audio::Render(sf::RenderTarget& target)
 {
-	Object::Render(window);
-}
-
-void Audio::Render(sf::RenderTexture& texture)
-{
-	Object::Render(texture);
+	Object::Render(target);
 }
 
 void Audio::Update()

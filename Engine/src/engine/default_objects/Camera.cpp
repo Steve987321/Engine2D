@@ -75,14 +75,9 @@ void Camera::Start()
 	Object::Start();
 }
 
-void Camera::Render(sf::RenderWindow& window)
+void Camera::Render(sf::RenderTarget& target)
 {
-	Object::Render(window);
-}
-
-void Camera::Render(sf::RenderTexture& texture)
-{
-	Object::Render(texture);
+	Object::Render(target);
 }
 
 void Camera::Update()

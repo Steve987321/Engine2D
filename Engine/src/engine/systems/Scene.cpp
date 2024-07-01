@@ -71,19 +71,11 @@ void Scene::Update()
 	add_objects.clear();
 }
 
-void Scene::Render(sf::RenderTexture& texture)
+void Scene::Render(sf::RenderTarget& target)
 {
 	for (auto& obj : objects_all)
 	{
-		obj->Render(texture);
-	}
-}
-
-void Scene::Render(sf::RenderWindow& window)
-{
-	for (auto& obj : objects_all)
-	{
-		obj->Render(window);
+		obj->Render(target);
 	}
 }
 

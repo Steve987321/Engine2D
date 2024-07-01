@@ -94,20 +94,9 @@ json Sprite::Serialize()
 	return s_data;
 }
 
-void Sprite::Render(sf::RenderWindow& window)
+void Sprite::Render(sf::RenderTarget& target)
 {
-	// update attached scripts
-	for (auto& script : m_attachedScripts | std::views::values)
-	{
-		script->OnUpdate(this);
-	}
-
-	window.draw(m_sprite);
-}
-
-void Sprite::Render(sf::RenderTexture& texture)
-{
-	texture.draw(m_sprite);
+	target.draw(m_sprite);
 }
 
 void Sprite::Start()

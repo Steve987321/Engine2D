@@ -96,16 +96,9 @@ namespace Toad
 		Object::Start();
 	}
 
-	void Circle::Render(sf::RenderWindow& window)
+	void Circle::Render(sf::RenderTarget& target)
 	{
-		// draw sfml circleshape object
-		window.draw(m_circle);
-	}
-
-	void Circle::Render(sf::RenderTexture& texture)
-	{
-		// draw sfml circleshape object
-		texture.draw(m_circle);
+		target.draw(m_circle);
 	}
 
 	void Circle::Update()

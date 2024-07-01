@@ -89,18 +89,11 @@ void Text::Start()
 	Object::Start();
 }
 
-void Text::Render(sf::RenderWindow& window)
+void Text::Render(sf::RenderTarget& target)
 {
-	Object::Render(window);
+	Object::Render(target);
 
-	window.draw(m_text);
-}
-
-void Text::Render(sf::RenderTexture& texture)
-{
-	Object::Render(texture);
-
-	texture.draw(m_text);
+	target.draw(m_text);
 }
 
 void Text::Update()

@@ -27,11 +27,13 @@ namespace Toad
 		}
 	}
 
-	void Object::Render(sf::RenderWindow& window)
-	{}
-
-	void Object::Render(sf::RenderTexture& texture)
-	{}
+	void Object::Render(sf::RenderTarget& target)
+	{
+		for (auto& script : m_attachedScripts | std::views::values)
+		{
+			script->OnRender(this, target);
+		}
+	}
 	
 	void Object::Update()
 	{

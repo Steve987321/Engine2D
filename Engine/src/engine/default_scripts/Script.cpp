@@ -34,6 +34,14 @@ void Script::OnStart(Object* obj)
 {
 }
 
+void Script::OnStop(Object* obj)
+{
+}
+
+void Script::OnRender(Object* obj, sf::RenderTarget& target)
+{
+}
+
 #ifdef TOAD_EDITOR
 void Script::OnEditorUI(Object* obj, ImGuiContext* ctx)
 {

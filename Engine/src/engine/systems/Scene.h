@@ -44,8 +44,7 @@ struct ENGINE_API Scene
 	///
 	///	Calls Render on all object instances in this scene.
 	///
-	void Render(sf::RenderWindow& window);
-	void Render(sf::RenderTexture& texture);
+	void Render(sf::RenderTarget& target);
 
 	///
 	/// @returns

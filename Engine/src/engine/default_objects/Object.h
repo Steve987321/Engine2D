@@ -32,10 +32,7 @@ public:
 
 	virtual void Start();
 
-	virtual void Render(sf::RenderWindow& window);
-
-	// For imgui, only when using the editor
-	virtual void Render(sf::RenderTexture& texture);
+	virtual void Render(sf::RenderTarget& target);
 
 	virtual void Update();
 

@@ -23,8 +23,7 @@ public:
 	json Serialize() override;
 
 private:
-	void Render(sf::RenderWindow& window) override;
-	void Render(sf::RenderTexture& texture) override;
+	void Render(sf::RenderTarget& target) override;
 	void Start() override;
 	void Update() override;
 

@@ -19,8 +19,7 @@ public:
 public:
 	void OnCreate() override;
 	void Start() override;
-	void Render(sf::RenderWindow& window) override;
-	void Render(sf::RenderTexture& texture) override;
+	void Render(sf::RenderTarget& target) override;
 	void Update() override;
 
 	const Vec2f& GetPosition() const override;
