@@ -16,7 +16,6 @@ namespace Toad
 		{
 			ImGui::BeginChild("FSMInspector", { ImGui::GetContentRegionAvail().x / 3, 0 }, true);
 			{
-				
 			}
 			ImGui::EndChild();
 

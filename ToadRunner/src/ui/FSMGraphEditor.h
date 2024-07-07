@@ -10,6 +10,7 @@ class FSMGraphEditor
 public:
 	void Show(bool* show);
 
+	FSM fsm;
 private:
 };
 

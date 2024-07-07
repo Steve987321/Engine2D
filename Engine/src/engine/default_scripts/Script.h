@@ -13,7 +13,7 @@
 #define EXPOSE_VAR(T) m_reflection.Add(#T, &(T))
 
 #define SCRIPT_CONSTRUCT(T)											\
-T(std::string_view name) : Script(name)								\
+explicit T(std::string_view name) : Script(name)					\
 {																	\
 	m_name = name;													\
 	ExposeVars();													\

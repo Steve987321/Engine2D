@@ -6,10 +6,10 @@ namespace Toad
 	
 	Vec2f QuadraticBezier(const Vec2f& a, const Vec2f& b, const Vec2f& control_point, float t)
 	{
-		return Vec2f(
+		return {
 			(1 - t) * (1 - t) * a.x + (1 - t) * 2 * t * control_point.x + t * t * b.x,
 			(1 - t) * (1 - t) * a.y + (1 - t) * 2 * t * control_point.y + t * t * b.y
-		);
+		};
 	}
 
 	//Vec2f MultiBezier(const Vec2f& a, const Vec2f& b, const Vec2f control_points[], uint32_t control_points_len, float t)

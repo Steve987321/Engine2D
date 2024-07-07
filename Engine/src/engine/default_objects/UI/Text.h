@@ -21,6 +21,7 @@ class ENGINE_API Text : public Object
 public:
 	Text(std::string_view obj_name);
 
+public:
 	void SetFont(const std::filesystem::path& relative_path, const sf::Font& font);
 	const std::filesystem::path& GetFontPath();
 

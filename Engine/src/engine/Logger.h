@@ -54,31 +54,35 @@ public:
 		{LOG_TYPE::WARNING, "WARNING"},
 	};
 
+	using FLOG_CALLBACK = std::function<void(LOG_TYPE, std::string_view msg)>;
+
 public:
 	/// Closes console and log file 
 	void DisposeLogger();
 
+	void AddCallback(const FLOG_CALLBACK& callback);
+
 public:
 	template <typename ... Args>
-	void LogDebug(const char* frmt, Args... args)
+	void LogDebug(std::string_view frmt, Args... args)
 	{
 		Log(frmt, LOG_TYPE::DEBUG, args...);
 	}
 
 	template <typename ... Args>
-	void LogWarning(const char* frmt, Args... args)
+	void LogWarning(std::string_view frmt, Args... args)
 	{
 		Log(frmt, LOG_TYPE::WARNING, args...);
 	}
 
 	template <typename ... Args>
-	void LogError(const char* frmt, Args... args)
+	void LogError(std::string_view frmt, Args... args)
 	{
 		Log(frmt, LOG_TYPE::ERROR, args...);
 	}
 
 	template <typename ... Args>
-	void LogException(const char* frmt, Args... args)
+	void LogException(std::string_view frmt, Args... args)
 	{
 		Log(frmt, LOG_TYPE::EXCEPTION, args...);
 	}
@@ -133,6 +137,11 @@ private:
 		if (create_log_file)
 			LogToFile(get_date_str("[%T]") + ' ' + formattedStr);
 
+		for (const auto& f : m_callbacks)
+		{
+			f(log_type, frmt);
+		}
+
 #ifndef TOAD_NO_CONSOLE_LOG
 		Print(formattedStr, log_type);
 #endif 
@@ -143,6 +152,7 @@ private:
 	HANDLE m_stdoutHandle = nullptr;
 #endif
 
+	std::vector<FLOG_CALLBACK> m_callbacks;
 	std::mutex m_mutex{};
 	std::mutex m_closeMutex{};
 

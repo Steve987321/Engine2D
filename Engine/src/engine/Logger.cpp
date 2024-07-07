@@ -54,6 +54,11 @@ namespace Toad
 #endif
 	}
 
+	void Logger::AddCallback(const FLOG_CALLBACK& callback)
+	{
+		m_callbacks.emplace_back(callback);
+	}
+
 	std::string Logger::GetLogFolder()
 	{
 		return get_exe_path().string();

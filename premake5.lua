@@ -72,7 +72,8 @@ end
 
     filter "system:windows"
         links {
-            "opengl32"
+            "opengl32",
+            "ws2_32",
         }
 
         pchheader "pch.h"
@@ -144,6 +145,7 @@ end
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+            "sfml-network",
         }
     
     filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
@@ -152,6 +154,7 @@ end
             "sfml-window-d",
             "sfml-graphics-d",
             "sfml-audio-d",
+            "sfml-network-d",
         }
     filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
         links {
@@ -159,6 +162,7 @@ end
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+            "sfml-network",
         }
 
 project "Game"
@@ -222,7 +226,8 @@ end
 
     filter "system:windows"
         links{
-            "opengl32"
+            "opengl32",
+            "ws2_32",
         }
 
     filter "system:windows"
@@ -299,6 +304,7 @@ end
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+            "sfml-network",
         }
     
     filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
@@ -307,6 +313,7 @@ end
             "sfml-window-d",
             "sfml-graphics-d",
             "sfml-audio-d",
+            "sfml-network-d",
         }
     filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
         links {
@@ -314,6 +321,7 @@ end
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+            "sfml-network",
         }
 
 project "ToadRunner"
@@ -385,7 +393,8 @@ end
          }
     filter "system:windows"
         links{
-            "opengl32"
+            "opengl32",
+            "ws2_32",
         }
 
         pchheader "pch.h"
@@ -460,6 +469,7 @@ end
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+            "sfml-network",
         }
     
     filter {"system:windows", "configurations:DebugNoEditor or configurations:Debug"}
@@ -468,6 +478,7 @@ end
             "sfml-window-d",
             "sfml-graphics-d",
             "sfml-audio-d",
+            "sfml-network-d",
         }
     filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
         links {
@@ -475,4 +486,5 @@ end
             "sfml-window",
             "sfml-graphics",
             "sfml-audio",
+            "sfml-network",
         }

@@ -76,6 +76,8 @@ public:
 	friend class FSM;
 
 	virtual void Invoke();
+
+	// checks the conditions if a transition should happen, should call Invoke() if this returns true.
 	bool IsTransitionAllowed();
 
 	std::vector<TransitionCondition<int>> conditions_i32;
