@@ -99,6 +99,18 @@ public:
 		return nullptr;
 	}
 
+	template <class T>
+	T* GetScript(std::string_view name)
+	{
+		auto it = m_attachedScripts.find(name.data());
+		if (it != m_attachedScripts.end())
+		{
+			return dynamic_cast<T*>(it->second);
+		}
+
+		return nullptr;
+	}
+
 	const std::unordered_map<std::string, Script* >& GetAttachedScripts() const;
 
 protected:

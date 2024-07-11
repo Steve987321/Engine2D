@@ -73,6 +73,10 @@ private:
 class Transition
 {
 public:
+	Transition(State& prev, State& next)
+		: m_prevState(prev), m_nextState(next)
+	{}
+
 	friend class FSM;
 
 	virtual void Invoke();
@@ -80,9 +84,9 @@ public:
 	// checks the conditions if a transition should happen, should call Invoke() if this returns true.
 	bool IsTransitionAllowed();
 
-	std::vector<TransitionCondition<int>> conditions_i32;
-	std::vector<TransitionCondition<float>> conditions_flt;
-	std::vector<TransitionCondition<std::string>> conditions_str;
+	std::vector<TransitionCondition<int>> conditions_i32{};
+	std::vector<TransitionCondition<float>> conditions_flt{};
+	std::vector<TransitionCondition<std::string>> conditions_str{};
 
 protected:
 	State& m_prevState;
