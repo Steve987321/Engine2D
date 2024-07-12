@@ -59,6 +59,14 @@ namespace Toad
 		}
 	}
 
+	void Object::End(Scene* next_scene)
+	{
+		for (auto& script : m_attachedScripts | std::views::values)
+		{
+			script->OnEnd(this, next_scene);
+		}
+	}
+
 	const Vec2f& Object::GetPosition() const
 	{
 		return { 0, 0 };

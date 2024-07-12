@@ -9,10 +9,10 @@ struct AppSettings;
 
 namespace Toad
 {
-	/// #TODO: refractor 
-	/// #TODO: refractor 
-	/// #TODO: refractor 
-	/// #TODO: refractor 
+	/// #TODO: refactor 
+	/// #TODO: refactor 
+	/// #TODO: refactor 
+	/// #TODO: refactor 
 	class ENGINE_API Engine
 	{
 	public:
@@ -60,6 +60,7 @@ namespace Toad
 
 		sf::RenderWindow& GetWindow();
 
+		sf::RenderTarget& GetActiveRenderTarget();
 		sf::RenderTexture& GetWindowTexture();
 		sf::RenderTexture& GetEditorCameraTexture();
 
@@ -68,7 +69,7 @@ namespace Toad
 		ResourceManager& GetResourceManager();
 
 		Scene& GetScene();
-		void SetScene(const Scene& scene);
+		void SetScene(Scene& scene);
 
 		ImGuiContext* GetImGuiContext();
 

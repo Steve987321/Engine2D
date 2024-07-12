@@ -34,10 +34,6 @@ void Script::OnStart(Object* obj)
 {
 }
 
-void Script::OnStop(Object* obj)
-{
-}
-
 void Script::OnRender(Object* obj, sf::RenderTarget& target)
 {
 }
@@ -53,6 +49,10 @@ void Script::OnImGui(Object* obj, ImGuiContext* ctx)
 {
 }
 #endif
+
+void Script::OnEnd(Object* obj, Scene* next_scene)
+{
+}
 
 void Script::ExposeVars()
 {

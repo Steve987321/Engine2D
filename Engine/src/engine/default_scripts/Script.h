@@ -28,6 +28,7 @@ Script* Clone() override											\
 namespace Toad
 {
 	class Object;
+	class Scene;
 
 class ENGINE_API Script
 {
@@ -40,7 +41,6 @@ public:
 	virtual void OnFixedUpdate(Object* obj);
 	virtual void OnLateUpdate(Object* obj);
 	virtual void OnStart(Object* obj);
-	virtual void OnStop(Object* obj);
 	virtual void OnRender(Object* obj, sf::RenderTarget& target);
 #ifdef TOAD_EDITOR
 	virtual void OnEditorUI(Object* obj, ImGuiContext* ctx);
@@ -48,6 +48,10 @@ public:
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	virtual void OnImGui(Object* obj, ImGuiContext* ctx);
 #endif 
+
+	virtual void OnEnd(Object* obj, Scene* next_scene);
+
+	// exposes vars to inspector and scene file
 	virtual void ExposeVars();
 
 	virtual Script* Clone() = 0;

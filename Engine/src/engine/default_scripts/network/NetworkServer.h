@@ -20,7 +20,7 @@ public:
 	void Listen();
 public:
 	void OnStart(Object* obj) override;
-	void OnStop(Object* obj) override;
+	void OnEnd(Object* obj, Scene* next_scene) override;
 	void OnEditorUI(Object* obj, ImGuiContext* ctx) override;
 	void OnImGui(Object* obj, ImGuiContext* ctx) override;
 	void ExposeVars() override;

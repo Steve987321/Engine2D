@@ -1,4 +1,5 @@
 #include "ScriptRegister.h"
+#include "engine/Engine.h"
 
 #include "assets/scripts/TestScript.h"
 
@@ -12,7 +13,6 @@ void register_scripts()
 {
 	get_registered_scripts().clear();
 
-	std::cout << sizeof(TestScript) << std::endl;
 	SCRIPT_REGISTER(TestScript);
 
 	SCRIPT_REGISTER(AnimationController);

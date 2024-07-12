@@ -163,6 +163,10 @@ void Engine::Run()
 		Render();
 	}
 
+#ifndef TOAD_EDITOR
+	m_currentScene.End(nullptr);
+#endif
+
 	CleanUp();
 }
 
@@ -420,6 +424,15 @@ sf::RenderWindow& Engine::GetWindow()
 	return m_window;
 }
 
+sf::RenderTarget& Engine::GetActiveRenderTarget()
+{
+#ifdef TOAD_EDITOR
+	return m_windowTexture;
+#else
+	return m_window; 
+#endif 
+}
+
 sf::RenderTexture& Engine::GetWindowTexture()
 {
 	return m_windowTexture;
@@ -445,8 +458,9 @@ Scene& Engine::GetScene()
 	return m_currentScene;
 }
 
-void Engine::SetScene(const Scene& scene)
+void Engine::SetScene(Scene& scene)
 {
+	m_currentScene.End(&scene);
 	m_currentScene = scene;
 
 	if (m_beginPlay)
@@ -465,12 +479,18 @@ bool Engine::GameStateIsPlaying() const
 
 void Engine::StartGameSession()
 {
+	if (m_beginPlay)
+		return;
+
 	m_beginPlay = true;
 	m_currentScene.Start();
 }
 
 void Engine::StopGameSession()
 {
+	if (m_beginPlay)
+		m_currentScene.End(nullptr);
+
 	m_beginPlay = false;
 }
 

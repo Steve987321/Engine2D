@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Circle.h"
 
+#include "engine/Engine.h"
+
 namespace Toad
 {
 	Circle::Circle(std::string_view obj_name)

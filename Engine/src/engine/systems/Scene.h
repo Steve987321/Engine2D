@@ -13,6 +13,9 @@ struct ENGINE_API Scene
 {
 	Scene() : name("unnamed_scene") {}
 
+	// all scenes
+	static inline std::vector<Scene> scenes;
+
 	// scene name
 	std::string name;
 
@@ -45,6 +48,11 @@ struct ENGINE_API Scene
 	///	Calls Render on all object instances in this scene.
 	///
 	void Render(sf::RenderTarget& target);
+
+	///
+	/// Called when scene is ended, Scene parameter will be nullptr if the application is stopped, else it will switch to that scene.
+	///
+	void End(Scene* next_scene);
 
 	///
 	/// @returns
@@ -128,7 +136,7 @@ struct ENGINE_API Scene
 // make sure scripts are added and loaded to objects 
 // make sure to update script registry before calling this function
 // supply asset_folder only when in editor so it knows where to search for textures in the project 
-ENGINE_API Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder = {});
+ENGINE_API Scene& LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder = {});
 
 // for path specify only the folder to save to 
 ENGINE_API void SaveScene(Scene& scene, const std::filesystem::path& path);

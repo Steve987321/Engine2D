@@ -79,6 +79,14 @@ void Scene::Render(sf::RenderTarget& target)
 	}
 }
 
+void Scene::End(Scene* next_scene)
+{
+	for (auto& obj : objects_all)
+	{
+		obj->End(next_scene);
+	}
+}
+
 void Scene::RemoveFromScene(std::string_view obj_name, bool is_begin_play)
 {
 	if (is_begin_play)
@@ -213,9 +221,11 @@ sf::IntRect GetRectFromJSON(json obj)
 	};
 }
 
-Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder)
+Scene& LoadScene(const std::filesystem::path& path, const std::filesystem::path& asset_folder)
 {
 	std::ifstream in(path);
+	Scene scene;
+	scene.name = "invalid";
 
 	json data;
 	if (in.is_open())
@@ -229,17 +239,22 @@ Scene LoadScene(const std::filesystem::path& path, const std::filesystem::path& 
 		{
 			LOGERRORF("JSON parse error at {} {}", e.byte, e.what());
 			in.close();
-			return {};
+			Scene::scenes.emplace_back(scene);
+			return Scene::scenes.back();
 		}
 	}
 
-	Scene scene;
 	scene.path = path;
 	scene.name = path.filename().string();
 
 	LoadSceneObjects(data, scene, asset_folder);
 
-	return scene;
+	if (Scene::scenes.back().name == "invalid")
+		Scene::scenes.back() = std::move(scene);
+	else
+		Scene::scenes.emplace_back(std::move(scene));
+
+	return Scene::scenes.back();
 }
 
 void SaveScene(Scene& scene, const std::filesystem::path& path)

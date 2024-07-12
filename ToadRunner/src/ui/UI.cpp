@@ -1191,6 +1191,39 @@ void ui::engine_ui(ImGuiContext* ctx)
 			
 			ImGui::Text(selected_obj->name.c_str());
 
+			static Toad::Object* prev_selected_obj = nullptr;
+			static size_t index = 0;
+			auto& obj_all = Toad::Engine::Get().GetScene().objects_all;
+			if (prev_selected_obj != selected_obj)
+			{
+				for (size_t i = 0; i < obj_all.size(); i++)
+				{
+					if (obj_all[i].get() == selected_obj)
+					{
+						index = i;
+					}
+				}
+			}
+
+			prev_selected_obj = selected_obj;
+
+			ImGui::SameLine(0, 10.f);
+			ImGui::BeginDisabled(index == 0);
+			if (ImGui::ArrowButton("##MoveUp", ImGuiDir_Up))
+			{
+				std::swap(obj_all[index], obj_all[index - 1]);
+				--index;
+			}
+			ImGui::EndDisabled();
+			ImGui::SameLine();
+			ImGui::BeginDisabled(index == obj_all.size() - 1);
+			if (ImGui::ArrowButton("##MoveDown", ImGuiDir_Down))
+			{
+				std::swap(obj_all[index], obj_all[index + 1]);
+				++index;
+			}
+			ImGui::EndDisabled();
+
 			float pos_x = selected_obj->GetPosition().x;
 			float pos_y = selected_obj->GetPosition().y;
 			float rotation = selected_obj->GetRotation();

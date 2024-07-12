@@ -40,6 +40,8 @@ public:
 
 	virtual void LateUpdate();
 
+	virtual void End(Scene* next_scene);
+
 	virtual const Vec2f& GetPosition() const;
 	virtual void SetPosition(const Vec2f& position);
 
