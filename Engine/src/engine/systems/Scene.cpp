@@ -226,6 +226,7 @@ Scene& LoadScene(const std::filesystem::path& path, const std::filesystem::path&
 	std::ifstream in(path);
 	Scene scene;
 	scene.name = "invalid";
+	Scene::scenes.emplace_back(scene);
 
 	json data;
 	if (in.is_open())
@@ -239,7 +240,6 @@ Scene& LoadScene(const std::filesystem::path& path, const std::filesystem::path&
 		{
 			LOGERRORF("JSON parse error at {} {}", e.byte, e.what());
 			in.close();
-			Scene::scenes.emplace_back(scene);
 			return Scene::scenes.back();
 		}
 	}
