@@ -12,7 +12,7 @@ namespace Toad
 
 		void Show();
 		void SetAssetPath(std::string_view path);
-		const fs::path& GetAssetPath();
+		const fs::path& GetAssetPath() const;
 
 		bool loaded_scene = false;
 		bool refresh = false;

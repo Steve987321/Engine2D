@@ -583,7 +583,7 @@ void GameAssetsBrowser::SetAssetPath(std::string_view path)
 	refresh = true;
 }
 
-const fs::path& GameAssetsBrowser::GetAssetPath()
+const fs::path& GameAssetsBrowser::GetAssetPath() const
 {
 	return m_assetsPath;
 }

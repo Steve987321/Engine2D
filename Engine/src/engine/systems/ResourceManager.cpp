@@ -8,6 +8,11 @@ namespace Toad
 {
 	ResourceManager::ResourceManager() = default;
 
+	std::unordered_map<std::string, sf::Texture>& ResourceManager::GetTextures()
+	{
+		return m_textures;
+	}
+
 	sf::Texture* ResourceManager::AddTexture(std::string_view id, const sf::Texture& tex)
 	{
 		if (m_textures.contains(id.data()))
@@ -112,15 +117,46 @@ namespace Toad
 		return false;
 	}
 
+	std::unordered_map<std::string, FSM>& ResourceManager::GetFSMs()
+	{
+		return m_fsms;
+	}
+
+	FSM* ResourceManager::AddFSM(std::string_view id, const FSM& fsm)
+	{
+		if (m_fsms.contains(id.data()))
+			LOGWARNF("[ResourceManager] FSM {} already exists and is getting replaced", id.data());
+
+		m_fsms[id.data()] = FSM(fsm);
+		return &m_fsms[id.data()];
+	}
+
+	FSM* ResourceManager::GetFSM(std::string_view id)
+	{
+		if (m_fsms.contains(id.data()))
+		{
+			return &m_fsms[id.data()];
+		}
+		return nullptr;
+	}
+
+	bool ResourceManager::RemoveFSM(std::string_view id)
+	{
+		if (auto it = m_fsms.find(id.data());
+			it != m_fsms.end())
+		{
+			m_fsms.erase(it);
+			return true;
+		}
+
+		return false;
+	}
+
 	void ResourceManager::Clear()
 	{
 		m_textures.clear();
 		m_audioSources.clear();
 		m_fonts.clear();
-	}
-
-	std::unordered_map<std::string, sf::Texture>& ResourceManager::GetTextures()
-	{
-		return m_textures;
+		m_fsms.clear();
 	}
 }

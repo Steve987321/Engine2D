@@ -5,6 +5,7 @@
 
 #include "EngineCore.h"
 #include "engine/Types.h"
+#include "nlohmann/json.hpp"
 
 #define GET_JSON_ELEMENT(val, data, key) if (data.contains(key)) val = data[key]; else LOGERRORF("Failed to load property: {}", key);
 
@@ -38,4 +39,27 @@ namespace Toad
 	ENGINE_API std::filesystem::path get_exe_path();
 
 	ENGINE_API float distance(const Vec2f& a, const Vec2f& b);
+
+	template<typename T>
+	ENGINE_API inline bool get_json_element(T& val, const nlohmann::json& data, std::string_view key, std::string error_msg = "") noexcept
+	{
+		if (data.contains(key) && !data.at(key).is_null())
+		{
+			try
+			{
+				val = data.at(key).get<T>();
+				return true;
+			}
+			catch (const nlohmann::json::exception& e)
+			{
+				error_msg = "[JSON] Failed to load property {}, {}", key.data(), e.what();
+				return false;
+			}
+		}
+		else
+		{
+			error_msg = "[JSON] Failed to load property: {}, doesn't exist", key.data();
+			return false;
+		}
+	}
 }

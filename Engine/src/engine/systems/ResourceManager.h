@@ -28,12 +28,18 @@ public:
 	// will only clear the soundbuffer and will still hold the rest of the audiosource data
 	bool RemoveAudioSource(std::string_view id);
 
+	std::unordered_map<std::string, FSM>& GetFSMs();
+	FSM* AddFSM(std::string_view id, const FSM& fsm);
+	FSM* GetFSM(std::string_view id);
+	bool RemoveFSM(std::string_view id);
+		
 	void Clear();
 
 private:
 	std::unordered_map<std::string, sf::Texture> m_textures;
 	std::unordered_map<std::string, AudioSource> m_audioSources;
 	std::unordered_map<std::string, sf::Font> m_fonts;
+	std::unordered_map<std::string, FSM> m_fsms;
 };
 
 }

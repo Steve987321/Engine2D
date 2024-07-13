@@ -2,6 +2,7 @@
 
 #include "engine/Logger.h"
 #include "engine/utils/Helpers.h"
+#include "engine/utils/FSM.h"
 #include "engine/Types.h"
 
 #include "engine/systems/Input.h"
