@@ -19,10 +19,19 @@ namespace Toad
 
 	namespace fs = std::filesystem;
 
+	FSMGraphEditor::FSMGraphEditor()
+	{
+		m_inspectorUI = std::bind(&FSMGraphEditor::ShowFSMProps, this);
+	}
+
 	void FSMGraphEditor::Show(bool* show, const GameAssetsBrowser& asset_browser)
 	{
 		ImGui::Begin("FSMGraphEditor", show, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
 		{
+			if (ImGui::IsWindowFocused())
+				if (ui::inspector_ui.target_type() != m_inspectorUI.target_type())
+						ui::inspector_ui = m_inspectorUI;
+
 			bool save_to_file = false;
 			if (ImGui::BeginMenuBar())
 			{
@@ -101,8 +110,8 @@ namespace Toad
 				ImGui::Text(state.name.c_str());
 
 				ImGui::PushID("prev");
-				ImGui::SmallButton("I");
 				FSMGraphEditorNodeInfo::node_prev_offset_pos = ImGui::GetCursorPos();
+				ImGui::SmallButton("I");
 				ImGui::PopID();
 
 				ImGui::SameLine(0, ImGui::GetWindowWidth() - ImGui::GetStyle().ItemSpacing.x - 40);
@@ -176,7 +185,6 @@ namespace Toad
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.f))
 				{
 					ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.f);
-					LOGDEBUGF("prev {} {} ", drag_delta.x, drag_delta.y);
 					ImGui::GetForegroundDrawList()->AddLine(press_pos, press_pos + drag_delta, IM_COL32(255, 255, 255, 255), 2.f);
 				}
 				else
@@ -187,13 +195,10 @@ namespace Toad
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.f))
 				{
 					ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.f);
-					LOGDEBUGF("next {} {} ", drag_delta.x, drag_delta.y);
 					ImGui::GetForegroundDrawList()->AddLine(press_pos, press_pos + drag_delta, IM_COL32(255, 255, 255, 255), 2.f);
 				}
 				else
-				{
 					next = false;
-				}
 			}
 
 			if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle, 0.f))
@@ -203,7 +208,6 @@ namespace Toad
 				ImVec2 current_scroll = { ImGui::GetScrollX(), ImGui::GetScrollY() };
 				ImGui::SetScrollX(current_scroll.x + drag_delta.x);
 				ImGui::SetScrollY(current_scroll.y + drag_delta.y);
-				LOGDEBUGF("{} {}", drag_delta.x, drag_delta.y);
 			}
 
 			ImGui::End();
@@ -307,6 +311,209 @@ namespace Toad
 		file << data << std::endl;
 		file.close();
 		return true;
+	}
+
+	void FSMGraphEditor::ShowFSMProps()
+	{
+		if (!fsm)
+		{
+			ImGui::Text("no fsm please create one");
+			return;
+		}
+		
+		ImGui::Text(fsm->GetName().c_str());
+		ImGui::Separator();
+
+		if (ImGui::TreeNode("FSM Variables"))
+		{
+			if (ImGui::TreeNode("I32"))
+			{
+				for (FSMVariable<int>& var : fsm->varsi32)
+				{
+					char name_buf[32];
+					strncpy(name_buf, var.name.c_str(), 32);
+					bool found = false;
+					if (ImGui::InputText("name", name_buf, 32))
+					{
+						for (FSMVariable<int>& var_other : fsm->varsi32)
+						{
+							if (&var == &var_other)
+								continue;
+							if (var_other.name == name_buf)
+								found = true;
+						}
+					}
+					if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
+					{
+						if (!found)
+							var.name = name_buf;
+					}
+
+					ImGui::DragInt(var.name.c_str(), &var.data);
+				}
+
+				if (ImGui::Button("ADD I32"))
+					fsm->AddVariable("var", 0);
+
+				ImGui::TreePop();
+			}
+
+			if (ImGui::TreeNode("FLT"))
+			{
+				for (FSMVariable<float>& var : fsm->varsflt)
+				{
+					char name_buf[32];
+					strncpy(name_buf, var.name.c_str(), 32);
+					bool found = false;
+
+					if (ImGui::InputText("name", name_buf, 32))
+					{
+						for (FSMVariable<float>& var_other : fsm->varsflt)
+						{
+							if (&var == &var_other)
+								continue;
+							if (var_other.name == name_buf)
+								found = true;
+						}
+					}
+					if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
+					{
+						if (!found)
+							var.name = name_buf;
+					}
+
+					ImGui::DragFloat(var.name.c_str(), &var.data);
+				}
+
+				if (ImGui::Button("ADD FLT"))
+					fsm->AddVariable("var", 0.f);
+
+				ImGui::TreePop();
+			}
+
+			ImGui::TreePop();
+		}
+
+		std::vector<State>& states = fsm->GetStates();
+
+		if (ImGui::TreeNode("States", "States (%d)", states.size()))
+		{
+			for (int i = 0; i < states.size(); i++)
+			{
+				State& state = states[i];
+
+				if (ImGui::TreeNode(std::to_string(i).c_str(), "(%s)", state.name.c_str()))
+				{
+					for (int j = 0; j < state.transitions.size(); j++)
+					{
+						Transition& transition = state.transitions[j];
+
+						if (ImGui::TreeNode((std::to_string(j) + "i32cond").c_str(), "condition (%d) (i32)", j))
+						{
+							for (TransitionCondition& cond : transition.conditions_i32)
+							{
+								cond.a;
+								cond.b;
+								if (cond.a > fsm->varsi32.size() || cond.b > fsm->varsi32.size())
+								{
+									ImGui::Text("Condition variables are invalid");
+								}
+								else
+								{
+									FSMVariable<int> var_a = fsm->varsi32[cond.a];
+									FSMVariable<int> var_b = fsm->varsi32[cond.b];
+									ImGui::DragInt(var_a.name.c_str(), &var_a.data);
+									ImGui::DragInt(var_b.name.c_str(), &var_b.data);
+
+									char compare_str[2];
+									to_string(cond.comparison_type, compare_str);
+
+									if (ImGui::BeginCombo("click check", compare_str))
+									{
+										for (int i = 0; i < (int)CompareType::COUNT - 1; i++)
+										{
+											CompareType ctype = static_cast<CompareType>(i);
+											to_string(ctype, compare_str);
+
+											if (ImGui::Selectable(compare_str, ctype == cond.comparison_type))
+												cond.comparison_type = ctype;
+										}
+										ImGui::EndCombo();
+									}
+								}
+
+							}
+
+							if (ImGui::Button("ADD CONDITION I32"))
+							{
+								if (fsm->varsi32.empty())
+									LOGERRORF("[FSMGraphEditor] Can't add i32 condition, fsm doesn't have any float variables");
+								else
+								{
+									TransitionCondition cond(fsm, 0, 0, FSMVariableType::INT32, CompareType::EQUAL);
+									transition.AddConditionI32(cond);
+								}
+
+							}
+							ImGui::TreePop();
+						}
+
+						if (ImGui::TreeNode((std::to_string(j) + "fltcond").c_str(), "condition (%d) (flt)", j))
+						{
+							for (TransitionCondition& cond : transition.conditions_flt)
+							{
+								cond.a;
+								cond.b;
+								if (cond.a > fsm->varsflt.size() || cond.b > fsm->varsflt.size())
+								{
+									ImGui::Text("Condition variables are invalid");
+								}
+								else
+								{
+									FSMVariable<float> var_a = fsm->varsflt[cond.a];
+									FSMVariable<float> var_b = fsm->varsflt[cond.b];
+									ImGui::DragFloat(var_a.name.c_str(), &var_a.data);
+									ImGui::DragFloat(var_b.name.c_str(), &var_b.data);
+									
+									char compare_str[2];
+									to_string(cond.comparison_type, compare_str);
+
+									if (ImGui::BeginCombo("click check", compare_str))
+									{
+										for (int i = 0; i < (int)CompareType::COUNT - 1; i++)
+										{
+											CompareType ctype = static_cast<CompareType>(i);
+											to_string(ctype, compare_str);
+
+											if (ImGui::Selectable(compare_str, ctype == cond.comparison_type))
+												cond.comparison_type = ctype;
+										}
+										ImGui::EndCombo();
+									}
+								}
+
+							}
+
+							if (ImGui::Button("ADD CONDITION FLT"))
+							{
+								if (fsm->varsflt.empty())
+									LOGERRORF("[FSMGraphEditor] Can't add float condition, fsm doesn't have any float variables");
+								else
+								{
+									TransitionCondition cond(fsm, 0, 0, FSMVariableType::FLOAT, CompareType::EQUAL);
+									transition.AddConditionFlt(cond);
+								}
+
+							}
+							ImGui::TreePop();
+						}
+					}
+
+					ImGui::TreePop();
+				}
+			}
+			ImGui::TreePop();
+		}
 	}
 
 }

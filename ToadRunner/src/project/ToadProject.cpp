@@ -236,7 +236,7 @@ namespace project {
 					if (ext == ".h" || ext == ".cpp" || ext == ".hpp" || ext == ".inl" || ext == ".lib" || ext == ".dylib")
 					{
 						fs::path destination = fs::path(settings.project_path) / "vendor" / fs::relative(e2.path(), engine_path_fs / "Vendor").string();
-						if (!fs::exists(destination.parent_path()));
+						if (!fs::exists(destination.parent_path()))
 							fs::create_directories(destination.parent_path());
 
 						fs::copy_file(e2.path(), destination, fs::copy_options::overwrite_existing);

@@ -1,6 +1,10 @@
+#pragma once
 #include <utility>
 
-#pragma once
+namespace Toad
+{
+	class GameAssetsBrowser;
+}
 
 namespace ui
 {
@@ -29,14 +33,14 @@ namespace ui
 	inline Vec2i grid_size = {80, 80};
 
 	// function that will be called in the inspector window 
-	// - will only be called when no objects are selected
-	// - when using it needs to be set every frame so it doesn't reset 
 	inline std::function<void()> inspector_ui;
 	
 	void engine_ui(ImGuiContext* ctx);
 
 	void event_callback(const sf::Event& e);
 	void editor_texture_draw_callback(sf::RenderTexture& texture);
+
+	void object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrowser& asset_browser);
 
 	void HelpMarker(const char* desc);
 }

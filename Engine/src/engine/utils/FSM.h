@@ -20,8 +20,14 @@ enum class CompareType
 	EQUALGREATERTHAN,	// a>=b
 	GREATERTHAN,		// a>b
 	EQUALLESSTHAN,		// a<=b
-	LESSTHAN			// a<b
+	LESSTHAN,			// a<b
+	COUNT				// Size
 };
+
+ENGINE_API std::string to_string(CompareType type);
+ENGINE_API void to_string(CompareType type, char dest[2]);
+
+std::ostream& operator<<(std::ostream& o, CompareType type);
 
 enum class FSMVariableType
 {
@@ -54,13 +60,16 @@ class ENGINE_API TransitionCondition
 {
 public:
 	TransitionCondition(FSM* fsm, int a, int b, FSMVariableType var_type, CompareType compare_type)
-		: m_fsm(fsm), m_a(a), m_b(b), m_varType(var_type), m_comparisonType(compare_type)
+		: m_fsm(fsm), a(a), b(b), m_varType(var_type), comparison_type(compare_type)
 	{}
 
 	TransitionCondition& operator=(const TransitionCondition& other);
 public:
-	json Serialize() const;
+	int a = 0;
+	int b = 0;
+	CompareType comparison_type;
 
+	json Serialize() const;
 
 	static TransitionCondition Deserialize(const json& data, FSM& fsm);
 
@@ -70,7 +79,7 @@ private:
 	template<typename T>
 	bool CompareAB(FSMVariable<T>& a, FSMVariable<T>& b) const 
 	{
-		switch (m_comparisonType)
+		switch (comparison_type)
 		{
 		case CompareType::NOTEQUAL:
 			return a.data != b.data;
@@ -90,12 +99,8 @@ private:
 	}
 
 private:
-	CompareType m_comparisonType;
-	int m_a = 0;
-	int m_b = 0;
-	FSMVariableType m_varType;
-
-	FSM* m_fsm;
+	FSMVariableType m_varType = FSMVariableType::INT32;
+	FSM* m_fsm = nullptr;
 };
 
 class ENGINE_API Transition
@@ -109,6 +114,9 @@ public:
 
 	friend class FSM;
 	
+	std::vector<TransitionCondition> conditions_i32{};
+	std::vector<TransitionCondition> conditions_flt{};
+
 	// gets called after State.Exit
 	virtual void Invoke();
 
@@ -125,10 +133,6 @@ private:
 	int m_prevStateIndex;
 	int m_nextStateIndex;
 	FSM& m_fsm;
-
-private:
-	std::vector<TransitionCondition> conditions_i32{};
-	std::vector<TransitionCondition> conditions_flt{};
 };
 
 /// Handle a state machine with states and transitions
@@ -149,8 +153,8 @@ public:
 	State* GetStateByName(std::string_view name);
 
 	void AddState(State state);
-	void AddVariable(std::string_view name, int var);
-	void AddVariable(std::string_view name, float var);
+	void AddVariable(std::string name, int var);
+	void AddVariable(std::string name, float var);
 
 	std::vector<FSMVariable<int>> varsi32{};
 	std::vector<FSMVariable<float>> varsflt{};

@@ -66,7 +66,6 @@ namespace Toad
 	{
 		const std::string state_name = state.name;
 		bool found = true;
-
 		const auto fix_duplicate_name = [&]
 		{
 			found = false;
@@ -94,14 +93,64 @@ namespace Toad
 		m_states.emplace_back(state);
 	}
 
-	void FSM::AddVariable(std::string_view name, int var)
+	void FSM::AddVariable(std::string name, int var)
 	{
-		varsi32.emplace_back(name.data(), var);
+		const std::string original_name = name;
+		bool found = true;
+		const auto fix_duplicate_name = [&]
+			{
+				found = false;
+				for (int i = 0; i < varsi32.size(); i++)
+				{
+					if (name == varsi32[i].name)
+					{
+						found = true;
+
+						// fix it and break and check again
+						while (name == varsi32[i].name)
+							name = original_name + '_' + std::to_string(i + 1);
+
+						break;
+					}
+
+				}
+			};
+
+		while (found)
+		{
+			fix_duplicate_name();
+		}
+		varsi32.emplace_back(name, var);
 	}
 
-	void FSM::AddVariable(std::string_view name, float var)
+	void FSM::AddVariable(std::string name, float var)
 	{
-		varsflt.emplace_back(name.data(), var);
+		const std::string original_name = name;
+		bool found = true;
+		const auto fix_duplicate_name = [&]
+			{
+				found = false;
+				for (int i = 0; i < varsflt.size(); i++)
+				{
+					if (name == varsflt[i].name)
+					{
+						found = true;
+
+						// fix it and break and check again
+						while (name == varsflt[i].name)
+							name = original_name + '_' + std::to_string(i + 1);
+
+						break;
+					}
+				}
+			};
+
+		while (found)
+		{
+			fix_duplicate_name();
+		}
+
+		varsflt.emplace_back(name, var);
 	}
 
 	json FSM::Serialize() const
@@ -290,7 +339,7 @@ namespace Toad
 			LOGERRORF("[FSMState] state index bigger than amount of states in fsm");
 			return nullptr;
 		}
-		m_fsm.GetStates()[m_prevStateIndex];
+		return &m_fsm.GetStates()[m_prevStateIndex];
 	}
 
 	Toad::State* Transition::GetNextState()
@@ -313,9 +362,9 @@ namespace Toad
 	json TransitionCondition::Serialize() const
 	{
 		json data;
-		data["a"] = m_a;
-		data["b"] = m_b;
-		data["compare"] = m_comparisonType;
+		data["a"] = a;
+		data["b"] = b;
+		data["compare"] = comparison_type;
 		data["type"] = m_varType;
 		return data;
 	}
@@ -324,9 +373,9 @@ namespace Toad
 	{
 		if (this != &other)
 		{
-			m_a = other.m_a;
-			m_b = other.m_b;
-			m_comparisonType = other.m_comparisonType;
+			a = other.a;
+			b = other.b;
+			comparison_type = other.comparison_type;
 			m_varType = other.m_varType;
 			m_fsm = other.m_fsm;
 		}
@@ -354,13 +403,61 @@ namespace Toad
 		switch (m_varType)
 		{
 		case FSMVariableType::FLOAT:
-			return CompareAB<float>(m_fsm->varsflt[m_a], m_fsm->varsflt[m_b]);
+			return CompareAB<float>(m_fsm->varsflt[a], m_fsm->varsflt[b]);
 			break;
 		case FSMVariableType::INT32:
-			return CompareAB<int>(m_fsm->varsi32[m_a], m_fsm->varsi32[m_b]);
+			return CompareAB<int>(m_fsm->varsi32[a], m_fsm->varsi32[b]);
 			break;
 		default:
 			return false;
+			break;
+		}
+	}
+
+	void to_string(CompareType type, char dest[2])
+	{
+		switch (type)
+		{
+		case CompareType::NOTEQUAL:
+			strncpy(dest, "!=", 2);
+			break;
+		case CompareType::EQUAL:
+			strncpy(dest, "==", 2);
+			break;
+		case CompareType::EQUALGREATERTHAN:
+			strncpy(dest, ">=", 2);
+			break;
+		case CompareType::GREATERTHAN:
+			strncpy(dest, ">", 2);
+			break;
+		case CompareType::EQUALLESSTHAN:
+			strncpy(dest, "<=", 2);
+			break;
+		case CompareType::LESSTHAN:
+			strncpy(dest, "<", 2);
+			break;
+		default:
+			break;
+		}
+	}
+
+	std::string to_string(CompareType type)
+	{
+		switch (type)
+		{
+		case CompareType::NOTEQUAL:
+			return "!=";
+		case CompareType::EQUAL:
+			return "==";
+		case CompareType::EQUALGREATERTHAN:
+			return ">=";
+		case CompareType::GREATERTHAN:
+			return ">";
+		case CompareType::EQUALLESSTHAN:
+			return "<=";
+		case CompareType::LESSTHAN:
+			return "<";
+		default:
 			break;
 		}
 	}

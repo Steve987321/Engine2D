@@ -24,8 +24,6 @@ namespace Toad
 
 	void AnimationEditor::Show(bool* show)
 	{
-		ui::inspector_ui = m_inspectorUI;
-
 		bool animation_editor_opened = ImGui::Begin("AnimationEditor", show);
 		{
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
@@ -193,6 +191,9 @@ namespace Toad
 
 		ImGui::Begin("Timeline");
 		{
+			if (ImGui::IsWindowFocused())
+				ui::inspector_ui = m_inspectorUI;
+
 			static int current_frame = 0;
 
 			ImGui::BeginChild("TimelineMenuBar", { 0, 50 }, true);
