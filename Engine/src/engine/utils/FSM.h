@@ -23,6 +23,12 @@ enum class CompareType
 	LESSTHAN			// a<b
 };
 
+enum class FSMVariableType
+{
+	FLOAT,
+	INT32
+};
+
 template<typename T>
 struct ENGINE_API FSMVariable
 {
@@ -37,90 +43,47 @@ public:
 	State() = default;
 
 public:
-	virtual void OnEnter() {};
-	virtual void OnExit() {};
-
-public:
 	std::string name;
 	std::vector<Transition> transitions{};
+
+	virtual void OnEnter() {};
+	virtual void OnExit() {};
 };
 
-template<typename T> 
 class ENGINE_API TransitionCondition
 {
 public:
-	TransitionCondition(FSMVariable<T>& a, FSMVariable<T>& b, CompareType type)
-		: m_a(a), m_b(b), m_comparisonType(type)
-	{
-	}
+	TransitionCondition(FSM* fsm, int a, int b, FSMVariableType var_type, CompareType compare_type)
+		: m_fsm(fsm), m_a(a), m_b(b), m_varType(var_type), m_comparisonType(compare_type)
+	{}
 
+	TransitionCondition& operator=(const TransitionCondition& other);
 public:
-	json Serialize() const
-	{
-		json data;
-		data["a"] = m_a.name;
-		data["b"] = m_b.name;
-		data["compare"] = m_comparisonType;
-		return data;
-	}
+	json Serialize() const;
 
-	TransitionCondition<T>& operator=(const TransitionCondition<T>& other)
-	{
-		if (this != &other)
-		{
-			m_a = other.m_a;
-			m_b = other.m_b;
-			m_comparisonType = other.m_comparisonType;
-		}
-		return *this;
-	}
 
-	static TransitionCondition<T> Deserialize(const json& data, std::vector<FSMVariable<T>>& variables)
-	{
-		std::string a_name;
-		std::string b_name;
-		get_json_element(a_name, data, "a");
-		get_json_element(b_name, data, "b");
-		CompareType compare_type = CompareType::EQUAL;
-		get_json_element(compare_type, data, "compare");
+	static TransitionCondition Deserialize(const json& data, FSM& fsm);
 
-		FSMVariable<T>* a_var = nullptr;
-		FSMVariable<T>* b_var = nullptr;
-		for (auto& var : variables)
-		{
-			if (var.name == a_name)
-				a_var = &var;
-			else if (var.name == b_name)
-				b_var = &var;
+	bool IsConditionMet() const;
 
-			if (a_var && b_var)
-				break;
-		}
-
-		if (!a_var || !b_var)
-		{
-			throw std::runtime_error("a_var or b_var is nullptr");
-		}
-
-		return TransitionCondition<T>(*a_var, *b_var, compare_type);
-	}
-
-	bool IsConditionMet() const 
+private:
+	template<typename T>
+	bool CompareAB(FSMVariable<T>& a, FSMVariable<T>& b) const 
 	{
 		switch (m_comparisonType)
 		{
 		case CompareType::NOTEQUAL:
-			return m_a.data != m_b.data;
+			return a.data != b.data;
 		case CompareType::EQUAL:
-			return m_a.data == m_b.data;
+			return a.data == b.data;
 		case CompareType::EQUALGREATERTHAN:
-			return m_a.data >= m_b.data;
+			return a.data >= b.data;
 		case CompareType::GREATERTHAN:
-			return m_a.data > m_b.data;
+			return a.data > b.data;
 		case CompareType::EQUALLESSTHAN:
-			return m_a.data <= m_b.data;
+			return a.data <= b.data;
 		case CompareType::LESSTHAN:
-			return m_a.data < m_b.data;
+			return a.data < b.data;
 		default:
 			return false;
 		}
@@ -128,15 +91,18 @@ public:
 
 private:
 	CompareType m_comparisonType;
-	FSMVariable<T>& m_a;
-	FSMVariable<T>& m_b;
+	int m_a = 0;
+	int m_b = 0;
+	FSMVariableType m_varType;
+
+	FSM* m_fsm;
 };
 
 class ENGINE_API Transition
 {
 public:
-	Transition(State& prev, State& next)
-		: m_prevState(prev), m_nextState(next)
+	Transition(FSM& fsm, int prev, int next)
+		: m_fsm(fsm), m_prevStateIndex(prev), m_nextStateIndex(next)
 	{}
 
 	Transition& operator=(const Transition& other);
@@ -149,15 +115,20 @@ public:
 	// checks the conditions if a transition should happen, should call Invoke() if this returns true.
 	bool IsTransitionAllowed();
 
-	void AddCondition(const TransitionCondition<int>& condition_i32);
-	void AddCondition(const TransitionCondition<float>& condition_i32);
+	void AddConditionI32(const TransitionCondition& condition_i32);
+	void AddConditionFlt(const TransitionCondition& condition_i32);
+
+	State* GetPreviousState();
+	State* GetNextState();
 
 private:
-	State& m_prevState;
-	State& m_nextState;
+	int m_prevStateIndex;
+	int m_nextStateIndex;
+	FSM& m_fsm;
 
-	std::vector<TransitionCondition<int>> conditions_i32{};
-	std::vector<TransitionCondition<float>> conditions_flt{};
+private:
+	std::vector<TransitionCondition> conditions_i32{};
+	std::vector<TransitionCondition> conditions_flt{};
 };
 
 /// Handle a state machine with states and transitions
@@ -173,8 +144,11 @@ public:
 	State* GetCurrentState() const;
 	const std::string& GetName() const;
 	std::vector<State>& GetStates();
-	void AddState(State state);
 
+	// can return nullptr
+	State* GetStateByName(std::string_view name);
+
+	void AddState(State state);
 	void AddVariable(std::string_view name, int var);
 	void AddVariable(std::string_view name, float var);
 

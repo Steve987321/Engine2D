@@ -14,6 +14,7 @@
 #include "FileBrowser.h"
 #include "AnimationEditor.h"
 #include "GameAssetsBrowser.h"
+#include "FSMGraphEditor.h"
 #include "TextEditor.h"
 #include "engine/systems/build/package.h"
 #include "project/ToadProject.h"
@@ -64,9 +65,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::GameAssetsBrowser asset_browser(settings.project_path);
 	static Toad::TextEditor textEditor;
 	static Toad::AnimationEditor anim_editor;
+	static Toad::FSMGraphEditor fsm_graph_editor;
 
 	static bool view_settings = false;
 	static bool view_text_editor = false;
+	static bool view_fsm_editor = true;
 
 	static Toad::Object* selected_obj = nullptr;
 	static std::set<std::string> selected_objects = {};
@@ -3025,6 +3028,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		ImGui::End();
 	}
+
+	if (view_fsm_editor)
+		fsm_graph_editor.Show(&view_fsm_editor, asset_browser);
 
 	if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))
 	{

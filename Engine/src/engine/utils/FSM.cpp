@@ -31,7 +31,7 @@ namespace Toad
 			{
 				m_currentState->OnExit();
 				t.Invoke();
-				m_currentState = &t.m_nextState;
+				m_currentState = &m_states[t.m_nextStateIndex];
 				m_currentState->OnEnter();
 			}
 		}
@@ -47,9 +47,19 @@ namespace Toad
 		return m_name;
 	}
 
-	std::vector<Toad::State>& FSM::GetStates()
+	std::vector<State>& FSM::GetStates()
 	{
 		return m_states;
+	}
+
+	Toad::State* FSM::GetStateByName(std::string_view name)
+	{
+		for (State& state : m_states)
+		{
+			if (state.name == name)
+				return &state;
+		}
+		return nullptr;
 	}
 
 	void FSM::AddState(State state)
@@ -68,7 +78,7 @@ namespace Toad
 
 					// fix it and break and check again
 					while (state.name == m_states[i].name)
-						state.name = state_name + '_' + std::to_string(i++);
+						state.name = state_name + '_' + std::to_string(i + 1);
 
 					break;
 				}
@@ -119,8 +129,8 @@ namespace Toad
 			for (const Transition& transition : state.transitions)
 			{
 				json transition_data;
-				transition_data["prev_state"] = transition.m_prevState.name;
-				transition_data["next_state"] = transition.m_nextState.name;
+				transition_data["prev_state"] = m_states[transition.m_prevStateIndex].name;
+				transition_data["next_state"] = m_states[transition.m_nextStateIndex].name;
 
 				json flt_cond_data;
 				json i32_cond_data;
@@ -200,28 +210,29 @@ namespace Toad
 			get_json_element(i32_cond_data, transition, "i32_cond");
 
 			// get states from names
-			State* prev_state = nullptr;
-			State* next_state = nullptr;
-			for (State& state : res.m_states)
+			int prev_state = 0;
+			int next_state = 0;
+			for (int i = 0; i < res.m_states.size(); i++)
 			{
+				State& state = res.m_states[i];
 				if (state.name == prev_state_name)
-					prev_state = &state;
+					prev_state = i;
 				else if (state.name == next_state_name)
-					next_state = &state;
+					next_state = i;
 			}
 
 			if (!prev_state || !next_state)
 				LOGERRORF("[FSM] Transition must have two states");
 			else
 			{
-				Transition t(*prev_state, *next_state);
+				Transition t(res, prev_state, next_state);
 
 				for (const auto& item : i32_cond_data)
-					t.AddCondition(TransitionCondition<int>::Deserialize(item, res.varsi32));
+					t.AddConditionI32(TransitionCondition::Deserialize(item, res));
 				for (const auto& item : flt_cond_data)
-					t.AddCondition(TransitionCondition<float>::Deserialize(item, res.varsflt));
+					t.AddConditionFlt(TransitionCondition::Deserialize(item, res));
 
-				prev_state->transitions.emplace_back(t);
+				res.GetStates()[prev_state].transitions.emplace_back(t);
 			}
 		}
 
@@ -232,10 +243,11 @@ namespace Toad
 	{
 		if (this != &other)
 		{
-			m_prevState = other.m_prevState;
-			m_nextState = other.m_nextState;
+			m_nextStateIndex = other.m_nextStateIndex;
+			m_prevStateIndex = other.m_prevStateIndex;
 			conditions_i32 = other.conditions_i32;
 			conditions_flt = other.conditions_flt;
+			m_fsm = other.m_fsm;
 		}
 		return *this;
 	}
@@ -246,33 +258,111 @@ namespace Toad
 
 	bool Transition::IsTransitionAllowed()
 	{
-		for (const TransitionCondition<int>& condition : conditions_i32)
+		for (const TransitionCondition& conditioni32 : conditions_i32)
 		{
-			if (!condition.IsConditionMet())
+			if (!conditioni32.IsConditionMet())
 				return false;
 		}
-		for (const TransitionCondition<float>& condition : conditions_flt)
+		for (const TransitionCondition& conditionflt : conditions_flt)
 		{
-			if (!condition.IsConditionMet())
+			if (!conditionflt.IsConditionMet())
 				return false;
 		}
 
 		return true;
 	}
 
-	void Transition::AddCondition(const TransitionCondition<int>& condition_i32)
+	void Transition::AddConditionI32(const TransitionCondition& condition_i32)
 	{
 		conditions_i32.emplace_back(condition_i32);
 	}
 
-	void Transition::AddCondition(const TransitionCondition<float>& condition_flt)
+	void Transition::AddConditionFlt(const TransitionCondition& condition_flt)
 	{
 		conditions_flt.emplace_back(condition_flt);
+	}
+
+	Toad::State* Transition::GetPreviousState()
+	{
+		std::vector<State>& states = m_fsm.GetStates();
+		if (states.size() < m_prevStateIndex)
+		{
+			LOGERRORF("[FSMState] state index bigger than amount of states in fsm");
+			return nullptr;
+		}
+		m_fsm.GetStates()[m_prevStateIndex];
+	}
+
+	Toad::State* Transition::GetNextState()
+	{
+		std::vector<State>& states = m_fsm.GetStates();
+		if (states.size() < m_nextStateIndex)
+		{
+			LOGERRORF("[FSMState] state index bigger than amount of states in fsm");
+			return nullptr;
+		}
+
+		return &m_fsm.GetStates()[m_nextStateIndex];
 	}
 
 	State::State(std::string_view name)
 		: name(name)
 	{
+	}
+
+	json TransitionCondition::Serialize() const
+	{
+		json data;
+		data["a"] = m_a;
+		data["b"] = m_b;
+		data["compare"] = m_comparisonType;
+		data["type"] = m_varType;
+		return data;
+	}
+
+	Toad::TransitionCondition& TransitionCondition::operator=(const TransitionCondition& other)
+	{
+		if (this != &other)
+		{
+			m_a = other.m_a;
+			m_b = other.m_b;
+			m_comparisonType = other.m_comparisonType;
+			m_varType = other.m_varType;
+			m_fsm = other.m_fsm;
+		}
+		return *this;
+	}
+
+	Toad::TransitionCondition TransitionCondition::Deserialize(const json& data, FSM& fsm)
+	{
+		int a_index;
+		int b_index;
+		get_json_element(a_index, data, "a");
+		get_json_element(b_index, data, "b");
+
+		CompareType compare_type = CompareType::EQUAL;
+		get_json_element(compare_type, data, "compare");
+
+		FSMVariableType type;
+		get_json_element(type, data, "type");
+
+		return {&fsm, a_index, b_index, type, compare_type};
+	}
+
+	bool TransitionCondition::IsConditionMet() const
+	{
+		switch (m_varType)
+		{
+		case FSMVariableType::FLOAT:
+			return CompareAB<float>(m_fsm->varsflt[m_a], m_fsm->varsflt[m_b]);
+			break;
+		case FSMVariableType::INT32:
+			return CompareAB<int>(m_fsm->varsi32[m_a], m_fsm->varsi32[m_b]);
+			break;
+		default:
+			return false;
+			break;
+		}
 	}
 
 }

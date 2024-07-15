@@ -9,6 +9,13 @@ namespace Toad
 
 class GameAssetsBrowser;
 
+struct FSMGraphEditorNodeInfo
+{
+	ImVec2 pos;
+	static inline ImVec2 node_prev_offset_pos{};
+	static inline ImVec2 node_next_offset_pos{};
+};
+
 // Edit load and save FSMs.
 class FSMGraphEditor
 {
@@ -19,7 +26,7 @@ public:
 
 	FSM* fsm = nullptr;
 private:
-	std::unordered_map<std::string, ImVec2> _statePos{};
+	std::unordered_map<std::string, FSMGraphEditorNodeInfo> _statePos{};
 
 };
 
