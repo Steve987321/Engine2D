@@ -25,7 +25,7 @@ enum class CompareType
 };
 
 ENGINE_API std::string to_string(CompareType type);
-ENGINE_API void to_string(CompareType type, char dest[2]);
+ENGINE_API void to_string(CompareType type, char dest[3]);
 
 std::ostream& operator<<(std::ostream& o, CompareType type);
 

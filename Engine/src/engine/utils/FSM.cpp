@@ -414,27 +414,27 @@ namespace Toad
 		}
 	}
 
-	void to_string(CompareType type, char dest[2])
+	void to_string(CompareType type, char dest[3])
 	{
 		switch (type)
 		{
 		case CompareType::NOTEQUAL:
-			strncpy(dest, "!=", 2);
+			strncpy(dest, "!=", 3);
 			break;
 		case CompareType::EQUAL:
-			strncpy(dest, "==", 2);
+			strncpy(dest, "==", 3);
 			break;
 		case CompareType::EQUALGREATERTHAN:
-			strncpy(dest, ">=", 2);
+			strncpy(dest, ">=", 3);
 			break;
 		case CompareType::GREATERTHAN:
-			strncpy(dest, ">", 2);
+			strncpy(dest, ">", 3);
 			break;
 		case CompareType::EQUALLESSTHAN:
-			strncpy(dest, "<=", 2);
+			strncpy(dest, "<=", 3);
 			break;
 		case CompareType::LESSTHAN:
-			strncpy(dest, "<", 2);
+			strncpy(dest, "<", 3);
 			break;
 		default:
 			break;

@@ -97,7 +97,7 @@ namespace Toad
 			static ImVec2 press_pos = {};
 			static bool is_dragging_state = false;
 			static std::string dragging_state;
-
+			
 			std::vector<State>& fsm_states = fsm->GetStates();
 			for (uint32_t i = 0; i < fsm_states.size(); i++)
 			{
@@ -185,7 +185,7 @@ namespace Toad
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.f))
 				{
 					ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.f);
-					ImGui::GetForegroundDrawList()->AddLine(press_pos, press_pos + drag_delta, IM_COL32(255, 255, 255, 255), 2.f);
+					ImGui::GetForegroundDrawList()->AddLine(press_pos, press_pos + drag_delta, IM_COL32(255, 255, 255, 155), 2.f);
 				}
 				else
 					prev = false;
@@ -195,7 +195,7 @@ namespace Toad
 				if (ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0.f))
 				{
 					ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.f);
-					ImGui::GetForegroundDrawList()->AddLine(press_pos, press_pos + drag_delta, IM_COL32(255, 255, 255, 255), 2.f);
+					ImGui::GetForegroundDrawList()->AddLine(press_pos, press_pos + drag_delta, IM_COL32(255, 255, 255, 155), 2.f);
 				}
 				else
 					next = false;
@@ -313,6 +313,155 @@ namespace Toad
 		return true;
 	}
 
+	template<typename T> 
+	static void ShowFSMVars(FSM* fsm)
+	{
+		constexpr bool is_integral = std::is_integral<T>::value;
+		constexpr bool is_floating_point = std::is_floating_point<T>::value;
+		std::vector<FSMVariable<T>>* vars = nullptr;
+		if constexpr (is_integral)
+			vars = &fsm->varsi32;
+		else if (is_floating_point)
+			vars = &fsm->varsflt;
+		else
+			return;
+
+		for (FSMVariable<T>& var : *vars)
+		{
+			char name_buf[32];
+			strncpy(name_buf, var.name.c_str(), 32);
+			bool found = false;
+			if (ImGui::InputText("name", name_buf, 32))
+			{
+				for (const FSMVariable<T>& var_other : *vars)
+				{
+					if (&var == &var_other)
+						continue;
+					if (var_other.name == name_buf)
+						found = true;
+				}
+			}
+			if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
+			{
+				if (!found)
+					var.name = name_buf;
+			}
+
+			if constexpr (is_integral)
+				ImGui::DragInt(var.name.c_str(), &var.data);
+			else if (is_floating_point)
+				ImGui::DragFloat(var.name.c_str(), &var.data);
+		}
+
+		if constexpr (is_integral)
+		{
+			if (ImGui::Button("ADD I32"))
+				fsm->AddVariable("var", 0);
+		}
+		else if (is_floating_point)
+		{
+			if (ImGui::Button("ADD FLT"))
+				fsm->AddVariable("var", 0.f);
+		}
+	}
+
+	template<typename T>
+	static void ShowConditions(int index, FSM* fsm, Transition& transition)
+	{
+		constexpr bool is_integral = std::is_integral<T>::value;
+		constexpr bool is_floating_point = std::is_floating_point<T>::value;
+		char type_str[4]{};
+		std::vector <FSMVariable<T>>* vars = nullptr;
+		std::vector<TransitionCondition>* conditions = nullptr;
+		if constexpr (is_integral)
+		{
+			vars = &fsm->varsi32;
+			conditions = &transition.conditions_i32;
+			strncpy(type_str, "i32", 4);
+		}
+		else if (is_floating_point)
+		{
+			vars = &fsm->varsflt;
+			conditions = &transition.conditions_flt;
+			strncpy(type_str, "flt", 4);
+		}
+		else
+			return;
+
+		if (ImGui::TreeNode((std::to_string(index) + type_str + "cond").c_str(), "condition (%d) (%s)", index, type_str))
+		{
+			for (TransitionCondition& cond : *conditions)
+			{
+				if (cond.a > vars->size() || cond.b > vars->size())
+					ImGui::Text("Condition variables are invalid");
+				else
+				{
+					const FSMVariable<T>& var_a = (*vars)[cond.a];
+					const FSMVariable<T>& var_b = (*vars)[cond.b];
+
+					if (ImGui::BeginCombo("var A", var_a.name.c_str()))
+					{
+						for (int i = 0; i < vars->size(); i++)
+						{
+							if (ImGui::Selectable((*vars)[i].name.c_str(), i == cond.a))
+								cond.a = i;
+						}
+						ImGui::EndCombo();
+					}
+					if (ImGui::BeginCombo("var B", var_b.name.c_str()))
+					{
+						for (int i = 0; i < vars->size(); i++)
+						{
+							if (ImGui::Selectable((*vars)[i].name.c_str(), i == cond.a))
+								cond.b = i;
+						}
+						ImGui::EndCombo();
+					}
+
+					char compare_str[3];
+					to_string(cond.comparison_type, compare_str);
+
+					if (ImGui::BeginCombo("compare", compare_str))
+					{
+						for (int i = 0; i < (int)CompareType::COUNT - 1; i++)
+						{
+							CompareType ctype = static_cast<CompareType>(i);
+							to_string(ctype, compare_str);
+
+							if (ImGui::Selectable(compare_str, ctype == cond.comparison_type))
+								cond.comparison_type = ctype;
+						}
+						ImGui::EndCombo();
+					}
+				}
+			}
+
+			ImGui::PushID(type_str);
+			if (ImGui::Button("ADD CONDITION"))
+			{
+				if (vars->empty())
+					LOGERRORF("[FSMGraphEditor] Can't add {0} condition, fsm doesn't have any {0} variables", type_str);
+				else
+				{
+					if (is_integral)
+					{
+						TransitionCondition cond(fsm, 0, 0, FSMVariableType::INT32, CompareType::EQUAL);
+						transition.AddConditionI32(cond);
+					}
+					else if (is_floating_point)
+					{
+						TransitionCondition cond(fsm, 0, 0, FSMVariableType::FLOAT, CompareType::EQUAL);
+						transition.AddConditionFlt(cond);
+					}
+
+				}
+			}
+			ImGui::PopID();
+
+			ImGui::TreePop();
+		}
+	}
+
 	void FSMGraphEditor::ShowFSMProps()
 	{
 		if (!fsm)
@@ -320,7 +469,7 @@ namespace Toad
 			ImGui::Text("no fsm please create one");
 			return;
 		}
-		
+
 		ImGui::Text(fsm->GetName().c_str());
 		ImGui::Separator();
 
@@ -328,65 +477,14 @@ namespace Toad
 		{
 			if (ImGui::TreeNode("I32"))
 			{
-				for (FSMVariable<int>& var : fsm->varsi32)
-				{
-					char name_buf[32];
-					strncpy(name_buf, var.name.c_str(), 32);
-					bool found = false;
-					if (ImGui::InputText("name", name_buf, 32))
-					{
-						for (FSMVariable<int>& var_other : fsm->varsi32)
-						{
-							if (&var == &var_other)
-								continue;
-							if (var_other.name == name_buf)
-								found = true;
-						}
-					}
-					if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
-					{
-						if (!found)
-							var.name = name_buf;
-					}
-
-					ImGui::DragInt(var.name.c_str(), &var.data);
-				}
-
-				if (ImGui::Button("ADD I32"))
-					fsm->AddVariable("var", 0);
+				ShowFSMVars<int>(fsm);
 
 				ImGui::TreePop();
 			}
 
 			if (ImGui::TreeNode("FLT"))
 			{
-				for (FSMVariable<float>& var : fsm->varsflt)
-				{
-					char name_buf[32];
-					strncpy(name_buf, var.name.c_str(), 32);
-					bool found = false;
-
-					if (ImGui::InputText("name", name_buf, 32))
-					{
-						for (FSMVariable<float>& var_other : fsm->varsflt)
-						{
-							if (&var == &var_other)
-								continue;
-							if (var_other.name == name_buf)
-								found = true;
-						}
-					}
-					if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
-					{
-						if (!found)
-							var.name = name_buf;
-					}
-
-					ImGui::DragFloat(var.name.c_str(), &var.data);
-				}
-
-				if (ImGui::Button("ADD FLT"))
-					fsm->AddVariable("var", 0.f);
+				ShowFSMVars<float>(fsm);
 
 				ImGui::TreePop();
 			}
@@ -407,106 +505,8 @@ namespace Toad
 					for (int j = 0; j < state.transitions.size(); j++)
 					{
 						Transition& transition = state.transitions[j];
-
-						if (ImGui::TreeNode((std::to_string(j) + "i32cond").c_str(), "condition (%d) (i32)", j))
-						{
-							for (TransitionCondition& cond : transition.conditions_i32)
-							{
-								cond.a;
-								cond.b;
-								if (cond.a > fsm->varsi32.size() || cond.b > fsm->varsi32.size())
-								{
-									ImGui::Text("Condition variables are invalid");
-								}
-								else
-								{
-									FSMVariable<int> var_a = fsm->varsi32[cond.a];
-									FSMVariable<int> var_b = fsm->varsi32[cond.b];
-									ImGui::DragInt(var_a.name.c_str(), &var_a.data);
-									ImGui::DragInt(var_b.name.c_str(), &var_b.data);
-
-									char compare_str[2];
-									to_string(cond.comparison_type, compare_str);
-
-									if (ImGui::BeginCombo("click check", compare_str))
-									{
-										for (int i = 0; i < (int)CompareType::COUNT - 1; i++)
-										{
-											CompareType ctype = static_cast<CompareType>(i);
-											to_string(ctype, compare_str);
-
-											if (ImGui::Selectable(compare_str, ctype == cond.comparison_type))
-												cond.comparison_type = ctype;
-										}
-										ImGui::EndCombo();
-									}
-								}
-
-							}
-
-							if (ImGui::Button("ADD CONDITION I32"))
-							{
-								if (fsm->varsi32.empty())
-									LOGERRORF("[FSMGraphEditor] Can't add i32 condition, fsm doesn't have any float variables");
-								else
-								{
-									TransitionCondition cond(fsm, 0, 0, FSMVariableType::INT32, CompareType::EQUAL);
-									transition.AddConditionI32(cond);
-								}
-
-							}
-							ImGui::TreePop();
-						}
-
-						if (ImGui::TreeNode((std::to_string(j) + "fltcond").c_str(), "condition (%d) (flt)", j))
-						{
-							for (TransitionCondition& cond : transition.conditions_flt)
-							{
-								cond.a;
-								cond.b;
-								if (cond.a > fsm->varsflt.size() || cond.b > fsm->varsflt.size())
-								{
-									ImGui::Text("Condition variables are invalid");
-								}
-								else
-								{
-									FSMVariable<float> var_a = fsm->varsflt[cond.a];
-									FSMVariable<float> var_b = fsm->varsflt[cond.b];
-									ImGui::DragFloat(var_a.name.c_str(), &var_a.data);
-									ImGui::DragFloat(var_b.name.c_str(), &var_b.data);
-									
-									char compare_str[2];
-									to_string(cond.comparison_type, compare_str);
-
-									if (ImGui::BeginCombo("click check", compare_str))
-									{
-										for (int i = 0; i < (int)CompareType::COUNT - 1; i++)
-										{
-											CompareType ctype = static_cast<CompareType>(i);
-											to_string(ctype, compare_str);
-
-											if (ImGui::Selectable(compare_str, ctype == cond.comparison_type))
-												cond.comparison_type = ctype;
-										}
-										ImGui::EndCombo();
-									}
-								}
-
-							}
-
-							if (ImGui::Button("ADD CONDITION FLT"))
-							{
-								if (fsm->varsflt.empty())
-									LOGERRORF("[FSMGraphEditor] Can't add float condition, fsm doesn't have any float variables");
-								else
-								{
-									TransitionCondition cond(fsm, 0, 0, FSMVariableType::FLOAT, CompareType::EQUAL);
-									transition.AddConditionFlt(cond);
-								}
-
-							}
-							ImGui::TreePop();
-						}
+						ShowConditions<int>(j, fsm, transition);
+						ShowConditions<float>(j, fsm, transition);
 					}
 
 					ImGui::TreePop();
