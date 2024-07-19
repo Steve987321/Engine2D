@@ -143,10 +143,11 @@ public:
 	FSM();
 	~FSM();
 
+	std::string name;
+
 	void Update();
 
 	State* GetCurrentState() const;
-	const std::string& GetName() const;
 	std::vector<State>& GetStates();
 
 	// can return nullptr
@@ -165,7 +166,6 @@ public:
 
 private:
 	std::vector<State> m_states{};
-	std::string m_name;
 	State* m_currentState = nullptr;
 };
 

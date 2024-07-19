@@ -7,12 +7,12 @@
 namespace Toad
 {
 	FSM::FSM(std::string_view name)
-		: m_name(name)
+		: name(name)
 	{
 	}
 
 	FSM::FSM()
-		:m_name("fsm")
+		:name("fsm")
 	{
 	}
 
@@ -40,11 +40,6 @@ namespace Toad
 	State* FSM::GetCurrentState() const
 	{
 		return m_currentState;
-	}
-
-	const std::string& FSM::GetName() const
-	{
-		return m_name;
 	}
 
 	std::vector<State>& FSM::GetStates()
@@ -198,7 +193,7 @@ namespace Toad
 			states_data[state.name] = transitions_data;
 		}
 
-		data["name"] = m_name;
+		data["name"] = name;
 		data["vars"] = vars_data;
 		data["states"] = states_data;
 
@@ -212,8 +207,8 @@ namespace Toad
 		json vars_data;
 		json states_data;
 
-		if (!get_json_element(res.m_name, data, "name"))
-			res.m_name = "INVALID_NAME";
+		if (!get_json_element(res.name, data, "name"))
+			res.name = "INVALID_NAME";
 
 		get_json_element(vars_data, data, "vars");
 		get_json_element(states_data, data, "states");

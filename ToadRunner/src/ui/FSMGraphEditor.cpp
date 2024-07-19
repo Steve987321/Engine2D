@@ -45,7 +45,7 @@ namespace Toad
 			}
 			if (save_to_file)
 			{
-				SaveToFile(asset_browser.GetAssetPath() / (fsm->GetName() + FILE_EXT_FSM));
+				SaveToFile(asset_browser.GetAssetPath() / (fsm->name + FILE_EXT_FSM));
 				save_to_file = false;
 			}
 
@@ -103,12 +103,37 @@ namespace Toad
 			{
 				State& state = fsm_states[i];
 
+				// found duplicates for rename
+				bool found = false;
+				char name_buf[32];
+				strncpy(name_buf, state.name.c_str(), 32);
+
 				// add node things for creating/linking transitions
 				ImGui::SetCursorPos(_statePos[state.name].pos);
 				
 				ImGui::BeginChild(state.name.c_str(), { 150, 150 }, true);
-				ImGui::Text(state.name.c_str());
-
+				ImGui::PushID(i);
+				if (ImGui::InputText("name", name_buf, 32))
+				{
+					for (State& var_other : fsm_states)
+					{
+						if (&state == &var_other)
+							continue;
+						if (var_other.name == name_buf)
+							found = true;
+					}
+				}
+				ImGui::PopID();
+				if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
+				{
+					if (!found)
+					{
+						_statePos[name_buf] = _statePos[state.name];
+						_statePos.erase(state.name);
+						state.name = name_buf;
+					}
+				}
+				
 				ImGui::PushID("prev");
 				FSMGraphEditorNodeInfo::node_prev_offset_pos = ImGui::GetCursorPos();
 				ImGui::SmallButton("I");
@@ -279,7 +304,7 @@ namespace Toad
 
 		fs::path corrected_path = path;
 		if (fs::is_directory(path))
-			corrected_path /= fsm->GetName() + FILE_EXT_FSM;
+			corrected_path /= fsm->name + FILE_EXT_FSM;
 
 		if (!fs::is_regular_file(path))
 		{ 
@@ -326,11 +351,14 @@ namespace Toad
 		else
 			return;
 
-		for (FSMVariable<T>& var : *vars)
+		for (size_t i = 0; i < vars->size(); i++)
 		{
+			FSMVariable<T>& var = (*vars)[i];
 			char name_buf[32];
 			strncpy(name_buf, var.name.c_str(), 32);
 			bool found = false;
+
+			ImGui::PushID(i);
 			if (ImGui::InputText("name", name_buf, 32))
 			{
 				for (const FSMVariable<T>& var_other : *vars)
@@ -344,8 +372,12 @@ namespace Toad
 			if (ImGui::IsItemFocused() && ImGui::IsKeyPressed(ImGuiKey_Enter))
 			{
 				if (!found)
+				{
 					var.name = name_buf;
+
+				}
 			}
+			ImGui::PopID();
 
 			if constexpr (is_integral)
 				ImGui::DragInt(var.name.c_str(), &var.data);
@@ -470,7 +502,13 @@ namespace Toad
 			return;
 		}
 
-		ImGui::Text(fsm->GetName().c_str());
+		char fsm_name_buf[32];
+		strncpy(fsm_name_buf, fsm->name.c_str(), 32);
+		if (ImGui::InputText("name", fsm_name_buf, 32))
+		{
+			fsm->name = fsm_name_buf;
+		}
+
 		ImGui::Separator();
 
 		if (ImGui::TreeNode("FSM Variables"))
