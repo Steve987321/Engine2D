@@ -4,7 +4,14 @@
 namespace Toad
 {
 
-	bool Input::IsKeyDown(sf::Keyboard::Key key)
+namespace Input
+{
+	static std::vector<FKEY_CALLBACK> key_press_callbacks{};
+	static std::vector<FMOUSE_CALLBACK> mouse_press_callbacks{};
+	static std::vector<FKEY_CALLBACK> key_up_callbacks{};
+	static std::vector<FMOUSE_CALLBACK> mouse_up_callbacks{};
+
+	bool IsKeyDown(sf::Keyboard::Key key)
 	{
 		return sf::Keyboard::isKeyPressed(key);
 	}
@@ -16,35 +23,35 @@ namespace Toad
 
 	void Input::AddKeyPressCallback(FKEY_CALLBACK callback)
 	{
-		m_keyPressCallbacks.emplace_back(callback);
+		key_press_callbacks.emplace_back(callback);
 	}
 
 	void Input::AddMousePressCallback(FMOUSE_CALLBACK callback)
 	{
-		m_mousePressCallbacks.emplace_back(callback);
+		mouse_press_callbacks.emplace_back(callback);
 	}
 
 	void Input::AddKeyReleaseCallback(FKEY_CALLBACK callback)
 	{
-		m_keyUpCallbacks.emplace_back(callback);
+		key_up_callbacks.emplace_back(callback);
 	}
 
 	void Input::AddMouseReleaseCallback(FMOUSE_CALLBACK callback)
 	{
-		m_mouseUpCallbacks.emplace_back(callback);
+		mouse_up_callbacks.emplace_back(callback);
 	}
 
 	void Input::Clear()
 	{
-		m_keyPressCallbacks.clear();
-		m_keyUpCallbacks.clear();
-		m_mousePressCallbacks.clear();
-		m_mouseUpCallbacks.clear();
+		key_press_callbacks.clear();
+		key_up_callbacks.clear();
+		mouse_press_callbacks.clear();
+		mouse_up_callbacks.clear();
 	}
 
 	void Input::InvokeKeyPressCallbacks(sf::Keyboard::Key key)
 	{
-		for (const auto& c : m_keyPressCallbacks)
+		for (const auto& c : key_press_callbacks)
 		{
 			if (c)
 				c(key);
@@ -53,7 +60,7 @@ namespace Toad
 
 	void Input::InvokeMousePressCallbacks(sf::Mouse::Button button)
 	{
-		for (const auto& c : m_mousePressCallbacks)
+		for (const auto& c : mouse_press_callbacks)
 		{
 			if (c)
 				c(button);
@@ -62,7 +69,7 @@ namespace Toad
 
 	void Input::InvokeKeyReleaseCallbacks(sf::Keyboard::Key key)
 	{
-		for (const auto& c : m_keyUpCallbacks)
+		for (const auto& c : key_up_callbacks)
 		{
 			if (c)
 				c(key);
@@ -71,11 +78,33 @@ namespace Toad
 
 	void Input::InvokeMouseReleaseCallbacks(sf::Mouse::Button button)
 	{
-		for (const auto& c : m_mouseUpCallbacks)
+		for (const auto& c : mouse_up_callbacks)
 		{
 			if (c)
 				c(button);
 		}
 	}
+
+	const std::vector<FKEY_CALLBACK>& GetAllKeyPressCallbacks()
+	{
+		return key_press_callbacks;
+	}
+
+	const std::vector<FKEY_CALLBACK>& GetAllKeyReleaseCallbacks()
+	{
+		return key_up_callbacks;
+	}
+
+	const std::vector<FMOUSE_CALLBACK>& GetAllMousePressCallbacks()
+	{
+		return mouse_press_callbacks;
+	}
+
+	const std::vector<FMOUSE_CALLBACK>& GetAllMouseReleaseCallbacks()
+	{
+		return mouse_up_callbacks;
+	}
+
+}
 
 }

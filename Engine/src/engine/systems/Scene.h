@@ -14,7 +14,9 @@ struct ENGINE_API Scene
 	Scene() : name("unnamed_scene") {}
 
 	// all scenes
-	static inline std::vector<Scene> scenes;
+	static inline std::vector<Scene> scenes{};
+
+	static inline Scene* current_scene = nullptr;
 
 	// scene name
 	std::string name;

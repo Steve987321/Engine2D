@@ -6,40 +6,88 @@
 namespace Toad
 {
 
-	// ids are relative paths
-class ENGINE_API ResourceManager
+// ids are relative paths
+namespace ResourceManager
 {
-public:
-	ResourceManager();
-
-	std::unordered_map<std::string, sf::Texture>& GetTextures();
-	sf::Texture* AddTexture(std::string_view id, const sf::Texture& tex);
-	sf::Texture* GetTexture(std::string_view id);
-	bool RemoveTexture(std::string_view id);
-
-	std::unordered_map<std::string, sf::Font>& GetFonts();
-	sf::Font* AddFont(std::string_view id, const sf::Font& font);
-	sf::Font* GetFont(std::string_view id);
-	bool RemoveFont(std::string_view id);
-
-	std::unordered_map<std::string, AudioSource>& GetAudioSources();
-	AudioSource* AddAudioSource(std::string_view id, const AudioSource& sound_buffer);
-	AudioSource* GetAudioSource(std::string_view id);
-	// will only clear the soundbuffer and will still hold the rest of the audiosource data
-	bool RemoveAudioSource(std::string_view id);
-
-	std::unordered_map<std::string, FSM>& GetFSMs();
-	FSM* AddFSM(std::string_view id, const FSM& fsm);
-	FSM* GetFSM(std::string_view id);
-	bool RemoveFSM(std::string_view id);
+	template<typename T>
+	class ENGINE_API ResourcesOfType
+	{
+	public:
+		using TDATA = std::unordered_map<std::string, T>;
 		
-	void Clear();
+		explicit ResourcesOfType(std::string_view resource_name)
+			: m_resourceName(resource_name)
+		{}
 
-private:
-	std::unordered_map<std::string, sf::Texture> m_textures;
-	std::unordered_map<std::string, AudioSource> m_audioSources;
-	std::unordered_map<std::string, sf::Font> m_fonts;
-	std::unordered_map<std::string, FSM> m_fsms;
-};
+	public:
+		TDATA& GetData()
+		{
+			return m_data;
+		}
+
+		virtual T* Add(std::string_view id, const T& data)
+		{
+			if (m_data.contains(id.data()))
+				LOGWARNF("[ResourceManager] Data of type '{}' with id '{}' already exists and is getting replaced", m_resourceName, id.data());
+
+			m_data[id.data()] = T(data);
+			return &m_data[id.data()];
+		}
+
+		virtual T* Get(std::string_view id)
+		{
+			auto it = m_data.find(id.data());
+			if (it != m_data.end())
+				return &(it->second);
+			
+			return nullptr;
+		}
+
+		// erases from map
+		virtual bool Remove(std::string_view id)
+		{
+			auto it = m_data.find(id.data());
+			if (it != m_data.end())
+			{
+				m_data.erase(it);
+				return true;
+			}
+
+			return false;
+		}
+
+		virtual void Clear()
+		{
+			m_data.clear();
+		}
+
+	protected:
+		TDATA m_data;
+		std::string m_resourceName;
+	};
+
+	template class ResourcesOfType<sf::Texture>;
+	template class ResourcesOfType<sf::Font>;
+	template class ResourcesOfType<FSM>;
+
+	class ENGINE_API AudioSourceResources : public ResourcesOfType<AudioSource>
+	{
+	public:
+		AudioSourceResources(std::string_view name)
+			: ResourcesOfType<AudioSource>(name)
+		{}
+
+		// will only clear the soundbuffer and will still hold the rest of the audiosource data
+		bool Remove(std::string_view id) override;
+	};
+
+	ENGINE_API ResourcesOfType<sf::Texture>& GetTextures();
+	ENGINE_API ResourcesOfType<sf::Font>& GetFonts();
+	ENGINE_API AudioSourceResources& GetAudioSources();
+	ENGINE_API ResourcesOfType<FSM>& GetFSMs();
+
+	// clears all resources
+	ENGINE_API void Clear();
+}
 
 }

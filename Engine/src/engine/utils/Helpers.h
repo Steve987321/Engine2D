@@ -6,6 +6,7 @@
 #include "EngineCore.h"
 #include "engine/Types.h"
 #include "nlohmann/json.hpp"
+#include "engine/FormatStr.h"
 
 #define GET_JSON_ELEMENT(val, data, key) if (data.contains(key)) val = data[key]; else LOGERRORF("Failed to load property: {}", key);
 
@@ -25,6 +26,9 @@ inline ENUMTYPE &operator ^= (ENUMTYPE &a, ENUMTYPE b) noexcept { return (ENUMTY
 
 namespace Toad
 {
+	class Script;
+	class Object;
+
 	/// @brief fast random number generator with bounds
 	/// @return fast int in range (inclusive) 
 	ENGINE_API int rand_int(int min, int max);
@@ -52,14 +56,26 @@ namespace Toad
 			}
 			catch (const nlohmann::json::exception& e)
 			{
-				error_msg = "[JSON] Failed to load property {}, {}", key.data(), e.what();
+				error_msg = format_str("[JSON] Failed to load property {}, {}", key.data(), e.what());
 				return false;
 			}
 		}
 		else
 		{
-			error_msg = "[JSON] Failed to load property: {}, doesn't exist", key.data();
+			error_msg = format_str("[JSON] Failed to load property: {}, doesn't exist", key.data());
 			return false;
 		}
+	}
+
+	template<class T>
+	T* get_object_as_type(Object* obj)
+	{
+		return dynamic_cast<T*>(obj);
+	}
+
+	template<class T>
+	T* get_script_as_type(Script* script)
+	{
+		return dynamic_cast<T*>(script);
 	}
 }

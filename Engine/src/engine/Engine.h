@@ -3,6 +3,7 @@
 #include "EngineMeta.h"
 #include "EngineCore.h"
 
+#include "utils/DLib.h"
 #include <imgui/imgui_internal.h>
 
 struct AppSettings;
@@ -21,18 +22,6 @@ namespace Toad
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
 		using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
-		template<class T> 
-		static T* GetObjectAsType(Object* obj)
-		{
-			return dynamic_cast<T*>(obj);
-		}
-
-		template<class T> 
-		static T* GetScriptAsType(Script* script)
-		{
-			return dynamic_cast<T*>(script);
-		}
-
 		Vec2i relative_mouse_pos = {};
 #ifdef TOAD_EDITOR
 		// editor viewport size
@@ -40,7 +29,6 @@ namespace Toad
 #endif
 
 		static Engine& Get();
-		static Logger& GetLogger();
 		
 		Engine();
 		~Engine();
@@ -53,11 +41,6 @@ namespace Toad
 		// get the window position
 		sf::Vector2i GetWindowPos() const;
 
-		sf::Time GetDeltaTime() const;
-		sf::Time GetFixedDeltaTime() const;
-
-		void AdjustFixedTimeStep(float seconds);
-
 		sf::RenderWindow& GetWindow();
 
 		sf::RenderTarget& GetActiveRenderTarget();
@@ -65,8 +48,6 @@ namespace Toad
 		sf::RenderTexture& GetEditorCameraTexture();
 
 		Camera& GetEditorCamera();
-
-		ResourceManager& GetResourceManager();
 
 		Scene& GetScene();
 		void SetScene(Scene& scene);
@@ -111,11 +92,8 @@ namespace Toad
 	private:
 		float m_tickps = 1000.f / 50.f;
 		int m_width = 500, m_height = 500;
-		sf::Time m_deltaTime;
-		sf::Time m_fixedDeltaTime = sf::seconds(0.04f);
 
 		sf::RenderWindow m_window;
-		sf::Clock m_deltaClock;
 
 		sf::RenderTexture m_windowTexture;
 		sf::RenderTexture m_windowEditorCamTexture;
@@ -127,8 +105,6 @@ namespace Toad
 
 		Scene m_currentScene = {};
 		std::vector<Scene> m_scenes = {};
-
-		ResourceManager m_resourceManager;
 
 		// instances of all game scripts
 		TGAME_SCRIPTS m_gameScripts = {};
@@ -142,18 +118,15 @@ namespace Toad
 		std::vector<std::shared_ptr<sf::RenderWindow>> m_viewports;
 		// mouse position relative to window/viewport 
 
+        DllHandle m_currDLL{};
 #ifdef _WIN32
-        HMODULE m_currDLL{};
 		inline static LONG_PTR s_originalWndProc = NULL;
-#else
-        void* m_currDLL{};
 #endif
 
 	private:
 		std::atomic_bool m_isRunning = false;
 
 		inline static Engine* s_Instance = nullptr;
-		inline static Logger s_LoggerInstance;
 
 		std::filesystem::path m_current_path;
 	};

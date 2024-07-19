@@ -29,15 +29,13 @@ namespace Toad
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
 			ImGui::TextColored({ 1, 1, 1, 0.7f }, info_title.c_str());
 
-			ResourceManager& resource_manager = Engine::Get().GetResourceManager();
-
 			// #TODO: add sequence converter (to tilesheet) and finish this behavior
 			ImGui::BeginDisabled();
 			if (ImGui::Button("LOAD SEQUENCE"))
 			{
 				for (const auto& s : m_textureIds)
 				{
-					resource_manager.RemoveTexture(s);
+					ResourceManager::GetTextures().Remove(s);
 				}
 				m_textureIds.clear();
 
@@ -56,7 +54,7 @@ namespace Toad
 #endif
 						LOGDEBUGF("[AnimationEditor] Loading texture from: {}", path);
 
-						sf::Texture* managed_texture = resource_manager.GetTexture(path);
+						sf::Texture* managed_texture = ResourceManager::GetTextures().Get(path);
 
 						if (managed_texture)
 						{
@@ -70,7 +68,7 @@ namespace Toad
 							sf::Texture t;
 							if (t.loadFromFile(path))
 							{
-								managed_texture = resource_manager.AddTexture(path, t);
+								managed_texture = ResourceManager::GetTextures().Add(path, t);
 								sf::Sprite s(*managed_texture);
 								s.setPosition(managed_texture->getSize().x * i / 2.f, 50);
 								m_sequence.emplace_back(s);
@@ -89,13 +87,13 @@ namespace Toad
 			{
 				for (const auto& s : m_textureIds)
 				{
-					resource_manager.RemoveTexture(s);
+					ResourceManager::GetTextures().Remove(s);
 				}
 				m_sequence.clear();
 				m_textureIds.clear();
 
 				std::string file = GetPathFile(get_exe_path().string(), "PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
-				sf::Texture* managed_texture = resource_manager.GetTexture(file);
+				sf::Texture* managed_texture = ResourceManager::GetTextures().Get(file);
 				if (managed_texture)
 				{
 					m_spriteSheet = sf::Sprite(*managed_texture);
@@ -106,7 +104,7 @@ namespace Toad
 					sf::Texture t;
 					if (t.loadFromFile(file))
 					{
-						managed_texture = resource_manager.AddTexture(file, t);
+						managed_texture = ResourceManager::GetTextures().Add(file, t);
 						m_spriteSheet = sf::Sprite(*managed_texture);
 						m_textureIds.emplace_back(file);
 					}

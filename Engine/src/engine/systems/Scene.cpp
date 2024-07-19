@@ -5,8 +5,8 @@
 #include "engine/default_objects/Sprite.h"
 #include "engine/default_objects/Circle.h"
 
-#include "Engine/Engine.h"
-
+#include "engine/Engine.h"
+#include "engine/systems/Time.h"
 #include "nlohmann/json.hpp"
 
 #include "engine/utils/Helpers.h"
@@ -31,17 +31,16 @@ void Scene::Update()
 		obj->Update();
 	}
 	
-	float fixed_dt = Toad::Engine::Get().GetFixedDeltaTime().asSeconds();
-	static float time = fixed_dt;
-	time += Toad::Engine::Get().GetDeltaTime().asSeconds();
-	while (time >= fixed_dt) 
+	static float time = Time::fixed_delta_time;
+	time += Time::GetDeltaTime();
+	while (time >= Time::fixed_delta_time)
 	{
 		for (auto& obj : objects_all)
 		{
 			obj->FixedUpdate();
 		}
 
-		time -= fixed_dt;
+		time -= Time::fixed_delta_time;
 	}
 
 	for (auto& obj : objects_all)
@@ -361,7 +360,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 					GET_JSON_ELEMENT(path_str, props, "texture_loc");
 					GET_JSON_ELEMENT(rect, props, "texture_rect");
 
-					sf::Texture* new_tex = Engine::Get().GetResourceManager().GetTexture(path_str);
+					sf::Texture* new_tex = ResourceManager::GetTextures().Get(path_str);
 					sf::IntRect tex_rect = GetRectFromJSON(rect);
 
 					if (new_tex == nullptr)
@@ -371,7 +370,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 #else
 						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
 #endif
-						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+						new_tex = ResourceManager::GetTextures().Add(path_str, tex);
 					}
 					circleobj->SetTexture(path_str, new_tex);
 					circle.setTextureRect(tex_rect);
@@ -411,7 +410,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 					GET_JSON_ELEMENT(path_str, props, "texture_loc");
 					GET_JSON_ELEMENT(rect, props, "texture_rect");
 
-					sf::Texture* new_tex = Engine::Get().GetResourceManager().GetTexture(path_str);
+					sf::Texture* new_tex = ResourceManager::GetTextures().Get(path_str);
 					sf::IntRect tex_rect = GetRectFromJSON(rect);
 
 					if (new_tex == nullptr)
@@ -421,7 +420,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 #else
 						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
 #endif
-						new_tex = Engine::Get().GetResourceManager().AddTexture(path_str, tex);
+						new_tex = ResourceManager::GetTextures().Add(path_str, tex);
 					}
 					spriteobj->SetTexture(path_str, new_tex);
 					sprite.setTextureRect(tex_rect);
@@ -486,7 +485,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 						new_audio_source.sound_buffer = sf::SoundBuffer(sb);
 					}
 
-					AudioSource* managed_audio_source = Engine::Get().GetResourceManager().AddAudioSource(rel_path, new_audio_source);
+					AudioSource* managed_audio_source = ResourceManager::GetAudioSources().Add(rel_path, new_audio_source);
 					audioobj->SetSource(managed_audio_source);
 				}
 			}
@@ -505,7 +504,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 
 				if (font_loc == "Default")
 				{
-					sf::Font* font = Engine::Get().GetResourceManager().GetFont("Default");
+					sf::Font* font = ResourceManager::GetFonts().Get("Default");
 					if (font != nullptr)
 					{
 						textobj->SetFont("Default", *font);
@@ -520,7 +519,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 						}
 						else
 						{
-							font = Engine::Get().GetResourceManager().AddFont("Default", arial);
+							font = ResourceManager::GetFonts().Add("Default", arial);
 							textobj->SetFont("Default", *font);
 						}
 					}

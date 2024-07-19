@@ -10,7 +10,7 @@ Text::Text(std::string_view obj_name)
 {
 	name = obj_name;
 	
-	sf::Font* default_font = Engine::Get().GetResourceManager().GetFont("Default");
+	sf::Font* default_font = ResourceManager::GetFonts().Get("Default");
 	if (default_font == nullptr)
 	{
 		sf::Font arial;
@@ -20,7 +20,7 @@ Text::Text(std::string_view obj_name)
 			return;
 		}
 
-		default_font = Engine::Get().GetResourceManager().AddFont("Default", arial);
+		default_font = ResourceManager::GetFonts().Add("Default", arial);
 		SetFont("Default", *default_font);
 	}
 	else

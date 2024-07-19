@@ -24,6 +24,7 @@
 #include "engine/systems/Animation.h"
 
 using json = nlohmann::json;
+using namespace Toad;
 
 constexpr int i8_min = std::numeric_limits<int8_t>::min();
 constexpr int i8_max = std::numeric_limits<int8_t>::max();
@@ -488,7 +489,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		ImGui::Begin("Settings", &view_settings);
 		{
-			ImGui::Text("FPS %.1f", 1.f / Toad::Engine::Get().GetDeltaTime().asSeconds());
+			ImGui::Text("FPS %.1f", 1.f / Time::GetDeltaTime());
 
 			if (ImGui::TreeNode("game scenes order"))
 			{
@@ -1231,7 +1232,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				SheetTileData data = *(SheetTileData*)payload->Data;
 
-				sf::Texture* stex = Toad::Engine::Get().GetResourceManager().GetTexture(data.path);
+				sf::Texture* stex = ResourceManager::GetTextures().Get(data.path);
 				if (!stex)
 				{
 					LOGERRORF("[UI:Viewport Drag Drop tilesheet] texture can't be loaded from resourcemanager: {}", data.path);
@@ -1266,23 +1267,25 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (obj)
 				{
-					auto obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
+					Vec2i obj_pos_px = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
+					Vec2f obj_pos_px_flt = { (float)obj_pos_px.x, (float)obj_pos_px.y };
+
 					float scale_x = image_width / initial_editor_cam_size.x;
 					float scale_y = image_height / initial_editor_cam_size.y;
 
-					obj_pos_px.x *= scale_x;
-					obj_pos_px.y *= scale_y;
-					obj_pos_px.x += pos.x;
-					obj_pos_px.y += pos.y;
+					obj_pos_px_flt.x *= scale_x;
+					obj_pos_px_flt.y *= scale_y;
+					obj_pos_px_flt.x += pos.x;
+					obj_pos_px_flt.y += pos.y;
 
 					if (add_to_list)
 					{
-						positions.emplace_back((float)obj_pos_px.x, (float)obj_pos_px.y);
-						ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 160), obj->name.c_str());
+						positions.emplace_back(obj_pos_px_flt.x, obj_pos_px_flt.y);
+						ImGui::GetWindowDrawList()->AddText(ImVec2{ obj_pos_px_flt.x, obj_pos_px_flt.y }, IM_COL32(255, 255, 0, 160), obj->name.c_str());
 					}
 					else
 					{
-						ImGui::GetWindowDrawList()->AddText(ImVec2{ (float)obj_pos_px.x, (float)obj_pos_px.y }, IM_COL32(255, 255, 0, 100), obj->name.c_str());
+						ImGui::GetWindowDrawList()->AddText(ImVec2{ obj_pos_px_flt.x, obj_pos_px_flt.y }, IM_COL32(255, 255, 0, 100), obj->name.c_str());
 					}
 				}
 			};
@@ -1425,8 +1428,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 								continue;
 							}*/
 
-							Toad::Sprite* sprite = Toad::Engine::GetObjectAsType<Toad::Sprite>(obj.get());
-							Toad::Circle* circle = Toad::Engine::GetObjectAsType<Toad::Circle>(obj.get());
+							Toad::Sprite* sprite = get_object_as_type<Toad::Sprite>(obj.get());
+							Toad::Circle* circle = get_object_as_type<Toad::Circle>(obj.get());
 							Vec2f scale = {};
 							if (sprite)
 							{
@@ -1836,9 +1839,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 							{
 								std::filesystem::path relative = std::filesystem::relative(t.path, asset_browser.GetAssetPath());
 
-								if (!Toad::Engine::Get().GetResourceManager().GetTexture(relative.string()))
+								if (!ResourceManager::GetTextures().Get(relative.string()))
 								{
-									Toad::Engine::Get().GetResourceManager().AddTexture(relative.string(), t.tile_map);
+									ResourceManager::GetTextures().Add(relative.string(), t.tile_map);
 								}
 
 								SheetTileData data;
@@ -2380,12 +2383,11 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 						{
 							break;
 						}
-
+						
 						std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
-						Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
-						if (resource_manager.GetTextures().contains(relative.string()))
+						if (ResourceManager::GetTextures().GetData().contains(relative.string()))
 						{
-							sf::Texture* managed_texture = resource_manager.GetTexture(relative.string());
+							sf::Texture* managed_texture = ResourceManager::GetTextures().Get(relative.string());
 							sprite_obj->SetTexture(relative, managed_texture);
 						}
 						else
@@ -2395,7 +2397,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 							{
 								LOGERRORF("Failed to load texture from {}", src);
 							}
-							sf::Texture* managed_texture = resource_manager.AddTexture(relative.string(), new_texture);
+							sf::Texture* managed_texture = ResourceManager::GetTextures().Add(relative.string(), new_texture);
 							if (managed_texture != nullptr)
 							{
 								sprite_obj->SetTexture(relative, managed_texture);
@@ -2503,10 +2505,9 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 						}
 
 						std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
-						Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
-						if (resource_manager.GetTextures().contains(relative.string()))
+						if (ResourceManager::GetTextures().GetData().contains(relative.string()))
 						{
-							sf::Texture* managed_texture = resource_manager.GetTexture(relative.string());
+							sf::Texture* managed_texture = ResourceManager::GetTextures().Get(relative.string());
 							circle_obj->SetTexture(relative, managed_texture);
 						}
 						else
@@ -2516,7 +2517,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 							{
 								LOGERRORF("Failed to load texture from {}", src);
 							}
-							sf::Texture* managed_texture = resource_manager.AddTexture(relative.string(), new_texture);
+							sf::Texture* managed_texture = ResourceManager::GetTextures().Add(relative.string(), new_texture);
 							if (managed_texture != nullptr)
 							{
 								circle_obj->SetTexture(relative, managed_texture);
@@ -2637,8 +2638,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 						}
 
 						std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
-						Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
-						AudioSource* managed_sound_buffer = resource_manager.GetAudioSource(relative.string());
+						AudioSource* managed_sound_buffer = ResourceManager::GetAudioSources().Get(relative.string());
 
 						if (managed_sound_buffer != nullptr)
 						{
@@ -2666,7 +2666,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 								new_src.has_valid_buffer = false;
 							}
 
-							AudioSource* managed_audio_source = resource_manager.AddAudioSource(relative.string(), new_src);
+							AudioSource* managed_audio_source = ResourceManager::GetAudioSources().Add(relative.string(), new_src);
 							if (managed_audio_source != nullptr)
 							{
 								audio_obj->SetSource(managed_audio_source);
@@ -2741,8 +2741,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 
 				if (ImGui::Button("set default font"))
 				{
-					Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
-					sf::Font* font = resource_manager.GetFont("Default");
+					sf::Font* font = ResourceManager::GetFonts().Get("Default");
 
 					if (font == nullptr)
 					{
@@ -2752,7 +2751,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 						}
 						else
 						{
-							resource_manager.AddFont("Default", *font);
+							ResourceManager::GetFonts().Add("Default", *font);
 							text_obj->SetFont("Default", *font);
 						}
 					}
@@ -2787,10 +2786,9 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 							}
 
 							std::filesystem::path relative = std::filesystem::relative(src, asset_browser.GetAssetPath());
-							Toad::ResourceManager& resource_manager = Toad::Engine::Get().GetResourceManager();
-							if (resource_manager.GetFonts().contains(relative.string()))
+							if (ResourceManager::GetFonts().GetData().contains(relative.string()))
 							{
-								sf::Font* managed_font = resource_manager.GetFont(relative.string());
+								sf::Font* managed_font = ResourceManager::GetFonts().Get(relative.string());
 								text_obj->SetFont(relative, *managed_font);
 							}
 							else
@@ -2800,7 +2798,7 @@ void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrow
 								{
 									LOGERRORF("Failed to load font from {}", src);
 								}
-								sf::Font* managed_font = resource_manager.AddFont(relative.string(), new_font);
+								sf::Font* managed_font = ResourceManager::GetFonts().Add(relative.string(), new_font);
 								if (managed_font != nullptr)
 								{
 									text_obj->SetFont(relative, *managed_font);

@@ -5,6 +5,7 @@
 
 #include "FSMGraphEditor.h"
 
+#include "engine/utils/BezierCurve.h"
 #include "engine/utils/FSM.h"
 #include "project/ToadProject.h"
 
@@ -69,7 +70,7 @@ namespace Toad
 					}
 
 					FSM new_fsm(fixed_name);
-					fsm = Engine::Get().GetResourceManager().AddFSM(id, new_fsm);
+					fsm = ResourceManager::GetFSMs().Add(id, new_fsm);
 				}
 				ImGui::End();
 				return;
@@ -184,6 +185,7 @@ namespace Toad
 
 					const ImVec2& next_offset = FSMGraphEditorNodeInfo::node_next_offset_pos;
 					const ImVec2& prev_offset = FSMGraphEditorNodeInfo::node_prev_offset_pos;
+
 					ImGui::GetForegroundDrawList()->AddLine(p1.pos + next_offset + window_pos, p2.pos + prev_offset + window_pos, IM_COL32_WHITE, 2.f);
 				}
 
@@ -272,9 +274,9 @@ namespace Toad
 			LOGWARNF("[FSMGraphEditor] No fsm element in data, file: '{}'", path);
 			fsm_data = data;
 		}
-
+		
 		fs::path relative = fs::relative(path, asset_browser.GetAssetPath());
-		fsm = Engine::Get().GetResourceManager().AddFSM(relative.string(), FSM::Deserialize(fsm_data));
+		fsm = ResourceManager::GetFSMs().Add(relative.string(), FSM::Deserialize(fsm_data));
 
 		if (!imgui_data_res)
 			return true;

@@ -4,7 +4,6 @@
 #include "Engine/Engine.h"
 
 using namespace Toad;
-using namespace sf;
 
 
 void TestScript::OnStart(Object* obj)
@@ -12,8 +11,6 @@ void TestScript::OnStart(Object* obj)
 	Script::OnStart(obj);
 
 	circle = dynamic_cast<Circle*>(obj);
-
-	Engine::Get().AdjustFixedTimeStep(0.01f);
 
 	if (circle == nullptr)
 	{
@@ -34,17 +31,17 @@ void TestScript::OnFixedUpdate(Toad::Object* obj)
 {
 	if (circle != nullptr)
 	{
-		float dt = Engine::Get().GetFixedDeltaTime().asSeconds();
+		float dt = Time::GetDeltaTime();
 
 		const auto change_c_col = [this]
 			{
 				auto rand_r = rand_int(0, 255);
 				auto rand_g = rand_int(0, 255);
 				auto rand_b = rand_int(0, 255);
-				circle->GetCircle().setFillColor(Color(rand_r, rand_g, rand_b));
+				circle->GetCircle().setFillColor(sf::Color(rand_r, rand_g, rand_b));
 			};
 
-		FloatRect c_bounds = circle->GetCircle().getGlobalBounds();
+		sf::FloatRect c_bounds = circle->GetCircle().getGlobalBounds();
 
 		if (Camera::GetActiveCamera())
 		{
@@ -108,13 +105,13 @@ void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
 	ImGui::Begin("[TestScript] Controller menu");
 
 	static int fps = 60;
-	static float fixed_time_step = Engine::Get().GetFixedDeltaTime().asSeconds();
+	static float fixed_time_step = Time::fixed_delta_time;
 	ImGui::DragFloat("Ball Speed Mult", &speed_mult);
 	if (ImGui::DragInt("FPS Lock", &fps))
 		Engine::Get().GetWindow().setFramerateLimit(fps);
 	
 	if (ImGui::InputFloat("Fixed Step Delta", &fixed_time_step, 1.0e-7f, 5.f, "%.7f"))
-		Engine::Get().AdjustFixedTimeStep(std::clamp(fixed_time_step, 1.0e-7f, 5.f));
+		Time::fixed_delta_time = std::clamp(fixed_time_step, 1.0e-7f, 5.f);
 
 	ImGui::SeparatorText("Info");
 	if (circle)
@@ -122,7 +119,7 @@ void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
 	else 
 		ImGui::Text("Ball position: ?");
 		
-	ImGui::Text("Frame per sec: %f", 1.f / Engine::Get().GetDeltaTime().asSeconds());
+	ImGui::Text("Frame per sec: %f", 1.f / Time::GetDeltaTime());
 
 	ImGui::End();
 }

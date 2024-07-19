@@ -333,12 +333,12 @@ void GameAssetsBrowser::Show()
 					if (selected.has_extension() && (selected.extension() == ".png" || selected.extension() == ".jpg"))
 					{
 						fs::path relative = fs::relative(selected, m_assetsPath);
-						Engine::Get().GetResourceManager().RemoveTexture(relative.string());
+						ResourceManager::GetTextures().Remove(relative.string());
 					}
 					if (selected.has_extension() && (selected.extension() == ".mp3" || selected.extension() == ".wav" || selected.extension() == ".org"))
 					{
 						fs::path relative = fs::relative(selected, m_assetsPath);
-						Engine::Get().GetResourceManager().RemoveAudioSource(relative.string());
+						ResourceManager::GetAudioSources().Remove(relative.string());
 					}
 
 					fs::remove(selected);
@@ -413,13 +413,13 @@ void GameAssetsBrowser::Show()
 					if (path.has_extension() && (ext == ".png" || ext == ".jpg"))
 					{
 						fs::path relative = fs::relative(path, m_assetsPath);
-						sf::Texture* texture = Engine::Get().GetResourceManager().GetTexture(relative.string());
+						sf::Texture* texture = ResourceManager::GetTextures().Get(relative.string());
 
 						if (texture == nullptr)
 						{
 							sf::Texture new_texture;
 							new_texture.loadFromFile(path.string());
-							texture = Engine::Get().GetResourceManager().AddTexture(relative.string(), new_texture);
+							texture = ResourceManager::GetTextures().Add(relative.string(), new_texture);
 						}
 
 						ImGui::Image(*texture, { 50, 50 });

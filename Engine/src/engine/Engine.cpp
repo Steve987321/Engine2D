@@ -9,9 +9,9 @@
 #include "game_core/ScriptRegister.h"
 #include "game_core/Game.h"
 
+#include "engine/systems/Time.h"
 #include "engine/systems/Timer.h"
 #include "utils/Wrappers.h"
-#include "utils/DLib.h"
 #include <imgui/imgui.h>
 #include <imgui-SFML.h>
 
@@ -139,15 +139,14 @@ void Engine::Run()
 #else 
 		relative_mouse_pos = sf::Mouse::getPosition(m_window);
 #endif
-		// update deltatime
-		m_deltaTime = m_deltaClock.restart();
+		Time::UpdateDeltaTime();
 
 		// handle events 
 		EventHandler();
 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 		// update imgui sfml
-		ImGui::SFML::Update(m_window, m_deltaTime);
+		ImGui::SFML::Update(m_window, Time::m_deltaTime);
 #endif 
 #ifdef TOAD_EDITOR
 		// update objects 
@@ -357,8 +356,7 @@ void Engine::Render()
 
 		if (!erased)
 		{
-			ImGui::SFML::Update(*(*it), m_deltaTime);
-
+			ImGui::SFML::Update(*(*it), Time::m_deltaTime);
 			(*it)->clear(sf::Color::Black);
 			ImGui::Begin("abc");
 			ImGui::Text("ABC");
@@ -399,26 +397,6 @@ Engine& Engine::Get()
 	return *s_Instance;
 }
 
-Logger& Engine::GetLogger()
-{
-	return s_LoggerInstance;
-}
-
-sf::Time Engine::GetDeltaTime() const
-{
-	return m_deltaTime;
-}
-
-sf::Time Engine::GetFixedDeltaTime() const
-{
-	return m_fixedDeltaTime;
-}
-
-void Engine::AdjustFixedTimeStep(float seconds)
-{
-	m_fixedDeltaTime = sf::seconds(seconds);
-}
-
 sf::RenderWindow& Engine::GetWindow()
 {
 	return m_window;
@@ -446,11 +424,6 @@ sf::RenderTexture& Engine::GetEditorCameraTexture()
 Toad::Camera& Engine::GetEditorCamera()
 {
 	return m_editorCam;
-}
-
-ResourceManager& Engine::GetResourceManager()
-{
-	return m_resourceManager;
 }
 
 Scene& Engine::GetScene()

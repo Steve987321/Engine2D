@@ -116,7 +116,7 @@ void Audio::ShouldPlayFromSource(bool play_from_source)
 
 	if (m_playFromSource)
 	{
-		Engine::Get().GetResourceManager().RemoveAudioSource(m_audioSource->relative_path.string());
+		ResourceManager::GetAudioSources().Remove(m_audioSource->relative_path.string());
 		m_music.openFromFile(file_path.string());
 	}
 	else
@@ -130,7 +130,7 @@ void Audio::ShouldPlayFromSource(bool play_from_source)
 
 		m_audioSource->sound_buffer = sf::SoundBuffer(new_sound_buffer);
 
-		m_audioSource = Engine::Get().GetResourceManager().AddAudioSource(m_audioSource->relative_path.string(), *m_audioSource);
+		m_audioSource = ResourceManager::GetAudioSources().Add(m_audioSource->relative_path.string(), *m_audioSource);
 		m_sound.setBuffer(m_audioSource->sound_buffer);
 		m_audioSource->has_valid_buffer = true;
 	}

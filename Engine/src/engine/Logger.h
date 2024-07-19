@@ -26,6 +26,7 @@ public:
 	Logger();
 	~Logger();
 
+	static Logger& Get();
 public:
 	enum class CONSOLE_COLOR : unsigned short
 	{
@@ -148,6 +149,8 @@ private:
 	}
 
 private:
+	static inline Logger* logger = nullptr;
+
 #ifdef _WIN32
 	HANDLE m_stdoutHandle = nullptr;
 #endif
@@ -161,9 +164,9 @@ private:
 
 }
 
-#define LOGDEBUGF(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, __VA_ARGS__)
-#define LOGERRORF(msg, ...) Toad::Engine::GetLogger().LogError(msg, __VA_ARGS__) 
-#define LOGWARNF(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, __VA_ARGS__) 
-#define LOGDEBUG(msg, ...) Toad::Engine::GetLogger().LogDebug(msg, nullptr)
-#define LOGERROR(msg, ...) Toad::Engine::GetLogger().LogError(msg, nullptr) 
-#define LOGWARN(msg, ...) Toad::Engine::GetLogger().LogWarning(msg, nullptr) 
+#define LOGDEBUGF(msg, ...) Toad::Logger::Get().LogDebug(msg, __VA_ARGS__)
+#define LOGERRORF(msg, ...) Toad::Logger::Get().LogError(msg, __VA_ARGS__) 
+#define LOGWARNF(msg, ...) Toad::Logger::Get().LogWarning(msg, __VA_ARGS__) 
+#define LOGDEBUG(msg, ...) Toad::Logger::Get().LogDebug(msg, nullptr)
+#define LOGERROR(msg, ...) Toad::Logger::Get().LogError(msg, nullptr) 
+#define LOGWARN(msg, ...) Toad::Logger::Get().LogWarning(msg, nullptr) 
