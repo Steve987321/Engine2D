@@ -1134,6 +1134,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		if (hierarchy_clicked_object)
 			inspector_ui = std::bind(&object_inspector, selected_obj, asset_browser);
+			inspector_ui = std::bind(&object_inspector, std::ref(selected_obj), asset_browser);
 
 		if (inspector_ui)
 			inspector_ui();
@@ -2206,7 +2207,6 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 	
 }
 
-void ui::object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrowser& asset_browser)
 {
 	if (selected_obj != nullptr)
 	{

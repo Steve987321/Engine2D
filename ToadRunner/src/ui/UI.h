@@ -40,7 +40,7 @@ namespace ui
 	void event_callback(const sf::Event& e);
 	void editor_texture_draw_callback(sf::RenderTexture& texture);
 
-	void object_inspector(Toad::Object* selected_obj, const Toad::GameAssetsBrowser& asset_browser);
+	void object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBrowser& asset_browser);
 
 	void HelpMarker(const char* desc);
 }
