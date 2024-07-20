@@ -15,6 +15,20 @@ namespace Toad
 {
 
 using json = nlohmann::json;
+Scene empty_scene;
+
+void Scene::SetScene(Scene* scene)
+{
+	current_scene.End(scene);
+
+	if (!scene)
+		return;
+
+	current_scene = *scene;
+
+	if (Engine::Get().GameStateIsPlaying())
+		current_scene.Start();
+}
 
 void Scene::Start()
 {
@@ -697,7 +711,7 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 		}
 
 		if (delete_old_objects)
-			for (const auto& obj : Engine::Get().GetScene().objects_all)
+			for (const auto& obj : Scene::current_scene.objects_all)
 				if (obj)
 					obj->Destroy();
 			

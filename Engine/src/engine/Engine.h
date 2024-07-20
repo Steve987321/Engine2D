@@ -28,6 +28,7 @@ namespace Toad
 		Vec2i viewport_size = {};
 #endif
 
+		static inline Scene empty_scene;
 		static Engine& Get();
 		
 		Engine();
@@ -48,9 +49,6 @@ namespace Toad
 		sf::RenderTexture& GetEditorCameraTexture();
 
 		Camera& GetEditorCamera();
-
-		Scene& GetScene();
-		void SetScene(Scene& scene);
 
 		ImGuiContext* GetImGuiContext();
 
@@ -103,9 +101,6 @@ namespace Toad
 		FEDITOR_TEXTURE_DRAW_CALLBACK m_editorTextureDrawCallback = nullptr;
 		ImGuiIO* m_io = nullptr;
 
-		Scene m_currentScene = {};
-		std::vector<Scene> m_scenes = {};
-
 		// instances of all game scripts
 		TGAME_SCRIPTS m_gameScripts = {};
 
@@ -128,6 +123,6 @@ namespace Toad
 
 		inline static Engine* s_Instance = nullptr;
 
-		std::filesystem::path m_current_path;
+		std::filesystem::path m_currentPath;
 	};
 }

@@ -9,7 +9,6 @@ namespace Toad
 {
 	Logger::Logger()
 	{
-		logger = this;
 #if !defined(TOAD_NO_CONSOLE_LOG) && defined(_WIN32)
 		HWND console_window = GetConsoleWindow();
 		if (!console_window)
@@ -41,7 +40,8 @@ namespace Toad
 
 	Logger& Logger::Get()
 	{
-		return *logger;
+		static Logger logger;
+		return logger;
 	}
 
 	void Logger::DisposeLogger()

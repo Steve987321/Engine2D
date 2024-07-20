@@ -5,10 +5,10 @@
 
 namespace Toad
 {
-	Object::Object(): name("Object"), m_currentScene(Engine::Get().GetScene())
+	Object::Object(): name("Object"), m_currentScene(Scene::current_scene)
 	{}
 
-	Object::Object(std::string_view name): name(name), m_currentScene(Engine::Get().GetScene())
+	Object::Object(std::string_view name): name(name), m_currentScene(Scene::current_scene)
 	{}
 
 	Object::~Object() = default;

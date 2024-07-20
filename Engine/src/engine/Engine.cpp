@@ -22,8 +22,6 @@ Engine::Engine()
 {
 	s_Instance = this;
 
-	m_currentScene = Scene();
-
 	GetDesktopDimensions(m_width, m_height);
 
 	m_width = (int)((float)m_width * 0.7f);
@@ -37,11 +35,11 @@ Engine::~Engine() = default;
 
 bool Engine::Init()
 {
-	LOGDEBUG("Initializing Engine");
+	LOGDEBUG("[Engine] Initializing Engine");
 
-	m_current_path = get_exe_path().parent_path();
+	m_currentPath = get_exe_path().parent_path();
 
-	for (const auto& e : std::filesystem::recursive_directory_iterator(m_current_path))
+	for (const auto& e : std::filesystem::recursive_directory_iterator(m_currentPath))
 	{
 		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
 		{
@@ -53,7 +51,7 @@ bool Engine::Init()
 
 #ifndef TOAD_EDITOR
 	// load settings
-	for (const auto& e : std::filesystem::directory_iterator(m_current_path))
+	for (const auto& e : std::filesystem::directory_iterator(m_currentPath))
 	{
 		if (e.path().filename() == "settings" && e.path().extension() == ".json")
 		{
@@ -61,10 +59,10 @@ bool Engine::Init()
 		}
 	}
 
-	std::vector<Scene> found_scenes;
+	Scene* starting_scene = nullptr;
 
 	// get start scene and get game dl
-	for (const auto& e : std::filesystem::recursive_directory_iterator(m_current_path))
+	for (const auto& e : std::filesystem::recursive_directory_iterator(m_currentPath))
 	{
 		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
 		{
@@ -73,7 +71,7 @@ bool Engine::Init()
 
 		if (e.path().has_extension() && e.path().extension() == ".TSCENE")
 		{
-			Scene s = LoadScene(e.path());
+			Scene& s = LoadScene(e.path());
 
 			std::string lower;
 			for (char c : s.name)
@@ -83,20 +81,9 @@ bool Engine::Init()
 
 			if (lower.find("start") != std::string::npos)
 			{
-				m_currentScene = s;
-			}
-
-			if (!s.objects_all.empty())
-			{
-				found_scenes.push_back(s);
+				starting_scene = &s;
 			}
 		}
-	}
-
-	m_scenes.reserve(found_scenes.size());
-	for (const Scene& s : found_scenes)
-	{
-		m_scenes.push_back(s);
 	}
 #endif
 
@@ -112,9 +99,15 @@ bool Engine::Init()
 		return false;
 	 
 #ifdef TOAD_EDITOR
-	LOGDEBUG("Creating window texture for viewport & game view");
+	LOGDEBUG("[Engine] Creating window texture for viewport & game view");
 	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
 	m_windowEditorCamTexture.create(m_window.getSize().x, m_window.getSize().y);
+#else
+	m_beginPlay = true;
+	if (starting_scene)
+		Scene::SetScene(starting_scene);
+	else
+		Scene::SetScene(&m_emptyScene);
 #endif
 
 	m_isRunning = true;
@@ -124,11 +117,6 @@ bool Engine::Init()
 
 void Engine::Run()
 {
-#ifndef TOAD_EDITOR
-	m_beginPlay = true;
-	SetScene(m_currentScene);
-#endif
-
 	while (m_window.isOpen())
 	{
 #ifdef TOAD_EDITOR
@@ -152,10 +140,10 @@ void Engine::Run()
 		// update objects 
 		if (m_beginPlay)
 		{
-			m_currentScene.Update();
+			Scene::current_scene.Update();
 		}
 #else
-		m_currentScene.Update();
+		Scene::current_scene.Update();
 #endif
 
 		// render the window and contents
@@ -163,7 +151,7 @@ void Engine::Run()
 	}
 
 #ifndef TOAD_EDITOR
-	m_currentScene.End(nullptr);
+	Scene::current_scene.End(nullptr);
 #endif
 
 	CleanUp();
@@ -172,7 +160,7 @@ void Engine::Run()
 bool Engine::InitWindow(const AppSettings& settings)
 {
 #if defined(TOAD_EDITOR)
-	LOGDEBUG("Loading editor window");
+	LOGDEBUG("[Engine] Loading editor window");
 
 	m_window.create(sf::VideoMode(m_width, m_height), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
 	m_window.setFramerateLimit(60);
@@ -190,7 +178,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 #endif
 
 	bool res = ImGui::SFML::Init(m_window, false);
-	LOGDEBUGF("ImGui SFML Init result: {}", res);
+	LOGDEBUGF("[Engine] ImGui SFML Init result: {}", res);
 	m_io = &ImGui::GetIO();
 	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -203,13 +191,13 @@ bool Engine::InitWindow(const AppSettings& settings)
 	return res;
 #else
 	// TODO: CHENGE DEEZZ
-	LOGDEBUG("Creating window");
+	LOGDEBUG("[Engine] Creating window");
 	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, settings.style, settings.ctx_settings);
 	m_window.setFramerateLimit(settings.frame_limit);
 
 #ifndef NDEBUG // imgui
 	bool res = ImGui::SFML::Init(m_window, false);
-	LOGDEBUGF("ImGui SFML Init result: {}", res);
+	LOGDEBUGF("[Engine] ImGui SFML Init result: {}", res);
 	m_io = &ImGui::GetIO();
 	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
@@ -307,14 +295,14 @@ void Engine::Render()
 	m_windowEditorCamTexture.clear();
 
 	// Update scene to the texture so it can display on the (game) viewport 
-	GetScene().Render(m_windowTexture);
+	Scene::current_scene.Render(m_windowTexture);
 	if (cam != nullptr)
 	{
 		m_windowTexture.setView(cam->GetView());
 	}
 	m_windowTexture.display();
 
-	GetScene().Render(m_windowEditorCamTexture);
+	Scene::current_scene.Render(m_windowEditorCamTexture);
 
 	if (m_editorTextureDrawCallback)
 	{
@@ -327,7 +315,7 @@ void Engine::Render()
 	// imgui
 	m_renderUI(ImGui::GetCurrentContext());
 
-	for (auto& obj : m_currentScene.objects_all)
+	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
 
@@ -369,13 +357,13 @@ void Engine::Render()
 	}
 #else
 #ifndef NDEBUG
-	for (auto& obj : m_currentScene.objects_all)
+	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
 
 	ImGui::SFML::Render(m_window);
 #endif 
-	GetScene().Render(m_window);
+	Scene::current_scene.Render(m_window);
 
 	if (cam != nullptr)
 	{
@@ -426,20 +414,6 @@ Toad::Camera& Engine::GetEditorCamera()
 	return m_editorCam;
 }
 
-Scene& Engine::GetScene()
-{
-	return m_currentScene;
-}
-
-void Engine::SetScene(Scene& scene)
-{
-	m_currentScene.End(&scene);
-	m_currentScene = scene;
-
-	if (m_beginPlay)
-		m_currentScene.Start();
-}
-
 ImGuiContext* Engine::GetImGuiContext()
 {
 	return ImGui::GetCurrentContext();
@@ -456,13 +430,13 @@ void Engine::StartGameSession()
 		return;
 
 	m_beginPlay = true;
-	m_currentScene.Start();
+	Scene::current_scene.Start();
 }
 
 void Engine::StopGameSession()
 {
 	if (m_beginPlay)
-		m_currentScene.End(nullptr);
+		Scene::current_scene.End(nullptr);
 
 	m_beginPlay = false;
 }
@@ -530,7 +504,7 @@ void Engine::LoadGameScripts()
 		script = nullptr;
 	}
 
-	for (auto& obj : m_currentScene.objects_all)
+	for (auto& obj : Scene::current_scene.objects_all)
 	{
 		auto& scripts = obj->GetAttachedScripts();
 		if (scripts.empty())
@@ -542,7 +516,7 @@ void Engine::LoadGameScripts()
 		{
 			ReflectVarsCopy vars;
 			i->second->GetReflection().Get().copy(vars);
-			objects_with_scripts[obj->name].emplace_back(object_script{i->first, vars});
+			objects_with_scripts[obj->name].emplace_back(object_script{ i->first, vars });
 
 			obj->RemoveScript(i->first);
 			i = scripts.begin();
@@ -558,8 +532,8 @@ void Engine::LoadGameScripts()
 	}
 
 	fs::path game_dll_path = game_bin_directory + game_bin_file;
-    fs::path current_game_dll = game_bin_directory + LIB_FILE_PREFIX + "GameCurrent" + LIB_FILE_EXT;
-    // fs::path current_game_dll = game_bin_directory + game_bin_file;
+	fs::path current_game_dll = game_bin_directory + LIB_FILE_PREFIX + "GameCurrent" + LIB_FILE_EXT;
+	// fs::path current_game_dll = game_bin_directory + game_bin_file;
 
 #ifdef TOAD_EDITOR
 	if (fs::exists(current_game_dll))
@@ -574,26 +548,27 @@ void Engine::LoadGameScripts()
 	}
 #endif
 
-//#ifdef _WIN32
-//#ifdef __APPLE__
-//    if (!game_bin_directory.empty())
-//    {
-//#endif
-        if (!fs::exists(game_dll_path)) {
-            LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
-        } else {
-            try {
-                fs::rename(game_dll_path, current_game_dll);
-            }
-            catch (fs::filesystem_error &e) {
-                LOGERRORF("{}", e.what());
-                return;
-            }
-        }
-//#ifdef __APPLE__
-//    }
-//#endif
-//#endif
+	//#ifdef _WIN32
+	//#ifdef __APPLE__
+	//    if (!game_bin_directory.empty())
+	//    {
+	//#endif
+	if (!fs::exists(game_dll_path)) {
+		LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
+	}
+	else {
+		try {
+			fs::rename(game_dll_path, current_game_dll);
+		}
+		catch (fs::filesystem_error& e) {
+			LOGERRORF("{}", e.what());
+			return;
+		}
+	}
+	//#ifdef __APPLE__
+	//    }
+	//#endif
+	//#endif
 
 	auto dll = DLibOpen(current_game_dll.string());
 	if (!dll)
@@ -629,14 +604,15 @@ void Engine::LoadGameScripts()
 			LOGWARNF("Script {} is now null and is getting removed", it->first.c_str());
 			it = m_gameScripts.erase(it);
 		}
-		else 
+		else
 		{
 			++it;
 		}
 	}
 
 	// update scripts on object if it has an old version
-	for (auto& obj : m_currentScene.objects_all)
+
+	for (auto& obj : Scene::current_scene.objects_all)
 	{
 		if (!objects_with_scripts.contains(obj->name))
 		{

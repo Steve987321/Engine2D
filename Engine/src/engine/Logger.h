@@ -149,8 +149,6 @@ private:
 	}
 
 private:
-	static inline Logger* logger = nullptr;
-
 #ifdef _WIN32
 	HANDLE m_stdoutHandle = nullptr;
 #endif

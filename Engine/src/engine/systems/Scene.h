@@ -9,14 +9,22 @@ namespace Toad
 
 using json = nlohmann::json;
 
-struct ENGINE_API Scene
-{
-	Scene() : name("unnamed_scene") {}
+class Scene;
+extern Scene empty_scene;
 
-	// all scenes
+class ENGINE_API Scene
+{
+public:
+	Scene()
+		: name("unnamed_scene")
+	{}
+
 	static inline std::vector<Scene> scenes{};
 
-	static inline Scene* current_scene = nullptr;
+	// active scene
+	static inline Scene& current_scene = empty_scene;
+
+	static void SetScene(Scene* scene);
 
 	// scene name
 	std::string name;

@@ -91,15 +91,15 @@ void ui::engine_ui(ImGuiContext* ctx)
         once = false;
     }
 
-	if (Toad::Engine::Get().GetScene().removed_from_scene)
+	if (Scene::current_scene.removed_from_scene)
 	{
 		if (selected_obj)
-			if (!Toad::Engine::Get().GetScene().GetSceneObject(selected_obj->name))
+			if (!Scene::current_scene.GetSceneObject(selected_obj->name))
 			{
 				selected_obj = nullptr;
 			}
 		selected_objects.clear(); // #TODO: lilazy
-		Toad::Engine::Get().GetScene().removed_from_scene = false;
+		Scene::current_scene.removed_from_scene = false;
 	}
 
 	//LOGDEBUGF("{} {}", ImGui::GetMousePos().x, ImGui::GetMousePos().y);
@@ -176,7 +176,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (ImGui::BeginMenu("Scene"))
 		{
-			auto& scene = Toad::Engine::Get().GetScene();
+			Scene& scene = Scene::current_scene;
 
 			if (scene.objects_all.empty())
 			{
@@ -477,8 +477,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (ImGui::Button("Create"))
 		{
-			Toad::Engine::Get().GetScene().name = scene_name;
-			SaveScene(Toad::Engine::Get().GetScene(), asset_browser.GetAssetPath());
+			Scene::current_scene.name = scene_name;
+			SaveScene(Scene::current_scene, asset_browser.GetAssetPath());
 		}
 
 		ImGui::EndPopup();
@@ -562,7 +562,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ImGui::TreeNode("all attached scripts"))
 			{
-				for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
+				for (const auto& obj : Scene::current_scene.objects_all)
 				{
 					ImGui::Text("name %s %p", obj->name.c_str(), obj.get());
 					for (const auto& [namescript, script] : obj->GetAttachedScripts())
@@ -595,7 +595,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))
 		{
-			Toad::Scene& scene = Toad::Engine::Get().GetScene();
+			Toad::Scene& scene = Scene::current_scene;
 
 			if (ImGui::IsKeyPressed(ImGuiKey_S))
 			{
@@ -644,7 +644,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		ImGui::SeparatorText(Toad::Engine::Get().GetScene().name.c_str());
+		ImGui::SeparatorText(Scene::current_scene.name.c_str());
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
 
@@ -671,7 +671,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 							}
 							for (const std::string& o : selected_objects)
 							{
-								Toad::Object* as_object = Toad::Engine::Get().GetScene().GetSceneObject(o).get();
+								Toad::Object* as_object = Scene::current_scene.GetSceneObject(o).get();
 
 								if (as_object != nullptr)
 								{
@@ -942,12 +942,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			for (const std::string& s : selected_objects)
 			{
-				Toad::Engine::Get().GetScene().GetSceneObject(s)->Destroy();
+				Scene::current_scene.GetSceneObject(s)->Destroy();
 				remove_objects_queue.emplace(s);
 			}
 		}
 
-		for (auto& obj : Toad::Engine::Get().GetScene().objects_all)
+		for (auto& obj : Scene::current_scene.objects_all)
 		{
 			// make sure we only iterate over root objects
 			if (!obj->GetParent().empty())
@@ -964,8 +964,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (!drag_drop_extra_check_parent.empty() || !drag_drop_extra_check_child.empty())
 			{
 				// get them as objects 
-				auto child_obj = Toad::Engine::Get().GetScene().GetSceneObject(drag_drop_extra_check_child);
-				auto parent_obj = Toad::Engine::Get().GetScene().GetSceneObject(drag_drop_extra_check_parent);
+				auto child_obj = Scene::current_scene.GetSceneObject(drag_drop_extra_check_child);
+				auto parent_obj = Scene::current_scene.GetSceneObject(drag_drop_extra_check_parent);
 				if (!child_obj || !parent_obj)
 				{
 					drag_drop_extra_check_parent.clear();
@@ -1052,23 +1052,23 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (ImGui::MenuItem("Circle"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("Circle"), Toad::Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Toad::Circle("Circle"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Sprite"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Audio"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Audio("Audio"), Toad::Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Toad::Audio("Audio"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Text"))
 				{
-					Toad::Engine::Get().GetScene().AddToScene(Toad::Text("Text"), Toad::Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Toad::Text("Text"), Toad::Engine::Get().GameStateIsPlaying());
 				}
 				if (ImGui::MenuItem("Camera"))
 				{
-					Toad::Camera* cam = Toad::Engine::Get().GetScene().AddToScene(Toad::Camera("Camera"), Toad::Engine::Get().GameStateIsPlaying()).get();
+					Toad::Camera* cam = Scene::current_scene.AddToScene(Toad::Camera("Camera"), Toad::Engine::Get().GameStateIsPlaying()).get();
 
 					cam->ActivateCamera();
 				}
@@ -1119,7 +1119,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			const std::string& front = remove_objects_queue.front();
 			selected_obj = nullptr;
 			selected_objects.erase(front);
-			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(front).get();
+			Toad::Object* obj = Scene::current_scene.GetSceneObject(front).get();
 			if (obj != nullptr)
 			{
 				obj->Destroy();
@@ -1133,7 +1133,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::Begin("Inspector", nullptr);
 	{
 		if (hierarchy_clicked_object)
-			inspector_ui = std::bind(&object_inspector, selected_obj, asset_browser);
 			inspector_ui = std::bind(&object_inspector, std::ref(selected_obj), asset_browser);
 
 		if (inspector_ui)
@@ -1240,7 +1239,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				else
 				{
-					Toad::Sprite* added_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying()).get();
+					Toad::Sprite* added_obj = Scene::current_scene.AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying()).get();
 
 					added_obj->SetTexture(data.path, stex);
 					added_obj->GetSprite().setTextureRect(data.tex_rect);
@@ -1293,7 +1292,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		if (always_show_object_names)
 		{
-			for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
+			for (const auto& obj : Scene::current_scene.objects_all)
 			{
 				if (obj.get() == selected_obj || selected_objects.contains(obj->name))
 				{
@@ -1311,7 +1310,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		}
 		for (const auto& name : selected_objects)
 		{
-			Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name).get();
+			Toad::Object* obj = Scene::current_scene.GetSceneObject(name).get();
 			if (obj)
 			{
 				obj_screen_pos_info(obj);
@@ -1417,7 +1416,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 						selected_obj->SetPosition(drag_pos);
 
-						for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
+						for (const auto& obj : Scene::current_scene.objects_all)
 						{
 							if (selected_obj == obj.get()) 
 								continue;
@@ -1471,7 +1470,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				for (const std::string& name : selected_objects)
 				{
-					Toad::Object* obj = Toad::Engine::Get().GetScene().GetSceneObject(name).get();
+					Toad::Object* obj = Scene::current_scene.GetSceneObject(name).get();
 					if (obj)
 					{
 						obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
@@ -1557,7 +1556,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					ImRect rect(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2));
 					
-					for (const auto& obj : Toad::Engine::Get().GetScene().objects_all)
+					for (const auto& obj : Scene::current_scene.objects_all)
 					{
 						auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
 						
@@ -2091,16 +2090,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					if (asset_browser.GetAssetPath().empty())
 					{
-						Toad::Engine::Get().SetScene(Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+						Scene::SetScene(&Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
 						scene_history.asset_folder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-						scene_history.scene = &Toad::Engine::Get().GetScene();
+						scene_history.scene = &Scene::current_scene;
 						scene_history.SaveState();
 					}
 					else
 					{
-						Toad::Engine::Get().SetScene(Toad::LoadScene(file, asset_browser.GetAssetPath()));
+						Scene::SetScene(&Toad::LoadScene(file, asset_browser.GetAssetPath()));
 						scene_history.asset_folder = asset_browser.GetAssetPath();
-						scene_history.scene = &Toad::Engine::Get().GetScene();
+						scene_history.scene = &Scene::current_scene;
 						scene_history.SaveState();
 					}
 					is_scene_loaded = true;
@@ -2116,7 +2115,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	{
 		selected_obj = nullptr;
 		scene_history.asset_folder = asset_browser.GetAssetPath();
-		scene_history.scene = &Toad::Engine::Get().GetScene();
+		scene_history.scene = &Scene::current_scene;
 		scene_history.SaveState();
 		is_scene_loaded = true;
 	}
@@ -2207,10 +2206,11 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 	
 }
 
+void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBrowser& asset_browser)
 {
 	if (selected_obj != nullptr)
 	{
-		auto attached_scripts = selected_obj->GetAttachedScripts();
+		const auto& attached_scripts = selected_obj->GetAttachedScripts();
 		bool suggestion = false;
 		char name_buf[100];
 		std::string new_name_str;
@@ -2219,7 +2219,7 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 		ImVec2 input_name_pos = ImGui::GetCursorPos();
 		if (ImGui::InputText("name", name_buf, sizeof(name_buf)))
 		{
-			Toad::Scene& scene = Toad::Engine::Get().GetScene();
+			Toad::Scene& scene = Scene::current_scene;
 
 			new_name_str = name_buf;
 
@@ -2259,7 +2259,7 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 			{
 				selected_obj->name = new_name_str;
 
-				/*auto& map = Toad::Engine::Get().GetScene().objects_map;
+				/*auto& map = Scene::current_scene.objects_map;
 				if (!map.contains(new_name_str))
 				{
 					auto a = map.extract(selected_obj->name);
@@ -2285,7 +2285,7 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 
 		static Toad::Object* prev_selected_obj = nullptr;
 		static size_t index = 0;
-		auto& obj_all = Toad::Engine::Get().GetScene().objects_all;
+		auto& obj_all = Scene::current_scene.objects_all;
 		if (prev_selected_obj != selected_obj)
 		{
 			for (size_t i = 0; i < obj_all.size(); i++)
@@ -2335,7 +2335,7 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 
 		//if (ImGui::Button("Test"))
 		//{
-		//	auto child_obj = Toad::Engine::Get().GetScene().AddToScene(Toad::Circle("child object"));
+		//	auto child_obj = Scene::current_scene.AddToScene(Toad::Circle("child object"));
 		//	child_obj->SetParent(selected_obj);
 		//}
 
