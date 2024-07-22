@@ -166,11 +166,14 @@ namespace Toad
 					if (payload && payload->Data)
 					{
 						uint32_t prev_state = *(uint32_t*)payload->Data;
+						if (prev_state != i)
+						{
+							if (prev_state < (uint32_t)fsm_states.size())
+								fsm_states[prev_state].transitions.emplace_back(*fsm, prev_state, i);
+							else
+								LOGERRORF("[FSMGraphEditor] Dragged state index is invalid: {}", prev_state);
+						}
 
-						if (prev_state < fsm_states.size())
-							fsm_states[prev_state].transitions.emplace_back(*fsm, prev_state, i);
-						else
-							LOGERRORF("[FSMGraphEditor] Dragged state index is invalid: {}", prev_state);
 					}
 					ImGui::EndDragDropTarget();
 				}
@@ -198,7 +201,7 @@ namespace Toad
 
 			if (is_dragging_state)
 			{
-				if (ImGui::IsMouseDown(ImGuiMouseButton_Left, 0.f))
+				if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				{
 					ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.f);
 					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
@@ -255,7 +258,7 @@ namespace Toad
 		json data;
 		try
 		{
-			json::parse(file);
+			data = json::parse(file);
 		}
 		catch (const json::parse_error& e)
 		{
@@ -357,11 +360,11 @@ namespace Toad
 		{
 			FSMVariable<T>& var = (*vars)[i];
 			char name_buf[32];
-			strncpy(name_buf, var.name.c_str(), 32);
+			strncpy(name_buf, var.name.c_str(), 32u);
 			bool found = false;
 
-			ImGui::PushID(i);
-			if (ImGui::InputText("name", name_buf, 32))
+			ImGui::PushID((int)i);
+			if (ImGui::InputText("name", name_buf, 32u))
 			{
 				for (const FSMVariable<T>& var_other : *vars)
 				{

@@ -291,15 +291,15 @@ namespace Toad
 			if (time_cursor_dragging)
 			{
 				// #TODO: Change mouse cursor to vertical thing
-				int drag_x = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 10.f).x;
+				float drag_x = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 10.f).x;
 				if (drag_x <= -10)
 				{
-					current_frame -= round((float)abs(drag_x) / 10.f);
+					current_frame -= round(abs(drag_x) / 10.f);
 					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
 				}
 				else if (drag_x >= 10)
 				{
-					current_frame += round((float)drag_x / 10.f);
+					current_frame += round(drag_x / 10.f);
 					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
 				}
 

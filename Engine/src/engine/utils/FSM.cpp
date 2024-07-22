@@ -453,7 +453,7 @@ namespace Toad
 		case CompareType::LESSTHAN:
 			return "<";
 		default:
-			break;
+			return "??";
 		}
 	}
 

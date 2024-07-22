@@ -1558,39 +1558,31 @@ void ui::engine_ui(ImGuiContext* ctx)
 					
 					for (const auto& obj : Scene::current_scene.objects_all)
 					{
-						auto a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
-						
+						Vec2i a = texture.mapCoordsToPixel(obj->GetPosition(), editor_cam.GetView());
+						Vec2f a_flt = { (float)a.x, (float)a.y };
+
 						float scale_x = image_width / initial_editor_cam_size.x;
 						float scale_y = image_height / initial_editor_cam_size.y;
 
-						a.x *= scale_x;
-						a.y *= scale_y;
-						a.x += pos.x;
-						a.y += pos.y;
+						a_flt.x *= scale_x;
+						a_flt.y *= scale_y;
+						a_flt.x += pos.x;
+						a_flt.y += pos.y;
 
-						//LOGDEBUGF("{} {} ", a.x, a.y);
-						if (rect.Contains({ (float)a.x, (float)a.y })) {
+						if (rect.Contains({ a_flt.x, a_flt.y })) {
 							if (selected_obj != obj.get())
-							{
 								selected_objects.emplace(obj->name);
-							}
 							else
-							{
 								selected_obj = obj.get();
-							}
 						}
 						else
 						{
 							if (!ImGui::IsKeyDown(ImGuiKey_LeftShift))
 							{
 								if (selected_obj == obj.get())
-								{
 									selected_obj = nullptr;
-								}
 								else if (selected_objects.contains(obj->name))
-								{
 									selected_objects.erase(obj->name);
-								}
 							}
 						}
 					}
@@ -1648,9 +1640,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				Vec2f pos = editor_cam.GetPosition();
 				Vec2f size = editor_cam.GetSize();
-				if (ImGui::SliderVec2("pos", &pos, INT_MIN, INT_MAX))
+				if (ImGui::SliderVec2("pos", &pos, FLT_MIN, FLT_MAX))
 					editor_cam.SetPosition(pos);
-				if (ImGui::SliderVec2("size", &size, INT_MIN, INT_MAX))
+				if (ImGui::SliderVec2("size", &size, FLT_MIN, FLT_MAX))
 					editor_cam.SetSize(size);
 				ImGui::TreePop();
 			}
@@ -1742,12 +1734,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 					t.tiles.clear();
 
-					for (int i = 0; i < t.tile_map.getSize().x; i += t.size.x)
+					for (uint32_t i = 0; i < t.tile_map.getSize().x; i += t.size.x)
 					{
-						for (int j = 0; j < t.tile_map.getSize().y; j += t.size.y)
+						for (uint32_t j = 0; j < t.tile_map.getSize().y; j += t.size.y)
 						{
 							sf::Sprite sprite = sf::Sprite(t.tile_map);
-							sprite.setTextureRect(sf::IntRect({ i, j }, t.size));
+							sprite.setTextureRect(sf::IntRect({ (int)i, (int)j }, t.size));
 
 							bool skip = false;
 
@@ -1757,9 +1749,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 								// must copy to an image 
 								auto image = t.tile_map.copyToImage();
 
-								for (int sprite_x = i; sprite_x < i + t.size.x; sprite_x++)
+								for (uint32_t sprite_x = i; sprite_x < i + t.size.x; sprite_x++)
 								{
-									for (int sprite_y = j; sprite_y < j + t.size.y; sprite_y++)
+									for (uint32_t sprite_y = j; sprite_y < j + t.size.y; sprite_y++)
 									{
 										if (image.getPixel(sprite_x, sprite_y) != sf::Color::Transparent)
 										{
@@ -1786,9 +1778,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 					if (preview_size)
 					{
 						auto draw = ImGui::GetWindowDrawList();
-						for (int x = 0; x < t.tile_map.getSize().x; x += t.size.x)
+						for (uint32_t x = 0; x < t.tile_map.getSize().x; x += t.size.x)
 						{
-							for (int y = 0; y < t.tile_map.getSize().y; y += t.size.y)
+							for (uint32_t y = 0; y < t.tile_map.getSize().y; y += t.size.y)
 							{
 								draw->AddLine(
 									screen_pos + ImVec2{ (float)x, (float)y },
@@ -2436,7 +2428,7 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 				}
 			}
 
-			auto sprite_col = sprite.getColor();
+			const sf::Color& sprite_col = sprite.getColor();
 			float col[4] = {
 				sprite_col.r / 255.f,
 				sprite_col.g / 255.f,
@@ -2444,7 +2436,11 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 				sprite_col.a / 255.f
 			};
 			if (ImGui::ColorEdit4("color", col))
-				sprite.setColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
+				sprite.setColor(sf::Color{
+				(uint8_t)(col[0] * 255.f),
+				(uint8_t)(col[1] * 255.f),
+				(uint8_t)(col[2] * 255.f), 
+				(uint8_t)(col[3] * 255.f)});
 
 			Vec2f scale = sprite.getScale();
 			if (ImGui::DragFloat("scale x", &scale.x))
@@ -2564,7 +2560,11 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 			};
 
 			if (ImGui::ColorEdit4("fill color", col))
-				circle.setFillColor(sf::Color(col[0] * 255, col[1] * 255, col[2] * 255, col[3] * 255));
+				circle.setFillColor(sf::Color{ 
+				(uint8_t)(col[0] * 255.f), 
+				(uint8_t)(col[1] * 255.f), 
+				(uint8_t)(col[2] * 255.f), 
+				(uint8_t)(col[3] * 255.f) });
 
 			auto circle_radius = circle.getRadius();
 			if (ImGui::DragFloat("radius", &circle_radius))

@@ -54,7 +54,7 @@ namespace Toad
 
 	float distance(const Vec2f& a, const Vec2f& b)
 	{
-		return std::sqrt(pow(b.x - a.x, 2) + pow(b.y - a.y, 2));
+		return std::sqrtf(powf(b.x - a.x, 2) + powf(b.y - a.y, 2));
 	}
 
 }

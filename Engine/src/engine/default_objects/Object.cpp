@@ -69,7 +69,8 @@ namespace Toad
 
 	const Vec2f& Object::GetPosition() const
 	{
-		return { 0, 0 };
+		static Vec2f pos{ 0, 0 };
+		return pos;
 	}
 		
 	void Object::SetPosition(const Vec2f& position)
