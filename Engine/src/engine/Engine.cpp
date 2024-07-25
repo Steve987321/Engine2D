@@ -163,7 +163,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 	LOGDEBUG("[Engine] Loading editor window");
 
 	m_window.create(sf::VideoMode(m_width, m_height), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
-	m_window.setFramerateLimit(60);
+	m_window.setFramerateLimit(30);
 
 #ifdef _WIN32
 	// drag drop 
@@ -227,7 +227,8 @@ void Engine::EventHandler()
 		
 		case sf::Event::Closed:
 		{
-			m_window.close();
+			StopGameSession();
+			m_window.close(); 
 			break;
 		}
 
@@ -454,14 +455,14 @@ void Engine::AddViewport(const sf::VideoMode& mode, std::string_view title, uint
 Vec2f Engine::ScreenToWorld(const Vec2i& screen_pos)
 {
 #ifdef TOAD_EDITOR
-	Camera* cam = Camera::GetActiveCamera();
-	if (cam)
+	
+	if (!interacting_camera || !interacting_texture)
 	{
-		float fx = cam->GetSize().x / viewport_size.x;
-		float fy = cam->GetSize().y / viewport_size.y;
-
-		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam->GetView());
+		LOGERRORF("[Engine] No interacting texture or camera: texture {} camera: {}", (void*)interacting_camera, (void*)interacting_texture);
+		return { -1, -1 };
 	}
+
+	return interacting_texture->mapPixelToCoords({ (int)(screen_pos.x), (int)(screen_pos.y) }, interacting_camera->GetView());
 
 	return {-1 , -1};
 #else
@@ -750,6 +751,7 @@ LRESULT Engine::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
 
 	return CallWindowProcA(reinterpret_cast<WNDPROC>(s_originalWndProc), handle, message, wparam, lparam);
 }
+
 #endif
 
 }

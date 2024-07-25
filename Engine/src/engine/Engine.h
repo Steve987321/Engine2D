@@ -26,6 +26,9 @@ namespace Toad
 #ifdef TOAD_EDITOR
 		// editor viewport size
 		Vec2i viewport_size = {};
+		// camera that is being interacted with
+		Camera* interacting_camera = &m_editorCam;
+		sf::RenderTexture* interacting_texture = &m_windowTexture;
 #endif
 
 		static inline Scene empty_scene;

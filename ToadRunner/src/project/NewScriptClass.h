@@ -2,6 +2,7 @@
 
 namespace Toad
 {
+	// #TODO make framework/Framework.h relative
 constexpr const char* NewScriptCplusplus =
 R"(#include "pch.h"
 #include "framework/Framework.h"
@@ -10,7 +11,6 @@ R"(#include "pch.h"
 #include "Engine/Engine.h"
 
 using namespace Toad;
-using namespace sf;
 
 // Called on scene begin 
 void $0@::OnStart(Object* obj)
@@ -26,7 +26,7 @@ void $0@::OnUpdate(Object* obj)
 
 }
 
-// Show variables in the editor
+// Show variables in the editor and serialize to scene
 void $0@::ExposeVars()
 {
 	Script::ExposeVars();

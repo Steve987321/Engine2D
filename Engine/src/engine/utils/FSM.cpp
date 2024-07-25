@@ -29,10 +29,12 @@ namespace Toad
 		{
 			if (t.IsTransitionAllowed())
 			{
-				m_currentState->OnExit();
+				if (m_currentState->on_exit)
+					m_currentState->on_exit();
 				t.Invoke();
 				m_currentState = &m_states[t.m_nextStateIndex];
-				m_currentState->OnEnter();
+				if (m_currentState->on_enter)
+					m_currentState->on_enter();
 			}
 		}
 	}

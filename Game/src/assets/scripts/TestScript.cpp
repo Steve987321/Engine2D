@@ -5,7 +5,6 @@
 
 using namespace Toad;
 
-
 void TestScript::OnStart(Object* obj)
 {
 	Script::OnStart(obj);

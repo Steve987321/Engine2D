@@ -52,8 +52,8 @@ public:
 	std::string name;
 	std::vector<Transition> transitions{};
 
-	virtual void OnEnter() {};
-	virtual void OnExit() {};
+	std::function<void()> on_enter;
+	std::function<void()> on_exit;
 };
 
 class ENGINE_API TransitionCondition

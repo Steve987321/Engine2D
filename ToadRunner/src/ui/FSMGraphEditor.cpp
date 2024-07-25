@@ -516,6 +516,8 @@ namespace Toad
 
 		ImGui::Separator();
 
+		ImGui::Text("Current state %s ", fsm->GetCurrentState() ? fsm->GetCurrentState()->name.c_str() : "null");
+
 		if (ImGui::TreeNode("FSM Variables"))
 		{
 			if (ImGui::TreeNode("I32"))

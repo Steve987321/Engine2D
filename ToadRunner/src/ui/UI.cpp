@@ -1182,22 +1182,41 @@ void ui::engine_ui(ImGuiContext* ctx)
 				(content_size.y - image_height + pady) * 0.5f
 				});
 
-			Toad::Engine::Get().viewport_size = {(int)image_width, (int)image_height};
-			Toad::Engine::Get().relative_mouse_pos = {
-				(int)(ImGui::GetMousePos().x - ImGui::GetCursorScreenPos().x),
-				(int) (ImGui::GetMousePos().y - ImGui::GetCursorScreenPos().y) };
+			const ImVec2 pos = ImGui::GetCursorScreenPos();
+
 			ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
+
+			if (ImGui::IsWindowHovered())
+			{
+				Toad::Engine::Get().viewport_size = { (int)image_width, (int)image_height };
+
+				if (cam)
+				{
+					Toad::Engine::Get().interacting_camera = cam;
+					Toad::Engine::Get().interacting_texture = &window_texture;
+					float f_x = cam->GetSize().x / image_width;
+					float f_y = cam->GetSize().y / image_height;
+
+					Toad::Engine::Get().relative_mouse_pos = {
+					(int)((ImGui::GetMousePos().x - pos.x) * f_x),
+					(int)((ImGui::GetMousePos().y - pos.y) * f_y) };
+				}
+				else
+					Toad::Engine::Get().interacting_camera = &Toad::Engine::Get().GetEditorCamera();
+
+			}
 		}
-		
+
 		ImGui::End();
 	}
-
+	
 	bool viewport_opened = ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 	{
 		auto& texture = Toad::Engine::Get().GetEditorCameraTexture();
 		const auto content_size = ImGui::GetContentRegionAvail();
 
 		Toad::Camera& editor_cam = Toad::Engine::Get().GetEditorCamera();
+
 		static Vec2f initial_editor_cam_size = editor_cam.GetSize();
 
 		constexpr float ar = 16.f / 9.f;
@@ -1225,6 +1244,20 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		ImVec2 image_cursor_pos = ImGui::GetCursorPos();
 		ImGui::Image(texture, { image_width, image_height }, sf::Color::White);
+
+		if (ImGui::IsWindowHovered())
+		{
+			Toad::Engine::Get().interacting_camera = &editor_cam;
+			Toad::Engine::Get().interacting_texture = &texture;
+
+			Toad::Engine::Get().viewport_size = { (int)image_width, (int)image_height };
+			float f_x = editor_cam.GetSize().x / image_width;
+			float f_y = editor_cam.GetSize().y / image_height;
+
+			Toad::Engine::Get().relative_mouse_pos = {
+				(int)((ImGui::GetMousePos().x - pos.x) * f_x),
+				(int)((ImGui::GetMousePos().y - pos.y) * f_y) };
+		}
 
 		if (ImGui::BeginDragDropTarget())
 		{
