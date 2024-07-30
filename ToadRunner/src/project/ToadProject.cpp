@@ -4,6 +4,8 @@
 #include "engine/Engine.h"
 #include "Misc.h"
 
+#include "ui/GameAssetsBrowser.h"
+
 #include "nlohmann/json.hpp"
 
 #include <filesystem>
@@ -500,6 +502,23 @@ namespace project {
 			LOAD_PROJECT_RES::OK,
 			Toad::format_str("Loaded project {} successfully", settings.name)
 		};
+	}
+
+	void LoadProjectResources(const ProjectSettings& project)
+	{
+		fs::path asset_path = Toad::GameAssetsBrowser::FindAssetPath(project);
+
+		for (const auto& entry : fs::directory_iterator(project.project_path))
+		{
+			if (fs::is_directory(entry.path()))
+				continue;
+
+			if (entry.path().extension() == FILE_EXT_FSM)
+			{
+				Toad::FSM fsm = Toad::FSM::Deserialize(entry.path());
+				Toad::ResourceManager::GetFSMs().Add(fs::relative(entry.path(), asset_path).string(), fsm);
+			}
+		}
 	}
 
 	project::PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir)

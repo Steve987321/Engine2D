@@ -117,6 +117,8 @@ namespace project {
 
 	LOAD_PROJECT_RES_INFO Load(const std::filesystem::path& path);
 
+	void LoadProjectResources(const std::filesystem::path& project_path);
+
 	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
 
 	// rerun premake path=projectpath
