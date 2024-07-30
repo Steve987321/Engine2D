@@ -49,7 +49,7 @@ namespace Toad
 		return m_states;
 	}
 
-	Toad::State* FSM::GetStateByName(std::string_view name)
+	State* FSM::GetStateByName(std::string_view name)
 	{
 		for (State& state : m_states)
 		{
@@ -285,7 +285,27 @@ namespace Toad
 		return res;
 	}
 
-	Toad::Transition& Transition::operator=(const Transition& other)
+	FSM FSM::Deserialize(const std::filesystem::path& file)
+	{
+		std::ifstream f(file);
+		if (!f)
+			return FSM{ "empty_fsm" };
+
+		json data;
+		try 
+		{
+			data = json::parse(f);
+		}
+		catch (json::parse_error& e)
+		{
+			LOGERRORF("[FSM] Failed to parse fsm json data from file {}, {}", file.string(), e.what());
+			return FSM{ "empty_fsm" };
+		}
+
+		return Deserialize(data);
+	}
+
+	Transition& Transition::operator=(const Transition& other)
 	{
 		if (this != &other)
 		{
@@ -328,7 +348,7 @@ namespace Toad
 		conditions_flt.emplace_back(condition_flt);
 	}
 
-	Toad::State* Transition::GetPreviousState()
+	State* Transition::GetPreviousState()
 	{
 		std::vector<State>& states = m_fsm.GetStates();
 		if (states.size() < m_prevStateIndex)
@@ -339,7 +359,7 @@ namespace Toad
 		return &m_fsm.GetStates()[m_prevStateIndex];
 	}
 
-	Toad::State* Transition::GetNextState()
+	State* Transition::GetNextState()
 	{
 		std::vector<State>& states = m_fsm.GetStates();
 		if (states.size() < m_nextStateIndex)
@@ -366,7 +386,7 @@ namespace Toad
 		return data;
 	}
 
-	Toad::TransitionCondition& TransitionCondition::operator=(const TransitionCondition& other)
+	TransitionCondition& TransitionCondition::operator=(const TransitionCondition& other)
 	{
 		if (this != &other)
 		{
@@ -379,7 +399,7 @@ namespace Toad
 		return *this;
 	}
 
-	Toad::TransitionCondition TransitionCondition::Deserialize(const json& data, FSM& fsm)
+	TransitionCondition TransitionCondition::Deserialize(const json& data, FSM& fsm)
 	{
 		int a_index;
 		int b_index;

@@ -162,7 +162,9 @@ public:
 	
 public:
 	json Serialize() const;
+
 	static FSM Deserialize(const json& data);
+	static FSM Deserialize(const std::filesystem::path& file);
 
 private:
 	std::vector<State> m_states{};
