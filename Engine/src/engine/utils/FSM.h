@@ -38,6 +38,10 @@ enum class FSMVariableType
 template<typename T>
 struct ENGINE_API FSMVariable
 {
+	FSMVariable(const std::string& name, const T& data)
+		: name(name), data(data)
+	{}
+
 	std::string name;
 	T data{};
 };

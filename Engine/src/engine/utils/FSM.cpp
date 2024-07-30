@@ -268,7 +268,7 @@ namespace Toad
 			}
 
 			if (!prev_state || !next_state)
-				LOGERRORF("[FSM] Transition must have two states");
+				LOGERROR("[FSM] Transition must have two states");
 			else
 			{
 				Transition t(res, prev_state, next_state);
@@ -333,7 +333,7 @@ namespace Toad
 		std::vector<State>& states = m_fsm.GetStates();
 		if (states.size() < m_prevStateIndex)
 		{
-			LOGERRORF("[FSMState] state index bigger than amount of states in fsm");
+			LOGERROR("[FSMState] state index bigger than amount of states in fsm");
 			return nullptr;
 		}
 		return &m_fsm.GetStates()[m_prevStateIndex];
@@ -344,7 +344,7 @@ namespace Toad
 		std::vector<State>& states = m_fsm.GetStates();
 		if (states.size() < m_nextStateIndex)
 		{
-			LOGERRORF("[FSMState] state index bigger than amount of states in fsm");
+			LOGERROR("[FSMState] state index bigger than amount of states in fsm");
 			return nullptr;
 		}
 
