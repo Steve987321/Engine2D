@@ -9,12 +9,16 @@
 Makefile
 *.xcworkspace
 *.xcworkspacedata
+*.xcscheme
 *.plist
 *pbxproj
 
 # Toad
 *.TSCENE
 scripts/output
+
+# ImGui
+imgui.ini
 
 # Bin directories
 bin/

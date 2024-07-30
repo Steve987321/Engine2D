@@ -6,32 +6,46 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 proj_dir = os.path.dirname(script_dir)
 
 if sys.platform == "win32":
-	dl_file_ext = ".dll"
-	dl_file_prefix = ""
+	bin_release_dir = os.path.join(proj_dir, "bin", "Release-windows-x86_64")
+	bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-windows-x86_64")
 	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-2.6.0", "bin")
+	sfml_bin_release_files = [
+		"sfml-audio-2.dll",
+		"sfml-graphics-2.dll",
+		"sfml-system-2.dll",
+		"sfml-network-2.dll",
+		"sfml-window-2.dll",
+	]
+	sfml_bin_debug_files = [
+		"sfml-audio-d-2.dll",
+		"sfml-graphics-d-2.dll",
+		"sfml-system-d-2.dll",
+		"sfml-network-d-2.dll",
+		"sfml-window-d-2.dll",
+	]
+
 elif sys.platform == "darwin": 
-	dl_file_ext = ".dylib"
-	dl_file_prefix = "lib"
+	bin_release_dir = os.path.join(proj_dir, "bin", "Release-macosx-x86_64")
+	bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-macosx-x86_64")
 	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-2.6.0", "lib")
-
-# output 
-bin_release_dir = os.path.join(proj_dir, "bin", "Release-windows-x86_64")
-bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-windows-x86_64")
-
-sfml_bin_release_files = [
-	dl_file_prefix + "sfml-audio-2" + dl_file_ext,
-	dl_file_prefix + "sfml-graphics-2" + dl_file_ext,
-	dl_file_prefix + "sfml-system-2" + dl_file_ext,
-	dl_file_prefix + "sfml-network-2" + dl_file_ext,
-	dl_file_prefix + "sfml-window-2" + dl_file_ext,
-]
-sfml_bin_debug_files = [
-	dl_file_prefix + "sfml-audio-d-2" + dl_file_ext,
-	dl_file_prefix + "sfml-graphics-d-2" + dl_file_ext,
-	dl_file_prefix + "sfml-system-d-2" + dl_file_ext,
-	dl_file_prefix + "sfml-network-d-2" + dl_file_ext,
-	dl_file_prefix + "sfml-window-d-2" + dl_file_ext,
-]
+	sfml_bin_release_files = [
+		"libsfml-audio.dylib",
+		"libsfml-graphics.dylib",
+		"libsfml-system.dylib",
+		"libsfml-network.dylib",
+		"libsfml-window.dylib",
+		"libsfml-audio.2.6.dylib",
+		"libsfml-graphics.2.6.dylib",
+		"libsfml-system.2.6.dylib",
+		"libsfml-network.2.6.dylib",
+		"libsfml-window.2.6.dylib",
+		"libsfml-audio.2.6.dylib",
+		"libsfml-graphics.2.6.0.dylib",
+		"libsfml-system.2.6.0.dylib",
+		"libsfml-network.2.6.0.dylib",
+		"libsfml-window.2.6.0.dylib",
+	]
+	sfml_bin_debug_files = sfml_bin_release_files
 
 is_valid = True 
 if os.path.exists(sfml_bin_dir):
@@ -64,7 +78,6 @@ for file in sfml_bin_release_files:
 	print(f"Copying {file} to {bin_release_dir}")
 	shutil.copy2(file, bin_release_dir)
 
-if sys.platform == "win32": 
-	for file in sfml_bin_debug_files: 
-		print(f"Copying {file} to {bin_debug_dir}")
-		shutil.copy2(file, bin_debug_dir)
+for file in sfml_bin_debug_files: 
+	print(f"Copying {file} to {bin_debug_dir}")
+	shutil.copy2(file, bin_debug_dir)

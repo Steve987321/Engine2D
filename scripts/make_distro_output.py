@@ -1,3 +1,8 @@
+'''
+Create a distribution of the engine. 
+This now only works on Windows. 
+'''
+
 import subprocess
 import shutil
 import os 

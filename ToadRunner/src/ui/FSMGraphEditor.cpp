@@ -303,7 +303,7 @@ namespace Toad
 	{
 		if (!fsm)
 		{
-			LOGERRORF("[FSMGraphEditor] Can't save as fsm is not valid");
+			LOGERROR("[FSMGraphEditor] Can't save as fsm is not valid");
 			return false;
 		}
 

@@ -9,9 +9,6 @@ namespace Toad
 
 using json = nlohmann::json;
 
-class Scene;
-extern Scene empty_scene;
-
 class ENGINE_API Scene
 {
 public:
@@ -19,10 +16,10 @@ public:
 		: name("unnamed_scene")
 	{}
 
-	static inline std::vector<Scene> scenes{};
+	static std::vector<Scene> scenes;
 
 	// active scene
-	static inline Scene& current_scene = empty_scene;
+	static Scene& current_scene;
 
 	static void SetScene(Scene* scene);
 
@@ -152,5 +149,7 @@ ENGINE_API Scene& LoadScene(const std::filesystem::path& path, const std::filesy
 ENGINE_API void SaveScene(Scene& scene, const std::filesystem::path& path);
 
 ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {}, bool delete_old_objects = true);
+
+extern Scene empty_scene;
 
 }

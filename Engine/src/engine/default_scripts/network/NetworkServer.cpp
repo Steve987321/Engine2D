@@ -17,7 +17,7 @@ namespace Toad
 
 	void NetworkServer::OnEnd(Object* obj, Scene* next_scene)
 	{
-		LOGDEBUGF("[NetworkServer] Closing listening socket");
+		LOGDEBUG("[NetworkServer] Closing listening socket");
 		m_listener.close();
 	}
 

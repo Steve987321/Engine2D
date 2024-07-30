@@ -16,6 +16,8 @@ namespace Toad
 
 using json = nlohmann::json;
 Scene empty_scene;
+Scene& Scene::current_scene = empty_scene;
+std::vector<Scene> Scene::scenes;
 
 void Scene::SetScene(Scene* scene)
 {
