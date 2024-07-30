@@ -11,6 +11,7 @@ Makefile
 
 *.xcworkspace
 *.xcworkspacedata
+*.xcscheme
 *.plist
 *pbxproj
 
