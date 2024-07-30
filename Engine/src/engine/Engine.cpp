@@ -18,6 +18,8 @@
 namespace Toad
 {
 
+using json = nlohmann::json;
+
 Engine::Engine()
 {
 	s_Instance = this;
@@ -69,7 +71,10 @@ bool Engine::Init()
 			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
 		}
 
-		if (e.path().has_extension() && e.path().extension() == ".TSCENE")
+		if (!e.path().has_extension())
+			continue;
+
+		if (e.path().extension() == FILE_EXT_TOADSCENE)
 		{
 			Scene& s = LoadScene(e.path());
 
@@ -83,6 +88,24 @@ bool Engine::Init()
 			{
 				starting_scene = &s;
 			}
+		}
+		if (e.path().extension() == FILE_EXT_FSM)
+		{
+			std::ifstream f(e.path());
+			json fsm_data;
+			try
+			{
+				fsm_data = json::parse(f);
+			}
+			catch (std::exception& e)
+			{
+				LOGDEBUGF("[Engine] Failed to parse {}", e.path().string());
+				continue;
+			}
+
+			FSM fsm = FSM::Deserialize(fsm_data);
+			fs::path relative = fs::relative(path, m_currentPath);
+			ResourceManager::GetFSMs().Add(relative.string(), fsm);
 		}
 	}
 #endif
