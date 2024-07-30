@@ -368,25 +368,25 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 
 				if (has_texture)
 				{
-					std::string path_str;
+					std::string rel_path_str;
 					json rect; 
 
-					GET_JSON_ELEMENT(path_str, props, "texture_loc");
+					GET_JSON_ELEMENT(rel_path_str, props, "texture_loc");
 					GET_JSON_ELEMENT(rect, props, "texture_rect");
 
-					sf::Texture* new_tex = ResourceManager::GetTextures().Get(path_str);
+					sf::Texture* new_tex = ResourceManager::GetTextures().Get(rel_path_str);
 					sf::IntRect tex_rect = GetRectFromJSON(rect);
 
 					if (new_tex == nullptr)
 					{
 #ifdef TOAD_EDITOR
-						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
+						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(rel_path_str));
 #else
-						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
+						sf::Texture tex = GetTexFromPath(std::filesystem::path(rel_path_str));
 #endif
-						new_tex = ResourceManager::GetTextures().Add(path_str, tex);
+						new_tex = ResourceManager::GetTextures().Add(rel_path_str, tex);
 					}
-					circleobj->SetTexture(path_str, new_tex);
+					circleobj->SetTexture(rel_path_str, new_tex);
 					circle.setTextureRect(tex_rect);
 				}
 				circle.setFillColor(fill_col);

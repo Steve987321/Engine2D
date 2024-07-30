@@ -110,7 +110,7 @@ std::string& FileBrowser::GetSelectedFile() {
     return m_selectedFile;
 }
 
-void FileBrowser::SetPath(std::string_view path) {
+void FileBrowser::SetPath(const std::filesystem::path& path) {
     if (!fs::is_directory(path))
     {   
         LOGDEBUGF("[FileBrowser] {} isn't a valid directory", path);
@@ -121,7 +121,7 @@ void FileBrowser::SetPath(std::string_view path) {
 	Refresh();
 }
 
-const std::string& FileBrowser::GetPath() const
+const std::filesystem::path& FileBrowser::GetPath() const
 {
     return m_currPath;
 }
@@ -140,10 +140,10 @@ bool FileBrowser::IsDoubleClicked()
     return m_isDoubleClicked;
 }
 
-std::vector<std::string> FileBrowser::SplitPath(std::string_view path) {
+std::vector<std::string> FileBrowser::SplitPath(const std::filesystem::path& path) {
     std::string folder;
     std::vector<std::string> res;
-    for (auto c : path)
+    for (auto c : path.string())
     {
         if (c == PATH_SEPARATOR) {
             if (folder.empty())

@@ -13,17 +13,17 @@ namespace Toad {
   //  DEFINE_ENUM_FLAG_OPERATORS(FileDialogFlags);
 
     // Return directory
-    std::string GetPathDialog(std::string_view title, std::string_view path);
+    std::string GetPathDialog(std::string_view title, const std::filesystem::path& path);
 
     // Return multiple files 
     // First element should be the path as the rest of the elements are the filenames on Windows 
     // file_types is only used on Windows
-    std::vector<std::string> GetPathFiles(std::string_view path, std::string_view file_types);
+    std::vector<std::string> GetPathFiles(const std::filesystem::path& path, std::string_view file_types);
 
     // Return files
     // flags is only used for windows file dialog
 	// file_types is only used on Windows
-    std::string GetPathFile(std::string_view path, std::string_view file_types);
+    std::string GetPathFile(const std::filesystem::path& path, std::string_view file_types);
 
 #ifdef __APPLE__
     std::string OpenFileDialogMac();

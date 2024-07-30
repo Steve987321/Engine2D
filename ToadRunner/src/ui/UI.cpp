@@ -270,7 +270,7 @@ void ui::engine_ui(ImGuiContext* ctx)
                 ImGui::EndCombo();
             }
 
-			ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.c_str());
+			ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.string().c_str());
 
 			if (ImGui::Button("Select Project Directory"))
 			{

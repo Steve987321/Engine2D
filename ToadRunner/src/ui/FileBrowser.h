@@ -17,8 +17,8 @@ public:
 
     std::string& GetSelectedFile();
 
-    void SetPath(std::string_view path);
-    const std::string& GetPath() const;
+    void SetPath(const std::filesystem::path& path);
+    const std::filesystem::path& GetPath() const;
 
     void Refresh();
 
@@ -26,10 +26,10 @@ public:
 private:
     void IterateDir(const fs::directory_iterator& dir_it);
 
-    std::vector<std::string> SplitPath(std::string_view path);
+    std::vector<std::string> SplitPath(const std::filesystem::path& path);
 
     std::string m_selectedFileBuffer;
-    std::string m_currPath;
+    std::filesystem::path m_currPath;
     std::string m_selectedFile;
 
     std::vector<std::filesystem::path> m_pathContents;

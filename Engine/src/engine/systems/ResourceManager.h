@@ -29,7 +29,8 @@ namespace ResourceManager
 		{
 			if (m_data.contains(id.data()))
 				LOGWARNF("[ResourceManager] Data of type '{}' with id '{}' already exists and is getting replaced", m_resourceName, id.data());
-
+			
+			LOGDEBUGF("[ResourceManager] Adding data of type '{}' with id '{}'", m_resourceName, id.data());
 			m_data[id.data()] = T(data);
 			return &m_data[id.data()];
 		}

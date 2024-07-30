@@ -24,13 +24,18 @@ int rename_input_callback(ImGuiInputTextCallback* data)
 	return 0;
 }
 
-GameAssetsBrowser::GameAssetsBrowser(std::string_view asset_path)
+GameAssetsBrowser::GameAssetsBrowser(const std::filesystem::path& asset_path)
 {
 	SetAssetPath(asset_path);
 }
 
 GameAssetsBrowser::~GameAssetsBrowser()
 {
+}
+
+std::filesystem::path GameAssetsBrowser::FindAssetPath(const project::ProjectSettings& project)
+{
+	return project.project_path / (project.name + "_GAME") / "src" / "assets";
 }
 
 void list_dir_contents(const fs::path& path)
@@ -243,7 +248,7 @@ void GameAssetsBrowser::Show()
 				if (ImGui::MenuItem("Scene"))
 				{
 					std::string scene_name = "Scene";
-					std::string file_ext = ".TSCENE";
+					std::string file_ext = FILE_EXT_TOADSCENE;
 					while (exists(m_currentPath / (scene_name + file_ext)))
 					{
 						scene_name += "_1";
@@ -264,6 +269,31 @@ void GameAssetsBrowser::Show()
 
 					ImGui::CloseCurrentPopup();
 				}
+
+				/*if (ImGui::MenuItem("FSM"))
+				{
+					std::string fsm_name = "fsm";
+					std::string file_ext = FILE_EXT_FSM;
+					while (exists(m_currentPath / (fsm_name + file_ext)))
+					{
+						fsm_name += "_1";
+					}
+					fsm_name += file_ext;
+
+					std::ofstream f(m_currentPath / fsm_name);
+					nlohmann::json da;
+					f << da;
+					f.close();
+
+					refresh = true;
+					selected = m_currentPath / fsm_name;
+					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
+					renaming = true;
+					ignore_rename_warning = true;
+
+					ImGui::CloseCurrentPopup();
+				}*/
+
 				if (ImGui::MenuItem("C++ Script"))
 				{
 					if (!ImGui::IsPopupOpen("create C++ script"))
@@ -576,7 +606,7 @@ void GameAssetsBrowser::Show()
 	}
 }
 
-void GameAssetsBrowser::SetAssetPath(std::string_view path)
+void GameAssetsBrowser::SetAssetPath(const std::filesystem::path& path)
 {
 	m_assetsPath = path;
 	m_currentPath = path;

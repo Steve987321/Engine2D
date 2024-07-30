@@ -77,8 +77,8 @@ namespace project {
 	struct ProjectSettings
 	{
 		std::string name;
-		std::string project_path;
-		std::string engine_path;
+		std::filesystem::path project_path;
+		std::filesystem::path engine_path;
 		PROJECT_FLAGS project_flags;
 		PROJECT_TYPE project_gen_type;
 		Vec2f editor_cam_size = {1280, 720};
@@ -115,7 +115,7 @@ namespace project {
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
 
-	LOAD_PROJECT_RES_INFO Load(const std::string_view path);
+	LOAD_PROJECT_RES_INFO Load(const std::filesystem::path& path);
 
 	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
 

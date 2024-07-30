@@ -1,5 +1,10 @@
 #pragma once
 
+namespace project
+{
+	struct ProjectSettings;
+}
+
 namespace Toad
 {
 	namespace fs = std::filesystem;
@@ -7,11 +12,13 @@ namespace Toad
 	class GameAssetsBrowser
 	{
 	public:
-		GameAssetsBrowser(std::string_view asset_path);
+		GameAssetsBrowser(const std::filesystem::path& asset_path);
 		~GameAssetsBrowser();
 
+		static std::filesystem::path FindAssetPath(const project::ProjectSettings& project);
+
 		void Show();
-		void SetAssetPath(std::string_view path);
+		void SetAssetPath(const std::filesystem::path& path);
 		const fs::path& GetAssetPath() const;
 
 		bool loaded_scene = false;

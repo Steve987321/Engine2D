@@ -15,7 +15,7 @@ namespace project {
 	using json = nlohmann::json;
 
 	// '/' to '\'
-	void path_as_backslash(std::string& s)
+	static void path_as_backslash(std::string& s)
 	{
 		for (char& c : s)
 		{
@@ -25,7 +25,7 @@ namespace project {
 	}
 
 	// '\' to '/'
-	void path_as_forward_slash(std::string& s)
+	static void path_as_forward_slash(std::string& s)
 	{
 		for (char& c : s)
 		{
@@ -72,8 +72,8 @@ namespace project {
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
 	{
-		std::string project_path_forwardslash = settings.project_path;
-		std::string engine_path_forwardslash = settings.engine_path;
+		std::string project_path_forwardslash = settings.project_path.string();
+		std::string engine_path_forwardslash = settings.engine_path.string();
 		std::string proj_type_str = ProjectTypeAsStr(settings.project_gen_type);
 
 		path_as_forward_slash(engine_path_forwardslash);
@@ -148,11 +148,11 @@ namespace project {
 			return ri;
 		}
 
-		fs::copy_file(generate_game_lua, fs::path(settings.project_path) / "premake5.lua", fs::copy_options::overwrite_existing);
+		fs::copy_file(generate_game_lua, settings.project_path / "premake5.lua", fs::copy_options::overwrite_existing);
 		
 		// copy premake executable, only needed for windows
 #ifdef _WIN32
-		if (!fs::copy_file(bin_path, settings.project_path + '/' + premake5))
+		if (!fs::copy_file(bin_path, settings.project_path / premake5))
 		{
 			return {
 				CREATE_PROJECT_RES::ERROR,
@@ -338,7 +338,7 @@ namespace project {
 			engine_file.close();
 		}
 
-		auto load_proj_res = Load(settings.project_path);
+		auto load_proj_res = Load(settings.project_path.string());
 		if (load_proj_res.res != LOAD_PROJECT_RES::OK)
 		{
 			return
@@ -379,7 +379,7 @@ namespace project {
 	}
 
 	// sets current_project 
-	LOAD_PROJECT_RES_INFO Load(const std::string_view path)
+	LOAD_PROJECT_RES_INFO Load(const std::filesystem::path& path)
 	{
 		ProjectSettings settings;
 
@@ -405,7 +405,7 @@ namespace project {
 				};
 			}
 
-			std::ifstream project_file(path.data());
+			std::ifstream project_file(path);
 
 			if (project_file.is_open())
 			{
