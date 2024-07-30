@@ -2,13 +2,11 @@
 .vs/
 .vscode/
 .idea/
-*.ini
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 *.sln
 Makefile
-
 *.xcworkspace
 *.xcworkspacedata
 *.plist
