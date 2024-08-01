@@ -42,7 +42,7 @@ namespace Toad
 				std::vector<std::string> files = GetPathFiles(get_exe_path().string(), "PNG or JPG (*.png;*.jpg)\0*.png;*.jpg\0 PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
 				if (!files.empty())
 				{
-					const std::string& dir = files[0];
+					//const std::string& dir = files[0];
 					for (size_t i = 0; i < files.size(); i++)
 					{
 #ifdef _WIN32

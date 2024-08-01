@@ -200,7 +200,7 @@ namespace project {
 			return 
 			{
 				CREATE_PROJECT_RES::ERROR,
-				("Failed to execute command {}", command)
+				Toad::format_str("Failed to execute command {}", command)
 			};
 		}
 

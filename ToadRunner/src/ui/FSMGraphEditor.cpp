@@ -547,7 +547,7 @@ namespace Toad
 
 		std::vector<State>& states = fsm->GetStates();
 
-		if (ImGui::TreeNode("States", "States (%d)", states.size()))
+        if (ImGui::TreeNode("States", "States (%zu)", states.size()))
 		{
 			for (int i = 0; i < states.size(); i++)
 			{
