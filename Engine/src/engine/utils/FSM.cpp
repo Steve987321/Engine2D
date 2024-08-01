@@ -39,6 +39,16 @@ namespace Toad
 		}
 	}
 
+	void FSM::Start()
+	{
+		if (m_states.empty())
+		{
+			LOGERRORF("[FSM:{}] FSM doesn't have any states", name);
+			return;
+		}
+		m_currentState = &m_states[0];
+	}
+
 	State* FSM::GetCurrentState() const
 	{
 		return m_currentState;
@@ -88,66 +98,6 @@ namespace Toad
 		}
 		
 		m_states.emplace_back(state);
-	}
-
-	void FSM::AddVariable(std::string name, int var)
-	{
-		const std::string original_name = name;
-		bool found = true;
-		const auto fix_duplicate_name = [&]
-			{
-				found = false;
-				for (int i = 0; i < varsi32.size(); i++)
-				{
-					if (name == varsi32[i].name)
-					{
-						found = true;
-
-						// fix it and break and check again
-						while (name == varsi32[i].name)
-							name = original_name + '_' + std::to_string(i + 1);
-
-						break;
-					}
-
-				}
-			};
-
-		while (found)
-		{
-			fix_duplicate_name();
-		}
-		varsi32.emplace_back(name, var);
-	}
-
-	void FSM::AddVariable(std::string name, float var)
-	{
-		const std::string original_name = name;
-		bool found = true;
-		const auto fix_duplicate_name = [&]
-			{
-				found = false;
-				for (int i = 0; i < varsflt.size(); i++)
-				{
-					if (name == varsflt[i].name)
-					{
-						found = true;
-
-						// fix it and break and check again
-						while (name == varsflt[i].name)
-							name = original_name + '_' + std::to_string(i + 1);
-
-						break;
-					}
-				}
-			};
-
-		while (found)
-		{
-			fix_duplicate_name();
-		}
-
-		varsflt.emplace_back(name, var);
 	}
 
 	json FSM::Serialize() const

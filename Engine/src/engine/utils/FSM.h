@@ -3,6 +3,7 @@
 #include "EngineCore.h"
 #include "nlohmann/json.hpp"
 #include "engine/utils/Helpers.h"
+#include "engine/Logger.h"
 
 namespace Toad
 {
@@ -26,8 +27,6 @@ enum class CompareType
 
 ENGINE_API std::string to_string(CompareType type);
 ENGINE_API void to_string(CompareType type, char dest[3]);
-
-std::ostream& operator<<(std::ostream& o, CompareType type);
 
 enum class FSMVariableType
 {
@@ -151,15 +150,93 @@ public:
 
 	void Update();
 
+	// sets the initial state
+	void Start();
 	State* GetCurrentState() const;
 	std::vector<State>& GetStates();
 
 	// can return nullptr
 	State* GetStateByName(std::string_view name);
 
+	// don't add states while fsm is running
+	// as this would cause an invalid current state
 	void AddState(State state);
-	void AddVariable(std::string name, int var);
-	void AddVariable(std::string name, float var);
+
+	template<typename T> 
+	void AddVariable(std::string name, T var)
+	{
+		std::vector<FSMVariable<T>>* vars = GetVarsVec<T>();
+		if (!vars)
+		{
+			LOGERROR("[FSM] Adding an unsupported variable type");
+			return;
+		}
+
+		const std::string original_name = name;
+		bool found = true;
+		const auto fix_duplicate_name = [&]
+			{
+				found = false;
+				for (int i = 0; i < vars->size(); i++)
+				{
+					if (name == (*vars)[i].name)
+					{
+						found = true;
+
+						// fix it and break and check again
+						while (name == (*vars)[i].name)
+							name = original_name + '_' + std::to_string(i + 1);
+
+						break;
+					}
+				}
+			};
+
+		while (found)
+			fix_duplicate_name();
+
+		vars->emplace_back(name, var);
+	}
+
+	template<typename T>
+	void SetVariable(std::string_view name, T var)
+	{
+		std::vector<FSMVariable<T>>* vars = GetVarsVec<T>();
+
+		if (!vars)
+		{
+			LOGERROR("[FSM] Setting an unsupported variable type");
+			return;
+		}
+		
+		for (FSMVariable<T>& fsm_var : *vars)
+		{
+			if (name == fsm_var.name)
+			{
+				fsm_var.data = var;
+				break;
+			}
+		}
+	}
+
+	template<typename T>
+	T GetVariable(std::string_view name)
+	{
+		std::vector<FSMVariable<T>>* vars = GetVarsVec<T>();
+		if (!vars)
+		{
+			LOGERROR("[FSM] Setting an unsupported variable type");
+			return;
+		}
+
+		for (FSMVariable<T>& fsm_var : *vars)
+		{
+			if (name == fsm_var.name)
+				return fsm_var.data;
+		}
+	
+		return 0;
+	}
 
 	std::vector<FSMVariable<int>> varsi32{};
 	std::vector<FSMVariable<float>> varsflt{};
@@ -173,6 +250,20 @@ public:
 private:
 	std::vector<State> m_states{};
 	State* m_currentState = nullptr;
+
+	template<typename T>
+	std::vector<FSMVariable<T>>* GetVarsVec()
+	{
+		if constexpr (std::is_same_v<T, int>)
+			return &varsi32;
+		else if constexpr (std::is_same_v<T, float>)
+			return &varsflt;
+		else
+		{
+			LOGERROR("[FSM] Variables for given type don't exist in this fsm");
+			return nullptr; 
+		}
+	}
 };
 
 }
