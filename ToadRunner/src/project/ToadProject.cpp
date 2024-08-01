@@ -495,6 +495,9 @@ namespace project {
 
 		}	
 
+		// clear possible previous resources
+		Toad::ResourceManager::Clear();
+
 		current_project = settings;
 		
 		return

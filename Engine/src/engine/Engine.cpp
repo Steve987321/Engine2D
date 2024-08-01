@@ -141,7 +141,7 @@ bool Engine::Init()
 void Engine::Run()
 {
 	while (m_window.isOpen())
-	{
+	{ 
 #ifdef TOAD_EDITOR
 		if (!m_window.hasFocus())
 		{
@@ -478,7 +478,6 @@ void Engine::AddViewport(const sf::VideoMode& mode, std::string_view title, uint
 Vec2f Engine::ScreenToWorld(const Vec2i& screen_pos)
 {
 #ifdef TOAD_EDITOR
-	
 	if (!interacting_camera || !interacting_texture)
 	{
 		LOGERRORF("[Engine] No interacting texture or camera: texture {} camera: {}", (void*)interacting_camera, (void*)interacting_texture);
