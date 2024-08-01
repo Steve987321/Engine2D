@@ -329,8 +329,12 @@ project "ToadRunner"
     -- filter "configurations:ReleaseNoEditor"
         -- kind "WindowedApp"
     -- filter "configurations:DebugNoEditor or configurations:Debug or configurations:Release or configurations:Distro"
-    kind "WindowedApp"
-    -- filter {}
+    filter "system:windows"
+        kind "WindowedApp"
+    filter "system:macosx"
+        kind "ConsoleApp"
+    filter {}
+    
     language "C++"
     cppdialect "C++20"
 
