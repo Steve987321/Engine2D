@@ -205,8 +205,14 @@ void GameAssetsBrowser::Show()
 					ImGui::CloseCurrentPopup();
 				}
 
-				ImGui::InputText("Name", script_name, sizeof(script_name));
+				static bool script_name_reserved = false;
 
+				if (ImGui::InputText("Name", script_name, sizeof(script_name)))
+				{
+					script_name_reserved = strncmp(script_name, "Game", 5) == 0;
+				}
+
+				ImGui::BeginDisabled(script_name_reserved);
 				if (ImGui::Button("Create"))
 				{
 					if (CreateCPPScript(script_name))
@@ -216,7 +222,7 @@ void GameAssetsBrowser::Show()
 
 					refresh = true;
 				}
-
+				ImGui::EndDisabled();
 				ImGui::EndPopup();
 			}
 			ImGui::PopID();
@@ -270,7 +276,7 @@ void GameAssetsBrowser::Show()
 					ImGui::CloseCurrentPopup();
 				}
 
-				/*if (ImGui::MenuItem("FSM"))
+				if (ImGui::MenuItem("FSM"))
 				{
 					std::string fsm_name = "fsm";
 					std::string file_ext = FILE_EXT_FSM;
@@ -290,9 +296,12 @@ void GameAssetsBrowser::Show()
 					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 					renaming = true;
 					ignore_rename_warning = true;
+					
+					// add to resourcemanager
+
 
 					ImGui::CloseCurrentPopup();
-				}*/
+				}
 
 				if (ImGui::MenuItem("C++ Script"))
 				{

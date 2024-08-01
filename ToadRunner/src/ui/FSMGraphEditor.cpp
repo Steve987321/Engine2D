@@ -40,7 +40,15 @@ namespace Toad
 					save_to_file = true;
 
 				if (ImGui::MenuItem("Load"))
-					GetPathFile(asset_browser.GetAssetPath().string(), "Finite State Machine (*.FSM)\0*.FSM\0");
+				{
+					fs::path fsm_data_file = GetPathFile(asset_browser.GetAssetPath().string(), "Finite State Machine (*.FSM)\0*.FSM\0");
+					if (!fsm_data_file.empty())
+					{
+						FSM deserialized_fsm = FSM::Deserialize(fsm_data_file);
+						// add to resourcemanager
+						fsm = ResourceManager::GetFSMs().Add(fs::relative(fsm_data_file, asset_browser.GetAssetPath()).string(), deserialized_fsm);
+					}
+				}
 
 				ImGui::EndMenuBar();
 			}
@@ -393,12 +401,12 @@ namespace Toad
 		if constexpr (is_integral)
 		{
 			if (ImGui::Button("ADD I32"))
-				fsm->AddVariable("var", 0);
+				fsm->AddVariable<int>("var", 0);
 		}
 		else if (is_floating_point)
 		{
 			if (ImGui::Button("ADD FLT"))
-				fsm->AddVariable("var", 0.f);
+				fsm->AddVariable<float>("var", 0.f);
 		}
 	}
 
