@@ -414,12 +414,12 @@ sf::RenderWindow& Engine::GetWindow()
 	return m_window;
 }
 
-sf::RenderTarget& Engine::GetActiveRenderTarget()
+sf::RenderTexture& Engine::GetActiveRenderTexture()
 {
 #ifdef TOAD_EDITOR
-	return m_windowTexture;
+	return *interacting_texture;
 #else
-	return m_window; 
+	return m_windowTexture; 
 #endif 
 }
 

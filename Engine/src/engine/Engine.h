@@ -47,7 +47,7 @@ namespace Toad
 
 		sf::RenderWindow& GetWindow();
 
-		sf::RenderTarget& GetActiveRenderTarget();
+		sf::RenderTexture& GetActiveRenderTexture();
 		sf::RenderTexture& GetWindowTexture();
 		sf::RenderTexture& GetEditorCameraTexture();
 
