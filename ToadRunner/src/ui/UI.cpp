@@ -1638,6 +1638,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 					//	selected_objects.clear();
 					//}
 				}
+
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+				{
+					// only selected one object
+					if (selected_objects.size() == 1 && !selected_obj)
+					{
+						selected_obj = Toad::Scene::current_scene.GetSceneObject(*selected_objects.begin()).get();
+						selected_objects.erase(selected_objects.begin());
+					}
+
+					inspector_ui = std::bind(&object_inspector, std::ref(selected_obj), asset_browser);
+				}
 			}
 		}
 
