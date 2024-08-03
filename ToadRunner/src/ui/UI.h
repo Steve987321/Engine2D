@@ -30,7 +30,7 @@ namespace ui
 
 	inline bool show_grid = false;
 	inline bool drag_snap = true;
-	inline Vec2i grid_size = {80, 80};
+	inline Vec2i grid_size = {10, 10};
 
 	// function that will be called in the inspector window 
 	inline std::function<void()> inspector_ui;
