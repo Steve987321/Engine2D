@@ -45,6 +45,8 @@ public:
 	virtual const Vec2f& GetPosition() const;
 	virtual void SetPosition(const Vec2f& position);
 
+	virtual FloatRect GetBounds() const;
+
 	virtual float GetRotation();
 	virtual void SetRotation(float degrees);
 

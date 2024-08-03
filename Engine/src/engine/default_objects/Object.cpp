@@ -84,7 +84,12 @@ namespace Toad
 		}
 	}
 
-	float Object::GetRotation()
+    FloatRect Object::GetBounds() const
+    {
+		return FloatRect{};
+    }
+
+    float Object::GetRotation()
 	{
 		return -1;
 	}

@@ -32,6 +32,11 @@ void Sprite::SetPosition(const Vec2f& position)
 	m_sprite.setPosition(position);
 }
 
+FloatRect Sprite::GetBounds() const
+{
+	return FloatRect(m_sprite.getGlobalBounds());
+}
+
 void Sprite::SetRotation(float degrees)
 {
 	Object::SetRotation(degrees);
