@@ -1429,16 +1429,26 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (d.x || d.y)
 			{
 				if (selected_gizmo.x)
-				{
 					d.y = 0;
-				}
 				else if (selected_gizmo.y)
-				{
 					d.x = 0;
+
+				static bool temp_disable_snapping = false;
+				if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && drag_snap)
+				{
+					temp_disable_snapping = true;
+					drag_snap = false;
+				}
+
+				if (ImGui::IsKeyReleased(ImGuiKey_LeftShift) && temp_disable_snapping)
+				{
+					temp_disable_snapping = false;
+					drag_snap = true;
 				}
 
 				float multiplierx = editor_cam.GetSize().x / image_width;
 				float multipliery = editor_cam.GetSize().y / image_height;
+
 				d.x *= multiplierx;
 				d.y *= multipliery;
 
@@ -1446,124 +1456,47 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					if (drag_snap)
 					{
-						//auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
-						//selected_obj->SetPosition(drag_pos);
+						Vec2f drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 
-						//for (const auto& obj : Scene::current_scene.objects_all)
-						//{
-						//	if (selected_obj == obj.get()) 
-						//		continue;
-
-						//	const auto& pos = obj->GetPosition();
-
-						//	/*if (Toad::distance(pos, selected_obj->GetPosition()) > 10.f)
-						//	{
-						//		continue;
-						//	}*/
-
-						//	Toad::Sprite* sprite = get_object_as_type<Toad::Sprite>(obj.get());
-						//	Toad::Circle* circle = get_object_as_type<Toad::Circle>(obj.get());
-						//	Vec2f scale = {};
-						//	if (sprite)
-						//	{
-						//		scale = {
-						//			sprite->GetSprite().getScale().x * (float)sprite->GetSprite().getGlobalBounds().width,
-						//			sprite->GetSprite().getScale().y* (float)sprite->GetSprite().getGlobalBounds().height,
-						//		};
-						//	}
-						//	else if (circle)
-						//	{
-						//		float radius = circle->GetCircle().getRadius();
-						//		scale = { 
-						//			radius * (float)circle->GetCircle().getGlobalBounds().width,
-						//			radius * (float)circle->GetCircle().getGlobalBounds().height
-						//		};
-						//	}
-						//	else
-						//		continue;
-
-						//	ImRect snap_bounds = { {pos.x, pos.y}, {pos.x + scale.x, pos.y + scale.y} };
-						//	snap_bounds.Expand(20.f);
-
-						//	if (snap_bounds.Contains({ selected_obj->GetPosition().x, selected_obj->GetPosition().y }))
-						//	{
-						//		snap_bounds.Expand(-20.f);
-
-						//		// Snap to nearest edge
-						//		Vec2f snapped_pos = selected_obj->GetPosition();
-
-						//		if (std::abs(snapped_pos.x - snap_bounds.Min.x) < 20.f)
-						//			snapped_pos.x = snap_bounds.Min.x;
-						//		else if (std::abs(snapped_pos.x - snap_bounds.Max.x) < 20.f)
-						//			snapped_pos.x = snap_bounds.Max.x;
-
-						//		if (std::abs(snapped_pos.y - snap_bounds.Min.y) < 20.f)
-						//			snapped_pos.y = snap_bounds.Min.y;
-						//		else if (std::abs(snapped_pos.y - snap_bounds.Max.y) < 20.f)
-						//			snapped_pos.y = snap_bounds.Max.y;
-
-						//		selected_obj->SetPosition(snapped_pos);
-						//	}
-
-						// snap to grid 
-						// Calculate the new position with the drag offset
-						// Calculate the new position with the drag offset
-						auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
+						const Vec2i& mouse_pos = Toad::Engine::Get().relative_mouse_pos;
+						Vec2f mouse_world_pos = Toad::Screen::ScreenToWorld(mouse_pos);
 
 						// Snap to the grid
-						drag_pos.x = std::round(drag_pos.x / grid_size.x) * grid_size.x;
-						drag_pos.y = std::round(drag_pos.y / grid_size.y) * grid_size.y;
+						mouse_world_pos.x = std::round(mouse_world_pos.x / grid_size.x) * grid_size.x;
+						mouse_world_pos.y = std::round(mouse_world_pos.y / grid_size.y) * grid_size.y;
 
 						// Set the snapped position
-						selected_obj->SetPosition(drag_pos);
+
+						// Vec2f world_pos = Toad::Screen::ScreenToWorld(a_flt);
+						selected_obj->SetPosition(mouse_world_pos);	
 
 						for (const auto& obj : Scene::current_scene.objects_all)
 						{
 							if (selected_obj == obj.get())
 								continue;
 
-							const auto& pos = obj->GetPosition();
-
-							Toad::Sprite* sprite = get_object_as_type<Toad::Sprite>(obj.get());
-							Toad::Circle* circle = get_object_as_type<Toad::Circle>(obj.get());
-							Vec2f scale = {};
-							if (sprite)
-							{
-								scale = {
-									sprite->GetSprite().getScale().x * (float)sprite->GetSprite().getGlobalBounds().width,
-									sprite->GetSprite().getScale().y * (float)sprite->GetSprite().getGlobalBounds().height,
-								};
-							}
-							else if (circle)
-							{
-								float radius = circle->GetCircle().getRadius();
-								scale = {
-									radius * 2.0f, // Assuming the scale is the diameter
-									radius * 2.0f
-								};
-							}
-							else
+							const FloatRect& bounds = obj->GetBounds();
+							FloatRect snap_bounds = bounds;
+							if (bounds.height == 0 || bounds.width == 0)
 								continue;
 
-							ImRect snap_bounds = { {pos.x, pos.y}, {pos.x + scale.x, pos.y + scale.y} };
 							snap_bounds.Expand(20.f);
-
-							if (snap_bounds.Contains({ selected_obj->GetPosition().x, selected_obj->GetPosition().y }))
+							if (snap_bounds.Contains(selected_obj->GetPosition()))
 							{
 								snap_bounds.Expand(-20.f);
 
 								// Snap to nearest edge
 								Vec2f snapped_pos = selected_obj->GetPosition();
 
-								if (std::abs(snapped_pos.x - snap_bounds.Min.x) < 20.f)
-									snapped_pos.x = snap_bounds.Min.x;
-								else if (std::abs(snapped_pos.x - snap_bounds.Max.x) < 20.f)
-									snapped_pos.x = snap_bounds.Max.x;
+								if (std::abs(snapped_pos.x - snap_bounds.left) < 20.f)
+									snapped_pos.x = snap_bounds.left;
+								else if (std::abs(snapped_pos.x - snap_bounds.left + snap_bounds.width) < 20.f)
+									snapped_pos.x = snap_bounds.left + snap_bounds.width;
 
-								if (std::abs(snapped_pos.y - snap_bounds.Min.y) < 20.f)
-									snapped_pos.y = snap_bounds.Min.y;
-								else if (std::abs(snapped_pos.y - snap_bounds.Max.y) < 20.f)
-									snapped_pos.y = snap_bounds.Max.y;
+								if (std::abs(snapped_pos.y - snap_bounds.top) < 20.f)
+									snapped_pos.y = snap_bounds.top;
+								else if (std::abs(snapped_pos.y - snap_bounds.top + snap_bounds.height) < 20.f)
+									snapped_pos.y = snap_bounds.top + snap_bounds.height;
 
 								selected_obj->SetPosition(snapped_pos);
 							}
