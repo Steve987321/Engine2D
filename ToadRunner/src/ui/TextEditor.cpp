@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 #include "TextEditor.h"
 
 namespace Toad {

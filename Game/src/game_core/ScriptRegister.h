@@ -16,19 +16,27 @@ struct SBuf
 	size_t size;
 };
 
+struct Scripts
+{
+	SBuf* scripts;
+	size_t len;
+};
+
 namespace Toad
 {
 
 extern "C"
 {
-	// functions signatures
-	typedef void (register_scripts_t)();
-	typedef void (register_script_t)();
-	typedef std::vector<SBuf>& (get_registered_scripts_t)();
 
-	GAME_API void register_scripts();
-	GAME_API void register_script(void* instance, size_t size);
-	GAME_API std::vector<SBuf>& get_registered_scripts();
+// functions signatures
+typedef void (register_scripts_t)();
+typedef void (register_script_t)();
+typedef Scripts (get_registered_scripts_t)();
+
+GAME_API void register_scripts();
+GAME_API void register_script(void* instance, size_t size);
+GAME_API Scripts get_registered_scripts();
+
 }
 
 }

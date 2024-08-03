@@ -1,7 +1,7 @@
 #include "framework/Framework.h"
 #include "TestScript.h"
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 using namespace Toad;
 

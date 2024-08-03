@@ -1,12 +1,10 @@
 #include "pch.h"
-#ifdef TOAD_EDITOR
 
+#ifdef TOAD_EDITOR
 #include <algorithm>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Engine/Engine.h"
-
-#include "EngineMeta.h"
+#include "engine/Engine.h"
 
 #include "UI.h"
 
@@ -16,7 +14,7 @@
 #include "GameAssetsBrowser.h"
 #include "FSMGraphEditor.h"
 #include "TextEditor.h"
-#include "engine/systems/build/package.h"
+#include "engine/systems/build/Package.h"
 #include "project/ToadProject.h"
 #include "SceneHistory.h"
 #include "utils/FileDialog.h"
@@ -231,7 +229,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					created_project = false;
 				}
 
-				ImGui::TextColored({ 1,0,0,1 }, Toad::format_str("Project creation failed: {}, {}", cpri.res, cpri.description).c_str());
+				ImGui::TextColored({ 1,0,0,1 }, "%s", Toad::format_str("Project creation failed: {}, {}", cpri.res, cpri.description).c_str());
 			}
 			else
 			{
@@ -1161,7 +1159,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				image_cursor_pos.y + size.y + 10
 				});
 
-			ImGui::TextColored({ 1, 0, 0, 1 }, err_msg);
+			ImGui::TextColored({ 1, 0, 0, 1 }, "%s", err_msg);
 		}
 		else
 		{
@@ -1511,9 +1509,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Toad::Object* obj = Scene::current_scene.GetSceneObject(name).get();
 					if (obj)
-					{
 						obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
-					}
 				}
 
 				ImGuiContext* g = ImGui::GetCurrentContext();
@@ -1534,13 +1530,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 1 });
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-				{
 					is_moving_gizmo = true;
-				}
 				else
-				{
 					is_moving_gizmo = false;
-				}
 			}
 			else
 			{
@@ -1749,7 +1741,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				for (auto it = opened_tilemaps.begin(); it != opened_tilemaps.end();)
 				{
-					ImGui::Text(it->path.filename().string().c_str());
+					ImGui::Text("%s", it->path.filename().string().c_str());
 					ImGui::SameLine();
 					if (ImGui::Button("close"))
 					{
@@ -2221,6 +2213,8 @@ void ui::event_callback(const sf::Event& e)
 		if (browser)
 			browser->refresh = true;
 		break;
+	default: 
+		break;
 	}
 }
 
@@ -2321,10 +2315,10 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 			ImVec2 frame_pad = ImGui::GetStyle().FramePadding;
 			ImVec2 text_size = ImGui::CalcTextSize(name_buf);
 			ImGui::SetCursorPos({ input_name_pos.x + text_size.x + frame_pad.x, input_name_pos.y + frame_pad.y });
-			ImGui::TextColored({ 1,1,1,0.4f }, part_of_str.c_str());
+			ImGui::TextColored({ 1,1,1,0.4f }, "%s", part_of_str.c_str());
 		}
 
-		ImGui::Text(selected_obj->name.c_str());
+		ImGui::Text("%s", selected_obj->name.c_str());
 
 		static Toad::Object* prev_selected_obj = nullptr;
 		static size_t index = 0;
@@ -3193,7 +3187,7 @@ bool ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, fl
 	std::string label_final = "##x";
 	label_final += label;
 
-	ImGui::Text(label.data());
+	ImGui::Text("%s", label.data());
 	ImGui::SameLine();
 	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
 	if (ImGui::DragFloat(label_final.c_str(), x, 1.0f, min, max))
@@ -3224,7 +3218,7 @@ bool ImGui::SliderVec2i(std::string_view label, int* x, int* y, int min, int max
 	std::string label_final = "##x";
 	label_final += label;
 
-	ImGui::Text(label.data());
+	ImGui::Text("%s", label.data());
 	ImGui::SameLine();
 	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
 	if (ImGui::DragInt(label_final.c_str(), x, 1.0f, min, max))
@@ -3301,7 +3295,7 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
         }
     }
 
-    LOGWARNF("Can't find binary directory in {}", settings.project_path);
+    LOGWARNF("Can't find binary directory in {}, looking for a binary compiled with the '{}' configuration", settings.project_path, PROJECT_BIN_SEARCH_FOR);
     return "";
 }
 #endif 

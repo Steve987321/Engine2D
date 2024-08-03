@@ -4,7 +4,7 @@
 #endif
 #include "AnimationEditor.h"
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 #include "UI.h"
 
@@ -27,7 +27,7 @@ namespace Toad
 		bool animation_editor_opened = ImGui::Begin("AnimationEditor", show);
 		{
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
-			ImGui::TextColored({ 1, 1, 1, 0.7f }, info_title.c_str());
+			ImGui::TextColored({ 1, 1, 1, 0.7f }, "%s", info_title.c_str());
 
 			// #TODO: add sequence converter (to tilesheet) and finish this behavior
 			ImGui::BeginDisabled();
@@ -327,7 +327,7 @@ namespace Toad
 
 	void AnimationEditor::ShowAnimationPropsUI()
 	{
-		ImGui::Text((m_selectedAnimation.name + FILE_EXT_TOADANIMATION).c_str());
+		ImGui::Text("%s", (m_selectedAnimation.name + FILE_EXT_TOADANIMATION).c_str());
 
 		ImGui::DragInt("Animation Frames", &m_selectedAnimation.frame_length);
 		if (m_selectedAnimation.frame_length != m_selectedAnimation.frames.size())

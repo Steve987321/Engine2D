@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 #include "GameAssetsBrowser.h"
 
@@ -491,7 +491,7 @@ void GameAssetsBrowser::Show()
 
 					ImGui::SetDragDropPayload("move file", buf, buf->length());
 					ImGui::BeginTooltip();
-					ImGui::Text(fs::path(*buf).filename().string().c_str());
+					ImGui::Text("%s", fs::path(*buf).filename().string().c_str());
 					ImGui::EndTooltip();
 					ImGui::EndDragDropSource();
 				}
@@ -570,7 +570,7 @@ void GameAssetsBrowser::Show()
 				}
 				else
 				{
-					ImGui::Text(path.filename().string().c_str());
+					ImGui::Text("%s", path.filename().string().c_str());
 				}
 
 				ImGui::EndChild();

@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 #include "FSMGraphEditor.h"
 

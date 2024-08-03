@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Object.h"
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 namespace Toad
 {
@@ -69,7 +69,7 @@ namespace Toad
 
 	const Vec2f& Object::GetPosition() const
 	{
-		static Vec2f pos{ 0, 0 };
+		const static Vec2f pos{ 0, 0 };
 		return pos;
 	}
 		
