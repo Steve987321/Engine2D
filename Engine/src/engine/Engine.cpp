@@ -122,9 +122,11 @@ bool Engine::Init()
 		return false;
 	 
 #ifdef TOAD_EDITOR
-	LOGDEBUG("[Engine] Creating window texture for viewport & game view");
+	LOGDEBUG("[Engine] Setting up views & textures");
 	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
 	m_windowEditorCamTexture.create(m_window.getSize().x, m_window.getSize().y);
+
+	m_editorCam.OnCreate();
 #else
 	m_beginPlay = true;
 	if (starting_scene)
@@ -485,33 +487,6 @@ void Engine::AddViewport(const sf::VideoMode& mode, std::string_view title, uint
 	bool res = ImGui::SFML::Init(*window, true);
 	LOGDEBUGF("[Engine::AddViewport] ImGui SFML Init result: {}", res);
 	m_viewports.emplace_back(window);
-}
-
-Vec2f Engine::ScreenToWorld(const Vec2i& screen_pos)
-{
-#ifdef TOAD_EDITOR
-	if (!interacting_camera || !interacting_texture)
-	{
-		LOGERRORF("[Engine] No interacting texture or camera: texture {} camera: {}", (void*)interacting_camera, (void*)interacting_texture);
-		return { -1, -1 };
-	}
-
-	return interacting_texture->mapPixelToCoords({ (int)(screen_pos.x), (int)(screen_pos.y) }, interacting_camera->GetView());
-
-	return {-1 , -1};
-#else
-	Camera* cam = Camera::GetActiveCamera();
-
-	if (cam)
-	{
-		float fx = cam->GetSize().x / m_window.getSize().x;
-		float fy = cam->GetSize().y / m_window.getSize().y;
-
-		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam->GetView());
-	}
-
-	return { -1, -1 };
-#endif
 }
 
 void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
