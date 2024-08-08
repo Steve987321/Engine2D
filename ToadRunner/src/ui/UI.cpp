@@ -1388,6 +1388,19 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			ImVec2 d = ImGui::GetMouseDragDelta(0, 0.f);
 
+			static bool temp_disable_snapping = false;
+			if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && drag_snap)
+			{
+				temp_disable_snapping = true;
+				drag_snap = false;
+			}
+
+			if (ImGui::IsKeyReleased(ImGuiKey_LeftShift) && temp_disable_snapping)
+			{
+				temp_disable_snapping = false;
+				drag_snap = true;
+			}
+				
 			if (ImGui::IsKeyPressed(ImGuiKey_X))
 			{
 				selected_gizmo.x = ~selected_gizmo.x;
@@ -1431,19 +1444,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				else if (selected_gizmo.y)
 					d.x = 0;
 
-				static bool temp_disable_snapping = false;
-				if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && drag_snap)
-				{
-					temp_disable_snapping = true;
-					drag_snap = false;
-				}
-
-				if (ImGui::IsKeyReleased(ImGuiKey_LeftShift) && temp_disable_snapping)
-				{
-					temp_disable_snapping = false;
-					drag_snap = true;
-				}
-
 				float multiplierx = editor_cam.GetSize().x / image_width;
 				float multipliery = editor_cam.GetSize().y / image_height;
 
@@ -1458,45 +1458,38 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 						const Vec2i& mouse_pos = Toad::Engine::Get().relative_mouse_pos;
 						Vec2f mouse_world_pos = Toad::Screen::ScreenToWorld(mouse_pos);
-
-						// Snap to the grid
+						
+						// snap to the grid
 						mouse_world_pos.x = std::round(mouse_world_pos.x / grid_size.x) * grid_size.x;
 						mouse_world_pos.y = std::round(mouse_world_pos.y / grid_size.y) * grid_size.y;
 
-						// Set the snapped position
-
-						// Vec2f world_pos = Toad::Screen::ScreenToWorld(a_flt);
 						selected_obj->SetPosition(mouse_world_pos);	
 
-						for (const auto& obj : Scene::current_scene.objects_all)
+						FloatRect selected_obj_bounds = selected_obj->GetBounds();
+
+						if (selected_obj_bounds.width != 0 && selected_obj_bounds.height != 0)
 						{
-							if (selected_obj == obj.get())
-								continue;
-
-							const FloatRect& bounds = obj->GetBounds();
-							FloatRect snap_bounds = bounds;
-							if (bounds.height == 0 || bounds.width == 0)
-								continue;
-
-							snap_bounds.Expand(20.f);
-							if (snap_bounds.Contains(selected_obj->GetPosition()))
+							for (const auto& obj : Scene::current_scene.objects_all)
 							{
-								snap_bounds.Expand(-20.f);
+								if (selected_obj == obj.get())
+									continue;
 
-								// Snap to nearest edge
-								Vec2f snapped_pos = selected_obj->GetPosition();
+								FloatRect bounds = obj->GetBounds();
+								if (bounds.width == 0 || bounds.height == 0)
+									continue;
+								
+								bounds.Expand(5.f);
+								if (bounds.Contains(mouse_world_pos))
+								{
+									// snap to nearest edge
+									float right = bounds.left + bounds.width;
+									float bottom = bounds.top + bounds.height;
 
-								if (std::abs(snapped_pos.x - snap_bounds.left) < 20.f)
-									snapped_pos.x = snap_bounds.left;
-								else if (std::abs(snapped_pos.x - snap_bounds.left + snap_bounds.width) < 20.f)
-									snapped_pos.x = snap_bounds.left + snap_bounds.width;
+									if (mouse_world_pos.x > right)
+									{
 
-								if (std::abs(snapped_pos.y - snap_bounds.top) < 20.f)
-									snapped_pos.y = snap_bounds.top;
-								else if (std::abs(snapped_pos.y - snap_bounds.top + snap_bounds.height) < 20.f)
-									snapped_pos.y = snap_bounds.top + snap_bounds.height;
-
-								selected_obj->SetPosition(snapped_pos);
+									}
+								}
 							}
 						}
 					}
@@ -1639,7 +1632,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						selected_obj = Toad::Scene::current_scene.GetSceneObject(*selected_objects.begin()).get();
 						selected_objects.erase(selected_objects.begin());
 					}
-
+					
 					inspector_ui = std::bind(&object_inspector, std::ref(selected_obj), asset_browser);
 				}
 			}
