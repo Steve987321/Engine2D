@@ -14,6 +14,8 @@
 #include "GameAssetsBrowser.h"
 #include "FSMGraphEditor.h"
 #include "TextEditor.h"
+#include "MessageQueue.h"
+
 #include "engine/systems/build/Package.h"
 #include "project/ToadProject.h"
 #include "SceneHistory.h"
@@ -65,6 +67,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::TextEditor textEditor;
 	static Toad::AnimationEditor anim_editor;
 	static Toad::FSMGraphEditor fsm_graph_editor;
+	static Toad::MessageQueue message_queue{{180, 100}, Toad::MessageQueuePlacement::RIGHT};
 
 	static bool view_settings = false;
 	static bool view_text_editor = false;
@@ -104,6 +107,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
+
+	message_queue.Show();
+	
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("Engine"))
@@ -111,6 +117,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::MenuItem("Test child window"))
 			{
 				Toad::Engine::Get().AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
+			}	
+			if (ImGui::MenuItem("Test button"))
+			{
+				Toad::MessageQueueMessage msg;
+				msg.category = Toad::MessageCategory::ENGINE;
+				msg.message = "Successfully initialized engine";
+				msg.title = "Engine Init";
+				msg.show_time_ms = 2000.f;
+				msg.type = Toad::MessageType::INFO;
+				message_queue.AddToMessageQueue(msg);
 			}
 			if (ImGui::MenuItem("Create Project.."))
 			{
