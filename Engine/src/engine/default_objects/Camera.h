@@ -35,7 +35,8 @@ public:
 
 	void SetSize(const Vec2f& size);
 	const Vec2f& GetSize() const;
-
+	const Vec2f& GetOriginalSize() const;
+	
 	void Zoom(float factor);
 
 	void SetViewport(const sf::FloatRect& viewport);
@@ -47,7 +48,7 @@ private:
 	static inline std::vector<Camera*> m_cameras {};
 	static inline Camera* m_activeCam = nullptr;
 	bool m_active = false;
-
+	Vec2f m_originalCamSize{};
 };
 
 }
