@@ -122,9 +122,11 @@ bool Engine::Init()
 		return false;
 	 
 #ifdef TOAD_EDITOR
-	LOGDEBUG("[Engine] Creating window texture for viewport & game view");
+	LOGDEBUG("[Engine] Setting up views & textures");
 	m_windowTexture.create(m_window.getSize().x, m_window.getSize().y);
 	m_windowEditorCamTexture.create(m_window.getSize().x, m_window.getSize().y);
+
+	m_editorCam.OnCreate();
 #else
 	m_beginPlay = true;
 	if (starting_scene)
@@ -209,7 +211,10 @@ bool Engine::InitWindow(const AppSettings& settings)
 	// m_io->Fonts->Clear();
 	m_io->Fonts->AddFontDefault();
 	// m_io->Fonts->Build();
-	ImGui::SFML::UpdateFontTexture();
+	if (!ImGui::SFML::UpdateFontTexture())
+	{
+		LOGERROR("[Engine] Failed to update font texture");
+	}
 
 	return res;
 #else
@@ -295,6 +300,9 @@ void Engine::EventHandler()
 			break;
 		}
 
+		default: 
+			break;
+
 		}
 	}
 }
@@ -358,11 +366,17 @@ void Engine::Render()
 			switch (e2.type)
 			{
 			case e2.Closed:
+			{
+
 				ImGui::SFML::Shutdown(*(*it));
 				(*it)->close();
 				it = m_viewports.erase(it);
 				erased = true;
 				break;
+			}
+			default:
+				break;
+
 			}
 		}
 
@@ -414,12 +428,12 @@ sf::RenderWindow& Engine::GetWindow()
 	return m_window;
 }
 
-sf::RenderTarget& Engine::GetActiveRenderTarget()
+sf::RenderTexture& Engine::GetActiveRenderTexture()
 {
 #ifdef TOAD_EDITOR
-	return m_windowTexture;
+	return *interacting_texture;
 #else
-	return m_window; 
+	return m_windowTexture; 
 #endif 
 }
 
@@ -473,33 +487,6 @@ void Engine::AddViewport(const sf::VideoMode& mode, std::string_view title, uint
 	bool res = ImGui::SFML::Init(*window, true);
 	LOGDEBUGF("[Engine::AddViewport] ImGui SFML Init result: {}", res);
 	m_viewports.emplace_back(window);
-}
-
-Vec2f Engine::ScreenToWorld(const Vec2i& screen_pos)
-{
-#ifdef TOAD_EDITOR
-	if (!interacting_camera || !interacting_texture)
-	{
-		LOGERRORF("[Engine] No interacting texture or camera: texture {} camera: {}", (void*)interacting_camera, (void*)interacting_texture);
-		return { -1, -1 };
-	}
-
-	return interacting_texture->mapPixelToCoords({ (int)(screen_pos.x), (int)(screen_pos.y) }, interacting_camera->GetView());
-
-	return {-1 , -1};
-#else
-	Camera* cam = Camera::GetActiveCamera();
-
-	if (cam)
-	{
-		float fx = cam->GetSize().x / m_window.getSize().x;
-		float fy = cam->GetSize().y / m_window.getSize().y;
-
-		return m_window.mapPixelToCoords({ (int)(screen_pos.x * fx), (int)(screen_pos.y * fy) }, cam->GetView());
-	}
-
-	return { -1, -1 };
-#endif
 }
 
 void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
@@ -607,8 +594,11 @@ void Engine::LoadGameScripts()
 
 	registerScripts();
 
-	for (const auto& [b, n] : getScripts())
+	Scripts scripts_data = getScripts();
+	for (size_t i = 0; i < scripts_data.len; i++)
 	{
+		const auto& [b, n] = scripts_data.scripts[i];
+
 		Script* script = (Script*)(b);
 		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
 		LOGDEBUGF("[Engine] Alloc for script {} with size {}. Base size {}: n: {}", script->GetName(), sizeof(*script), sizeof(Toad::Script), n);

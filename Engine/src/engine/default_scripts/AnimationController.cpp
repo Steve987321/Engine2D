@@ -46,7 +46,7 @@ void AnimationController::OnEditorUI(Object* obj, ImGuiContext* ctx)
 	Script::OnEditorUI(obj, ctx);
 	if (m_attachedAnimation)
 	{
-		ImGui::Text(m_attachedAnimation->name.c_str());
+		ImGui::Text("%s", m_attachedAnimation->name.c_str());
 		ImGui::Text("is playing: %s", m_isPlaying ? "true" : "false");
 	}
 	else

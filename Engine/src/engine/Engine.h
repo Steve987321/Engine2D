@@ -47,7 +47,7 @@ namespace Toad
 
 		sf::RenderWindow& GetWindow();
 
-		sf::RenderTarget& GetActiveRenderTarget();
+		sf::RenderTexture& GetActiveRenderTexture();
 		sf::RenderTexture& GetWindowTexture();
 		sf::RenderTexture& GetEditorCameraTexture();
 
@@ -60,9 +60,6 @@ namespace Toad
 		void StopGameSession();
 
 		void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style = 0);
-
-		// Returns the world coordinates
-		Vec2f ScreenToWorld(const Vec2i& screen_pos);
 
 		void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path);
 		// load game.dll 
@@ -85,6 +82,9 @@ namespace Toad
 
 		// checks to see if a new game.dll is available 
 		void GameUpdatedWatcher();
+
+		// finds settings.json and loads them 
+		void LoadEngineSettings();
 
 #ifdef _WIN32
 		static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);

@@ -27,27 +27,27 @@ namespace ResourceManager
 		return false;
 	}
 
-	ResourcesOfType<sf::Texture>& ResourceManager::GetTextures()
+	ResourcesOfType<sf::Texture>& GetTextures()
 	{
 		return textures;
 	}
 
-	ResourcesOfType<sf::Font>& ResourceManager::GetFonts()
+	ResourcesOfType<sf::Font>& GetFonts()
 	{
 		return fonts;
 	}
 
-	AudioSourceResources& ResourceManager::GetAudioSources()
+	AudioSourceResources& GetAudioSources()
 	{
 		return audio_sources;
 	}
 
-	ResourcesOfType<FSM>& ResourceManager::GetFSMs()
+	ResourcesOfType<FSM>& GetFSMs()
 	{
 		return fsms;
 	}
 
-	void ResourceManager::Clear()
+	void Clear()
 	{
 		textures.Clear();
 		audio_sources.Clear();

@@ -42,7 +42,12 @@ namespace Toad
 		m_circle.setPosition(position);
 	}
 
-	void Circle::SetRotation(float degrees)
+    FloatRect Circle::GetBounds() const
+    {
+		return FloatRect(m_circle.getGlobalBounds());
+    }
+
+    void Circle::SetRotation(float degrees)
 	{
 		Object::SetRotation(degrees);
 

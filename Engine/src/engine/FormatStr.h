@@ -57,7 +57,10 @@ namespace Toad
                     int index = std::stoi(index_str);
                     if (index >= args_as_str.size())  // bru
                     {
-                        result += begin + "INVALID" + end;
+                        result += begin;
+                        result += "INVALID"; 
+                        result += end;
+                        
                         continue;
                     }
                     result += args_as_str[index];

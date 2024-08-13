@@ -17,6 +17,7 @@ namespace Toad
 
 		const Vec2f& GetPosition() const override;
 		void SetPosition(const Vec2f& position) override;
+		FloatRect GetBounds() const override;
 
 		void SetRotation(float degrees) override;
 		float GetRotation() override;

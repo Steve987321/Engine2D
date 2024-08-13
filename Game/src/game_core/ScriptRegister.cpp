@@ -9,24 +9,24 @@
 namespace Toad
 {
 
+static std::vector<SBuf> scripts{};
+
 void register_scripts()
 {
-	get_registered_scripts().clear();
+	scripts.clear();
 
 	SCRIPT_REGISTER(TestScript);
-
 	SCRIPT_REGISTER(AnimationController);
 }
 
 void register_script(void* instance, size_t size)
 {
-	get_registered_scripts().emplace_back(instance, size);
+	scripts.emplace_back(instance, size);
 }
 
-std::vector<SBuf>& get_registered_scripts()
+Scripts get_registered_scripts()
 {
-	static std::vector<SBuf> scripts{};
-	return scripts;
+	return {scripts.data(), scripts.size()};
 }
 
 }

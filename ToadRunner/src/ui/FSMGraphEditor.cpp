@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 #include "FSMGraphEditor.h"
 
@@ -27,8 +27,20 @@ namespace Toad
 
 	void FSMGraphEditor::Show(bool* show, const GameAssetsBrowser& asset_browser)
 	{
+		if (!asset_browser.GetAssetPath().empty() && strnlen(m_savedPathBuf, MAX_PATH) == 0)
+			strncpy(m_savedPathBuf, asset_browser.GetAssetPath().c_str(), MAX_PATH);
+
+		if (m_simulateFSM)
+		{
+			float alpha = std::clamp(sinf((float)ImGui::GetTime() * 10.f), 0.3f, 0.85f);
+			ImGui::PushStyleColor(ImGuiCol_Border, {1.f, 1.f, 1.f, alpha});
+		}
+		
 		ImGui::Begin("FSMGraphEditor", show, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_HorizontalScrollbar);
 		{
+			if (m_simulateFSM)
+				ImGui::PopStyleColor();
+
 			if (ImGui::IsWindowFocused())
 				if (ui::inspector_ui.target_type() != m_inspectorUI.target_type())
 						ui::inspector_ui = m_inspectorUI;
@@ -52,9 +64,39 @@ namespace Toad
 
 				ImGui::EndMenuBar();
 			}
-			if (save_to_file)
+
+			if (ImGui::IsKeyDown(ImGuiKey_ModCtrl) && ImGui::IsKeyPressed(ImGuiKey_S))
 			{
-				SaveToFile(asset_browser.GetAssetPath() / (fsm->name + FILE_EXT_FSM));
+				save_to_file = true;
+			}
+			
+			if (save_to_file && fsm)
+			{
+				if (m_savedPath.empty())
+					m_savedPath = asset_browser.GetAssetPath();
+				else
+				{
+					// check if its still there 
+					if (!fs::exists(m_savedPath))
+					{
+						LOGWARNF("[FSMGraphEditor] The fsm file doesn't exist at '{}' anymore", m_savedPath.string());
+						
+						bool found_lost_file = false;
+						for (const auto& entry : fs::recursive_directory_iterator(asset_browser.GetAssetPath()))
+						{
+							if (entry.path().filename() == m_savedPath.filename())
+							{
+								// update resourcemanager 
+								ResourceManager::GetFSMs().Remove(fs::relative(entry.path(), asset_browser.GetAssetPath()).string());
+								found_lost_file = true;
+							}
+						}
+
+						if (!found_lost_file)
+							LOGERROR("[FSMGraphEditor] Can't find the fsm file");
+					}
+				}
+				SaveToFile(m_savedPath / (fsm->name + FILE_EXT_FSM));
 				save_to_file = false;
 			}
 
@@ -84,6 +126,22 @@ namespace Toad
 				return;
 			}
 
+			if (ImGui::Button(m_simulateFSM ? "Simulate Stop" : "Simulate Start"))
+			{
+				m_simulateFSM = !m_simulateFSM;
+
+				if (m_simulateFSM)
+				{
+					m_previousFSMState = fsm->Serialize();
+					fsm->Start();
+				}
+				else
+					*fsm = FSM::Deserialize(m_previousFSMState);
+			}
+
+			if (m_simulateFSM)
+				fsm->Update();
+
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
 				ImGui::OpenPopup("AddStatePopup");
 
@@ -94,7 +152,7 @@ namespace Toad
 					fsm->AddState(State("state"));
 					FSMGraphEditorNodeInfo info;
 					info.pos = { ImGui::GetWindowPos() - ImGui::GetMousePos() };
-					_statePos[fsm->GetStates().back().name] = info;
+					m_statePos[fsm->GetStates().back().name] = info;
 					ImGui::CloseCurrentPopup();
 				}
 
@@ -111,6 +169,7 @@ namespace Toad
 			for (uint32_t i = 0; i < fsm_states.size(); i++)
 			{
 				State& state = fsm_states[i];
+				bool is_current_state = fsm->GetCurrentState() == &state;
 
 				// found duplicates for rename
 				bool found = false;
@@ -118,8 +177,14 @@ namespace Toad
 				strncpy(name_buf, state.name.c_str(), 32);
 
 				// add node things for creating/linking transitions
-				ImGui::SetCursorPos(_statePos[state.name].pos);
+				ImGui::SetCursorPos(m_statePos[state.name].pos);
 				
+				if (is_current_state)
+				{
+					float alpha = std::clamp(sinf((float)ImGui::GetTime() * 10.f), 0.3f, 0.85f);
+					ImGui::PushStyleColor(ImGuiCol_Border, {1.f, 1.f, 1.f, alpha});
+				}
+
 				ImGui::BeginChild(state.name.c_str(), { 150, 150 }, true);
 				ImGui::PushID(i);
 				if (ImGui::InputText("name", name_buf, 32))
@@ -137,8 +202,8 @@ namespace Toad
 				{
 					if (!found)
 					{
-						_statePos[name_buf] = _statePos[state.name];
-						_statePos.erase(state.name);
+						m_statePos[name_buf] = m_statePos[state.name];
+						m_statePos.erase(state.name);
 						state.name = name_buf;
 					}
 				}
@@ -168,6 +233,9 @@ namespace Toad
 
 				ImGui::EndChild();
 
+				if (is_current_state)
+					ImGui::PopStyleColor();
+
 				if (ImGui::BeginDragDropTarget())
 				{
 					const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_TRANSITION");
@@ -185,19 +253,25 @@ namespace Toad
 					}
 					ImGui::EndDragDropTarget();
 				}
-
+				
 				// transitions
 				for (Transition& transition : state.transitions)
 				{
-					const FSMGraphEditorNodeInfo& p1 = _statePos[state.name];
-					const FSMGraphEditorNodeInfo& p2 = _statePos[transition.GetNextState()->name];
+					ImU32 line_col;
+					if (transition.IsTransitionAllowed())
+						line_col = transition_active_line_col;
+					else 
+						line_col = transition_line_col;
+
+					const FSMGraphEditorNodeInfo& p1 = m_statePos[state.name];
+					const FSMGraphEditorNodeInfo& p2 = m_statePos[transition.GetNextState()->name];
 
 					const ImVec2 window_pos = ImGui::GetWindowPos();
 
 					const ImVec2& next_offset = FSMGraphEditorNodeInfo::node_next_offset_pos;
 					const ImVec2& prev_offset = FSMGraphEditorNodeInfo::node_prev_offset_pos;
 
-					ImGui::GetForegroundDrawList()->AddLine(p1.pos + next_offset + window_pos, p2.pos + prev_offset + window_pos, IM_COL32_WHITE, 2.f);
+					ImGui::GetForegroundDrawList()->AddLine(p1.pos + next_offset + window_pos, p2.pos + prev_offset + window_pos, transition_line_col, 2.f);
 				}
 
 				if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -213,7 +287,7 @@ namespace Toad
 				{
 					ImVec2 drag_delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.f);
 					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
-					_statePos[dragging_state].pos += drag_delta;
+					m_statePos[dragging_state].pos += drag_delta;
 				}
 				else
 					is_dragging_state = false;
@@ -293,7 +367,7 @@ namespace Toad
 			return true;
 
 		// get metadata for imgui 
-		_statePos.clear();
+		m_statePos.clear();
 		for (const auto& item : imgui_data.items())
 		{
 			float x = 0.f;
@@ -301,7 +375,7 @@ namespace Toad
 			json pos = item.value().at("pos");
 			x = pos.at("x");
 			y = pos.at("y");
-			_statePos[item.key()].pos = {x,y};
+			m_statePos[item.key()].pos = {x,y};
 		}
 		
 		return true;
@@ -333,7 +407,7 @@ namespace Toad
 
 		json imgui_data;
 
-		for (const auto& [name, info] : _statePos)
+		for (const auto& [name, info] : m_statePos)
 		{
 			json pos_data;
 			pos_data["x"] = info.pos.x;
@@ -509,6 +583,17 @@ namespace Toad
 
 	void FSMGraphEditor::ShowFSMProps()
 	{
+		static bool valid_path_buf = false;
+		if (ImGui::InputText("##FSMSavePath", m_savedPathBuf, MAX_PATH))
+		{
+			valid_path_buf = fs::exists(m_savedPathBuf) && fs::is_directory(m_savedPathBuf);
+
+			if (valid_path_buf)
+				m_savedPath = m_savedPathBuf;
+		}
+		if (!valid_path_buf)
+			ImGui::TextColored({1, 0, 0, 1}, "Not a valid directory");
+
 		if (!fsm)
 		{
 			ImGui::Text("no fsm please create one");

@@ -36,7 +36,7 @@ public:
 	Script(std::string_view name);
 
 	const std::string& GetName() const;
-
+	
 	virtual void OnUpdate(Object* obj);
 	virtual void OnFixedUpdate(Object* obj);
 	virtual void OnLateUpdate(Object* obj);

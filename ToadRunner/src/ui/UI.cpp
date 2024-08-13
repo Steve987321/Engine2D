@@ -1,12 +1,10 @@
 #include "pch.h"
-#ifdef TOAD_EDITOR
 
+#ifdef TOAD_EDITOR
 #include <algorithm>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "Engine/Engine.h"
-
-#include "EngineMeta.h"
+#include "engine/Engine.h"
 
 #include "UI.h"
 
@@ -16,7 +14,9 @@
 #include "GameAssetsBrowser.h"
 #include "FSMGraphEditor.h"
 #include "TextEditor.h"
-#include "engine/systems/build/package.h"
+#include "MessageQueue.h"
+
+#include "engine/systems/build/Package.h"
 #include "project/ToadProject.h"
 #include "SceneHistory.h"
 #include "utils/FileDialog.h"
@@ -67,6 +67,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static Toad::TextEditor textEditor;
 	static Toad::AnimationEditor anim_editor;
 	static Toad::FSMGraphEditor fsm_graph_editor;
+	static Toad::MessageQueue message_queue{{180, 100}, Toad::MessageQueuePlacement::RIGHT};
 
 	static bool view_settings = false;
 	static bool view_text_editor = false;
@@ -106,6 +107,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
+
+	message_queue.Show();
+	
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("Engine"))
@@ -113,6 +117,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::MenuItem("Test child window"))
 			{
 				Toad::Engine::Get().AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
+			}	
+			if (ImGui::MenuItem("Test button"))
+			{
+				Toad::MessageQueueMessage msg;
+				msg.category = Toad::MessageCategory::ENGINE;
+				msg.message = "Successfully initialized engine";
+				msg.title = "Engine Init";
+				msg.show_time_ms = 2000.f;
+				msg.type = Toad::MessageType::INFO;
+				message_queue.AddToMessageQueue(msg);
 			}
 			if (ImGui::MenuItem("Create Project.."))
 			{
@@ -231,7 +245,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					created_project = false;
 				}
 
-				ImGui::TextColored({ 1,0,0,1 }, Toad::format_str("Project creation failed: {}, {}", cpri.res, cpri.description).c_str());
+				ImGui::TextColored({ 1,0,0,1 }, "%s", Toad::format_str("Project creation failed: {}, {}", cpri.res, cpri.description).c_str());
 			}
 			else
 			{
@@ -1161,7 +1175,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				image_cursor_pos.y + size.y + 10
 				});
 
-			ImGui::TextColored({ 1, 0, 0, 1 }, err_msg);
+			ImGui::TextColored({ 1, 0, 0, 1 }, "%s", err_msg);
 		}
 		else
 		{
@@ -1390,6 +1404,19 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			ImVec2 d = ImGui::GetMouseDragDelta(0, 0.f);
 
+			static bool temp_disable_snapping = false;
+			if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && drag_snap)
+			{
+				temp_disable_snapping = true;
+				drag_snap = false;
+			}
+
+			if (ImGui::IsKeyReleased(ImGuiKey_LeftShift) && temp_disable_snapping)
+			{
+				temp_disable_snapping = false;
+				drag_snap = true;
+			}
+				
 			if (ImGui::IsKeyPressed(ImGuiKey_X))
 			{
 				selected_gizmo.x = ~selected_gizmo.x;
@@ -1429,16 +1456,13 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (d.x || d.y)
 			{
 				if (selected_gizmo.x)
-				{
 					d.y = 0;
-				}
 				else if (selected_gizmo.y)
-				{
 					d.x = 0;
-				}
 
 				float multiplierx = editor_cam.GetSize().x / image_width;
 				float multipliery = editor_cam.GetSize().y / image_height;
+
 				d.x *= multiplierx;
 				d.y *= multipliery;
 
@@ -1446,126 +1470,42 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					if (drag_snap)
 					{
-						//auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
-						//selected_obj->SetPosition(drag_pos);
+						Vec2f drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 
-						//for (const auto& obj : Scene::current_scene.objects_all)
-						//{
-						//	if (selected_obj == obj.get()) 
-						//		continue;
+						const Vec2i& mouse_pos = Toad::Engine::Get().relative_mouse_pos;
+						Vec2f mouse_world_pos = Toad::Screen::ScreenToWorld(mouse_pos);
+						
+						// snap to the grid
+						mouse_world_pos.x = std::round(mouse_world_pos.x / grid_size.x) * grid_size.x;
+						mouse_world_pos.y = std::round(mouse_world_pos.y / grid_size.y) * grid_size.y;
 
-						//	const auto& pos = obj->GetPosition();
+						selected_obj->SetPosition(mouse_world_pos);	
 
-						//	/*if (Toad::distance(pos, selected_obj->GetPosition()) > 10.f)
-						//	{
-						//		continue;
-						//	}*/
+						FloatRect selected_obj_bounds = selected_obj->GetBounds();
 
-						//	Toad::Sprite* sprite = get_object_as_type<Toad::Sprite>(obj.get());
-						//	Toad::Circle* circle = get_object_as_type<Toad::Circle>(obj.get());
-						//	Vec2f scale = {};
-						//	if (sprite)
-						//	{
-						//		scale = {
-						//			sprite->GetSprite().getScale().x * (float)sprite->GetSprite().getGlobalBounds().width,
-						//			sprite->GetSprite().getScale().y* (float)sprite->GetSprite().getGlobalBounds().height,
-						//		};
-						//	}
-						//	else if (circle)
-						//	{
-						//		float radius = circle->GetCircle().getRadius();
-						//		scale = { 
-						//			radius * (float)circle->GetCircle().getGlobalBounds().width,
-						//			radius * (float)circle->GetCircle().getGlobalBounds().height
-						//		};
-						//	}
-						//	else
-						//		continue;
-
-						//	ImRect snap_bounds = { {pos.x, pos.y}, {pos.x + scale.x, pos.y + scale.y} };
-						//	snap_bounds.Expand(20.f);
-
-						//	if (snap_bounds.Contains({ selected_obj->GetPosition().x, selected_obj->GetPosition().y }))
-						//	{
-						//		snap_bounds.Expand(-20.f);
-
-						//		// Snap to nearest edge
-						//		Vec2f snapped_pos = selected_obj->GetPosition();
-
-						//		if (std::abs(snapped_pos.x - snap_bounds.Min.x) < 20.f)
-						//			snapped_pos.x = snap_bounds.Min.x;
-						//		else if (std::abs(snapped_pos.x - snap_bounds.Max.x) < 20.f)
-						//			snapped_pos.x = snap_bounds.Max.x;
-
-						//		if (std::abs(snapped_pos.y - snap_bounds.Min.y) < 20.f)
-						//			snapped_pos.y = snap_bounds.Min.y;
-						//		else if (std::abs(snapped_pos.y - snap_bounds.Max.y) < 20.f)
-						//			snapped_pos.y = snap_bounds.Max.y;
-
-						//		selected_obj->SetPosition(snapped_pos);
-						//	}
-
-						// snap to grid 
-						// Calculate the new position with the drag offset
-						// Calculate the new position with the drag offset
-						auto drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
-
-						// Snap to the grid
-						drag_pos.x = std::round(drag_pos.x / grid_size.x) * grid_size.x;
-						drag_pos.y = std::round(drag_pos.y / grid_size.y) * grid_size.y;
-
-						// Set the snapped position
-						selected_obj->SetPosition(drag_pos);
-
-						for (const auto& obj : Scene::current_scene.objects_all)
+						if (selected_obj_bounds.width != 0 && selected_obj_bounds.height != 0)
 						{
-							if (selected_obj == obj.get())
-								continue;
-
-							const auto& pos = obj->GetPosition();
-
-							Toad::Sprite* sprite = get_object_as_type<Toad::Sprite>(obj.get());
-							Toad::Circle* circle = get_object_as_type<Toad::Circle>(obj.get());
-							Vec2f scale = {};
-							if (sprite)
+							for (const auto& obj : Scene::current_scene.objects_all)
 							{
-								scale = {
-									sprite->GetSprite().getScale().x * (float)sprite->GetSprite().getGlobalBounds().width,
-									sprite->GetSprite().getScale().y * (float)sprite->GetSprite().getGlobalBounds().height,
-								};
-							}
-							else if (circle)
-							{
-								float radius = circle->GetCircle().getRadius();
-								scale = {
-									radius * 2.0f, // Assuming the scale is the diameter
-									radius * 2.0f
-								};
-							}
-							else
-								continue;
+								if (selected_obj == obj.get())
+									continue;
 
-							ImRect snap_bounds = { {pos.x, pos.y}, {pos.x + scale.x, pos.y + scale.y} };
-							snap_bounds.Expand(20.f);
+								FloatRect bounds = obj->GetBounds();
+								if (bounds.width == 0 || bounds.height == 0)
+									continue;
+								
+								bounds.Expand(5.f);
+								if (bounds.Contains(mouse_world_pos))
+								{
+									// snap to nearest edge
+									float right = bounds.left + bounds.width;
+									float bottom = bounds.top + bounds.height;
 
-							if (snap_bounds.Contains({ selected_obj->GetPosition().x, selected_obj->GetPosition().y }))
-							{
-								snap_bounds.Expand(-20.f);
+									if (mouse_world_pos.x > right)
+									{
 
-								// Snap to nearest edge
-								Vec2f snapped_pos = selected_obj->GetPosition();
-
-								if (std::abs(snapped_pos.x - snap_bounds.Min.x) < 20.f)
-									snapped_pos.x = snap_bounds.Min.x;
-								else if (std::abs(snapped_pos.x - snap_bounds.Max.x) < 20.f)
-									snapped_pos.x = snap_bounds.Max.x;
-
-								if (std::abs(snapped_pos.y - snap_bounds.Min.y) < 20.f)
-									snapped_pos.y = snap_bounds.Min.y;
-								else if (std::abs(snapped_pos.y - snap_bounds.Max.y) < 20.f)
-									snapped_pos.y = snap_bounds.Max.y;
-
-								selected_obj->SetPosition(snapped_pos);
+									}
+								}
 							}
 						}
 					}
@@ -1578,9 +1518,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Toad::Object* obj = Scene::current_scene.GetSceneObject(name).get();
 					if (obj)
-					{
 						obj->SetPosition(obj->GetPosition() + Vec2f{ d.x, d.y });
-					}
 				}
 
 				ImGuiContext* g = ImGui::GetCurrentContext();
@@ -1601,13 +1539,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 1 });
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-				{
 					is_moving_gizmo = true;
-				}
 				else
-				{
 					is_moving_gizmo = false;
-				}
 			}
 			else
 			{
@@ -1704,6 +1638,18 @@ void ui::engine_ui(ImGuiContext* ctx)
 					//	selected_obj = nullptr;
 					//	selected_objects.clear();
 					//}
+				}
+
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+				{
+					// only selected one object
+					if (selected_objects.size() == 1 && !selected_obj)
+					{
+						selected_obj = Toad::Scene::current_scene.GetSceneObject(*selected_objects.begin()).get();
+						selected_objects.erase(selected_objects.begin());
+					}
+					
+					inspector_ui = std::bind(&object_inspector, std::ref(selected_obj), asset_browser);
 				}
 			}
 		}
@@ -1804,7 +1750,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				for (auto it = opened_tilemaps.begin(); it != opened_tilemaps.end();)
 				{
-					ImGui::Text(it->path.filename().string().c_str());
+					ImGui::Text("%s", it->path.filename().string().c_str());
 					ImGui::SameLine();
 					if (ImGui::Button("close"))
 					{
@@ -2206,6 +2152,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 	}
+
     ImGui::End();
 
 	asset_browser.Show();
@@ -2275,6 +2222,8 @@ void ui::event_callback(const sf::Event& e)
 	case sf::Event::GainedFocus:
 		if (browser)
 			browser->refresh = true;
+		break;
+	default: 
 		break;
 	}
 }
@@ -2376,10 +2325,10 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 			ImVec2 frame_pad = ImGui::GetStyle().FramePadding;
 			ImVec2 text_size = ImGui::CalcTextSize(name_buf);
 			ImGui::SetCursorPos({ input_name_pos.x + text_size.x + frame_pad.x, input_name_pos.y + frame_pad.y });
-			ImGui::TextColored({ 1,1,1,0.4f }, part_of_str.c_str());
+			ImGui::TextColored({ 1,1,1,0.4f }, "%s", part_of_str.c_str());
 		}
 
-		ImGui::Text(selected_obj->name.c_str());
+		ImGui::Text("%s", selected_obj->name.c_str());
 
 		static Toad::Object* prev_selected_obj = nullptr;
 		static size_t index = 0;
@@ -3207,11 +3156,14 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 			if (ImGui::BeginPopup("SCRIPT SETTINGS"))
 			{
 				// show options for this script
-				if (ImGui::Button("Remove"))
+				if (ImGui::Button("SCRIPT DELETE"))
 				{
 					selected_obj->RemoveScript(selected_script_name);
 				}
-
+				if (ImGui::Button("SCRIPT COPY"))
+				{
+					// selected_obj->SerializeScripts()
+				}
 				ImGui::EndPopup();
 			}
 
@@ -3248,7 +3200,7 @@ bool ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, fl
 	std::string label_final = "##x";
 	label_final += label;
 
-	ImGui::Text(label.data());
+	ImGui::Text("%s", label.data());
 	ImGui::SameLine();
 	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
 	if (ImGui::DragFloat(label_final.c_str(), x, 1.0f, min, max))
@@ -3279,7 +3231,7 @@ bool ImGui::SliderVec2i(std::string_view label, int* x, int* y, int min, int max
 	std::string label_final = "##x";
 	label_final += label;
 
-	ImGui::Text(label.data());
+	ImGui::Text("%s", label.data());
 	ImGui::SameLine();
 	ImGui::PushItemWidth(frame_bb.GetWidth() / 2.f - style.FramePadding.x);
 	if (ImGui::DragInt(label_final.c_str(), x, 1.0f, min, max))
@@ -3356,7 +3308,7 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
         }
     }
 
-    LOGWARNF("Can't find binary directory in {}", settings.project_path);
+    LOGWARNF("Can't find binary directory in {}, looking for a binary compiled with the '{}' configuration", settings.project_path, PROJECT_BIN_SEARCH_FOR);
     return "";
 }
 #endif 

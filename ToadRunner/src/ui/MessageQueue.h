@@ -35,17 +35,19 @@ enum class MessageQueuePlacement
 struct MessageQueueMessage
 {
 	std::string title;
-	int showing_duration_sec = 1;
+	std::string message;
+	float show_time_ms = 1000.f;
 	MessageType type = MessageType::INFO;
 	MessageCategory category = MessageCategory::OTHER;
 };
+
 
 // vertical imgui message queue
 class MessageQueue
 {
 public:
-	MessageQueue(ImVec2 area_region, MessageQueuePlacement placement)
-		: _region(area_region), _placement(placement)
+	MessageQueue(ImVec2 size, MessageQueuePlacement placement)
+		: m_size(size), m_placement(placement)
 	{}
 
 public:
@@ -53,9 +55,9 @@ public:
 	void Show();
 
 private:
-	std::queue<std::pair<MessageQueueMessage, Timer>> _messageQueue{};
-	ImVec2 _region{};
-	MessageQueuePlacement _placement = MessageQueuePlacement::RIGHT;
+	std::vector<std::pair<MessageQueueMessage, Timer>> m_messageQueue{};
+	ImVec2 m_size{};
+	MessageQueuePlacement m_placement = MessageQueuePlacement::RIGHT;
 };
 
 }

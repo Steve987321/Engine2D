@@ -12,18 +12,18 @@ namespace Toad
 		};
 	}
 
-	//Vec2f MultiBezier(const Vec2f& a, const Vec2f& b, const Vec2f control_points[], uint32_t control_points_len, float t)
-	//{
-	//	if (control_points_len <= 1)
-	//	{
-	//		assert(control_points && "control_points argument is null");
-	//		return QuadraticBezier(a, b, *control_points, t);
-	//	}
+	// Vec2f MultiBezier(const Vec2f& a, const Vec2f& b, const Vec2f control_points[], uint32_t control_points_len, float t)
+	// {
+	// 	if (control_points_len <= 1)
+	// 	{
+	// 		assert(control_points && "control_points argument is null");
+	// 		return QuadraticBezier(a, b, *control_points, t);
+	// 	}
 
-	//	for (uint32_t i = 0, j = 1; j < control_points_len - 1; i++, j++)
-	//	{
-	//		Vec2f mid_point = (control_points[i] + control_points[j]) / 2;
-	//	}
-	//}
+	// 	for (uint32_t i = 0, j = 1; j < control_points_len - 1; i++, j++)
+	// 	{
+	// 		Vec2f mid_point = (control_points[i] + control_points[j]) / 2;
+	// 	}
+	// }
 
 }
