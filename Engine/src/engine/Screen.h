@@ -7,8 +7,8 @@ class Camera;
 
 namespace Screen
 {
-    Vec2f ScreenToWorld(const Vec2i& point);
-    Vec2f ScreenToWorld(const Vec2i& point, const Camera& cam);
+	ENGINE_API Vec2f ScreenToWorld(const Vec2i& point);
+	ENGINE_API Vec2f ScreenToWorld(const Vec2i& point, const Camera& cam);
 }
 
 }
