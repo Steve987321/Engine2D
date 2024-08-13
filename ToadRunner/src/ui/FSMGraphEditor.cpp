@@ -28,7 +28,7 @@ namespace Toad
 	void FSMGraphEditor::Show(bool* show, const GameAssetsBrowser& asset_browser)
 	{
 		if (!asset_browser.GetAssetPath().empty() && strnlen(m_savedPathBuf, MAX_PATH) == 0)
-			strncpy(m_savedPathBuf, asset_browser.GetAssetPath().c_str(), MAX_PATH);
+			strncpy(m_savedPathBuf, asset_browser.GetAssetPath().string().c_str(), MAX_PATH);
 
 		if (m_simulateFSM)
 		{
