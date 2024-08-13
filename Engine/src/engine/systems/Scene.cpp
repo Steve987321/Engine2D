@@ -131,6 +131,7 @@ std::shared_ptr<Object> Scene::GetSceneObject(std::string_view obj_name)
 			return obj;
 		}
 	}
+
 	return nullptr;
 }
 

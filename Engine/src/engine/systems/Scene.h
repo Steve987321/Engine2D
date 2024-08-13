@@ -71,7 +71,7 @@ public:
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
-		std::string obj_name = object.name;
+		std::string obj_name = std::move(object.name);
 		bool found = false;
 		bool found_in_queue = false;
 		uint32_t count = 0;
