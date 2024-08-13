@@ -31,7 +31,17 @@ private:
 	void ShowFSMProps();
 	std::function<void()> m_inspectorUI;
 
-	std::unordered_map<std::string, FSMGraphEditorNodeInfo> _statePos{};
+	bool m_simulateFSM = false;
+	json m_previousFSMState{};
+
+	std::filesystem::path m_savedPath{};
+	char m_savedPathBuf[MAX_PATH]{};
+
+
+	static constexpr ImU32 transition_line_col = IM_COL32_WHITE;
+	static constexpr ImU32 transition_active_line_col = IM_COL32_WHITE;
+
+	std::unordered_map<std::string, FSMGraphEditorNodeInfo> m_statePos{};
 
 };
 

@@ -2152,6 +2152,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 	}
+
     ImGui::End();
 
 	asset_browser.Show();
@@ -3155,11 +3156,14 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 			if (ImGui::BeginPopup("SCRIPT SETTINGS"))
 			{
 				// show options for this script
-				if (ImGui::Button("Remove"))
+				if (ImGui::Button("SCRIPT DELETE"))
 				{
 					selected_obj->RemoveScript(selected_script_name);
 				}
-
+				if (ImGui::Button("SCRIPT COPY"))
+				{
+					// selected_obj->SerializeScripts()
+				}
 				ImGui::EndPopup();
 			}
 
