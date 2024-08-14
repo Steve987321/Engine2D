@@ -45,7 +45,7 @@ namespace Toad
 	ENGINE_API float distance(const Vec2f& a, const Vec2f& b);
 
 	template<typename T>
-	ENGINE_API inline bool get_json_element(T& val, const nlohmann::json& data, std::string_view key, std::string error_msg = "") noexcept
+	ENGINE_API inline bool get_json_element(T& val, const nlohmann::ordered_json& data, std::string_view key, std::string error_msg = "") noexcept
 	{
 		if (data.contains(key) && !data.at(key).is_null())
 		{

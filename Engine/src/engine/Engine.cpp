@@ -18,7 +18,7 @@
 namespace Toad
 {
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 Engine::Engine()
 {

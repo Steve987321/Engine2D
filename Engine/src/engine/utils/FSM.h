@@ -8,7 +8,7 @@
 namespace Toad
 {
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 class State;
 class Transition;

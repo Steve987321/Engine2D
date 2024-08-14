@@ -14,7 +14,7 @@
 namespace project {
 
 	namespace fs = std::filesystem;
-	using json = nlohmann::json;
+	using json = nlohmann::ordered_json;
 
 	// '/' to '\'
 	static void path_as_backslash(std::string& s)

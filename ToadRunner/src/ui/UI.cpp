@@ -23,8 +23,7 @@
 #include "engine/utils/Helpers.h"
 #include "engine/systems/Animation.h"
 
-using json = nlohmann::json;
-using namespace Toad;
+using json = nlohmann::ordered_json;
 
 constexpr int i8_min = std::numeric_limits<int8_t>::min();
 constexpr int i8_max = std::numeric_limits<int8_t>::max();

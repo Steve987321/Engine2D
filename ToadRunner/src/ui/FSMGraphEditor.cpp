@@ -328,7 +328,7 @@ namespace Toad
 
 	bool FSMGraphEditor::LoadFromFile(const fs::path& path, const GameAssetsBrowser& asset_browser)
 	{
-		using json = nlohmann::json;
+		using json = nlohmann::ordered_json;
 
 		std::ifstream file(path);
 		if (!file)

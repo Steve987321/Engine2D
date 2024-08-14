@@ -9,7 +9,7 @@
 namespace Toad
 {
 	namespace fs = std::filesystem;
-	using json = nlohmann::json;
+	using json = nlohmann::ordered_json;
 
 	Package::Package()
 	{

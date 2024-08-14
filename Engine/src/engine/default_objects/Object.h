@@ -11,7 +11,7 @@ namespace Toad
 	class Script;
 	class Scene;
 
-	using json = nlohmann::json;
+	using json = nlohmann::ordered_json;
 
 ///
 /// An Object is the base class for different type of game objects

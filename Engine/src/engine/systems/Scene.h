@@ -7,7 +7,7 @@
 namespace Toad
 {
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 
 class ENGINE_API Scene
 {

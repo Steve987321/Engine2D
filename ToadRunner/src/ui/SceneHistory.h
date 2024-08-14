@@ -2,7 +2,7 @@
 namespace Toad
 {
 	class Scene;
-	using json = nlohmann::json;
+	using json = nlohmann::ordered_json;
 	
 	class SceneHistory
 	{

@@ -14,7 +14,7 @@
 namespace Toad
 {
 
-using json = nlohmann::json;
+using json = nlohmann::ordered_json;
 Scene empty_scene;
 Scene& Scene::current_scene = empty_scene;
 std::vector<Scene> Scene::scenes;
