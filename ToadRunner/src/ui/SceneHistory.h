@@ -13,7 +13,9 @@ namespace Toad
 	public:
 		void Undo();
 		void Redo();
-		void SaveState();
+
+		// returns whether a new scene state has been saved
+		bool SaveState();
 	
 		Scene* scene;
 		std::filesystem::path asset_folder;

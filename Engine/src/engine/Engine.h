@@ -22,6 +22,7 @@ namespace Toad
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
 		using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
+		friend class Mouse;
 		Vec2i relative_mouse_pos = {};
 #ifdef TOAD_EDITOR
 		// editor viewport size
@@ -29,6 +30,10 @@ namespace Toad
 		// camera that is being interacted with
 		Camera* interacting_camera = &m_editorCam;
 		sf::RenderTexture* interacting_texture = &m_windowTexture;
+		bool mouse_visible_prev = false;
+		bool mouse_visible = false;
+		bool capture_mouse = false;
+		Vec2i last_captured_mouse_pos{};
 #endif
 
 		static inline Scene empty_scene;

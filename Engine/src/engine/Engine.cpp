@@ -64,19 +64,19 @@ bool Engine::Init()
 	Scene* starting_scene = nullptr;
 
 	// get start scene and get game dl
-	for (const auto& e : std::filesystem::recursive_directory_iterator(m_currentPath))
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(m_currentPath))
 	{
-		if (e.path().filename().string().find("Game") != std::string::npos && e.path().extension() == LIB_FILE_EXT)
+		if (entry.path().filename().string().find("Game") != std::string::npos && entry.path().extension() == LIB_FILE_EXT)
 		{
-			UpdateGameBinPaths(e.path().filename().string(), e.path().parent_path().string());
+			UpdateGameBinPaths(entry.path().filename().string(), entry.path().parent_path().string());
 		}
 
-		if (!e.path().has_extension())
+		if (!entry.path().has_extension())
 			continue;
 
-		if (e.path().extension() == FILE_EXT_TOADSCENE)
+		if (entry.path().extension() == FILE_EXT_TOADSCENE)
 		{
-			Scene& s = LoadScene(e.path());
+			Scene& s = LoadScene(entry.path());
 
 			std::string lower;
 			for (char c : s.name)
@@ -89,9 +89,9 @@ bool Engine::Init()
 				starting_scene = &s;
 			}
 		}
-		if (e.path().extension() == FILE_EXT_FSM)
+		if (entry.path().extension() == FILE_EXT_FSM)
 		{
-			std::ifstream f(e.path());
+			std::ifstream f(entry.path());
 			json fsm_data;
 			try
 			{
@@ -99,12 +99,12 @@ bool Engine::Init()
 			}
 			catch (std::exception& e)
 			{
-				LOGDEBUGF("[Engine] Failed to parse {}", e.path().string());
+				LOGDEBUGF("[Engine] Failed to parse {}", entry.path().string());
 				continue;
 			}
 
 			FSM fsm = FSM::Deserialize(fsm_data);
-			fs::path relative = fs::relative(path, m_currentPath);
+			std::filesystem::path relative = std::filesystem::relative(entry.path(), m_currentPath);
 			ResourceManager::GetFSMs().Add(relative.string(), fsm);
 		}
 	}
@@ -132,7 +132,7 @@ bool Engine::Init()
 	if (starting_scene)
 		Scene::SetScene(starting_scene);
 	else
-		Scene::SetScene(&m_emptyScene);
+		Scene::SetScene(&Scene::scenes[0]);
 #endif
 
 	m_isRunning = true;
@@ -220,7 +220,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 #else
 	// TODO: CHENGE DEEZZ
 	LOGDEBUG("[Engine] Creating window");
-	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, settings.style, settings.ctx_settings);
+	m_window.create(sf::VideoMode(settings.window_width, settings.window_height), settings.window_name, settings.style, sf::ContextSettings{});
 	m_window.setFramerateLimit(settings.frame_limit);
 
 #ifndef NDEBUG // imgui

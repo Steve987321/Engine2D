@@ -22,6 +22,7 @@
 #include "utils/FileDialog.h"
 #include "engine/utils/Helpers.h"
 #include "engine/systems/Animation.h"
+#include "engine/Types.h"
 
 using json = nlohmann::ordered_json;
 
@@ -31,9 +32,11 @@ constexpr int i16_min = std::numeric_limits<int16_t>::min();
 constexpr int i16_max = std::numeric_limits<int16_t>::max();
 constexpr int i32_max = std::numeric_limits<int32_t>::max();
 
-Toad::SceneHistory scene_history{};
-Toad::GameAssetsBrowser* browser = nullptr; // #TODO: TEMP?
-bool is_scene_loaded = false;
+using namespace Toad;
+
+static Toad::SceneHistory scene_history{};
+static Toad::GameAssetsBrowser* browser = nullptr; // #TODO: TEMP?
+static bool is_scene_loaded = false;
 
 // get installed directory (distro)
 // get engine solution directory (source)
@@ -72,11 +75,14 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static bool view_text_editor = false;
 	static bool view_fsm_editor = true;
 
+	// when to show '*' for unsaved changes
+	static bool saved_scene = true;
+
 	static Toad::Object* selected_obj = nullptr;
 	static std::set<std::string> selected_objects = {};
 
 	bool hierarchy_clicked_object = false;
-
+	
     // set default project settings
     static bool once = true;
     if (once)
@@ -591,7 +597,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 	}
 
 	// SCENE/HIERARCHY
-	// #TODO: needs fixing: scene.objects_map changed to scene.objects_all
 	ImGui::Begin("Scene", nullptr);
 	{
 		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
@@ -614,6 +619,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (!scene.path.empty())
 				{
+					saved_scene = true;
 					SaveScene(scene, scene.path.parent_path());
 				}
 			}
@@ -657,7 +663,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 		}
 
-		ImGui::SeparatorText(Scene::current_scene.name.c_str());
+		ImGui::SeparatorText((saved_scene ? Scene::current_scene.name : Scene::current_scene.name + '*').c_str());
 		bool ignore_mouse_click = false;
 		std::queue<std::string> remove_objects_queue;
 
@@ -1198,7 +1204,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 			const ImVec2 pos = ImGui::GetCursorScreenPos();
 
 			ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
+			if (ImGui::IsItemClicked())
+			{
+				Engine::Get().capture_mouse = true;
 
+				if (!Engine::Get().mouse_visible_prev)
+					Mouse::SetVisible(false);
+			}
+			if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+			{
+				Mouse::SetVisible(true);
+
+				Engine::Get().capture_mouse = false;
+				Engine::Get().mouse_visible_prev = Engine::Get().mouse_visible;
+				Engine::Get().mouse_visible = true;
+			}
 			if (ImGui::IsWindowHovered())
 			{
 				Toad::Engine::Get().viewport_size = { (int)image_width, (int)image_height };
@@ -1216,7 +1236,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 				else
 					Toad::Engine::Get().interacting_camera = &Toad::Engine::Get().GetEditorCamera();
-
 			}
 		}
 
@@ -2136,14 +2155,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 						Scene::SetScene(&Toad::LoadScene(file, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
 						scene_history.asset_folder = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 						scene_history.scene = &Scene::current_scene;
-						scene_history.SaveState();
+						if (scene_history.SaveState())
+							saved_scene = false;
 					}
 					else
 					{
 						Scene::SetScene(&Toad::LoadScene(file, asset_browser.GetAssetPath()));
 						scene_history.asset_folder = asset_browser.GetAssetPath();
 						scene_history.scene = &Scene::current_scene;
-						scene_history.SaveState();
+						if (scene_history.SaveState())
+							saved_scene = false;
 					}
 					is_scene_loaded = true;
 					selected_obj = nullptr;
@@ -3183,6 +3204,62 @@ void ui::HelpMarker(const char* desc)
 	}
 }
 
+std::filesystem::path GetEngineDirectory()
+{
+    std::filesystem::path res;
+	res = misc::GetExePath();
+
+#ifdef TOAD_DISTRO
+	return res.parent_path();
+#else
+	if (!std::filesystem::exists(res) || !std::filesystem::is_directory(res))
+	{
+		std::filesystem::path parent;
+		do {
+			parent = res.parent_path();
+			for (const auto& entry : std::filesystem::directory_iterator(parent))
+			{
+				if (std::filesystem::is_directory(entry.path()))
+					continue;
+
+				if (entry.path().filename().string().find("Onion.sln") != std::string::npos || 
+					entry.path().filename().string().find("Makefile") != std::string::npos)
+				{
+					return parent;
+				}
+			}
+			res = parent;
+		} while (parent.has_parent_path()); // #TODO always returns true 
+	}
+#endif
+
+    return res;
+}
+
+std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings)
+{
+	std::filesystem::path p = settings.project_path;
+	if (!std::filesystem::is_directory(p)) 
+		p = p.parent_path();
+
+    for (const auto& entry : std::filesystem::directory_iterator(p))
+    {
+        if (entry.path().filename().string().find("bin") != std::string::npos)
+        {
+            for (const auto& entry2 : std::filesystem::directory_iterator(entry.path()))
+            {
+                if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
+                {
+                    return entry2.path();
+                }
+            }
+        }
+    }
+
+    LOGWARNF("Can't find binary directory in {}, looking for a binary compiled with the '{}' configuration", settings.project_path, PROJECT_BIN_SEARCH_FOR);
+    return "";
+}
+
 bool ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, float max)
 {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -3255,59 +3332,4 @@ bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 	return ImGui::SliderVec2(label, &v->x, &v->y, min, max);
 }
 
-std::filesystem::path GetEngineDirectory()
-{
-    std::filesystem::path res;
-	res = misc::GetExePath();
-
-#ifdef TOAD_DISTRO
-	return res.parent_path();
-#else
-	if (!std::filesystem::exists(res) || !std::filesystem::is_directory(res))
-	{
-		std::filesystem::path parent;
-		do {
-			parent = res.parent_path();
-			for (const auto& entry : std::filesystem::directory_iterator(parent))
-			{
-				if (std::filesystem::is_directory(entry.path()))
-					continue;
-
-				if (entry.path().filename().string().find("Onion.sln") != std::string::npos || 
-					entry.path().filename().string().find("Makefile") != std::string::npos)
-				{
-					return parent;
-				}
-			}
-			res = parent;
-		} while (parent.has_parent_path()); // #TODO always returns true 
-	}
-#endif
-
-    return res;
-}
-
-std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings)
-{
-	std::filesystem::path p = settings.project_path;
-	if (!std::filesystem::is_directory(p)) 
-		p = p.parent_path();
-
-    for (const auto& entry : std::filesystem::directory_iterator(p))
-    {
-        if (entry.path().filename().string().find("bin") != std::string::npos)
-        {
-            for (const auto& entry2 : std::filesystem::directory_iterator(entry.path()))
-            {
-                if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
-                {
-                    return entry2.path();
-                }
-            }
-        }
-    }
-
-    LOGWARNF("Can't find binary directory in {}, looking for a binary compiled with the '{}' configuration", settings.project_path, PROJECT_BIN_SEARCH_FOR);
-    return "";
-}
 #endif 

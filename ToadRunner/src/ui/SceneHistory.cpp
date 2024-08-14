@@ -63,7 +63,7 @@ namespace Toad
 		}
 	}
 
-	void SceneHistory::SaveState()
+	bool SceneHistory::SaveState()
 	{
 		assert(scene && "scene in SceneHistory is not valid");
 
@@ -74,7 +74,7 @@ namespace Toad
 			if (m_undoableStates.front() == data)
 			{
 				// LOGDEBUGF("[SceneHistory][Scene:{}] same data & is getting skipped", scene->name);
-				return;
+				return false;
 			}
 		}
 		
@@ -84,6 +84,8 @@ namespace Toad
 		{
 			m_undoableStates.pop_back();
 		}
+
+		return true;
 	}
 
 }

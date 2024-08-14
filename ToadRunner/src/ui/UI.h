@@ -5,7 +5,6 @@ namespace Toad
 {
 	class GameAssetsBrowser;
 }
-
 namespace ui
 {
 	struct TileSpritePlacer {
@@ -51,3 +50,4 @@ namespace ImGui {
 	bool SliderVec2i(std::string_view label, int* x, int* y, int min = 0, int max = 0);
 	bool SliderVec2i(std::string_view label, Vec2i* v, int min = 0, int max = 0);
 }
+
