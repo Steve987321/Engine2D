@@ -31,6 +31,9 @@ namespace ui
 	inline bool drag_snap = true;
 	inline Vec2i grid_size = {10, 10};
 
+	// reloads the scene when stopping 
+	inline bool reload_scene_on_stop = true;
+
 	// function that will be called in the inspector window 
 	inline std::function<void()> inspector_ui;
 	

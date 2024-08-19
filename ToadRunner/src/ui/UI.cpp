@@ -1675,15 +1675,27 @@ void ui::engine_ui(ImGuiContext* ctx)
 		ImGui::SetCursorPos({ ImGui::GetScrollX() + 20, 20 });
 		if (ImGui::TreeNode("Viewport Options"))
 		{
+			static fs::path last_scene_path;
+
 			if (!Toad::Engine::Get().GameStateIsPlaying())
 			{
 				if (ImGui::Button("Play"))
+				{
+					if (reload_scene_on_stop)
+						last_scene_path = Scene::current_scene.path;
+
 					Toad::Engine::Get().StartGameSession();
+				}
 			}
 			else
 			{
 				if (ImGui::Button("Stop"))
+				{
+					if (reload_scene_on_stop)
+						Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
+
 					Toad::Engine::Get().StopGameSession();
+				}
 			}
 
 			static int fps = 60;
@@ -1706,6 +1718,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::Engine::Get().GetWindow().setFramerateLimit(fps);
 				}
 			}
+
+			ImGui::Checkbox("Reload scene on stop", &reload_scene_on_stop);
+
 			if (ImGui::TreeNode("Editor Camera Settings"))
 			{
 				Vec2f pos = editor_cam.GetPosition();
