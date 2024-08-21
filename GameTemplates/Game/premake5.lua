@@ -1,5 +1,5 @@
 project "Game"
-    kind "SharedLib"
+    kind "None" -- SharedLib, but None to skip build
     language "C++"
     cppdialect "C++20"
 
