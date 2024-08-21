@@ -1,5 +1,3 @@
---premake5.lua
-
 newoption{
     trigger = "enginepath",
     description = "Set the engine installation path"
@@ -68,7 +66,7 @@ if _OPTIONS["usesrc"] then
         "vendor/SFML-2.6.0/include",
         "vendor/json/include",
         "%{prj.name}/src",
-        "%{prj.name}/src/scripts"
+        "%{prj.name}/src/assets"
     }
     libdirs{
         engine_path .. "/bin/Release-%{cfg.system}-x86_64",
@@ -82,7 +80,7 @@ else
         "vendor/SFML-2.6.0/include",
         "vendor/json/include",
         "%{prj.name}/src",
-        "%{prj.name}/src/scripts",
+        "%{prj.name}/src/assets",
     }
     libdirs{
         engine_path .. "/libs",
@@ -185,10 +183,10 @@ end
             "vorbis",
             "vorbisenc",
             "vorbisfile",
-            "sfml-system-s-d",
-            "sfml-window-s-d",
-            "sfml-graphics-s-d",
-            "sfml-audio-s-d",
+            "sfml-system-d",
+            "sfml-window-d",
+            "sfml-graphics-d",
+            "sfml-audio-d",
         }
     filter {"system:windows", "configurations:Release or configurations:Dev"}
         defines {
@@ -204,8 +202,8 @@ end
             "vorbis",
             "vorbisenc",
             "vorbisfile",
-            "sfml-system-s",
-            "sfml-window-s",
-            "sfml-graphics-s",
-            "sfml-audio-s",
+            "sfml-system",
+            "sfml-window",
+            "sfml-graphics",
+            "sfml-audio",
         }
