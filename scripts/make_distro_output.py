@@ -24,12 +24,12 @@ files = [
     (("bin", "DebugNoEditor-windows-x86_64", "Engine.dll"), ("bin", "debug"), ""),
     (("ToadRunner", "src", "project", "generate_game_project.lua"), ("scripts",), ""),
     (("ToadRunner", "imgui.ini"), ("",), ""),
-    (("Game", "src", ), ("game_template", "src"), ""),
+    (("Game", "src", ), ("game_templates", "src"), ""),
     (("vendor", "bin", "premake5.exe"), ("bin",), ""),
     (("vendor", "bin", "LICENSE.txt"), ("bin",), ""),
-    (("vendor", "imgui"), ("game_template", "vendor", "imgui"), ""),
-    (("vendor", "json"), ("game_template", "vendor", "json"), ""),
-    (("vendor", "SFML-2.6.0"), ("game_template", "vendor", "SFML-2.6.0"), ""),
+    (("vendor", "imgui"), ("game_templates", "vendor", "imgui"), ""),
+    (("vendor", "json"), ("game_templates", "vendor", "json"), ""),
+    (("vendor", "SFML-2.6.0"), ("game_templates", "vendor", "SFML-2.6.0"), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-audio-2.dll"), (""), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-system-2.dll"), (""), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-graphics-2.dll"), (""), ""),
@@ -40,7 +40,7 @@ files = [
     (("vendor", "SFML-2.6.0", "bin", "sfml-graphics-d-2.dll"), ("bin", "debug"), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-network-d-2.dll"), ("bin", "debug"), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-window-d-2.dll"), ("bin", "debug"), ""),
-    (("vendor", "sfml-imgui"), ("game_template", "vendor", "sfml-imgui"), ""),
+    (("vendor", "sfml-imgui"), ("game_templates", "vendor", "sfml-imgui"), ""),
 ]
 
 # files and folders to ignore 
@@ -70,9 +70,9 @@ if not is_valid:
 
 os.makedirs(os.path.join(dir_out, "bin"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "bin/debug"), exist_ok=True)
-os.makedirs(os.path.join(dir_out, "game_template"), exist_ok=True)
-os.makedirs(os.path.join(dir_out, "game_template/src"), exist_ok=True)
-os.makedirs(os.path.join(dir_out, "game_template/vendor"), exist_ok=True)
+os.makedirs(os.path.join(dir_out, "game_templates"), exist_ok=True)
+os.makedirs(os.path.join(dir_out, "game_templates/src"), exist_ok=True)
+os.makedirs(os.path.join(dir_out, "game_templates/vendor"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "libs"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "script_api"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "scripts"), exist_ok=True)
