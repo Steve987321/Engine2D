@@ -240,6 +240,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		static bool created_project = false;
 		static project::CREATE_PROJECT_RES_INFO cpri;
+		static std::vector<project::ProjectTemplate> project_templates{};
+		static std::string selected_template;
+
+		// when we want to refresh we clear it 
+		if (project_templates.empty())
+		{
+			project_templates = project::GetAvailableTemplates(settings.engine_path);
+			if (project_templates.empty())
+			{
+				LOGERROR("No templates found");
+				project_templates.emplace_back();
+			}
+			else
+				selected_template = project_templates[0].name;
+		}
 
 		if (created_project)
 		{
@@ -297,13 +312,54 @@ void ui::engine_ui(ImGuiContext* ctx)
 				settings.project_path = selected;
 			}
 
-			if (!settings.name.empty() && !settings.project_path.empty() && !settings.engine_path.empty())
+			if (ImGui::BeginChild("Project templates", { 0, ImGui::GetContentRegionAvail().y / 2 }, true))
+			{
+				if (ImGui::Button("Refresh"))
+					project_templates.clear();
+
+				size_t selected = 0;
+				if (ImGui::BeginTable("Project templates table", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders))
+				{
+					// #TODO: add sorting 
+
+					ImGui::TableSetupColumn("Name");
+					ImGui::TableSetupColumn("Description");
+					ImGui::TableSetupColumn("Path");
+					ImGui::TableHeadersRow();
+
+					for (size_t i = 0; i < project_templates.size(); i++)
+					{
+						const project::ProjectTemplate& pt = project_templates[i];
+
+						ImGui::TableNextRow();
+						ImGui::TableNextColumn();
+						if (ImGui::Selectable(pt.name.c_str(), selected == i, ImGuiSelectableFlags_SpanAllColumns))
+						{
+							selected = i;
+							selected_template = pt.name;
+						}
+						ImGui::TableNextColumn();
+						if (pt.description.empty())
+							ImGui::Text("No decription provided");
+						else
+							ImGui::Text(pt.description.c_str());
+						ImGui::TableNextColumn();
+						ImGui::Text("%s", pt.path.string().c_str());
+					}
+
+					ImGui::EndTable();
+				}
+			}
+			ImGui::EndChild();
+
+			ImGui::Text("Selected Template: %s", selected_template.c_str());
+			if (!settings.name.empty() && !settings.project_path.empty() && !settings.engine_path.empty() && !selected_template.empty())
 			{
 				if (ImGui::Button("Create"))
 				{
 					created_project = true;
 
-					cpri = Create(settings);
+					cpri = Create(settings, selected_template);
 
 					if (cpri.res != project::CREATE_PROJECT_RES::OK)
 					{

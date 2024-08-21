@@ -97,6 +97,17 @@ namespace project {
 		}
 	};
 
+	// little information about the project template
+	struct ProjectTemplate
+	{
+		std::string name;
+
+		// optional could be empty
+		std::string description;
+
+		std::filesystem::path path;
+	};
+
 	struct LOAD_PROJECT_RES_INFO 
 	{
 		LOAD_PROJECT_RES res;
@@ -113,7 +124,7 @@ namespace project {
 
     std::string ProjectTypeAsStr(PROJECT_TYPE r);
 
-	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings);
+	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings, const std::string& selected_template);
 
 	LOAD_PROJECT_RES_INFO Load(const std::filesystem::path& path);
 
@@ -123,4 +134,6 @@ namespace project {
 
 	// rerun premake path=projectpath
 	bool Update(const ProjectSettings& settings, const std::filesystem::path& path);
+
+	std::vector<ProjectTemplate> GetAvailableTemplates(const std::filesystem::path& path);
 }

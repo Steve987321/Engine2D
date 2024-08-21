@@ -72,7 +72,7 @@ namespace project {
 	// very minimal checking 
 	extern bool VerifyEnginePathContents(const fs::path& path, CREATE_PROJECT_RES_INFO& ri);
 
-	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings)
+	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings, const std::string& selected_template)
 	{
 		std::string project_path_forwardslash = settings.project_path.string();
 		std::string engine_path_forwardslash = settings.engine_path.string();
@@ -217,11 +217,12 @@ namespace project {
 			std::cout << e.what() << std::endl;
 		}
 
+		// vendor is global for now 
 #ifdef TOAD_DISTRO
-		fs::copy(engine_path_fs / "game_template" / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
-		fs::copy(engine_path_fs / "game_template" / "vendor", project_path_forwardslash + "/vendor", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+		fs::copy(engine_path_fs / "game_templates" / selected_template / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+		fs::copy(engine_path_fs / "game_templates" / "vendor", project_path_forwardslash + "/vendor", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 #else
-		fs::copy(engine_path_fs / "Game" / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+		fs::copy(engine_path_fs / "GameTemplates" / selected_template / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 		for (const auto& e : fs::directory_iterator(engine_path_fs / "vendor"))
 			if (e.path().filename().string().find("imgui") != std::string::npos ||
 				e.path().filename().string().find("json") != std::string::npos ||
@@ -381,7 +382,7 @@ namespace project {
 	}
 
 	// sets current_project 
-	LOAD_PROJECT_RES_INFO Load(const std::filesystem::path& path)
+	LOAD_PROJECT_RES_INFO Load(const fs::path& path)
 	{
 		ProjectSettings settings;
 
@@ -524,7 +525,7 @@ namespace project {
 		}
 	}
 
-	project::PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir)
+	project::PROJECT_TYPE DetectProjectType(const fs::path& proj_dir)
 	{
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
@@ -544,7 +545,7 @@ namespace project {
 #endif
 	}
 
-	bool Update(const ProjectSettings& settings, const std::filesystem::path& path)
+	bool Update(const ProjectSettings& settings, const fs::path& path)
 	{
 		if (!fs::exists(path))
 		{
@@ -642,6 +643,59 @@ namespace project {
 		return true;
 	}
 
+	std::vector<ProjectTemplate> GetAvailableTemplates(const fs::path& engine_path)
+	{
+		std::vector<ProjectTemplate> res;
+
+		fs::path templates_path = engine_path / "GameTemplates";
+
+		if (!fs::exists(templates_path))
+		{
+			LOGONCEERROR("[Project] No GameTemplates folder found in engine");
+			return res;
+		}
+
+		for (const auto& entry : fs::directory_iterator(templates_path))
+		{
+			if (!entry.is_directory())
+				continue;
+
+			if (!fs::exists(entry.path() / "src" / "assets"))
+				continue; 
+			if (!fs::exists(entry.path() / "src" / "game_core"))
+				continue;
+
+			ProjectTemplate pt;
+			pt.name = entry.path().filename().string();
+			pt.path = entry.path();
+
+			for (const auto& project_entry : fs::directory_iterator(entry))
+			{
+				std::string name = project_entry.path().filename().string();
+
+				for (auto& c : name)
+					c = (char)std::tolower(c);
+
+				if (name.find("readme") != std::string::npos)
+				{
+					std::ifstream readme(project_entry.path());
+					if (readme)
+					{
+						std::stringstream ss;
+						ss << readme.rdbuf();
+						pt.description = std::move(ss.str());
+						pt.description = pt.description.substr(0, pt.description.find_first_of("\n"));
+						readme.close();
+					}
+				}
+			}
+
+			res.emplace_back(pt);
+		}
+
+		return res;
+	}
+
 	std::string ProjectTypeAsStr(PROJECT_TYPE r)
     {
         switch(r){
@@ -700,7 +754,7 @@ namespace project {
 
 			return false;
 		}
-		if (!fs::is_directory(path / "game_template"))
+		if (!fs::is_directory(path / "game_templates"))
 		{
 			ri = CREATE_PROJECT_RES_INFO{
 				CREATE_PROJECT_RES::PATH_NOT_EXIST,
@@ -718,16 +772,7 @@ namespace project {
 
 		}
 #else
-		// check for game, runner and vendor (and engine/src/pch.h?) 
-		if (!fs::is_directory(path / "Game"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have Game/ folder in parent : {}", path)
-			};
-
-			return false;
-		}
+		// check for runner and vendor (and engine/src/pch.h?) 
 		if (!fs::is_directory(path / "ToadRunner"))
 		{
 			ri = CREATE_PROJECT_RES_INFO{
