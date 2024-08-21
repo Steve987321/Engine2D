@@ -105,7 +105,12 @@ namespace project {
 		// optional could be empty
 		std::string description;
 
+		// full path
 		std::filesystem::path path;
+
+		sf::Texture image_preview;
+
+		bool image_preview_loaded = false;
 	};
 
 	struct LOAD_PROJECT_RES_INFO 

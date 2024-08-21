@@ -260,8 +260,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (cpri.res != project::CREATE_PROJECT_RES::OK)
 			{
-				if (ImGui::Button("Close"))
+				if (ImGui::Button("Retry"))
 				{
+					project_templates.clear();
 					created_project = false;
 				}
 
@@ -269,8 +270,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			else
 			{
-				if (ImGui::Button("Close"))
+				if (ImGui::Button("Done"))
 				{
+					project_templates.clear();
+					created_project = false;
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::Text("Project created successfully");
@@ -315,32 +318,51 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::BeginChild("Project templates", { 0, ImGui::GetContentRegionAvail().y / 2 }, true))
 			{
 				if (ImGui::Button("Refresh"))
-					project_templates.clear();
+					project_templates = project::GetAvailableTemplates(settings.engine_path);
 
-				size_t selected = 0;
-				if (ImGui::BeginTable("Project templates table", 3, ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders))
+				static size_t selected = 0;
+				if (ImGui::BeginTable("Project templates table", 4, ImGuiTableFlags_Resizable | ImGuiTableFlags_Sortable | ImGuiTableFlags_Borders))
 				{
 					// #TODO: add sorting 
 
+					ImGui::TableSetupColumn("Preview", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed);
 					ImGui::TableSetupColumn("Name");
 					ImGui::TableSetupColumn("Description");
-					ImGui::TableSetupColumn("Path");
+					ImGui::TableSetupColumn("Path", ImGuiTableColumnFlags_NoSort);
 					ImGui::TableHeadersRow();
 
 					for (size_t i = 0; i < project_templates.size(); i++)
 					{
 						const project::ProjectTemplate& pt = project_templates[i];
-
+						
 						ImGui::TableNextRow();
 						ImGui::TableNextColumn();
-						if (ImGui::Selectable(pt.name.c_str(), selected == i, ImGuiSelectableFlags_SpanAllColumns))
+
+						if (pt.image_preview_loaded)
+						{
+							ImGui::Image(pt.image_preview, { 50, 50 }, sf::Color::White);
+							if (ImGui::IsItemHovered())
+							{
+								if (ImGui::BeginTooltip())
+								{
+									static float scaling = 150;
+									scaling += ImGui::GetIO().MouseWheel * 10;
+									ImGui::Image(pt.image_preview, { scaling, scaling }, sf::Color::White);
+									ImGui::EndTooltip();
+								}
+							}
+						}
+						ImGui::TableNextColumn();
+
+						if (ImGui::Selectable(pt.name.c_str(), selected == i, ImGuiSelectableFlags_SpanAllColumns, {0, 50.f}))
 						{
 							selected = i;
 							selected_template = pt.name;
 						}
+						
 						ImGui::TableNextColumn();
 						if (pt.description.empty())
-							ImGui::Text("No decription provided");
+							ImGui::TextColored({1, 1, 1, 0.7f}, "No decription provided");
 						else
 							ImGui::Text(pt.description.c_str());
 						ImGui::TableNextColumn();

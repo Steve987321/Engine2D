@@ -671,6 +671,12 @@ namespace project {
 
 			for (const auto& project_entry : fs::directory_iterator(entry))
 			{
+				if (project_entry.path().extension() == ".png" || project_entry.path().extension() == ".jpg")
+				{
+					pt.image_preview_loaded = pt.image_preview.loadFromFile(project_entry.path().string());
+					continue;
+				}
+
 				std::string name = project_entry.path().filename().string();
 
 				for (auto& c : name)
@@ -684,7 +690,21 @@ namespace project {
 						std::stringstream ss;
 						ss << readme.rdbuf();
 						pt.description = std::move(ss.str());
-						pt.description = pt.description.substr(0, pt.description.find_first_of("\n"));
+
+						// save first 3 lines
+						size_t line_3 = 0;
+						int counter = 0;
+						for (size_t i = 0; i < pt.description.size(); i++)
+						{
+							if (pt.description[i] == '\n')
+							{
+								line_3 = i;
+								counter++;
+								if (counter == 3)
+									break;
+							}
+						}
+						pt.description = pt.description.substr(0, line_3);
 						readme.close();
 					}
 				}
