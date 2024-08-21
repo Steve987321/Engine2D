@@ -14,6 +14,7 @@ output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 group "GameTemplates"
     include "GameTemplates/Game"
+    include "GameTemplates/RayCaster"
 group ""
 
 include "Engine"
