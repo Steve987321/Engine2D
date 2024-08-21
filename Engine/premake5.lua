@@ -3,8 +3,8 @@ project "Engine"
     language "C++"
     cppdialect "C++20"
     
-    targetdir ("bin/" .. output_dir .. "/")
-    objdir ("bin-intermediate/" .. output_dir .. "/")
+    targetdir ("../bin/" .. output_dir .. "/")
+    objdir ("../bin-intermediate/" .. output_dir .. "/")
 
     flags {"MultiProcessorCompile"}
 

@@ -1,5 +1,4 @@
 project "ToadRunner"
-    location "ToadRunner"
     -- filter "configurations:ReleaseNoEditor"
         -- kind "WindowedApp"
     -- filter "configurations:DebugNoEditor or configurations:Debug or configurations:Release or configurations:Distro"
@@ -12,8 +11,8 @@ project "ToadRunner"
     language "C++"
     cppdialect "C++20"
 
-    targetdir ("bin/" .. output_dir .. "/")
-    objdir ("bin-intermediate/" .. output_dir .. "/")
+    targetdir ("../bin/" .. output_dir .. "/")
+    objdir ("../bin-intermediate/" .. output_dir .. "/")
 
     flags {"MultiProcessorCompile"}
 
