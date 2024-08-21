@@ -63,29 +63,32 @@ public:
 
 	void AddCallback(const FLOG_CALLBACK& callback);
 
+	// Clears stored logs that should only be logged once
+	void ClearLogOnceMessages();
+
 public:
 	template <typename ... Args>
-	void LogDebug(std::string_view frmt, Args... args)
+	void LogDebug(std::string_view frmt, bool log_once, Args... args)
 	{
-		Log(frmt, LOG_TYPE::DEBUG, args...);
+		Log(frmt, LOG_TYPE::DEBUG, log_once, args...);
 	}
 
 	template <typename ... Args>
-	void LogWarning(std::string_view frmt, Args... args)
+	void LogWarning(std::string_view frmt, bool log_once, Args... args)
 	{
-		Log(frmt, LOG_TYPE::WARNING, args...);
+		Log(frmt, LOG_TYPE::WARNING, log_once, args...);
 	}
 
 	template <typename ... Args>
-	void LogError(std::string_view frmt, Args... args)
+	void LogError(std::string_view frmt, bool log_once, Args... args)
 	{
-		Log(frmt, LOG_TYPE::ERROR, args...);
+		Log(frmt, LOG_TYPE::ERROR, log_once, args...);
 	}
 
 	template <typename ... Args>
-	void LogException(std::string_view frmt, Args... args)
+	void LogException(std::string_view frmt, bool log_once, Args... args)
 	{
-		Log(frmt, LOG_TYPE::EXCEPTION, args...);
+		Log(frmt, LOG_TYPE::EXCEPTION, log_once, args...);
 	}
 
 private:
@@ -129,22 +132,30 @@ private:
 	///	@param log_type Type of log that affects console colors and beginning message of output
 	/// @param args Arguments that fit with the formatted string
 	template<typename ... Args>
-	void Log(const std::string_view frmt, LOG_TYPE log_type, Args&& ... args)
+	void Log(const std::string_view frmt, LOG_TYPE log_type, bool log_once, Args&& ... args)
 	{
 		std::lock_guard lock(m_mutex);
 
-		auto formattedStr = format_str(frmt, args...);
+		std::string formatted_str = format_str(frmt, args...);
+
+		if (log_once)
+		{
+			if (m_loggedOnceMessages.contains(formatted_str))
+				return;
+
+			m_loggedOnceMessages.emplace(formatted_str);
+		}
 
 		if (create_log_file)
-			LogToFile(get_date_str("[%T]") + ' ' + formattedStr);
+			LogToFile(get_date_str("[%T]") + ' ' + formatted_str);
 
-		for (const auto& f : m_callbacks)
+		for (const FLOG_CALLBACK& f : m_callbacks)
 		{
 			f(log_type, frmt);
 		}
 
 #ifndef TOAD_NO_CONSOLE_LOG
-		Print(formattedStr, log_type);
+		Print(formatted_str, log_type);
 #endif 
 	}
 
@@ -158,13 +169,22 @@ private:
 	std::mutex m_closeMutex{};
 
 	std::ofstream m_logFile{};
+
+	// set of (formatted) logs that should only be logged once
+	std::set<std::string> m_loggedOnceMessages{};
 };
 
 }
 
-#define LOGDEBUGF(msg, ...) Toad::Logger::Get().LogDebug(msg, __VA_ARGS__)
-#define LOGERRORF(msg, ...) Toad::Logger::Get().LogError(msg, __VA_ARGS__) 
-#define LOGWARNF(msg, ...) Toad::Logger::Get().LogWarning(msg, __VA_ARGS__) 
-#define LOGDEBUG(msg, ...) Toad::Logger::Get().LogDebug(msg, nullptr)
-#define LOGERROR(msg, ...) Toad::Logger::Get().LogError(msg, nullptr) 
-#define LOGWARN(msg, ...) Toad::Logger::Get().LogWarning(msg, nullptr) 
+#define LOGDEBUGF(msg, ...) Toad::Logger::Get().LogDebug(msg, false, __VA_ARGS__)
+#define LOGERRORF(msg, ...) Toad::Logger::Get().LogError(msg, false, __VA_ARGS__) 
+#define LOGWARNF(msg, ...) Toad::Logger::Get().LogWarning(msg, false, __VA_ARGS__) 
+#define LOGDEBUG(msg, ...) Toad::Logger::Get().LogDebug(msg, false, nullptr)
+#define LOGERROR(msg, ...) Toad::Logger::Get().LogError(msg, false, nullptr) 
+#define LOGWARN(msg, ...) Toad::Logger::Get().LogWarning(msg, false, nullptr) 
+#define LOGONCEDEBUGF(msg, ...) Toad::Logger::Get().LogDebug(msg, true, __VA_ARGS__)
+#define LOGONCEERRORF(msg, ...) Toad::Logger::Get().LogError(msg, true, __VA_ARGS__) 
+#define LOGONCEWARNF(msg, ...) Toad::Logger::Get().LogWarning(msg, true, __VA_ARGS__) 
+#define LOGONCEDEBUG(msg, ...) Toad::Logger::Get().LogDebug(msg, true, nullptr)
+#define LOGONCEERROR(msg, ...) Toad::Logger::Get().LogError(msg, true, nullptr) 
+#define LOGONCEWARN(msg, ...) Toad::Logger::Get().LogWarning(msg, true, nullptr) 

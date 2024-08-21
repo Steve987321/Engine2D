@@ -65,6 +65,11 @@ namespace Toad
 		m_callbacks.emplace_back(callback);
 	}
 
+	void Logger::ClearLogOnceMessages()
+	{
+		m_loggedOnceMessages.clear();
+	}
+
 	std::string Logger::GetLogFolder()
 	{
 		return get_exe_path().string();
