@@ -1,7 +1,7 @@
 #include "ScriptRegister.h"
 #include "engine/Engine.h"
 
-#include "assets/scripts/TestScript.h"
+#include "scripts/TestScript.h"
 
 // tools 
 #include "engine/default_scripts/AnimationController.h"

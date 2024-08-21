@@ -5,16 +5,16 @@
 
 using namespace Toad;
 
+static Circle* circle = nullptr;
+
 void TestScript::OnStart(Object* obj)
 {
 	Script::OnStart(obj);
 
-	circle = dynamic_cast<Circle*>(obj);
+	circle = get_object_as_type<Circle>(obj);
 
 	if (circle == nullptr)
-	{
 		LOGERROR("CIRCLE IS NULL");
-	}
 
 	velx = start_direction_X;
 	vely = start_direction_Y;
@@ -28,54 +28,52 @@ void TestScript::OnUpdate(Object* obj)
 
 void TestScript::OnFixedUpdate(Toad::Object* obj)
 {
-	if (circle != nullptr)
-	{
-		float dt = Time::GetDeltaTime();
+	if (!circle)
+		return;
 
-		const auto change_c_col = [this]
-			{
-				auto rand_r = rand_int(0, 255);
-				auto rand_g = rand_int(0, 255);
-				auto rand_b = rand_int(0, 255);
-				circle->GetCircle().setFillColor(sf::Color(rand_r, rand_g, rand_b));
-			};
-
-		sf::FloatRect c_bounds = circle->GetCircle().getGlobalBounds();
-
-		if (Camera::GetActiveCamera())
+	const auto change_c_col = []
 		{
-			const Vec2f& campos = Camera::GetActiveCamera()->GetPosition();
-			const Vec2f camsize = Camera::GetActiveCamera()->GetSize();
-			auto camposlefttop = Vec2f{ campos.x - camsize.x / 2.f, campos.y - camsize.y / 2.f };
+			auto rand_r = rand_int(0, 255);
+			auto rand_g = rand_int(0, 255);
+			auto rand_b = rand_int(0, 255);
+			circle->GetCircle().setFillColor(sf::Color(rand_r, rand_g, rand_b));
+		};
 
-			if (c_bounds.left < camposlefttop.x)
-				if (velx < 0)
-				{
-					change_c_col();
-					velx *= -1;
-				}
-			if (c_bounds.left + c_bounds.width > camposlefttop.x + camsize.x)
-				if (velx > 0)
-				{
-					change_c_col();
-					velx *= -1;
-				}
-			if (c_bounds.top < camposlefttop.y)
-				if (vely < 0)
-				{
-					change_c_col();
-					vely *= -1;
-				}
-			if (c_bounds.top + c_bounds.height > camposlefttop.y + camsize.y)
-				if (vely > 0)
-				{
-					change_c_col();
-					vely *= -1;
-				}
-		}
+	sf::FloatRect c_bounds = circle->GetCircle().getGlobalBounds();
 
-		circle->SetPosition(circle->GetPosition() + Vec2f{ velx, vely } *speed_mult * dt);
+	if (Camera::GetActiveCamera())
+	{
+		const Vec2f& campos = Camera::GetActiveCamera()->GetPosition();
+		const Vec2f& camsize = Camera::GetActiveCamera()->GetSize();
+		auto camposlefttop = Vec2f{ campos.x - camsize.x / 2.f, campos.y - camsize.y / 2.f };
+
+		if (c_bounds.left < camposlefttop.x)
+			if (velx < 0)
+			{
+				change_c_col();
+				velx *= -1;
+			}
+		if (c_bounds.left + c_bounds.width > camposlefttop.x + camsize.x)
+			if (velx > 0)
+			{
+				change_c_col();
+				velx *= -1;
+			}
+		if (c_bounds.top < camposlefttop.y)
+			if (vely < 0)
+			{
+				change_c_col();
+				vely *= -1;
+			}
+		if (c_bounds.top + c_bounds.height > camposlefttop.y + camsize.y)
+			if (vely > 0)
+			{
+				change_c_col();
+				vely *= -1;
+			}
 	}
+
+	circle->SetPosition(circle->GetPosition() + Vec2f{ velx, vely } *speed_mult * Time::fixed_delta_time);
 }
 
 void TestScript::ExposeVars()

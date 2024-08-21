@@ -1,7 +1,5 @@
 #pragma once
 
-#include "engine/default_objects/Circle.h"
-
 class GAME_API TestScript : public Toad::Script
 {
 public:
@@ -25,8 +23,4 @@ public:
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	void OnImGui(Toad::Object* obj, ImGuiContext* ctx) override;
 #endif 
-
-private:
-	Toad::Circle* circle = nullptr;
-
 };
