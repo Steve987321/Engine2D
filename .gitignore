@@ -14,7 +14,7 @@ Makefile
 *pbxproj
 
 # Toad
-*.TSCENE
+ToadRunner/*.TSCENE
 scripts/output
 
 # ImGui
@@ -59,3 +59,4 @@ bin-intermediate/
 
 # Mac
 *.DS_Store
+
