@@ -1,5 +1,6 @@
 #pragma once
 
+// #TODO store in file
 namespace Toad
 {
 	// #TODO make framework/Framework.h relative
@@ -7,8 +8,6 @@ constexpr const char* NewScriptCplusplus =
 R"(#include "pch.h"
 #include "framework/Framework.h"
 #include "$0@.h"
-
-#include "Engine/Engine.h"
 
 using namespace Toad;
 
@@ -36,6 +35,8 @@ void $0@::ExposeVars()
 
 constexpr const char* NewScriptHeader =
 R"(#pragma once
+
+#include "engine/Engine.h"
 
 class GAME_API $0@ : public Toad::Script
 {
