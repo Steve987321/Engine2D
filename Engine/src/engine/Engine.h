@@ -30,8 +30,8 @@ namespace Toad
 		// camera that is being interacted with
 		Camera* interacting_camera = &m_editorCam;
 		sf::RenderTexture* interacting_texture = &m_windowTexture;
-		bool mouse_visible_prev = false;
-		bool mouse_visible = false;
+		bool mouse_visible_prev = true;
+		bool mouse_visible = true;
 		bool capture_mouse = false;
 		Vec2i last_captured_mouse_pos{};
 #endif
