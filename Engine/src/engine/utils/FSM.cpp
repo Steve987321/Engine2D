@@ -35,6 +35,9 @@ namespace Toad
 				m_currentState = &m_states[t.m_nextStateIndex];
 				if (m_currentState->on_enter)
 					m_currentState->on_enter();
+
+				// first in transitions list has priority 
+				break;
 			}
 		}
 	}
@@ -164,6 +167,7 @@ namespace Toad
 
 		get_json_element(vars_data, data, "vars");
 		get_json_element(states_data, data, "states");
+		// #TODO: add transitions bruv
 
 		// vars 
 		json vars_flt_data;
@@ -274,6 +278,9 @@ namespace Toad
 
 	bool Transition::IsTransitionAllowed()
 	{
+		if (conditions_flt.empty() && conditions_i32.empty())
+			return false;
+
 		for (const TransitionCondition& conditioni32 : conditions_i32)
 		{
 			if (!conditioni32.IsConditionMet())
