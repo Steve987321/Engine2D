@@ -518,9 +518,7 @@ void Engine::LoadGameScripts()
 	{
 		auto& scripts = obj->GetAttachedScripts();
 		if (scripts.empty())
-		{
 			continue;
-		}
 
 		for (auto i = scripts.begin(); i != scripts.end();)
 		{

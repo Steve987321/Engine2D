@@ -69,8 +69,7 @@ namespace Toad
 
 	const Vec2f& Object::GetPosition() const
 	{
-		const static Vec2f pos{ 0, 0 };
-		return pos;
+		return m_objectPos;
 	}
 		
 	void Object::SetPosition(const Vec2f& position)
@@ -82,6 +81,8 @@ namespace Toad
 			Object* obj = m_currentScene.GetSceneObject(child).get();
 			obj->SetPosition(obj->GetPosition() + (position - current_position));
 		}
+
+		m_objectPos = position;
 	}
 
     FloatRect Object::GetBounds() const
@@ -114,6 +115,15 @@ namespace Toad
 
 			obj->SetRotation(degrees);
 		}
+	}
+
+	json Object::Serialize()
+	{
+		json props;
+		props["parent"] = GetParent();
+		props["posx"] = GetPosition().x;
+		props["posy"] = GetPosition().y;
+		return props;
 	}
 
 	const std::set<std::string>& Object::GetChildren()

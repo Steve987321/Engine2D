@@ -50,7 +50,7 @@ public:
 	virtual float GetRotation();
 	virtual void SetRotation(float degrees);
 
-	virtual json Serialize() = 0;
+	virtual json Serialize();
 
 	const std::set<std::string>& GetChildren();
 	std::vector<Object*> GetChildrenAsObjects() const;
@@ -125,6 +125,11 @@ protected:
 	std::string m_parent;
 
 	Scene& m_currentScene;
+
+private:
+	// position used only by Object
+	Vec2f m_objectPos{0, 0};
+
 };
 
 }

@@ -31,7 +31,6 @@ namespace Toad
 		scene->objects_all.clear();
 
 		LoadSceneObjects(last_state, *scene, asset_folder);
-		
 
 		while (m_redoableStates.size() > history_length)
 		{

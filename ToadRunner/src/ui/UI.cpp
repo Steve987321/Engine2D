@@ -23,7 +23,7 @@
 #include "engine/utils/Helpers.h"
 #include "engine/systems/Animation.h"
 #include "engine/Types.h"
-
+ 
 using json = nlohmann::ordered_json;
 
 constexpr int i8_min = std::numeric_limits<int8_t>::min();
@@ -136,7 +136,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::MenuItem("Create Project.."))
 			{
 				settings.engine_path = GetEngineDirectory().string();
-
+				LOGDEBUGF("Engine path: {}", settings.engine_path);
 				ImGui::PushOverrideID(project_creation_popup_id);
 				ImGui::OpenPopup("CreateProject");
 				ImGui::PopID();
@@ -1147,26 +1147,24 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::BeginMenu("Create"))
 			{
+				if (ImGui::MenuItem("Empty Object"))
+					Scene::current_scene.AddToScene(Toad::Object("Object"), Toad::Engine::Get().GameStateIsPlaying());
+
 				if (ImGui::MenuItem("Circle"))
-				{
 					Scene::current_scene.AddToScene(Toad::Circle("Circle"), Toad::Engine::Get().GameStateIsPlaying());
-				}
+
 				if (ImGui::MenuItem("Sprite"))
-				{
 					Scene::current_scene.AddToScene(Toad::Sprite("Sprite"), Toad::Engine::Get().GameStateIsPlaying());
-				}
+
 				if (ImGui::MenuItem("Audio"))
-				{
 					Scene::current_scene.AddToScene(Toad::Audio("Audio"), Toad::Engine::Get().GameStateIsPlaying());
-				}
+
 				if (ImGui::MenuItem("Text"))
-				{
 					Scene::current_scene.AddToScene(Toad::Text("Text"), Toad::Engine::Get().GameStateIsPlaying());
-				}
+
 				if (ImGui::MenuItem("Camera"))
 				{
 					Toad::Camera* cam = Scene::current_scene.AddToScene(Toad::Camera("Camera"), Toad::Engine::Get().GameStateIsPlaying()).get();
-
 					cam->ActivateCamera();
 				}
 
@@ -1668,7 +1666,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 				}
 			}
 		}
-
 
 		if (ImGui::IsItemHovered())
 		{

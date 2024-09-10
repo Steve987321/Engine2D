@@ -659,6 +659,7 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 	}
 
 #ifdef _WIN32
+	// #TODO y? use premake script in project 
 	if (!IncludeToProjectFile(cpp_file))
 	{
 		LOGERRORF("Failed to add {} to project file", cpp_file);
