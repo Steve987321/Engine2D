@@ -647,7 +647,7 @@ namespace project {
 	{
 		std::vector<ProjectTemplate> res;
 
-#ifdef TOAD_DISTRO
+#ifndef TOAD_DISTRO
 		fs::path templates_path = engine_path / "GameTemplates";
 #else 
 		fs::path templates_path = engine_path / "game_templates";
