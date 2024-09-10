@@ -141,6 +141,7 @@ json Scene::Serialize(std::vector<Object*> v)
 
 	// object types
 	json objects; // all 
+	json empties;
 	json circles;
 	json sprites;
 	json audios;
@@ -182,8 +183,13 @@ json Scene::Serialize(std::vector<Object*> v)
 		{
 			cameras[object->name] = cam->Serialize();
 		}
+		else
+		{
+			empties[object->name] = object->Serialize();
+		}
 	}
 
+	objects["empty"] = empties;
 	objects["circles"] = circles;
 	objects["sprites"] = sprites;
 	objects["audios"] = audios;
@@ -306,6 +312,8 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 #ifdef TOAD_EDITOR
 	assert(!asset_folder.empty() && "asset_folder argument should be used when in toad editor");
 #endif
+
+	static_assert(std::is_base_of_v<Object, T>, "Can't load object into the scene that isn't inherited from Toad::Object");
 
 	std::queue<std::pair<std::string, std::string>> set_object_parents_queue{};
 
@@ -586,7 +594,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 					camobj->DeactivateCamera();
 				}
 			}
-
+			
 			for (const auto& script : object.value()["scripts"].items())
 			{
 				auto gscripts = Engine::Get().GetGameScriptsRegister();
@@ -719,6 +727,7 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 					obj->Destroy();
 			
 		auto& objectsall = objects["objects"];
+		LoadSceneObjectsOfType<Object>(objectsall["empty"], scene, asset_folder);
 		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder);
 		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder);
 		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder);
