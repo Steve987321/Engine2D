@@ -542,7 +542,7 @@ namespace Toad
 
 					if (ImGui::BeginCombo("compare", compare_str))
 					{
-						for (int i = 0; i < (int)CompareType::COUNT - 1; i++)
+						for (int i = 0; i < (int)CompareType::COUNT; i++)
 						{
 							CompareType ctype = static_cast<CompareType>(i);
 							to_string(ctype, compare_str);
