@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "misc.h"
+#include "Misc.h"
 
 #include <EngineCore.h>
 
@@ -10,7 +10,7 @@ namespace misc
 
 namespace fs = std::filesystem;
 
-std::vector<Editor> misc::FindEditors()
+std::vector<Editor> FindEditors()
 {
 #ifdef __APPLE__
     return {};

@@ -77,7 +77,7 @@ public:
 	template <class T>
 	bool RemoveScript()
 	{
-		for (const auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)
@@ -93,7 +93,7 @@ public:
 	template <class T>
 	T* GetScript()
 	{
-		for (const auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			auto res = dynamic_cast<T*>(script);
 			if (res != nullptr)

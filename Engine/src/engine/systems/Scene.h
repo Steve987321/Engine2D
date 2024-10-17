@@ -91,11 +91,11 @@ public:
 		const auto adjust_name = [&](const std::vector<std::shared_ptr<Object>>& objects)
 			{
 				obj_name += " (" + std::to_string(count) + ')';
-				auto it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+				auto it = std::find_if(objects.begin(), objects.end(), [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
 				while (it != objects.end())
 				{
 					obj_name = object.name + " (" + std::to_string(++count) + ')';
-					it = std::ranges::find_if(objects, [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
+					it = std::find_if(objects.begin(), objects.end(), [&obj_name](const std::shared_ptr<Toad::Object>& obj) { return obj->name == obj_name; });
 				}
 			};
 

@@ -364,7 +364,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 						if (pt.description.empty())
 							ImGui::TextColored({1, 1, 1, 0.7f}, "No decription provided");
 						else
-							ImGui::Text(pt.description.c_str());
+							ImGui::Text("%s", pt.description.c_str());
 						ImGui::TableNextColumn();
 						ImGui::Text("%s", pt.path.string().c_str());
 					}
@@ -2397,11 +2397,11 @@ void ui::object_inspector(Toad::Object*& selected_obj, const Toad::GameAssetsBro
 				suggestion = true;
 
 				new_name_str += " (" + std::to_string(count) + ')';
-				auto it = std::ranges::find_if(scene.objects_all, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
+				auto it = std::find_if(scene.objects_all.begin(), scene.objects_all.end(), [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
 				while (it != scene.objects_all.end())
 				{
 					new_name_str += " (" + std::to_string(++count) + ')';
-					it = std::ranges::find_if(scene.objects_all, [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
+					it = std::find_if(scene.objects_all.begin(), scene.objects_all.end(), [&new_name_str](const std::shared_ptr<Toad::Object>& obj) {return obj->name == new_name_str; });
 				}
 			}
 			else

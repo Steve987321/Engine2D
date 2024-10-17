@@ -21,7 +21,7 @@ namespace Toad
 
 	void Object::Start()
 	{
-		for (auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			script->OnStart(this);
 		}
@@ -29,7 +29,7 @@ namespace Toad
 
 	void Object::Render(sf::RenderTarget& target)
 	{
-		for (auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			script->OnRender(this, target);
 		}
@@ -37,7 +37,7 @@ namespace Toad
 	
 	void Object::Update()
 	{
-		for (auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			script->OnUpdate(this);
 		}
@@ -45,7 +45,7 @@ namespace Toad
 
 	void Object::FixedUpdate()
 	{
-		for (auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			script->OnFixedUpdate(this);
 		}
@@ -53,7 +53,7 @@ namespace Toad
 
 	void Object::LateUpdate()
 	{
-		for (auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			script->OnLateUpdate(this);
 		}
@@ -61,7 +61,7 @@ namespace Toad
 
 	void Object::End(Scene* next_scene)
 	{
-		for (auto& script : m_attachedScripts | std::views::values)
+		for (const auto& [_, script] : m_attachedScripts)
 		{
 			script->OnEnd(this, next_scene);
 		}

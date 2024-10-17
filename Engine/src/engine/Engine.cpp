@@ -506,7 +506,7 @@ void Engine::LoadGameScripts()
 	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
 	std::unordered_map <std::string, std::vector<object_script>> objects_with_scripts{};
 
-	for (auto& script : m_gameScripts | std::views::values)
+	for (auto& [_, script] : m_gameScripts)
 	{
 		// #TODO: save name and give warning about lost scripts 
 		if (script)
