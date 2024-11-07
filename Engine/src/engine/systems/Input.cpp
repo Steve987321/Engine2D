@@ -16,32 +16,32 @@ namespace Input
 		return sf::Keyboard::isKeyPressed(key);
 	}
 
-	bool Input::IsMouseDown(sf::Mouse::Button button)
+	bool IsMouseDown(sf::Mouse::Button button)
 	{
 		return sf::Mouse::isButtonPressed(button);
 	}
 
-	void Input::AddKeyPressCallback(FKEY_CALLBACK callback)
+	void AddKeyPressCallback(FKEY_CALLBACK callback)
 	{
 		key_press_callbacks.emplace_back(callback);
 	}
 
-	void Input::AddMousePressCallback(FMOUSE_CALLBACK callback)
+	void AddMousePressCallback(FMOUSE_CALLBACK callback)
 	{
 		mouse_press_callbacks.emplace_back(callback);
 	}
 
-	void Input::AddKeyReleaseCallback(FKEY_CALLBACK callback)
+	void AddKeyReleaseCallback(FKEY_CALLBACK callback)
 	{
 		key_up_callbacks.emplace_back(callback);
 	}
 
-	void Input::AddMouseReleaseCallback(FMOUSE_CALLBACK callback)
+	void AddMouseReleaseCallback(FMOUSE_CALLBACK callback)
 	{
 		mouse_up_callbacks.emplace_back(callback);
 	}
 
-	void Input::Clear()
+	void Clear()
 	{
 		key_press_callbacks.clear();
 		key_up_callbacks.clear();
@@ -49,7 +49,7 @@ namespace Input
 		mouse_up_callbacks.clear();
 	}
 
-	void Input::InvokeKeyPressCallbacks(sf::Keyboard::Key key)
+	void InvokeKeyPressCallbacks(sf::Keyboard::Key key)
 	{
 		for (const auto& c : key_press_callbacks)
 		{
@@ -58,7 +58,7 @@ namespace Input
 		}
 	}
 
-	void Input::InvokeMousePressCallbacks(sf::Mouse::Button button)
+	void InvokeMousePressCallbacks(sf::Mouse::Button button)
 	{
 		for (const auto& c : mouse_press_callbacks)
 		{
@@ -67,7 +67,7 @@ namespace Input
 		}
 	}
 
-	void Input::InvokeKeyReleaseCallbacks(sf::Keyboard::Key key)
+	void InvokeKeyReleaseCallbacks(sf::Keyboard::Key key)
 	{
 		for (const auto& c : key_up_callbacks)
 		{
@@ -76,7 +76,7 @@ namespace Input
 		}
 	}
 
-	void Input::InvokeMouseReleaseCallbacks(sf::Mouse::Button button)
+	void InvokeMouseReleaseCallbacks(sf::Mouse::Button button)
 	{
 		for (const auto& c : mouse_up_callbacks)
 		{
