@@ -1766,10 +1766,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				if (ImGui::Button("Stop"))
 				{
+					Toad::Engine::Get().StopGameSession();
+
 					if (reload_scene_on_stop)
 						Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
-
-					Toad::Engine::Get().StopGameSession();
 				}
 			}
 
