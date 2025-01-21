@@ -7,14 +7,13 @@ class Script;
 
 using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
-class ScriptManager
+namespace ScriptManager
 {
-public: 
+	void LoadScripts();
 
-private:
-
-	TGAME_SCRIPTS m_scripts;
-
+	void CallUpdateScripts();
+	void CallFixedUpdateScripts();
+	void CallStartScripts();
 };
 
 }

@@ -117,6 +117,15 @@ namespace Toad
 		}
 	}
 
+	const Vec2f& Object::GetScale() const
+	{
+		return {-1, -1};
+	}
+
+	void Object::SetScale(const Vec2f& scale)
+	{
+	}
+
 	json Object::Serialize()
 	{
 		json props;

@@ -11,6 +11,8 @@ public:
 	explicit Camera(std::string_view obj_name);
 	~Camera();
 
+	Vec2f original_size{};
+
 	json Serialize() override;
 
 public:
@@ -35,7 +37,6 @@ public:
 
 	void SetSize(const Vec2f& size);
 	const Vec2f& GetSize() const;
-	const Vec2f& GetOriginalSize() const;
 	
 	void Zoom(float factor);
 
@@ -48,7 +49,6 @@ private:
 	static inline std::vector<Camera*> m_cameras {};
 	static inline Camera* m_activeCam = nullptr;
 	bool m_active = false;
-	Vec2f m_originalCamSize{};
 };
 
 }

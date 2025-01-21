@@ -11,36 +11,27 @@ using json = nlohmann::ordered_json;
 
 //using FAnimTransition = std::function<void(int)>;
 
-enum class AnimationForType
-{
-	SPRITE,
-	CIRCLE,
-	CAMERA,
-	AUDIO,
-	UITEXT,
-};
-
 struct AnimationFrame
 {
 	Vec2f position{};
 	Vec2f scale{};
 	float rotation = 0; 
 
-	std::vector<std::pair<std::string, json>> scripts;
-	json obj_prop;
+	Vec2i texture_pos;
+	IntRect texture_rect;
 
-	// ui 
-	bool is_key = false;
+	// scripts with name and value 
+	std::vector<std::pair<std::string, json>> scripts;
 };
 
 struct Animation
 {
 	std::string name = "unnamed";
+
+	// key frames 
 	std::vector<AnimationFrame> frames{};
-	//std::vector<FAnimTransition> frames;
 
 	int frame_rate = 5;
-	int frame_length = 0; // should be same as frames.size()
 	bool is_looping = false;
 
 	json Serialize() const;

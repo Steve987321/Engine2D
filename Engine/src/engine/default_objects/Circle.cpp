@@ -6,6 +6,7 @@
 namespace Toad
 {
 	Circle::Circle(std::string_view obj_name)
+		//: position(m_circle)
 	{
 		name = obj_name;
 
@@ -30,7 +31,12 @@ namespace Toad
 		m_circle.setTexture(texture, true);
 	}
 
-	const Vec2f& Circle::GetPosition() const 
+	void Circle::SetTextureRect(const IntRect& rect)
+	{
+		m_circle.setTextureRect(rect);
+	}
+
+	const Vec2f& Circle::GetPosition() const
 	{
 		return m_circle.getPosition();
 	}
@@ -44,10 +50,30 @@ namespace Toad
 
     FloatRect Circle::GetBounds() const
     {
-		return FloatRect(m_circle.getGlobalBounds());
+		return m_circle.getGlobalBounds();
     }
 
-    void Circle::SetRotation(float degrees)
+	float Circle::GetRadius() const
+	{
+		return m_circle.getRadius();
+	}
+
+	void Circle::SetRadius(float radius)
+	{
+		m_circle.setRadius(radius);
+	}
+
+	void Circle::SetScale(const Vec2f& scale)
+{
+		m_circle.setScale(scale);
+	}
+
+	const Vec2f& Circle::GetScale() const
+{
+		return m_circle.getScale();
+	}
+
+	void Circle::SetRotation(float degrees)
 	{
 		Object::SetRotation(degrees);
 

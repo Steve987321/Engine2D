@@ -69,7 +69,7 @@ void Camera::OnCreate()
 	Vec2u size = Engine::Get().GetWindow().getSize();
 
 	m_view.setSize({(float)size.x, (float)size.y});
-	m_originalCamSize = m_view.getSize();
+	original_size = m_view.getSize();
 }
 
 void Camera::Start()
@@ -147,11 +147,6 @@ void Camera::SetSize(const Vec2f& size)
 const Vec2f& Camera::GetSize() const
 {
 	return m_view.getSize();
-}
-
-const Vec2f& Camera::GetOriginalSize() const
-{
-	return m_originalCamSize;
 }
 
 void Camera::Zoom(float factor)

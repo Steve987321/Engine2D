@@ -16,6 +16,12 @@ public:
 		: name("unnamed_scene")
 	{}
 
+	struct TObjectToBeAdded
+	{
+		std::shared_ptr<Object> object;
+		int32_t index;
+	};
+
 	static std::vector<Scene> scenes;
 
 	// active scene
@@ -36,7 +42,7 @@ public:
 	std::vector<std::string> remove_objects;
 
 	// objects that should be added 
-	std::vector<std::shared_ptr<Object>> add_objects;
+	std::vector<TObjectToBeAdded> add_objects;
 
 	// set when something has been removed from the scene, needs to be manually set back to its default value
 	bool removed_from_scene = false;
@@ -67,7 +73,7 @@ public:
 	///	Also checks if name of object is already here.
 	///
 	template <class T>
-	std::shared_ptr<T> AddToScene(T&& object, bool is_begin_play = true)
+	std::shared_ptr<T> AddToScene(T&& object, bool is_begin_play = true, int32_t index = -1)
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
@@ -76,11 +82,23 @@ public:
 		bool found_in_queue = false;
 		uint32_t count = 0;
 
+		const auto check_name_queue = [&](const std::vector<TObjectToBeAdded>& objects, bool& flag)
+			{
+				for (const auto& obj : objects)
+				{
+					if (obj.object->name == obj_name)
+					{
+						count++;
+						flag = true;
+					}
+				}
+			};
+
 		const auto check_name = [&](const std::vector<std::shared_ptr<Object>>& objects, bool& flag)
 			{
-				for (auto& obj : objects)
+				for (const auto& obj : objects)
 				{
-					if (obj->name == obj_name)
+					if (obj && obj->name == obj_name)
 					{
 						count++;
 						flag = true;
@@ -99,28 +117,64 @@ public:
 				}
 			};
 
+		const auto adjust_name_queue = [&](const std::vector<TObjectToBeAdded>& objects)
+			{
+				obj_name += " (" + std::to_string(count) + ')';
+				auto it = std::find_if(
+					objects.begin(),
+					objects.end(),
+					[&obj_name](const TObjectToBeAdded& obj)
+					{ 
+						return obj.object->name == obj_name;
+					});
+				while (it != objects.end())
+				{
+					obj_name = object.name + " (" + std::to_string(++count) + ')';
+					it = std::find_if(
+						objects.begin(), 
+						objects.end(), 
+						[&obj_name](const TObjectToBeAdded& obj)
+						{ 
+							return obj.object->name == obj_name;
+						});
+				}
+			};
+
 		check_name(objects_all, found);
-		check_name(add_objects, found_in_queue);
+		check_name_queue(add_objects, found_in_queue);
 	
 		if (found)
 			adjust_name(objects_all);
 
 		else if (found_in_queue)
-			adjust_name(add_objects);
+			adjust_name_queue(add_objects);
 
 		object.name = obj_name;
 
 		if (is_begin_play)
 		{
-			add_objects.emplace_back(std::make_shared<T>(object));
-			add_objects.back()->OnCreate();
-			return std::dynamic_pointer_cast<T>(add_objects.back());
+			// add to a queue 
+			add_objects.emplace_back(std::make_shared<T>(object), index);
+			add_objects.back().object->OnCreate();
+			return std::dynamic_pointer_cast<T>(add_objects.back().object);
 		}
 		else
 		{
-			objects_all.emplace_back(std::make_shared<T>(object));
-			objects_all.back()->OnCreate();
-			return std::dynamic_pointer_cast<T>(objects_all.back());
+			if (index < 0)
+			{
+				objects_all.emplace_back(std::make_shared<T>(object));
+				objects_all.back()->OnCreate();
+				return std::dynamic_pointer_cast<T>(objects_all.back());
+			}
+			else 
+			{
+				if ((size_t)index + 1 > objects_all.size())
+					objects_all.resize((size_t)index + 1);
+
+				objects_all[index] = std::make_shared<T>(object);
+				objects_all[index]->OnCreate();
+				return std::dynamic_pointer_cast<T>(objects_all[index]);
+			}
 		}
 		
 	}
@@ -138,6 +192,13 @@ public:
 
 	// for serializing a selection of objects 
 	json Serialize(std::vector<Object*> v = {});
+
+private:
+	void RegisterScriptFunctions();
+
+	std::vector<std::function<void(Object&)>> start_methods;
+	std::vector<std::function<void(Object&)>> update_methods;
+	std::vector<std::function<void(Object&)>> fixed_update_methods;
 };
 
 // make sure scripts are added and loaded to objects 

@@ -57,4 +57,28 @@ namespace Toad
 		return std::sqrtf(powf(b.x - a.x, 2) + powf(b.y - a.y, 2));
 	}
 
+	float deg_to_rad(float degrees)
+	{
+		return degrees * (std::numbers::pi_v<float> / 180.f);
+	}
+
+	float rad_to_deg(float radians)
+	{
+		return radians * (180.f / std::numbers::pi_v<float>);
+	}
+
+	std::string GetFileContents(const char* file)
+	{
+		std::ifstream f(file);
+		if (f.is_open())
+		{
+			std::stringstream ss;
+			ss << f.rdbuf();
+			f.close();
+			return ss.str();
+		}
+
+		return "";
+	}
+
 }

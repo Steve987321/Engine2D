@@ -79,7 +79,17 @@ void Scene::Update()
 
 	for (const auto& obj : add_objects)
 	{
-		objects_all.emplace_back(obj);
+		if (obj.index == -1)
+		{
+			objects_all.emplace_back(obj.object);
+		}
+		else
+		{
+			if ((size_t)obj.index + 1 > objects_all.size())
+				objects_all.resize((size_t)obj.index + 1);
+
+			objects_all[obj.index] = obj.object;
+		}
 	}
 
 	remove_objects.clear();
@@ -126,7 +136,7 @@ std::shared_ptr<Object> Scene::GetSceneObject(std::string_view obj_name)
 {
 	for (auto& obj : objects_all)
 	{
-		if (obj->name == obj_name)
+		if (obj && obj->name == obj_name)
 		{
 			return obj;
 		}
@@ -155,6 +165,9 @@ json Scene::Serialize(std::vector<Object*> v)
 			v.push_back(obj.get());
 		}
 	}
+
+	int32_t index = 0;
+
 	for (const auto& object : v)
 	{
 		Circle* circle = dynamic_cast<Circle*>(object);
@@ -163,30 +176,38 @@ json Scene::Serialize(std::vector<Object*> v)
 		Text* text = dynamic_cast<Text*>(object);
 		Camera* cam = dynamic_cast<Camera*>(object);
 
-		if (circle != nullptr)
+		if (circle)
 		{
 			circles[object->name] = circle->Serialize();
+			circles[object->name]["index"] = index;
 		}
-		else if (sprite != nullptr)
+		else if (sprite)
 		{
 			sprites[object->name] = sprite->Serialize();
+			sprites[object->name]["index"] = index;
 		}
-		else if (audio != nullptr)
+		else if (audio)
 		{
 			audios[object->name] = audio->Serialize();
+			audios[object->name]["index"] = index;
 		}
-		else if (text != nullptr)
+		else if (text)
 		{
 			texts[object->name] = text->Serialize();
+			texts[object->name]["index"] = index;
 		}
-		else if (cam != nullptr)
+		else if (cam)
 		{
 			cameras[object->name] = cam->Serialize();
+			cameras[object->name]["index"] = index;
 		}
 		else
 		{
 			empties[object->name] = object->Serialize();
+			empties[object->name]["index"] = index;
 		}
+
+		index++;
 	}
 
 	objects["empty"] = empties;
@@ -200,6 +221,19 @@ json Scene::Serialize(std::vector<Object*> v)
 	data["objects"] = objects;
 
 	return data;
+}
+
+void Scene::RegisterScriptFunctions()
+{
+	using Fp = void(Script::*)(Object*);
+
+	for (const auto& obj : objects_all)
+	{
+		for (const auto& [name, script] : obj->GetAttachedScripts())
+		{
+
+		}
+	}
 }
 
 enum class TypesMap
@@ -322,14 +356,16 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 		try
 		{
 			json props;
+			int32_t index = -1;
 			float x = 0.f;
 			float y = 0.f;
 
 			GET_JSON_ELEMENT(props, object.value(), "properties");
+			GET_JSON_ELEMENT(index, object.value(), "index");
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
 
-			Object* newobj = scene.AddToScene(T(object.key()), Engine::Get().GameStateIsPlaying()).get();
+			Object* newobj = scene.AddToScene(T(object.key()), Engine::Get().GameStateIsPlaying(), index).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
@@ -343,13 +379,9 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			{
 				Object* parent_obj = scene.GetSceneObject(parent_name).get();
 				if (parent_obj != nullptr)
-				{
 					newobj->SetParent(parent_obj);
-				}
 				else
-				{
 					set_object_parents_queue.emplace(newobj->name, parent_name);
-				}
 			}
 
 			if (circleobj != nullptr)
@@ -604,6 +636,9 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				}
 				if (auto it = gscripts.find(script.key()); it != gscripts.end())
 				{
+					if (!it->second)
+						continue;
+
 					newobj->AddScript(it->second->Clone());
 					newobj->GetScript(script.key())->ExposeVars();
 					auto new_attached_script = newobj->GetScript(it->first);

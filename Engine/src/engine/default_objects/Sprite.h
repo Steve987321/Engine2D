@@ -14,10 +14,14 @@ public:
 	sf::Sprite& GetSprite();
 	const Vec2f& GetPosition() const override;
 	void SetPosition(const Vec2f& position) override;
+
 	FloatRect GetBounds() const override;
 
 	void SetRotation(float degrees) override;
 	float GetRotation() override;
+
+	const Vec2f& GetScale() const override;
+	void SetScale(const Vec2f& scale) override;
 
 	std::filesystem::path& GetTextureSourcePath();
 	void SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture);

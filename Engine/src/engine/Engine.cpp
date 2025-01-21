@@ -158,6 +158,9 @@ void Engine::Run()
 		EventHandler();
 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
+		if (m_preUICallback)
+			m_preUICallback();
+
 		// update imgui sfml
 		ImGui::SFML::Update(m_window, Time::m_deltaTime);
 #endif 
@@ -207,6 +210,7 @@ bool Engine::InitWindow(const AppSettings& settings)
 	m_io = &ImGui::GetIO();
 	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	m_io->IniFilename = NULL;
 
 	// m_io->Fonts->Clear();
 	m_io->Fonts->AddFontDefault();
@@ -457,6 +461,28 @@ ImGuiContext* Engine::GetImGuiContext()
 	return ImGui::GetCurrentContext();
 }
 
+void Engine::RecreateImGuiContext()
+{
+	ImGui::SFML::Shutdown();
+
+	ImGui::CreateContext();
+
+	bool res = ImGui::SFML::Init(m_window, false);
+	LOGDEBUGF("[Engine] ImGui SFML Init result: {}", res);
+	m_io = &ImGui::GetIO();
+	m_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	m_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	m_io->IniFilename = NULL;
+
+	 //m_io->Fonts->Clear();
+	 m_io->Fonts->AddFontDefault();
+	 //m_io->Fonts->Build();
+	 if (!ImGui::SFML::UpdateFontTexture())
+	 {
+		 LOGERROR("[Engine] Failed to update font texture");
+	 }
+}
+
 bool Engine::GameStateIsPlaying() const
 {
 	return m_beginPlay;
@@ -593,11 +619,22 @@ void Engine::LoadGameScripts()
 	registerScripts();
 
 	Scripts scripts_data = getScripts();
+	if (!scripts_data.scripts)
+	{
+		LOGERROR("scripts_data is nullptr");
+		return;
+	}
+
 	for (size_t i = 0; i < scripts_data.len; i++)
 	{
 		const auto& [b, n] = scripts_data.scripts[i];
 
 		Script* script = (Script*)(b);
+		if (!script)
+		{
+			LOGERRORF("Script is nullptr: {}", i);
+			continue;
+		}
 		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
 		LOGDEBUGF("[Engine] Alloc for script {} with size {}. Base size {}: n: {}", script->GetName(), sizeof(*script), sizeof(Toad::Script), n);
 		void* p = malloc(n);
@@ -698,6 +735,11 @@ std::queue<std::filesystem::path>& Engine::GetDroppedFilesQueue()
 	return m_droppedFilesQueue;
 }
 
+void Engine::SetPreUICallback(const FENGINE_PRE_UI_CALLBACK& callback)
+{
+	m_preUICallback = callback;
+}
+
 void Engine::SetEngineUI(const FENGINE_UI& p_ui)
 {
 	m_renderUI = p_ui;
@@ -713,8 +755,16 @@ void Engine::SetEditorTextureDrawCallback(const FEDITOR_TEXTURE_DRAW_CALLBACK& c
 	m_editorTextureDrawCallback = callback;
 }
 
+void Engine::SetOnCloseCallback(const FONCLOSE_CALLBACK& callback)
+{
+	m_closeCallback = callback;
+}
+
 void Engine::CleanUp()
 {
+	if (m_closeCallback)
+		m_closeCallback(0);
+
 	LOGDEBUG("clean up");
 
 	this->m_isRunning = false;

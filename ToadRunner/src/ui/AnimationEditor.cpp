@@ -17,21 +17,32 @@ namespace Toad
 	AnimationEditor::AnimationEditor()
 	{
 		m_inspectorUI = std::bind(&AnimationEditor::ShowAnimationPropsUI, this);
-		m_previewTexture.create(1920, 1080);
+		m_previewTexture.create(0, 0);
+
+		m_cam.SetSize({1920, 1080});
+		m_cam.original_size = m_cam.GetSize();
 	}
 
 	AnimationEditor::~AnimationEditor() = default;
 
 	void AnimationEditor::Show(bool* show)
 	{
+		static Vec2i starting_position{ 0,0 };
+		static Vec2i spacing{ 100,100 };
+		static Vec2i tile_size{ 100,100 };
+
 		bool animation_editor_opened = ImGui::Begin("AnimationEditor", show);
+
+		if (animation_editor_opened)
+			Engine::Get().interacting_texture = &m_previewTexture;
+
 		{
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
 			ImGui::TextColored({ 1, 1, 1, 0.7f }, "%s", info_title.c_str());
 
 			// #TODO: add sequence converter (to tilesheet) and finish this behavior
 			ImGui::BeginDisabled();
-			if (ImGui::Button("LOAD SEQUENCE"))
+			if (ImGui::Button("Load image sequence"))
 			{
 				for (const auto& s : m_textureIds)
 				{
@@ -83,7 +94,7 @@ namespace Toad
 			ImGui::EndDisabled();
 
 			ImGui::SameLine();
-			if (ImGui::Button("LOAD TILESHEET"))
+			if (ImGui::Button("Load tilesheet"))
 			{
 				for (const auto& s : m_textureIds)
 				{
@@ -92,12 +103,18 @@ namespace Toad
 				m_sequence.clear();
 				m_textureIds.clear();
 
+				//
+				// #TODO: Drag and drop from game assets, don't allow files from other directories other then game assets directory 
+				//
+
 				std::string file = GetPathFile(get_exe_path().string(), "PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
 				sf::Texture* managed_texture = ResourceManager::GetTextures().Get(file);
 				if (managed_texture)
 				{
 					m_spriteSheet = sf::Sprite(*managed_texture);
 					m_textureIds.emplace_back(file);
+
+					ImGui::OpenPopup("Tile detector");
 				}
 				else
 				{
@@ -106,6 +123,10 @@ namespace Toad
 					{
 						managed_texture = ResourceManager::GetTextures().Add(file, t);
 						m_spriteSheet = sf::Sprite(*managed_texture);
+
+						Vec2u tex_size = m_spriteSheet.getTexture()->getSize();
+						m_previewTexture.create(tex_size.x, tex_size.y);
+
 						m_textureIds.emplace_back(file);
 					}
 					else
@@ -113,13 +134,13 @@ namespace Toad
 				}
 			}
 
-			if (ImGui::Button("CHANGE TEXTURE RES"))
+			if (ImGui::Button("Change texture resolution"))
 			{
 				ImGui::OpenPopup("ChangeTexResPopup");
 			}
 			if (ImGui::BeginPopup("ChangeTexResPopup", ImGuiWindowFlags_AlwaysAutoResize))
 			{
-				static Vec2i size = {(int)m_previewTexture.getSize().x, (int)m_previewTexture.getSize().y};
+				static Vec2i size = { (int)m_previewTexture.getSize().x, (int)m_previewTexture.getSize().y };
 				ImGui::SliderVec2i("size", &size, 1);
 				if (ImGui::Button("ok"))
 				{
@@ -132,15 +153,61 @@ namespace Toad
 				}
 				ImGui::EndPopup();
 			}
+			
+			ImGui::SliderVec2i("start", &starting_position);
+			ImGui::SliderVec2i("spacing", &spacing);
+			ImGui::SliderVec2i("tile size", &tile_size);
+
+			// in a scope so it can be collapsed
+			{
+
+				//if (ImGui::BeginPopup("Tile detector"))
+				//{
+				//	static sf::Color bg_color(255, 255, 255, 0);
+				//	static float bg_color_f4[4] = { 1, 1, 1, 0 };
+
+				//	if (ImGui::ColorEdit4("fill color", bg_color_f4))
+				//	{
+				//		bg_color = sf::Color(
+				//			static_cast<uint8_t>(bg_color_f4[0] * 255.f),
+				//			static_cast<uint8_t>(bg_color_f4[1] * 255.f),
+				//			static_cast<uint8_t>(bg_color_f4[2] * 255.f),
+				//			static_cast<uint8_t>(bg_color_f4[3] * 255.f)
+				//		);
+				//	}
+
+				//	if (ImGui::Button("Begin"))
+				//	{
+				//		sf::Image image = m_spriteSheet.getTexture()->copyToImage();
+
+				//		Vec2u tile_size{ 0, 0 };
+
+				//		for (uint32_t x = 0; x < image.getSize().x; x++)
+				//		{
+				//			for (uint32_t y = 0; y < image.getSize().y; y++)
+				//			{
+				//				sf::Color col = image.getPixel(x, y);
+
+				//				if (col == bg_color)
+				//					continue;
+
+				//				Vec2u pos(x, y);
+
+				//				//tile_positions.emplace_back();
+
+				//				//LOGDEBUGF("{} {}, COL(R:{}, G:{}, B:{}, A:{})", x, y, (int)col.r, (int)col.g, (int)col.b, (int)col.a);
+				//			}
+				//		}
+
+				//		ImGui::CloseCurrentPopup();
+				//	}
+
+				//	ImGui::EndPopup();
+				//}
+			}
 
 			m_previewTexture.setView(m_cam.GetView());
-
 			m_previewTexture.clear(sf::Color::Black);
-
-			for (const auto & s : m_sequence)
-			{
-				m_previewTexture.draw(s);
-			}
 
 			if (!m_sequence.empty())
 				ImGui::TextColored({ 0.7f, 0.7f, 0.7f, 0.6f }, "sequence animations should first be converted to a spritesheet");
@@ -149,20 +216,83 @@ namespace Toad
 
 			m_previewTexture.display();
 
+			ImVec2 preview_texture_scursor_pos;
+
 			ImGui::BeginChild("PreviewScreen", { 0,0 }, true);
 			{
-				ImGui::Image(m_previewTexture, { ImGui::GetContentRegionAvail().x,  ImGui::GetContentRegionAvail().y }, sf::Color::White);
+				preview_texture_scursor_pos = ImGui::GetCursorScreenPos();
+				ImVec2 content_size = ImGui::GetContentRegionAvail();
+				ImGui::Image(m_previewTexture, {content_size.x, content_size.y}, sf::Color::White);
+
+				ImDrawList* draw = ImGui::GetWindowDrawList();
+
+				for (int x = starting_position.x; x < m_previewTexture.getSize().x;)
+				{
+					for (int y = starting_position.y; y < m_previewTexture.getSize().y;)
+					{
+						Vec2f screen_start = Screen::WorldToScreen({ (float)x, (float)y }, m_cam, { content_size.x, content_size.y }, { preview_texture_scursor_pos.x, preview_texture_scursor_pos.y });
+						Vec2f screen_end = Screen::WorldToScreen({ (float)x + tile_size.x, (float)y + tile_size.y }, m_cam, { content_size.x, content_size.y }, { preview_texture_scursor_pos.x, preview_texture_scursor_pos.y });
+						draw->AddRect({screen_start.x, screen_start.y}, { screen_end.x, screen_end.y }, IM_COL32_WHITE);
+						y += tile_size.y + spacing.y;
+					}
+					x += tile_size.x + spacing.x;
+				}
 			}
 			ImGui::SameLine();
 			ImGui::Begin("PreviewOutputAnimation");
 			{
+				ImVec2 cursor_pos_begin = ImGui::GetCursorPos();
 				ImGui::Image(m_previewOutputAnimationTexture, { ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y });
-				ImGui::End();
+
+				ImGui::SetCursorPos(cursor_pos_begin);
+				if (ImGui::TreeNode("Options"))
+				{
+
+					ImGui::TreePop();
+				}
+
 			}
+			ImGui::End();
 			ImGui::EndChild();
 
 			if (animation_editor_opened)
 			{
+				Vec2u size = m_previewTexture.getSize();
+				ImDrawList* draw = ImGui::GetForegroundDrawList();
+				constexpr ImU32 border_col = IM_COL32(255, 255, 255, 250);
+
+				if (ImGui::IsKeyDown(ImGuiKey_ModSuper))
+				{
+					static bool previously_dragging = false;
+					static bool capture_first_click = true;
+					ImVec2 start{};
+					if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && capture_first_click)
+					{
+						start = ImGui::GetMousePos();
+						capture_first_click = false;
+					}
+					else if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+						capture_first_click = true;
+
+					if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+					{
+						previously_dragging = true;
+					}
+					else
+					{
+						ImVec2 end = start + ImGui::GetMousePos();
+						Vec2f world_start = Screen::ScreenToWorld({ (int)start.x, (int)start.y }, m_cam);
+						Vec2f world_dist = Screen::ScreenToWorld({ (int)end.x, (int)end.y }, m_cam) - world_start;
+
+						starting_position = {(int)world_start.x, (int)world_start.y};
+						tile_size = {(int)world_start.x, (int)world_start.y};
+						
+						if (previously_dragging)
+							previously_dragging = false;
+					}
+				}
+
+				// movement 
 				if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
 				{
 					ImGuiContext* g = ImGui::GetCurrentContext();
@@ -187,134 +317,34 @@ namespace Toad
 		}
 		ImGui::End();
 
-		ImGui::Begin("Timeline");
 		{
-			if (ImGui::IsWindowFocused())
-				ui::inspector_ui = m_inspectorUI;
+			//ImGui::Begin("Timeline");
+			//{
+			//	if (ImGui::IsWindowFocused())
+			//		ui::inspector_ui = m_inspectorUI;
 
-			static int current_frame = 0;
+			//	static int current_frame = 0;
 
-			ImGui::BeginChild("TimelineMenuBar", { 0, 50 }, true);
-			{
-				ImGui::PushItemWidth(30);
+			//	ImGui::BeginChild("TimelineMenuBar", { 0, 50 }, true);
+			//	{
+			//		ImGui::PushItemWidth(30);
+			//		if (ImGui::Button("<"))
+			//			current_frame--;
+			//		ImGui::SameLine();
+			//		if (ImGui::Button(">"))
+			//			current_frame++;
 
-				if (ImGui::DragInt("pos", &current_frame))
-					current_frame = std::clamp(current_frame, 0, m_selectedAnimation.frame_length);
+			//		ImGui::Separator();
 
-				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-				{
-					if (ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize()))
-					{
-						ImGui::BeginPopup("AddObjectToTimeLine");
-					}
-				}
+			//		ImGui::PopItemWidth();
+			//	}
+			//	ImGui::EndChild();
 
-				ImGui::PopItemWidth();
-			}
-			ImGui::EndChild();
-
-			if (ImGui::BeginPopup("AddObjectToTimeLine"))
-			{
-				if (ImGui::BeginMenu("Create"))
-				{
-					if (ImGui::MenuItem("Circle"))
-					{
-						m_selectedAnimation.frames[0].is_key = true;
-					}
-					if (ImGui::MenuItem("Sprite"))
-					{
-					}
-					if (ImGui::MenuItem("Audio"))
-					{
-					}
-					if (ImGui::MenuItem("Text"))
-					{
-					}
-					if (ImGui::MenuItem("Camera"))
-					{
-					}
-
-					ImGui::EndMenu();
-				}
-
-				ImGui::EndPopup();
-			}
-
-			ImGui::BeginChild("TimelineList", { 50, 0 }, true);
-			{
-				
-			}
-			ImGui::EndChild();
-
-			auto draw = ImGui::GetWindowDrawList();
-			auto current_pos = ImGui::GetCursorPos();
-
-			for (size_t i = 0; i < m_selectedAnimation.frames.size(); i++)
-			{
-				float pos_x = current_pos.x + (float)i * 10.f;
-				//if (pos_x > current_pos.x + ImGui::GetContentRegionAvail().x) // #TODO: fix check
-				//	break;
-
-				draw->AddCircleFilled(ImGui::GetCursorScreenPos() + ImVec2{ pos_x, current_pos.y }, 2.f, IM_COL32_WHITE);
-			}
-
-			// timeline dragger 
-			ImVec2 pos = ImGui::GetCursorScreenPos() + ImVec2{ current_pos.x + current_frame * 10.f - 1, current_pos.y + 5};
-
-			static ImU32 timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.4f });
-			// dragger
-			const int triangle_size = 5;
-			ImRect triangle_rect(pos + ImVec2{ -triangle_size, -triangle_size }, pos + ImVec2{ triangle_size, triangle_size });
-			triangle_rect.Expand(5);
-			draw->AddTriangleFilled(pos + ImVec2{ -triangle_size + 1, -triangle_size + 1}, pos + ImVec2{ triangle_size + 1, -triangle_size + 1 }, pos + ImVec2{1, triangle_size + 1}, timeline_drag_col);
-
-			// line 
-			ImRect time_cursor_rect(pos, pos + ImVec2{ 2, ImGui::GetContentRegionAvail().y } );
-			draw->AddRectFilled(time_cursor_rect.Min, time_cursor_rect.Max, timeline_drag_col);
-
-			static bool time_cursor_dragging = false;
-
-			if (ImGui::IsMouseHoveringRect(triangle_rect.Min, triangle_rect.Max))
-			{
-				timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.6f });
-				if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
-				{
-					timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.2f });
-					time_cursor_dragging = true; 
-				}
-			}
-			else if (!time_cursor_dragging)
-			{
-				timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.4f });
-			}
-
-			if (time_cursor_dragging)
-			{
-				// #TODO: Change mouse cursor to vertical thing
-				float drag_x = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 10.f).x;
-				if (drag_x <= -10)
-				{
-					current_frame -= round(abs(drag_x) / 10.f);
-					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
-				}
-				else if (drag_x >= 10)
-				{
-					current_frame += round(drag_x / 10.f);
-					ImGui::ResetMouseDragDelta(ImGuiMouseButton_Left);
-				}
-
-				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
-				{
-					time_cursor_dragging = false;
-					timeline_drag_col = ImGui::ColorConvertFloat4ToU32({ 1, 1, 1, 0.4f });
-				}
-
-				current_frame = std::clamp(current_frame, 0, m_selectedAnimation.frame_length);
-			}
+			//	ImGui::End();
+			//}
 		}
-		ImGui::End();
-	}
 
+	}
 	void AnimationEditor::LoadAnimationFromSequence()
 	{
 
@@ -329,16 +359,6 @@ namespace Toad
 	{
 		ImGui::Text("%s", (m_selectedAnimation.name + FILE_EXT_TOADANIMATION).c_str());
 
-		ImGui::DragInt("Animation Frames", &m_selectedAnimation.frame_length);
-		if (m_selectedAnimation.frame_length != m_selectedAnimation.frames.size())
-		{
-			ImGui::TextColored({ 1, 1, 0, 1 }, "The animation frames in the array are %d", (int)m_selectedAnimation.frames.size());
-			if (ImGui::Button("resize animation frame length"))
-			{
-				m_selectedAnimation.frames.resize(m_selectedAnimation.frame_length);
-			}
-		}
-
 		if (!m_sequence.empty())
 		{
 			ImGui::Text("sequence");
@@ -348,7 +368,6 @@ namespace Toad
 				if (ImGui::Selectable(std::to_string(i).c_str(), selected == i))
 				{
 					selected = i;
-
 				}
 			}
 

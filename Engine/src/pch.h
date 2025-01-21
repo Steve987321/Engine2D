@@ -23,6 +23,8 @@
 #include <functional>
 #include <format>
 #include <filesystem>
+#include <fstream>
+#include <string_view>
 
 #include <numbers>
 #include <random>

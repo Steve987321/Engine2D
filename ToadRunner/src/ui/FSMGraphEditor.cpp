@@ -15,9 +15,10 @@
 
 #include "utils/FileDialog.h"
 
-namespace Toad
-{
 
+namespace ui
+{
+	using namespace Toad;
 	namespace fs = std::filesystem;
 
 	FSMGraphEditor::FSMGraphEditor()

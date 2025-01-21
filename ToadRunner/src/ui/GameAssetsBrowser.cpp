@@ -13,7 +13,9 @@
 
 #include "pugixml/pugixml.hpp"
 
-namespace Toad
+using namespace Toad;
+
+namespace ui
 {
 
 bool ignore_rename_warning = false;
@@ -607,11 +609,11 @@ void GameAssetsBrowser::Show()
 	}
 	else
 	{
-		if (ImGui::Begin("Game Assets"))
-		{
-			if (!m_assetsPath.empty())
-				list_dir_contents(m_assetsPath);
-		}
+		//if (ImGui::Begin("Game Assets"))
+		//{
+		//	if (!m_assetsPath.empty())
+		//		list_dir_contents(m_assetsPath);
+		//}
 	}
 }
 

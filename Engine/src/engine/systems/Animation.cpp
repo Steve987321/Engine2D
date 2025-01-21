@@ -12,7 +12,6 @@ namespace Toad
 		{
 			json frame_data;
 
-			frame_data["key"] = frame.is_key;
 			frame_data["px"] = frame.position.x;
 			frame_data["py"] = frame.position.y;
 			frame_data["r"] = frame.rotation;

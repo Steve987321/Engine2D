@@ -2,8 +2,9 @@
 
 #include "EngineCore.h"
 
-#include "engine/Types.h"
 #include "nlohmann/json.hpp"
+
+#include "engine/Types.h"
 #include "engine/default_scripts/Script.h"
 
 namespace Toad
@@ -50,6 +51,9 @@ public:
 	virtual float GetRotation();
 	virtual void SetRotation(float degrees);
 
+	virtual const Vec2f& GetScale() const;
+	virtual void SetScale(const Vec2f& scale);
+
 	virtual json Serialize();
 
 	const std::set<std::string>& GetChildren();
@@ -70,7 +74,6 @@ public:
 
 	Script* GetScript(std::string_view name);
 
-	// faster than removing by script type
 	bool RemoveScript(std::string_view script_name);
 
 	// slower than removing by script string name
@@ -115,7 +118,7 @@ public:
 		return nullptr;
 	}
 
-	const std::unordered_map<std::string, Script* >& GetAttachedScripts() const;
+	const std::unordered_map<std::string, Script*>& GetAttachedScripts() const;
 
 protected:
 	// attached scripts 
@@ -128,8 +131,7 @@ protected:
 
 private:
 	// position used only by Object
-	Vec2f m_objectPos{0, 0};
-
+	Vec2f m_objectPos{ 0, 0 };
 };
 
 }

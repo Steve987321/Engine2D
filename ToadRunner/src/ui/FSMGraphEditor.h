@@ -4,7 +4,7 @@
 
 struct ImVec2;
 
-namespace Toad
+namespace ui
 {
 
 class GameAssetsBrowser;
@@ -26,17 +26,16 @@ public:
 	bool LoadFromFile(const std::filesystem::path& path, const GameAssetsBrowser& asset_browser);
 	bool SaveToFile(const std::filesystem::path& path);
 
-	FSM* fsm = nullptr;
+	Toad::FSM* fsm = nullptr;
 private:
 	void ShowFSMProps();
 	std::function<void()> m_inspectorUI;
 
 	bool m_simulateFSM = false;
-	json m_previousFSMState{};
+	Toad::json m_previousFSMState{};
 
 	std::filesystem::path m_savedPath{};
 	char m_savedPathBuf[MAX_PATH]{};
-
 
 	static constexpr ImU32 transition_line_col = IM_COL32_WHITE;
 	static constexpr ImU32 transition_active_line_col = IM_COL32_WHITE;

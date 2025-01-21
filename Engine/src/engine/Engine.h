@@ -18,8 +18,10 @@ namespace Toad
 	{
 	public:
 		using FENGINE_UI = std::function<void(ImGuiContext* ctx)>;
+		using FENGINE_PRE_UI_CALLBACK = std::function<void()>;
 		using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
+		using FONCLOSE_CALLBACK = std::function<void(int)>;
 		using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
 		friend class Mouse;
@@ -59,6 +61,7 @@ namespace Toad
 		Camera& GetEditorCamera();
 
 		ImGuiContext* GetImGuiContext();
+		void RecreateImGuiContext();
 
 		bool GameStateIsPlaying() const;
 		void StartGameSession();
@@ -74,11 +77,12 @@ namespace Toad
 
 		std::queue<std::filesystem::path>& GetDroppedFilesQueue();
 
+		void SetPreUICallback(const FENGINE_PRE_UI_CALLBACK& callback);
 		void SetEngineUI(const FENGINE_UI& p_ui);
 		// use also only for ui
 		void SetEventCallback(const FEVENT_CALLBACK& callback);
 		void SetEditorTextureDrawCallback(const FEDITOR_TEXTURE_DRAW_CALLBACK& callback);
-
+		void SetOnCloseCallback(const FONCLOSE_CALLBACK& callback);
 	private:
 		bool InitWindow(const AppSettings& settings);
 		void EventHandler();
@@ -104,9 +108,11 @@ namespace Toad
 		sf::RenderTexture m_windowTexture;
 		sf::RenderTexture m_windowEditorCamTexture;
 
+		FENGINE_PRE_UI_CALLBACK m_preUICallback = nullptr;
 		FENGINE_UI m_renderUI = nullptr;
 		FEVENT_CALLBACK m_eventCallback = nullptr;
 		FEDITOR_TEXTURE_DRAW_CALLBACK m_editorTextureDrawCallback = nullptr;
+		FONCLOSE_CALLBACK m_closeCallback = nullptr;
 		ImGuiIO* m_io = nullptr;
 
 		// instances of all game scripts

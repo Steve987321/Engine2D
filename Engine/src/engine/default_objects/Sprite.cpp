@@ -49,6 +49,16 @@ float Sprite::GetRotation()
 	return m_sprite.getRotation();
 }
 
+const Vec2f& Sprite::GetScale() const
+{
+	return m_sprite.getScale();
+}
+
+void Sprite::SetScale(const Vec2f& scale)
+{
+	return m_sprite.setScale(scale);
+}
+
 std::filesystem::path& Sprite::GetTextureSourcePath()
 {
 	return m_texture_source_path;

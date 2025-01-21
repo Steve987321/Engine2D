@@ -7,7 +7,8 @@ namespace Toad
 
 namespace fs = std::filesystem;
 
-class FileBrowser {
+class FileBrowser 
+{
 public:
     explicit FileBrowser(std::string_view starting_directory);
     ~FileBrowser();
@@ -23,6 +24,7 @@ public:
     void Refresh();
 
     bool IsDoubleClicked();
+
 private:
     void IterateDir(const fs::directory_iterator& dir_it);
 

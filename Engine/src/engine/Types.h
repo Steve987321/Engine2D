@@ -7,6 +7,7 @@ using Vec3i = sf::Vector3i;
 using Vec3f = sf::Vector3f;
 using Keyboard = sf::Keyboard;
 using IntRect = sf::IntRect;
+using Texture = sf::Texture;
 
 class ENGINE_API FloatRect : public sf::FloatRect
 {

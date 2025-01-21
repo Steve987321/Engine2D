@@ -5,7 +5,7 @@ namespace project
 	struct ProjectSettings;
 }
 
-namespace Toad
+namespace ui
 {
 	namespace fs = std::filesystem;
 

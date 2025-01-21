@@ -510,7 +510,7 @@ namespace project {
 
 	void LoadProjectResources(const ProjectSettings& project)
 	{
-		fs::path asset_path = Toad::GameAssetsBrowser::FindAssetPath(project);
+		fs::path asset_path = ui::GameAssetsBrowser::FindAssetPath(project);
 
 		for (const auto& entry : fs::directory_iterator(project.project_path))
 		{

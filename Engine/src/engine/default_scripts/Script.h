@@ -20,9 +20,9 @@ explicit T(std::string_view name) : Script(name)					\
 }																	\
 Script* Clone() override											\
 {																	\
-	T* pScript = new T(*this);										\
-	pScript->ExposeVars();											\
-	return dynamic_cast<Script*>(pScript);							\
+	T* script = new T(*this);										\
+	script->ExposeVars();											\
+	return dynamic_cast<Script*>(script);							\
 }
 
 namespace Toad
