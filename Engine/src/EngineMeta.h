@@ -5,6 +5,7 @@
 #include "engine/utils/FSM.h"
 #include "engine/Types.h"
 #include "engine/Screen.h"
+#include "engine/DrawingCanvas.h"
 
 #include "engine/systems/Input.h"
 #include "engine/systems/Scene.h"

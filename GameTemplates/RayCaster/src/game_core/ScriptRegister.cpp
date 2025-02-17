@@ -12,7 +12,7 @@
 namespace Toad
 {
 
-static std::vector<SBuf> scripts{};
+static std::vector<ScriptBuffer> scripts{};
 
 void register_scripts()
 {

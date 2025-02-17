@@ -54,6 +54,9 @@ namespace Toad
 
 		sf::RenderWindow& GetWindow();
 
+		// make better
+		std::vector<sf::Vertex>& CreateVA(size_t size);
+
 		sf::RenderTexture& GetActiveRenderTexture();
 		sf::RenderTexture& GetWindowTexture();
 		sf::RenderTexture& GetEditorCameraTexture();
@@ -74,9 +77,9 @@ namespace Toad
 		void LoadGameScripts();
 		// returns a map of scripts with script name as key, some script could be nullptr
 		TGAME_SCRIPTS& GetGameScriptsRegister();
+		DrawingCanvas& GetCanvas();
 
 		std::queue<std::filesystem::path>& GetDroppedFilesQueue();
-
 		void SetPreUICallback(const FENGINE_PRE_UI_CALLBACK& callback);
 		void SetEngineUI(const FENGINE_UI& p_ui);
 		// use also only for ui
@@ -103,6 +106,8 @@ namespace Toad
 		float m_tickps = 1000.f / 50.f;
 		int m_width = 500, m_height = 500;
 
+		DrawingCanvas m_drawingCanvas;
+
 		sf::RenderWindow m_window;
 
 		sf::RenderTexture m_windowTexture;
@@ -115,9 +120,6 @@ namespace Toad
 		FONCLOSE_CALLBACK m_closeCallback = nullptr;
 		ImGuiIO* m_io = nullptr;
 
-		// instances of all game scripts
-		TGAME_SCRIPTS m_gameScripts = {};
-
 		std::queue<std::filesystem::path> m_droppedFilesQueue;
 
 		bool m_beginPlay = false, m_beginPlayPrev = false;
@@ -126,6 +128,8 @@ namespace Toad
 		// multiple windows
 		std::vector<std::shared_ptr<sf::RenderWindow>> m_viewports;
 		// mouse position relative to window/viewport 
+
+		std::vector<std::vector<sf::Vertex>> created_vertexarrays;
 
         DllHandle m_currDLL{};
 #ifdef _WIN32

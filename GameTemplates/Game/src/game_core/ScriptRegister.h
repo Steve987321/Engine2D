@@ -2,23 +2,31 @@
 
 // Functions for the engine to read to get access to the game scripts and to register scripts
 
-#include <EngineCore.h>
+namespace Toad
+{
+	class Object;
+}
+
+#include "Engine/systems/ScriptManager.h"
 #include "Game.h"
 
 #include "engine/default_scripts/Script.h"
+#include <functional>
+#include <vector>
 
 #define SCRIPT_REGISTER(T) register_script(new T(#T), sizeof(T))
 
-struct SBuf
+struct ScriptBuffer
 {
-	SBuf(void* b, size_t s) : buf(b), size(s) {}
+	ScriptBuffer(void* b, size_t s) : buf(b), size(s) {}
 	void* buf;
+
 	size_t size;
 };
 
 struct Scripts
 {
-	SBuf* scripts;
+	ScriptBuffer* scripts;
 	size_t len;
 };
 

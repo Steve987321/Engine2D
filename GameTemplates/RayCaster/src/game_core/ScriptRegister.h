@@ -9,16 +9,16 @@
 
 #define SCRIPT_REGISTER(T) register_script(new T(#T), sizeof(T))
 
-struct SBuf
+struct ScriptBuffer
 {
-	SBuf(void* b, size_t s) : buf(b), size(s) {}
+	ScriptBuffer(void* b, size_t s) : buf(b), size(s) {}
 	void* buf;
 	size_t size;
 };
 
 struct Scripts
 {
-	SBuf* scripts;
+	ScriptBuffer* scripts;
 	size_t len;
 };
 

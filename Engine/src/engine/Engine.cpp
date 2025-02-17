@@ -332,6 +332,7 @@ void Engine::Render()
 
 	// Update scene to the texture so it can display on the (game) viewport 
 	Scene::current_scene.Render(m_windowTexture);
+	m_drawingCanvas.DrawVertices(m_windowTexture);
 	if (cam != nullptr)
 	{
 		m_windowTexture.setView(cam->GetView());
@@ -339,6 +340,7 @@ void Engine::Render()
 	m_windowTexture.display();
 
 	Scene::current_scene.Render(m_windowEditorCamTexture);
+	m_drawingCanvas.DrawVertices(m_windowEditorCamTexture);
 
 	if (m_editorTextureDrawCallback)
 	{
@@ -432,6 +434,13 @@ sf::RenderWindow& Engine::GetWindow()
 	return m_window;
 }
 
+std::vector<sf::Vertex>& Engine::CreateVA(size_t size)
+{
+	created_vertexarrays.emplace_back();
+	created_vertexarrays.back().resize(size);
+	return created_vertexarrays.back();
+}
+
 sf::RenderTexture& Engine::GetActiveRenderTexture()
 {
 #ifdef TOAD_EDITOR
@@ -502,6 +511,8 @@ void Engine::StopGameSession()
 	if (m_beginPlay)
 		Scene::current_scene.End(nullptr);
 
+	GetCanvas().Clear();
+
 	m_beginPlay = false;
 }
 
@@ -528,206 +539,17 @@ void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string
 
 void Engine::LoadGameScripts()
 {
-	namespace fs = std::filesystem;
-	using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
-	std::unordered_map <std::string, std::vector<object_script>> objects_with_scripts{};
-
-	for (auto& [_, script] : m_gameScripts)
-	{
-		// #TODO: save name and give warning about lost scripts 
-		if (script)
-			free(script);
-		script = nullptr;
-	}
-
-	for (auto& obj : Scene::current_scene.objects_all)
-	{
-		auto& scripts = obj->GetAttachedScripts();
-		if (scripts.empty())
-			continue;
-
-		for (auto i = scripts.begin(); i != scripts.end();)
-		{
-			ReflectVarsCopy vars;
-			i->second->GetReflection().Get().copy(vars);
-			objects_with_scripts[obj->name].emplace_back(object_script{ i->first, vars });
-
-			obj->RemoveScript(i->first);
-			i = scripts.begin();
-		}
-	}
-
-	// clear Input callbacks 
-	Input::Clear();
-
-	if (m_currDLL)
-	{
-		DLibFree(m_currDLL);
-	}
-
-	fs::path game_dll_path = game_bin_directory + game_bin_file;
-	fs::path current_game_dll = game_bin_directory + LIB_FILE_PREFIX + "GameCurrent" + LIB_FILE_EXT;
-	// fs::path current_game_dll = game_bin_directory + game_bin_file;
-
-#ifdef TOAD_EDITOR
-	if (fs::exists(current_game_dll))
-	{
-		if (fs::exists(game_dll_path))
-		{
-			if (!fs::remove(current_game_dll.c_str()))
-			{
-				LOGERRORF("Failed to remove file {}", current_game_dll);
-			}
-		}
-	}
-#endif
-
-	//#ifdef _WIN32
-	//#ifdef __APPLE__
-	//    if (!game_bin_directory.empty())
-	//    {
-	//#endif
-	if (!fs::exists(game_dll_path)) {
-		LOGWARNF("Couldn't find game dll file, {}", game_dll_path);
-	}
-	else {
-		try {
-			fs::rename(game_dll_path, current_game_dll);
-		}
-		catch (fs::filesystem_error& e) {
-			LOGERRORF("{}", e.what());
-			return;
-		}
-	}
-	//#ifdef __APPLE__
-	//    }
-	//#endif
-	//#endif
-
-	auto dll = DLibOpen(current_game_dll.string());
-	if (!dll)
-	{
-		LOGERRORF("Couldn't load game dll file, {} : {}", current_game_dll, DLGetError());
-		return;
-	}
-
-	m_currDLL = dll;
-
-	auto registerScripts = reinterpret_cast<register_scripts_t*>(DLibGetAddress(dll, "register_scripts"));
-	auto getScripts = reinterpret_cast<get_registered_scripts_t*>(DLibGetAddress(dll, "get_registered_scripts"));
-
-	registerScripts();
-
-	Scripts scripts_data = getScripts();
-	if (!scripts_data.scripts)
-	{
-		LOGERROR("scripts_data is nullptr");
-		return;
-	}
-
-	for (size_t i = 0; i < scripts_data.len; i++)
-	{
-		const auto& [b, n] = scripts_data.scripts[i];
-
-		Script* script = (Script*)(b);
-		if (!script)
-		{
-			LOGERRORF("Script is nullptr: {}", i);
-			continue;
-		}
-		LOGDEBUGF("Load game script: {}", script->GetName().c_str());
-		LOGDEBUGF("[Engine] Alloc for script {} with size {}. Base size {}: n: {}", script->GetName(), sizeof(*script), sizeof(Toad::Script), n);
-		void* p = malloc(n);
-		memcpy(p, b, n);
-
-		// this can be deleted after 
-		assert(p && "Allocation failed for script, please rebuild script to be updated");
-		m_gameScripts[script->GetName()] = (Script*)p;
-		m_gameScripts[script->GetName()]->ExposeVars();
-	}
-	for (TGAME_SCRIPTS::iterator it = m_gameScripts.begin(); it != m_gameScripts.end();)
-	{
-		if (!it->second)
-		{
-			LOGWARNF("Script {} is now null and is getting removed", it->first.c_str());
-			it = m_gameScripts.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
-
-	// update scripts on object if it has an old version
-
-	for (auto& obj : Scene::current_scene.objects_all)
-	{
-		if (!objects_with_scripts.contains(obj->name))
-		{
-			continue;
-		}
-
-		const auto& prev_obj_state = objects_with_scripts[obj->name];
-
-		for (auto& [attached_script_name, old_reflection_vars] : prev_obj_state)
-		{
-			auto it = m_gameScripts.find(attached_script_name);
-			if (it != m_gameScripts.end())
-			{
-				// update exposed vars if they exist 
-				// LOGDEBUGF("[Engine] Alloc for script {} with size {}", it->first, sizeof(*it->second));
-				// void* p = malloc(sizeof(*it->second));
-				// memcpy(p, it->second, sizeof(*it->second));
-				obj->AddScript(it->second->Clone());
-				obj->GetScript(it->first)->ExposeVars();
-				auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection().Get();
-
-				for (auto& [name, v] : new_reflection_vars.str)
-					for (auto& [newname, newv] : old_reflection_vars.str)
-						if (newname == name)
-							*v = newv;
-				for (auto& [name, v] : new_reflection_vars.b)
-					for (auto& [newname, newv] : old_reflection_vars.b)
-						if (newname == name)
-							*v = newv;
-				for (auto& [name, v] : new_reflection_vars.flt)
-					for (auto& [newname, newv] : old_reflection_vars.flt)
-						if (newname == name)
-							*v = newv;
-				for (auto& [name, v] : new_reflection_vars.i8)
-					for (auto& [newname, newv] : old_reflection_vars.i8)
-						if (newname == name)
-							*v = newv;
-				for (auto& [name, v] : new_reflection_vars.i16)
-					for (auto& [newname, newv] : old_reflection_vars.i16)
-						if (newname == name)
-							*v = newv;
-				for (auto& [name, v] : new_reflection_vars.i32)
-					for (auto& [newname, newv] : old_reflection_vars.i32)
-						if (newname == name)
-							*v = newv;
-
-				LOGDEBUGF("Updated Script {} on Object {}", attached_script_name, obj->name);
-			}
-		}
-
-		objects_with_scripts.erase(obj->name);
-	}
-
-#ifdef _DEBUG
-	for (const auto& [obj_name, info] : objects_with_scripts)
-	{
-		for (const auto& script : info)
-		{
-			LOGWARNF("Script lost {} on object {}", script.script_name, obj_name);
-		}
-	}
-#endif
+	ScriptManager::LoadScripts();
 }
 
 Engine::TGAME_SCRIPTS& Engine::GetGameScriptsRegister()
 {
-	return m_gameScripts;
+	return ScriptManager::GetScripts();
+}
+
+DrawingCanvas& Engine::GetCanvas()
+{
+	return m_drawingCanvas;
 }
 
 std::queue<std::filesystem::path>& Engine::GetDroppedFilesQueue()
