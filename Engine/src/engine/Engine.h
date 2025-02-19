@@ -4,6 +4,7 @@
 #include "EngineCore.h"
 
 #include "utils/DLib.h"
+#include "filewatch/filewatch.h"
 #include <imgui/imgui_internal.h>
 
 struct AppSettings;
@@ -22,8 +23,9 @@ namespace Toad
 		using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 		using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
 		using FONCLOSE_CALLBACK = std::function<void(int)>;
-		using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
+		using FONDLLCHANGE_CALLBACK = std::function<void(const std::wstring&, const filewatch::Event)>;
 
+		using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 		friend class Mouse;
 		Vec2i relative_mouse_pos = {};
 #ifdef TOAD_EDITOR
@@ -86,14 +88,13 @@ namespace Toad
 		void SetEventCallback(const FEVENT_CALLBACK& callback);
 		void SetEditorTextureDrawCallback(const FEDITOR_TEXTURE_DRAW_CALLBACK& callback);
 		void SetOnCloseCallback(const FONCLOSE_CALLBACK& callback);
+		void SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback);
+		void ReleaseGameDLLWatcher();
 	private:
 		bool InitWindow(const AppSettings& settings);
 		void EventHandler();
 		void Render();
 		void CleanUp();
-
-		// checks to see if a new game.dll is available 
-		void GameUpdatedWatcher();
 
 		// finds settings.json and loads them 
 		void LoadEngineSettings();
@@ -118,6 +119,10 @@ namespace Toad
 		FEVENT_CALLBACK m_eventCallback = nullptr;
 		FEDITOR_TEXTURE_DRAW_CALLBACK m_editorTextureDrawCallback = nullptr;
 		FONCLOSE_CALLBACK m_closeCallback = nullptr;
+		FONDLLCHANGE_CALLBACK m_onDLLChangeCallback = nullptr;
+
+		std::unique_ptr<filewatch::FileWatch<std::wstring>> dll_file_watch = nullptr;
+
 		ImGuiIO* m_io = nullptr;
 
 		std::queue<std::filesystem::path> m_droppedFilesQueue;

@@ -535,11 +535,22 @@ void Engine::UpdateGameBinPaths(std::string_view game_bin_file_name, std::string
 	{
 		game_bin_directory += PATH_SEPARATOR;
 	}
+
+	std::wstring ws(game_bin_directory.size(), ' ');
+	ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
+
+	dll_file_watch = std::make_unique<filewatch::FileWatch<std::wstring>>(ws, m_onDLLChangeCallback);
 }
 
 void Engine::LoadGameScripts()
 {
+	auto& f = m_onDLLChangeCallback;
+	ReleaseGameDLLWatcher();
+	
 	ScriptManager::LoadScripts();
+
+	if (f)
+		SetGameDLLWatcherCallback(f);
 }
 
 Engine::TGAME_SCRIPTS& Engine::GetGameScriptsRegister()
@@ -582,6 +593,29 @@ void Engine::SetOnCloseCallback(const FONCLOSE_CALLBACK& callback)
 	m_closeCallback = callback;
 }
 
+void Engine::SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback)
+{
+	m_onDLLChangeCallback = callback;
+
+	if (!std::filesystem::exists(game_bin_directory))
+	{
+		LOGERRORF("Can't add game dll watcher to non existing file: {}", game_bin_directory);
+		return;
+	}
+
+	std::wstring ws(game_bin_directory.size(), ' ');
+	ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
+
+	dll_file_watch = std::make_unique<filewatch::FileWatch<std::wstring>>(ws, m_onDLLChangeCallback);
+	LOGDEBUG("Setting dll watch");
+}
+
+void Engine::ReleaseGameDLLWatcher()
+{
+	LOGDEBUG("Releasing dll watcher");
+	dll_file_watch = nullptr;
+}
+
 void Engine::CleanUp()
 {
 	if (m_closeCallback)
@@ -596,14 +630,6 @@ void Engine::CleanUp()
 
 	LOGDEBUG("closing window");
 	m_window.close();
-}
-
-void Engine::GameUpdatedWatcher()
-{
-	std::ifstream f(game_bin_file);
-	if (f.is_open())
-	{
-	}
 }
 
 #ifdef _WIN32

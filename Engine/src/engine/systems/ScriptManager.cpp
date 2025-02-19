@@ -5,6 +5,7 @@
 #include "engine/systems/Scene.h"
 #include "engine/systems/Input.h"
 #include "engine/utils/DLib.h"
+#include "engine/systems/Timer.h"
 
 #include "engine/Settings.h" 
 #include "engine/Logger.h"
@@ -73,27 +74,32 @@ namespace Toad
 		}
 #endif
 
-		//#ifdef _WIN32
-		//#ifdef __APPLE__
-		//    if (!game_bin_directory.empty())
-		//    {
-		//#endif
-		if (!fs::exists(game_dll_path)) {
+		if (!fs::exists(game_dll_path))
+		{
 			LOGWARNF("[ScriptManager] Couldn't find game dll file, {}", game_dll_path);
 		}
-		else {
-			try {
-				fs::rename(game_dll_path, current_game_dll);
-			}
-			catch (fs::filesystem_error& e) {
-				LOGERRORF("[ScriptManager] Rename failed: {}", e.what());
-				return;
-			}
+		else 
+		{
+			std::string err;
+			Timer t;
+			int tries = 0;
+			do
+			{
+				try
+				{
+					Sleep(500);
+					fs::rename(game_dll_path, current_game_dll);
+					tries++;
+				}
+				catch (fs::filesystem_error& e)
+				{
+					err = e.what();
+				}
+			} while (t.Elapsed<std::chrono::milliseconds>() < 2000);
+
+			if (!err.empty())
+				LOGERRORF("[ScriptManager] Rename failed: {}", err);
 		}
-		//#ifdef __APPLE__
-		//    }
-		//#endif
-		//#endif
 
 		auto dll = DLibOpen(current_game_dll.string());
 		if (!dll)

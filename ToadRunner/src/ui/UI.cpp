@@ -73,8 +73,16 @@ static void SaveINIToCorrectBuffer()
 	*buf = ImGui::SaveIniSettingsToMemory();
 }
 
-// #TODO move somewhere else 
-static void CheckScriptReload()
+static void GameDLLOnChangeCallback(const std::wstring& path, const filewatch::Event e)
+{
+	if (should_reload)
+		return;
+
+	should_reload = true;
+	LOGDEBUGF("WATCHER EVENT: {}", filewatch::event_to_string(e));
+}
+
+static void ScriptReload()
 {
 	if (!should_reload)
 		return;
@@ -132,12 +140,12 @@ void ui::engine_ui(ImGuiContext* ctx)
 #else
         settings.project_gen_type = project::PROJECT_TYPE::Makefile;
 #endif
-
+		Engine::Get().SetGameDLLWatcherCallback(GameDLLOnChangeCallback);
 		browser = &asset_browser;
         once = false;
     }
 
-	CheckScriptReload();
+	ScriptReload();
 
 	if (Scene::current_scene.removed_from_scene)
 	{
@@ -223,7 +231,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::MenuItem("Reload"))
 				should_reload = true;
 
-			ImGui::MenuItem("Auto Reload", nullptr, nullptr, &auto_reload);
+			ImGui::MenuItem("Auto Reload", nullptr, nullptr, auto_reload);
 
 			ImGui::EndDisabled();
 			ImGui::EndMenu();
@@ -1027,8 +1035,6 @@ void ui::event_callback(const sf::Event& e)
 	case sf::Event::GainedFocus:
 		if (browser)
 			browser->refresh = true;
-		if (auto_reload)
-			should_reload = true;
 		break;
 	default: 
 		break;
