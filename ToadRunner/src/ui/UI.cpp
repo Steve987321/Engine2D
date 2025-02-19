@@ -1,5 +1,8 @@
 #include "pch.h"
 
+
+// #TODO: refactor
+
 #ifdef TOAD_EDITOR
 #include <algorithm>
 
@@ -33,6 +36,8 @@ using namespace Toad;
 
 static SceneHistory scene_history{};
 static ui::GameAssetsBrowser* browser = nullptr;
+static MessageQueue message_queue{ MessageQueuePlacement::RIGHT };
+
 static bool is_scene_loaded = false;
 static bool load_ini = true; 
 static bool load_ini_file = true;
@@ -101,6 +106,14 @@ static void ScriptReload()
 	if (game_was_playing)
 		Engine::Get().StartGameSession();
 
+	MessageQueueMessage msg;
+	msg.msg = "Updated scripts";
+	msg.category = MessageCategory::GAME;
+	msg.show_time_ms = 2000;
+	msg.type = MessageType::INFO;
+
+	message_queue.AddToMessageQueue(msg);
+
 	should_reload = false;
 }
 
@@ -129,7 +142,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 	static TextEditor text_edit;
 	static AnimationEditor anim_editor;
 	static FSMGraphEditor fsm_graph_editor;
-	static MessageQueue message_queue{ {180, 100}, MessageQueuePlacement::RIGHT };
 
     // set default project settings
     static bool once = true;
@@ -177,8 +189,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			{
 				MessageQueueMessage msg;
 				msg.category = MessageCategory::ENGINE;
-				msg.message = "Successfully initialized engine";
-				msg.title = "Engine Init";
+				msg.msg = "Successfully initialized engine";
 				msg.show_time_ms = 2000.f;
 				msg.type = MessageType::INFO;
 				message_queue.AddToMessageQueue(msg);

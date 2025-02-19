@@ -34,8 +34,7 @@ enum class MessageQueuePlacement
 
 struct MessageQueueMessage
 {
-	std::string title;
-	std::string message;
+	std::string msg;
 	float show_time_ms = 1000.f;
 	MessageType type = MessageType::INFO;
 	MessageCategory category = MessageCategory::OTHER;
@@ -46,8 +45,8 @@ struct MessageQueueMessage
 class MessageQueue
 {
 public:
-	MessageQueue(ImVec2 size, MessageQueuePlacement placement)
-		: m_size(size), m_placement(placement)
+	MessageQueue(MessageQueuePlacement placement)
+		: m_placement(placement)
 	{}
 
 public:
@@ -56,7 +55,6 @@ public:
 
 private:
 	std::vector<std::pair<MessageQueueMessage, Timer>> m_messageQueue{};
-	ImVec2 m_size{};
 	MessageQueuePlacement m_placement = MessageQueuePlacement::RIGHT;
 };
 
