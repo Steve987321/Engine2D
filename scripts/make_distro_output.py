@@ -29,6 +29,7 @@ files = [
     (("vendor", "bin", "LICENSE.txt"), ("bin",), ""),
     (("vendor", "imgui"), ("game_templates", "vendor", "imgui"), ""),
     (("vendor", "json"), ("game_templates", "vendor", "json"), ""),
+    (("vendor", "filewatcher"), ("game_templates", "vendor", "filewatcher"), ""),
     (("vendor", "SFML-2.6.0"), ("game_templates", "vendor", "SFML-2.6.0"), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-audio-2.dll"), (""), ""),
     (("vendor", "SFML-2.6.0", "bin", "sfml-system-2.dll"), (""), ""),

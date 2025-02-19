@@ -192,7 +192,7 @@ namespace project {
 			settings.name,
 			premake_use_src_arg);
 
-		LOGDEBUG(command.c_str());
+		LOGDEBUGF("{}", command.c_str());
 		int res = system(command.c_str());
 		LOGDEBUGF("result: {}", res);
 		if (res != 0)
@@ -227,7 +227,8 @@ namespace project {
 			if (e.path().filename().string().find("imgui") != std::string::npos ||
 				e.path().filename().string().find("json") != std::string::npos ||
 				e.path().filename().string().find("SFML-2.6") != std::string::npos ||
-				e.path().filename().string().find("sfml-imgui") != std::string::npos)
+				e.path().filename().string().find("sfml-imgui") != std::string::npos || 
+				e.path().filename().string().find("filewatcher") != std::string::npos)
 			{
 				for (const auto& e2 : fs::recursive_directory_iterator(e.path()))
 				{
