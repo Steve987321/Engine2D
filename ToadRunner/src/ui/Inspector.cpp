@@ -538,37 +538,24 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 			{
 				sf::Text& text = text_obj->GetTextObj();
 				Toad::TextStyle text_style = text_obj->GetStyle();
-
-				if (!text.getFont()->getInfo().family.empty())
-				{
-					if (ImGui::Button(text.getFont()->getInfo().family.c_str()))
-					{
-						// TODO:
-					}
-				}
-				else
-				{
-					if (ImGui::Button("##nofont"))
-					{
-
-					}
-				}
-
+                if (!text.getFont())
+                {
+                    // invalid font
+                    // probably didn't find the font file
+                    ImGui::TextColored({1, 0, 0, 1}, "Invalid font");
+                }
+               
 				if (ImGui::Button("set default font"))
 				{
 					sf::Font* font = ResourceManager::GetFonts().Get("Default");
-
+                    
+                    // check if we don't already have a default font
 					if (font == nullptr)
 					{
-						if (!font->loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
-						{
-							LOGWARN("Can't find C:\\Windows\\Fonts\\Arial.ttf");
-						}
-						else
-						{
-							ResourceManager::GetFonts().Add("Default", *font);
-							text_obj->SetFont("Default", *font);
-						}
+                        sf::Font new_default_font = GetDefaultFont();
+                  
+                        ResourceManager::GetFonts().Add("Default", new_default_font);
+                        text_obj->SetFont("Default", new_default_font);
 					}
 					else
 					{

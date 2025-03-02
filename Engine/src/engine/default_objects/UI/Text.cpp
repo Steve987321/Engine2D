@@ -6,6 +6,22 @@
 namespace Toad
 {
 
+sf::Font GetDefaultFont()
+{
+    sf::Font f;
+    bool load_success = false;
+    
+    // #TODO: store these font paths somewhere else
+#ifdef _WIN32
+    load_success = f.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf");
+#else
+    load_success = f.loadFromFile("/Library/Fonts/Catamaran-Regular.ttf");
+#endif
+    
+    assert(load_success && "Can't load default font");
+    return f;
+}
+
 Text::Text(std::string_view obj_name)
 {
 	name = obj_name;

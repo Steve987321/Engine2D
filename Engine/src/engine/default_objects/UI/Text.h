@@ -16,6 +16,8 @@ struct ENGINE_API TextStyle
 	float outline_thickness = 1.f;
 };
 
+ENGINE_API sf::Font GetDefaultFont();
+
 class ENGINE_API Text : public Object
 {
 public:

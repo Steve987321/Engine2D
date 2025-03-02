@@ -100,9 +100,11 @@ namespace ui
 					{
 						if (selected_obj && obj)
 							LOGDEBUGF("dragging {1} to {0}", obj->name, selected_obj->name);
-
-						drag_drop_extra_check_parent = obj->name;
-						drag_drop_extra_check_child = selected_obj->name;
+                        
+                        if (obj)
+                            drag_drop_extra_check_parent = obj->name;
+                        if (selected_obj)
+                            drag_drop_extra_check_child = selected_obj->name;
 
 						if (ImGui::AcceptDragDropPayload("move object"))
 						{
@@ -416,9 +418,10 @@ namespace ui
 				{
 					drag_drop_extra_check_parent.clear();
 					drag_drop_extra_check_child.clear();
-				}
+                    
+                    child_obj->SetParent(parent_obj.get());
 
-				child_obj->SetParent(parent_obj.get());
+				}
 			}
 		}
 

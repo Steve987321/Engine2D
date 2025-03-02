@@ -73,7 +73,7 @@ static void SaveINIToCorrectBuffer()
 		buf = &ui::ini_anim_buf;
 		break;
 	default:
-		LOGERRORF("[{}] buttowski" __FUNCTION__);
+		LOGERROR("buttowski");
 		break;
 	}
 
