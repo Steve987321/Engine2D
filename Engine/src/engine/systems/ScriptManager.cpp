@@ -16,7 +16,6 @@ namespace Toad
 {
 	// instances of all game scripts
 	static TGAME_SCRIPTS game_scripts = {};
-
 	static DllHandle current_dll;
 
 	void ScriptManager::LoadScripts()
@@ -29,6 +28,7 @@ namespace Toad
 		{
 			if (script)
 				free(script);
+
 			script = nullptr;
 		}
 

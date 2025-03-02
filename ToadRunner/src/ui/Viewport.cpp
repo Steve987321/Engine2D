@@ -9,6 +9,7 @@
 
 #include "imgui-SFML.h"
 #include "engine/Engine.h"
+#include "engine/PlaySession.h"
 
 #include "UI.h"
 
@@ -21,10 +22,10 @@ namespace ui
 	{
 		bool viewport_opened = ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 		{
-			auto& texture = Engine::Get().GetEditorCameraTexture();
+			auto& texture = Toad::GetEditorCameraTexture();
 			const auto content_size = ImGui::GetContentRegionAvail();
 
-			Camera& editor_cam = Engine::Get().GetEditorCamera();
+			Camera& editor_cam = Toad::GetEditorCamera();
 
 			static Vec2f initial_editor_cam_size = editor_cam.GetSize();
 
@@ -56,14 +57,14 @@ namespace ui
 
 			if (ImGui::IsWindowHovered())
 			{
-				Engine::Get().interacting_camera = &editor_cam;
-				Engine::Get().interacting_texture = &texture;
+				SetInteractingCamera(&editor_cam);
+				SetInteractingTexture(&texture);
 
-				Engine::Get().viewport_size = { (int)image_width, (int)image_height };
+				viewport_size = { (int)image_width, (int)image_height };
 				float f_x = editor_cam.GetSize().x / image_width;
 				float f_y = editor_cam.GetSize().y / image_height;
 
-				Engine::Get().relative_mouse_pos = {
+				Mouse::relative_mouse_pos = {
 					(int)((ImGui::GetMousePos().x - pos.x) * f_x),
 					(int)((ImGui::GetMousePos().y - pos.y) * f_y) };
 			}
@@ -81,7 +82,7 @@ namespace ui
 					}
 					else
 					{
-						Sprite* added_obj = Scene::current_scene.AddToScene(Sprite("Sprite"), Engine::Get().GameStateIsPlaying()).get();
+						Sprite* added_obj = Scene::current_scene.AddToScene(Sprite("Sprite"), Toad::begin_play).get();
 
 						added_obj->SetTexture(data.path, stex);
 						added_obj->GetSprite().setTextureRect(data.tex_rect);
@@ -280,7 +281,7 @@ namespace ui
 						{
 							Vec2f drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 
-							const Vec2i& mouse_pos = Engine::Get().relative_mouse_pos;
+							const Vec2i& mouse_pos = Mouse::relative_mouse_pos;
 							Vec2f mouse_world_pos = Screen::ScreenToWorld(mouse_pos);
 
 							// snap to the grid
@@ -544,21 +545,21 @@ namespace ui
 			{
 				static fs::path last_scene_path;
 
-				if (!Engine::Get().GameStateIsPlaying())
+				if (!Toad::begin_play)
 				{
 					if (ImGui::Button("Play"))
 					{
 						if (reload_scene_on_stop)
 							last_scene_path = Scene::current_scene.path;
 
-						Engine::Get().StartGameSession();
+						Toad::StartGameSession();
 					}
 				}
 				else
 				{
 					if (ImGui::Button("Stop"))
 					{
-						Engine::Get().StopGameSession();
+						Toad::StopGameSession();
 
 						if (reload_scene_on_stop)
 							Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
@@ -570,7 +571,7 @@ namespace ui
 				ImGui::BeginDisabled(fps_unlocked);
 				if (ImGui::DragInt("FPS", &fps, 1, 10, 100000))
 				{
-					Engine::Get().GetWindow().setFramerateLimit(std::clamp(fps, 10, 100000));
+					Toad::GetWindow().setFramerateLimit(std::clamp(fps, 10, 100000));
 				}
 				ImGui::EndDisabled();
 				ImGui::SameLine();
@@ -578,11 +579,11 @@ namespace ui
 				{
 					if (fps_unlocked)
 					{
-						Engine::Get().GetWindow().setFramerateLimit(0);
+						Toad::GetWindow().setFramerateLimit(0);
 					}
 					else
 					{
-						Engine::Get().GetWindow().setFramerateLimit(fps);
+						Toad::GetWindow().setFramerateLimit(fps);
 					}
 				}
 

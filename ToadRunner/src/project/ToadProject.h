@@ -81,8 +81,8 @@ namespace project {
 		std::filesystem::path engine_path;
 		PROJECT_FLAGS project_flags;
 		PROJECT_TYPE project_gen_type;
-		Vec2f editor_cam_size = {1280, 720};
-		Vec2f editor_cam_pos = {0, 0};
+		Toad::Vec2f editor_cam_size = {1280, 720};
+		Toad::Vec2f editor_cam_pos = {0, 0};
 
 		nlohmann::json to_json() const
 		{

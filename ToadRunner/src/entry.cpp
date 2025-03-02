@@ -9,21 +9,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 #else
 int main(int argc, char** argv)
 #endif 
-{
-	Toad::Engine engine;
-	
+{	
 #ifdef TOAD_EDITOR
-	engine.SetPreUICallback(ui::update_ini);
-	engine.SetEngineUI(ui::engine_ui);
-	engine.SetEventCallback(ui::event_callback);
-	engine.SetEditorTextureDrawCallback(ui::editor_texture_draw_callback);
-	engine.SetOnCloseCallback(ui::save_ini_files);
+	Toad::SetPreUICallback(ui::update_ini);
+	Toad::SetEngineUI(ui::engine_ui);
+	Toad::SetEventCallback(ui::event_callback);
+	Toad::SetEditorTextureDrawCallback(ui::editor_texture_draw_callback);
+	Toad::SetOnCloseCallback(ui::save_ini_files);
 #endif
 
-	if (!engine.Init())
+	if (!Toad::Init())
 		return 1;
 	
-	ImGui::SetCurrentContext(engine.GetImGuiContext());
+	ImGui::SetCurrentContext(Toad::GetWindow().GetImGuiContext());
 	
-	engine.Run();
+	Toad::Run();
 }

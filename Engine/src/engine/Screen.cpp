@@ -9,9 +9,9 @@ namespace Screen
 {
     Vec2f ScreenToWorld(const Vec2i& point)
     {
-        sf::RenderTexture& tex = Engine::Get().GetActiveRenderTexture();
+        sf::RenderTexture& tex = GetActiveRenderTexture();
 
-        Camera* current_cam = Engine::Get().interacting_camera;
+        Camera* current_cam = GetInteractingCamera();
         if (!current_cam) 
             return {-1, -1};
 
@@ -20,7 +20,7 @@ namespace Screen
 
     Vec2f ScreenToWorld(const Vec2i& point, const Camera& cam)
     {
-        sf::RenderTexture& tex = Engine::Get().GetActiveRenderTexture();
+        sf::RenderTexture& tex = GetActiveRenderTexture();
         float fx = cam.original_size.x / cam.GetSize().x;
         float fy = cam.original_size.y / cam.GetSize().y;
         Vec2i fixed_point = { (int)((float)point.x * fx), (int)(float)(point.y * fy) };
@@ -29,7 +29,7 @@ namespace Screen
 
     Vec2f WorldToScreen(const Vec2f& point, const Camera& cam, const Vec2f& content_size, const Vec2f& content_pos)
     {
-        Vec2i obj_pos_px = Engine::Get().GetActiveRenderTexture().mapCoordsToPixel(point, cam.GetView());
+        Vec2i obj_pos_px = GetActiveRenderTexture().mapCoordsToPixel(point, cam.GetView());
         Vec2f obj_pos_px_flt = { (float)obj_pos_px.x, (float)obj_pos_px.y };
 
         const Vec2f& cam_original_size = cam.original_size;

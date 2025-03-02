@@ -18,9 +18,11 @@ namespace Toad
 
 struct ScriptBuffer
 {
-	ScriptBuffer(void* b, size_t s) : buf(b), size(s) {}
-	void* buf;
+	ScriptBuffer(void* b, size_t s)
+		: buf(b), size(s) 
+	{}
 
+	void* buf;
 	size_t size;
 };
 

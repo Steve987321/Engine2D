@@ -9,7 +9,7 @@
 #endif
 
 #include "pch.h"
-#include <EngineCore.h>
+#include "EngineCore.h"
 
 struct AppSettings
 {

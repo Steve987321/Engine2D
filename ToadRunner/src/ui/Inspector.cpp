@@ -765,7 +765,7 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 		}
 		if (ImGui::BeginPopup("SCRIPT ADD"))
 		{
-			for (auto& [name, script] : Toad::Engine::Get().GetGameScriptsRegister())
+			for (auto& [name, script] : Toad::GetGameScriptsRegister())
 			{
 				if (!script)
 					continue;

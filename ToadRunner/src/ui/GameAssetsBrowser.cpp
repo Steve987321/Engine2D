@@ -79,14 +79,14 @@ void GameAssetsBrowser::Show()
 				return;
 			}
 
-			auto& droppedFilesQueue = Engine::Get().GetDroppedFilesQueue();
+			auto& droppedFilesQueue = GetWindow().GetDroppedFilesQueue();
 			while (!droppedFilesQueue.empty())
 			{
 				const fs::path& queued_file = droppedFilesQueue.front();
 
-				if (!fs::copy_file(queued_file, m_currentPath / queued_file.filename()))
+				if (!fs::copy_file(queued_file, GetCurrentPath() / queued_file.filename()))
 				{
-					LOGERRORF("Failed to copy {} to {}", queued_file, m_currentPath / queued_file.filename());
+					LOGERRORF("Failed to copy {} to {}", queued_file, GetCurrentPath() / queued_file.filename());
 				}
 
 				refresh = true;
@@ -102,9 +102,9 @@ void GameAssetsBrowser::Show()
 			}
 			else
 			{
-				if (m_currentPath != m_assetsPath && ImGui::ArrowButton("##back", ImGuiDir_Left))
+				if (GetCurrentPath() != m_assetsPath && ImGui::ArrowButton("##back", ImGuiDir_Left))
 				{
-					m_currentPath = m_currentPath.parent_path();
+					SetCurrentPath(GetCurrentPath().parent_path());
 					refresh = true;
 				}
 			}
@@ -238,14 +238,14 @@ void GameAssetsBrowser::Show()
 				if (ImGui::MenuItem("Directory"))
 				{
 					std::string dir_name = "new_directory";
-					while (exists(m_currentPath / dir_name))
+					while (exists(GetCurrentPath() / dir_name))
 					{
 						dir_name += "_1";
 					}
-					create_directory(m_currentPath / dir_name);
+					create_directory(GetCurrentPath() / dir_name);
 
 					refresh = true;
-					selected = m_currentPath / dir_name;
+					selected = GetCurrentPath() / dir_name;
 					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 					ignore_rename_warning = true;
 					renaming = true;
@@ -257,20 +257,20 @@ void GameAssetsBrowser::Show()
 				{
 					std::string scene_name = "Scene";
 					std::string file_ext = FILE_EXT_TOADSCENE;
-					while (exists(m_currentPath / (scene_name + file_ext)))
+					while (exists(GetCurrentPath() / (scene_name + file_ext)))
 					{
 						scene_name += "_1";
 					}
 
 					scene_name += file_ext;
 
-					std::ofstream f(m_currentPath / scene_name);
+					std::ofstream f(GetCurrentPath() / scene_name);
 					nlohmann::json da;
 					f << da;
 					f.close();
 					
 					refresh = true;
-					selected = m_currentPath / scene_name;
+					selected = GetCurrentPath() / scene_name;
 					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 					renaming = true;
 					ignore_rename_warning = true;
@@ -282,19 +282,19 @@ void GameAssetsBrowser::Show()
 				{
 					std::string fsm_name = "fsm";
 					std::string file_ext = FILE_EXT_FSM;
-					while (exists(m_currentPath / (fsm_name + file_ext)))
+					while (exists(GetCurrentPath() / (fsm_name + file_ext)))
 					{
 						fsm_name += "_1";
 					}
 					fsm_name += file_ext;
 
-					std::ofstream f(m_currentPath / fsm_name);
+					std::ofstream f(GetCurrentPath() / fsm_name);
 					nlohmann::json da;
 					f << da;
 					f.close();
 
 					refresh = true;
-					selected = m_currentPath / fsm_name;
+					selected = GetCurrentPath() / fsm_name;
 					strncpy(renaming_buf, selected.filename().string().c_str(), selected.filename().string().length() + 1);
 					renaming = true;
 					ignore_rename_warning = true;
@@ -319,7 +319,7 @@ void GameAssetsBrowser::Show()
 
 				if (ImGui::MenuItem("Copy path"))
 				{
-					ImGui::SetClipboardText(m_currentPath.string().c_str());
+					ImGui::SetClipboardText(GetCurrentPath().string().c_str());
 				}
 				
 				ImGui::EndPopup();
@@ -406,7 +406,7 @@ void GameAssetsBrowser::Show()
 			{
 				m_current_path_contents.clear();
 
-				for (const auto& entry : fs::directory_iterator(m_currentPath))
+				for (const auto& entry : fs::directory_iterator(GetCurrentPath()))
 					m_current_path_contents.emplace_back(entry.path());
 
 				refresh = false;
@@ -441,7 +441,7 @@ void GameAssetsBrowser::Show()
 
 					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
 					{
-						m_currentPath = path;
+						SetCurrentPath(path);
 						refresh = true;
 					}
 				}
@@ -620,7 +620,7 @@ void GameAssetsBrowser::Show()
 void GameAssetsBrowser::SetAssetPath(const std::filesystem::path& path)
 {
 	m_assetsPath = path;
-	m_currentPath = path;
+	SetCurrentPath(path);
 	refresh = true;
 }
 
@@ -631,8 +631,8 @@ const fs::path& GameAssetsBrowser::GetAssetPath() const
 
 bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 {
-	std::string cpp_file = (m_currentPath / script_name).string() + ".cpp";
-	std::string header_file = (m_currentPath / script_name).string() + ".h";
+	std::string cpp_file = (GetCurrentPath() / script_name).string() + ".cpp";
+	std::string header_file = (GetCurrentPath() / script_name).string() + ".h";
 
 	std::ofstream fcpp(cpp_file);
 	if (!fcpp.is_open())
@@ -654,7 +654,7 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 		LOGERROR("Failed to verify paths");
 		return false;
 	}
-	if (!AddToScriptRegistry(m_currentPath / script_name))
+	if (!AddToScriptRegistry(GetCurrentPath() / script_name))
 	{
 		LOGERRORF("Failed to add {} to script registry", script_name);
 		return false;

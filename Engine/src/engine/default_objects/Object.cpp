@@ -2,6 +2,7 @@
 #include "Object.h"
 
 #include "engine/Engine.h"
+#include "engine/PlaySession.h"
 
 namespace Toad
 {
@@ -224,7 +225,7 @@ namespace Toad
 		}
 
 		SetParent(nullptr);
-		m_currentScene.RemoveFromScene(name, Engine::Get().GameStateIsPlaying());
+		m_currentScene.RemoveFromScene(name, Toad::begin_play);
 	}
 
 	json Object::SerializeScripts() const
@@ -334,7 +335,7 @@ namespace Toad
 
 	void Object::AddScript(std::string_view script_name)
 	{
-		const auto& gscripts = Engine::Get().GetGameScriptsRegister();
+		const auto& gscripts = Toad::GetGameScriptsRegister();
 		if (auto it = gscripts.find(script_name.data()); it != gscripts.end())
 		{
 			AddScript(it->second->Clone());

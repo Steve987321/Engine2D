@@ -23,6 +23,8 @@ class FlowNode
 public:
 	Flow& flow_ctx;
 
+	FlowNodeTransition* transition = nullptr;
+
 	std::function<void()> update;
 };
 

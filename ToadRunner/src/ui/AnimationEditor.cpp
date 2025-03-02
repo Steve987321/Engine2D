@@ -34,7 +34,7 @@ namespace Toad
 		bool animation_editor_opened = ImGui::Begin("AnimationEditor", show);
 
 		if (animation_editor_opened)
-			Engine::Get().interacting_texture = &m_previewTexture;
+			 SetInteractingTexture(&m_previewTexture);
 
 		{
 			std::string info_title = format_str("{} | (W:{}H:{})", m_selectedAnimation.name + FILE_EXT_TOADANIMATION, m_previewTexture.getSize().x, m_previewTexture.getSize().y);
@@ -226,9 +226,9 @@ namespace Toad
 
 				ImDrawList* draw = ImGui::GetWindowDrawList();
 
-				for (int x = starting_position.x; x < m_previewTexture.getSize().x;)
+				for (uint32_t x = (uint32_t)starting_position.x; x < m_previewTexture.getSize().x;)
 				{
-					for (int y = starting_position.y; y < m_previewTexture.getSize().y;)
+					for (uint32_t y = (uint32_t)starting_position.y; y < m_previewTexture.getSize().y;)
 					{
 						Vec2f screen_start = Screen::WorldToScreen({ (float)x, (float)y }, m_cam, { content_size.x, content_size.y }, { preview_texture_scursor_pos.x, preview_texture_scursor_pos.y });
 						Vec2f screen_end = Screen::WorldToScreen({ (float)x + tile_size.x, (float)y + tile_size.y }, m_cam, { content_size.x, content_size.y }, { preview_texture_scursor_pos.x, preview_texture_scursor_pos.y });

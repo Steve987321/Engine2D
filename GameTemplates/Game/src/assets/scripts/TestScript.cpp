@@ -105,7 +105,7 @@ void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
 	static float fixed_time_step = Time::fixed_delta_time;
 	ImGui::DragFloat("Ball Speed Mult", &speed_mult);
 	if (ImGui::DragInt("FPS Lock", &fps))
-		Engine::Get().GetWindow().setFramerateLimit(fps);
+		Toad::GetWindow().setFramerateLimit(fps);
 	
 	if (ImGui::InputFloat("Fixed Step Delta", &fixed_time_step, 1.0e-7f, 5.f, "%.7f"))
 		Time::fixed_delta_time = std::clamp(fixed_time_step, 1.0e-7f, 5.f);

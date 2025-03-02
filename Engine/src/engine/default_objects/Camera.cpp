@@ -66,7 +66,7 @@ void Camera::OnCreate()
 {
 	m_cameras.push_back(this);
 	SetPosition({0.f, 0.f});
-	Vec2u size = Engine::Get().GetWindow().getSize();
+	Vec2u size = GetWindow().getSize();
 
 	m_view.setSize({(float)size.x, (float)size.y});
 	original_size = m_view.getSize();

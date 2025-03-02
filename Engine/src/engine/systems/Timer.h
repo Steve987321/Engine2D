@@ -18,7 +18,7 @@ public:
 	template<typename TDur = std::chrono::milliseconds>
 	float Elapsed() const
 	{
-		return std::chrono::duration_cast<TDur>(TClock::now() - m_start).count();
+		return (float)std::chrono::duration_cast<TDur>(TClock::now() - m_start).count();
 	}
 
 private:

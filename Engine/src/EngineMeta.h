@@ -6,6 +6,7 @@
 #include "engine/Types.h"
 #include "engine/Screen.h"
 #include "engine/DrawingCanvas.h"
+#include "engine/AppWindow.h"
 
 #include "engine/systems/Input.h"
 #include "engine/systems/Scene.h"

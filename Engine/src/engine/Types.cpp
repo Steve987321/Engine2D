@@ -2,6 +2,8 @@
 #include "engine/Engine.h"
 #include "Types.h"
 
+namespace Toad
+{
 
 void FloatRect::Expand(float v)
 {
@@ -24,22 +26,22 @@ bool FloatRect::Contains(const Vec2f& point)
 void Mouse::SetVisible(bool visible)
 {
 #ifdef TOAD_EDITOR
-	Toad::Engine::Get().mouse_visible = visible;
-	if (Toad::Engine::Get().capture_mouse)
-		Toad::Engine::Get().GetWindow().setMouseCursorVisible(visible);
+	mouse_visible = visible;
+	if (capture_mouse)
+		GetWindow().setMouseCursorVisible(visible);
 #else
-	Toad::Engine::Get().GetWindow().setMouseCursorVisible(visible);
+	GetWindow().setMouseCursorVisible(visible);
 #endif 
 }
 
 const Vec2i& Mouse::GetPosition()
 {
 #ifdef TOAD_EDITOR
-	if (!Toad::Engine::Get().capture_mouse)
-		return Toad::Engine::Get().last_captured_mouse_pos;
+	if (!capture_mouse)
+		return last_captured_mouse_pos;
 
-	Toad::Engine::Get().last_captured_mouse_pos = getPosition();
-	return Toad::Engine::Get().last_captured_mouse_pos;
+	last_captured_mouse_pos = getPosition();
+	return last_captured_mouse_pos;
 #endif 
 
 	return getPosition();
@@ -48,9 +50,10 @@ const Vec2i& Mouse::GetPosition()
 void Mouse::SetPosition(const Vec2i& pos)
 {
 #ifdef TOAD_EDITOR
-	if (!Toad::Engine::Get().capture_mouse)
+	if (!capture_mouse)
 		return;
 #endif 
 	setPosition(pos);
 }
 
+}

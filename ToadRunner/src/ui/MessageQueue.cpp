@@ -38,7 +38,7 @@ namespace Toad
 			pos.x -= 100.f;
 			pos.y += i * (text_size.y + 5.f);
 
-			float a = (1.f + ImSin(ImGui::GetTime() * 10)) / 2.f;
+			float a = (1.f + ImSin((float)ImGui::GetTime() * 10)) / 2.f;
 			// draw bg 
 			draw->AddRectFilled(pos, { pos.x + text_size.x, pos.y + text_size.y }, IM_COL32(10, 10, 10, 200));
 

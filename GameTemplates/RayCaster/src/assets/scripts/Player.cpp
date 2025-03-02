@@ -67,7 +67,7 @@ void Player::OnUpdate(Object* obj)
 	Vec2i mouse_pos = Mouse::GetPosition();
 
 	// get current window 
-	const sf::RenderWindow& window = Engine::Get().GetWindow();
+	const sf::RenderWindow& window = Toad::GetWindow();
 
 	// locks mouse at center of window (#TODO: including the editor)
 	const Vec2i locked_mouse_pos = { 

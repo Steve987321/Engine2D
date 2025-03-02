@@ -1,5 +1,24 @@
 #pragma once
 
+namespace filewatch
+{
+	enum class Event;
+}
+
+struct ImGuiContext;
+namespace Toad
+{
+
+class Script;
+
+using FENGINE_UI = std::function<void(ImGuiContext* ctx)>;
+using FENGINE_PRE_UI_CALLBACK = std::function<void()>;
+using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
+using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
+using FONCLOSE_CALLBACK = std::function<void(int)>;
+using FONDLLCHANGE_CALLBACK = std::function<void(const std::wstring&, const filewatch::Event)>;
+using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
+
 using Vec2i = sf::Vector2i;
 using Vec2f = sf::Vector2f;
 using Vec2u = sf::Vector2u;
@@ -32,7 +51,6 @@ public:
 
 private:
 	using sf::FloatRect::intersects;
-
 };
 
 class ENGINE_API Mouse : public sf::Mouse
@@ -41,6 +59,11 @@ public:
 	static void SetVisible(bool visible);
 	static const Vec2i& GetPosition();
 	static void SetPosition(const Vec2i& pos);
+
+	static inline bool mouse_visible = true;
+	static inline bool capture_mouse = false;
+	static inline Vec2i last_captured_mouse_pos {};
+	static inline Vec2i relative_mouse_pos {};
 
 private:
 	using sf::Mouse::getPosition;
@@ -55,3 +78,5 @@ struct ENGINE_API AudioSource
 	bool has_valid_buffer;
 };
 
+
+}

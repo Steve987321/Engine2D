@@ -6,6 +6,7 @@
 #include "SceneHierarchy.h"
 
 #include "engine/Engine.h"
+#include "engine/PlaySession.h"
 
 #include "UI.h"
 
@@ -496,23 +497,23 @@ namespace ui
 			if (ImGui::BeginMenu("Create"))
 			{
 				if (ImGui::MenuItem("Empty Object"))
-					Scene::current_scene.AddToScene(Object("Object"), Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Object("Object"), Toad::begin_play);
 
 				if (ImGui::MenuItem("Circle"))
-					Scene::current_scene.AddToScene(Circle("Circle"), Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Circle("Circle"), Toad::begin_play);
 
 				if (ImGui::MenuItem("Sprite"))
-					Scene::current_scene.AddToScene(Sprite("Sprite"), Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Sprite("Sprite"), Toad::begin_play);
 
 				if (ImGui::MenuItem("Audio"))
-					Scene::current_scene.AddToScene(Audio("Audio"), Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Audio("Audio"), Toad::begin_play);
 
 				if (ImGui::MenuItem("Text"))
-					Scene::current_scene.AddToScene(Text("Text"), Engine::Get().GameStateIsPlaying());
+					Scene::current_scene.AddToScene(Text("Text"), Toad::begin_play);
 
 				if (ImGui::MenuItem("Camera"))
 				{
-					Camera* cam = Scene::current_scene.AddToScene(Camera("Camera"), Engine::Get().GameStateIsPlaying()).get();
+					Camera* cam = Scene::current_scene.AddToScene(Camera("Camera"), Toad::begin_play).get();
 					cam->ActivateCamera();
 				}
 

@@ -12,7 +12,7 @@ void TestScript::OnStart(Object* obj)
 
 	circle = dynamic_cast<Circle*>(obj);
 
-	//Engine::Get().AdjustFixedTimeStep(0.01f);
+	//Toad::AdjustFixedTimeStep(0.01f);
 
 	if (circle == nullptr)
 	{
@@ -109,7 +109,7 @@ void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
 	static int fps = 60;
 	ImGui::DragFloat("Ball Speed Mult", &speed_mult);
 	if (ImGui::DragInt("FPS Lock", &fps))
-		Engine::Get().GetWindow().setFramerateLimit(fps);
+		Toad::GetWindow().setFramerateLimit(fps);
 	
 	ImGui::InputFloat("Fixed Step Delta", &Time::fixed_delta_time, 1.0e-7f, 5.f, "%.7f");
 

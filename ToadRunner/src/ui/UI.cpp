@@ -23,13 +23,15 @@
 #include "ui/Viewport.h"
 
 #include "engine/systems/build/Package.h"
-#include "project/ToadProject.h"
-#include "SceneHistory.h"
-#include "utils/FileDialog.h"
 #include "engine/utils/Helpers.h"
 #include "engine/systems/Animation.h"
 #include "engine/Types.h"
- 
+#include "engine/PlaySession.h"
+
+#include "project/ToadProject.h"
+#include "SceneHistory.h"
+#include "utils/FileDialog.h"
+
 using json = nlohmann::ordered_json;
 
 using namespace Toad;
@@ -93,18 +95,18 @@ static void ScriptReload()
 		return;
 
 	bool game_was_playing = false;
-	if (Engine::Get().GameStateIsPlaying())
+	if (Toad::begin_play)
 	{
 		game_was_playing = true;
-		Engine::Get().StopGameSession();
+		Toad::StopGameSession();
 	}
 
-	Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
+	Toad::UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
-	Engine::Get().LoadGameScripts();
+	LoadGameScripts();
 
 	if (game_was_playing)
-		Engine::Get().StartGameSession();
+		StartGameSession();
 
 	MessageQueueMessage msg;
 	msg.msg = "Updated scripts";
@@ -152,7 +154,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 #else
         settings.project_gen_type = project::PROJECT_TYPE::Makefile;
 #endif
-		Engine::Get().SetGameDLLWatcherCallback(GameDLLOnChangeCallback);
+		Toad::SetGameDLLWatcherCallback(GameDLLOnChangeCallback);
 		browser = &asset_browser;
         once = false;
     }
@@ -183,7 +185,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::MenuItem("Test child window"))
 			{
-				Engine::Get().AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
+				AppWindow::AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
 			}	
 			if (ImGui::MenuItem("Test button"))
 			{
@@ -494,7 +496,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					if (!std::filesystem::exists(project::current_project.engine_path))
 						project::current_project.engine_path = GetEngineDirectory().string();
 						
-                    Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
+                    Toad::UpdateGameBinPaths(LIB_FILE_PREFIX + settings.name + LIB_FILE_EXT, GetProjectBinPath(settings).string());
 				}
 
 			}
@@ -535,9 +537,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 				if (lri.res == project::LOAD_PROJECT_RES::OK)
 				{
-					Engine::Get().UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
+					Toad::UpdateGameBinPaths(LIB_FILE_PREFIX + project::current_project.name + "_Game" + LIB_FILE_EXT, GetProjectBinPath(project::current_project).string());
 
-					Engine::Get().LoadGameScripts();
+					Toad::LoadGameScripts();
 
 					if (!std::filesystem::exists(project::current_project.engine_path))
 						project::current_project.engine_path = GetEngineDirectory().string();
@@ -792,21 +794,21 @@ void ui::engine_ui(ImGuiContext* ctx)
 			// button from viewport 
 			static fs::path last_scene_path;
 
-			if (!Engine::Get().GameStateIsPlaying())
+			if (!Toad::begin_play)
 			{
 				if (ImGui::Button("Play"))
 				{
 					if (reload_scene_on_stop)
 						last_scene_path = Scene::current_scene.path;
 
-					Engine::Get().StartGameSession();
+					StartGameSession();
 				}
 			}
 			else
 			{
 				if (ImGui::Button("Stop"))
 				{
-					Engine::Get().StopGameSession();
+					Toad::StopGameSession();
 
 					if (reload_scene_on_stop)
 						Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
@@ -835,7 +837,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			else
 			{
-				auto& window_texture = Engine::Get().GetWindowTexture();
+				auto& window_texture = GetWindowTexture();
 
 				auto content_size = ImGui::GetContentRegionAvail();
 
@@ -852,41 +854,41 @@ void ui::engine_ui(ImGuiContext* ctx)
 					(content_size.y - image_height + pady) * 0.5f
 					});
 
-				const ImVec2 pos = ImGui::GetCursorScreenPos();
+				static bool mouse_visible_prev = false;
 
+				const ImVec2 pos = ImGui::GetCursorScreenPos();
 				ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
 				if (ImGui::IsItemClicked())
 				{
-					Engine::Get().capture_mouse = true;
+					Mouse::capture_mouse = true;
 
-					if (!Engine::Get().mouse_visible_prev)
+					if (!mouse_visible_prev)
 						Mouse::SetVisible(false);
 				}
 				if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 				{
 					Mouse::SetVisible(true);
 
-					Engine::Get().capture_mouse = false;
-					Engine::Get().mouse_visible_prev = Engine::Get().mouse_visible;
-					Engine::Get().mouse_visible = true;
+					Mouse::capture_mouse = false;
+					mouse_visible_prev = true;
 				}
 				if (ImGui::IsWindowHovered())
 				{
-					Engine::Get().viewport_size = { (int)image_width, (int)image_height };
+					viewport_size = { (int)image_width, (int)image_height };
 
 					if (cam)
 					{
-						Engine::Get().interacting_camera = cam;
-						Engine::Get().interacting_texture = &window_texture;
+						SetInteractingCamera(cam);
+						SetInteractingTexture(&window_texture);
 						float f_x = cam->GetSize().x / image_width;
 						float f_y = cam->GetSize().y / image_height;
 
-						Engine::Get().relative_mouse_pos = {
+						Mouse::relative_mouse_pos = {
 						(int)((ImGui::GetMousePos().x - pos.x) * f_x),
 						(int)((ImGui::GetMousePos().y - pos.y) * f_y) };
 					}
 					else
-						Engine::Get().interacting_camera = &Engine::Get().GetEditorCamera();
+						SetInteractingCamera(&Toad::GetEditorCamera());
 				}
 			}
 
@@ -983,8 +985,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
 			{
-				if (Engine::Get().GameStateIsPlaying())
-					Engine::Get().StopGameSession();
+				if (Toad::begin_play)
+					Toad::StopGameSession();
 
 				selected_obj = nullptr;
 				selected_objects.clear();
@@ -992,8 +994,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			else
 			{
-				if (Engine::Get().GameStateIsPlaying())
-					Engine::Get().StopGameSession();
+				if (Toad::begin_play)
+					Toad::StopGameSession();
 
 				selected_obj = nullptr;
 				selected_objects.clear();
@@ -1024,8 +1026,8 @@ void ui::update_ini()
 		}
 		else
 		{
-			Engine::Get().RecreateImGuiContext();
-			ImGui::SetCurrentContext(Engine::Get().GetImGuiContext());
+			Toad::GetWindow().RecreateImGuiContext();
+			ImGui::SetCurrentContext(Toad::GetWindow().GetImGuiContext());
 			if (ini_buf)
 				ImGui::LoadIniSettingsFromMemory(ini_buf);
 		}
@@ -1059,7 +1061,7 @@ void ui::editor_texture_draw_callback(sf::RenderTexture& texture)
 	{
 		return;
 	}
-	const Camera& cam = Engine::Get().GetEditorCamera();
+	const Camera& cam = Toad::GetEditorCamera();
 	static auto rect = sf::RectangleShape();
 	rect.setFillColor(sf::Color::Transparent);
 	rect.setOutlineThickness(2.f);

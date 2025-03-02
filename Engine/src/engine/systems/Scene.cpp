@@ -5,6 +5,7 @@
 #include "engine/default_objects/Sprite.h"
 #include "engine/default_objects/Circle.h"
 
+#include "engine/PlaySession.h"
 #include "engine/Engine.h"
 #include "engine/systems/Time.h"
 #include "nlohmann/json.hpp"
@@ -28,7 +29,7 @@ void Scene::SetScene(Scene* scene)
 
 	current_scene = *scene;
 
-	if (Engine::Get().GameStateIsPlaying())
+	if (begin_play)
 		current_scene.Start();
 }
 
@@ -47,16 +48,17 @@ void Scene::Update()
 		obj->Update();
 	}
 	
-	static float time = Time::fixed_delta_time;
-	time += Time::GetDeltaTime();
-	while (time >= Time::fixed_delta_time)
+	static float fdt = Time::GetFixedDeltaTime();
+	static float time_acc = fdt;
+	time_acc += Time::GetDeltaTime();
+	while (time_acc >= fdt)
 	{
 		for (auto& obj : objects_all)
 		{
 			obj->FixedUpdate();
 		}
 
-		time -= Time::fixed_delta_time;
+		time_acc -= fdt;
 	}
 
 	for (auto& obj : objects_all)
@@ -365,7 +367,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
 
-			Object* newobj = scene.AddToScene(T(object.key()), Engine::Get().GameStateIsPlaying(), index).get();
+			Object* newobj = scene.AddToScene(T(object.key()), Toad::begin_play, index).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
@@ -629,7 +631,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			
 			for (const auto& script : object.value()["scripts"].items())
 			{
-				auto gscripts = Engine::Get().GetGameScriptsRegister();
+				auto gscripts = Toad::GetGameScriptsRegister();
 				if (gscripts.empty())
 				{
 					LOGWARN("[Scene] Scripts register is empty");
@@ -750,10 +752,10 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 	if (objects.contains("objects"))
 	{
 		bool restart = false;
-		if (Engine::Get().GameStateIsPlaying())
+		if (Toad::begin_play)
 		{
 			restart = true;
-			Engine::Get().StopGameSession();
+			Toad::StopGameSession();
 		}
 
 		if (delete_old_objects)
@@ -771,7 +773,7 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 
 		if (restart) 
 		{
-			Engine::Get().StartGameSession();
+			Toad::StartGameSession();
 		}
 	}
 }
