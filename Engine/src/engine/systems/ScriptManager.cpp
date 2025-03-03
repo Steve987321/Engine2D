@@ -87,7 +87,7 @@ namespace Toad
 			{
 				try
 				{
-					Sleep(500);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 					fs::rename(game_dll_path, current_game_dll);
 					tries++;
 				}

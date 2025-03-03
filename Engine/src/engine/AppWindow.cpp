@@ -28,7 +28,7 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 	orginal_wnd_proc = SetWindowLongPtrA(window_handle, GWLP_WNDPROC, (LONG_PTR)AppWindow::WndProc);
 	ShowWindow(window_handle, SW_NORMAL);
 #else
-	void* window_handle = window.getSystemHandle();
+	void* window_handle = getSystemHandle();
 #endif
 
 	bool res = ImGui::SFML::Init(*this, false);

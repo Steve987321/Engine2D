@@ -11,12 +11,18 @@ namespace Toad
 
 class Script;
 
+#ifdef _WIN32
+using TFILEWATCH_STRTYPE = std::wstring;
+#else
+using TFILEWATCH_STRTYPE = std::string;
+#endif
+
 using FENGINE_UI = std::function<void(ImGuiContext* ctx)>;
 using FENGINE_PRE_UI_CALLBACK = std::function<void()>;
 using FEVENT_CALLBACK = std::function<void(const sf::Event& ctx)>;
 using FEDITOR_TEXTURE_DRAW_CALLBACK = std::function<void(sf::RenderTexture& texture)>;
 using FONCLOSE_CALLBACK = std::function<void(int)>;
-using FONDLLCHANGE_CALLBACK = std::function<void(const std::wstring&, const filewatch::Event)>;
+using FONDLLCHANGE_CALLBACK = std::function<void(const TFILEWATCH_STRTYPE&, const filewatch::Event)>;
 using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
 using Vec2i = sf::Vector2i;

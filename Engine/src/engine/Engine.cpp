@@ -29,7 +29,7 @@ static FEDITOR_TEXTURE_DRAW_CALLBACK editor_texture_draw_callback = nullptr;
 static FONCLOSE_CALLBACK close_callback = nullptr;
 static FONDLLCHANGE_CALLBACK on_dll_change_callback = nullptr;
 
-static std::unique_ptr<filewatch::FileWatch<std::wstring>> dll_file_watch = nullptr;
+static std::unique_ptr<filewatch::FileWatch<TFILEWATCH_STRTYPE>> dll_file_watch = nullptr;
 
 static Camera editor_cam{ "EditorCamera" };
 // multiple windows
@@ -409,18 +409,25 @@ AppWindow& GetWindow()
 
 void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
 {
-	game_bin_directory = bin_path;
-	game_bin_file = game_bin_file_name;
-
-	if (!game_bin_directory.ends_with(PATH_SEPARATOR))
-	{
-		game_bin_directory += PATH_SEPARATOR;
-	}
-
-	std::wstring ws(game_bin_directory.size(), ' ');
-	ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
-
-	dll_file_watch = std::make_unique<filewatch::FileWatch<std::wstring>>(ws, on_dll_change_callback);
+    game_bin_directory = bin_path;
+    game_bin_file = game_bin_file_name;
+    
+    if (!game_bin_directory.ends_with(PATH_SEPARATOR))
+    {
+        game_bin_directory += PATH_SEPARATOR;
+    }
+    
+    if (game_bin_directory.find("bin") == std::string::npos)
+        return;
+    
+#ifdef _WIN32
+    std::wstring ws(game_bin_directory.size(), ' ');
+    ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
+    
+    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(ws, on_dll_change_callback);
+#else
+    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
+#endif
 }
 
 void LoadGameScripts()
@@ -473,11 +480,19 @@ void SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback)
 		LOGERRORF("Can't add game dll watcher to non existing file: {}", game_bin_directory);
 		return;
 	}
+    
+    if (game_bin_directory.find("bin") == std::string::npos)
+        return;
 
-	std::wstring ws(game_bin_directory.size(), ' ');
-	ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
-
-	dll_file_watch = std::make_unique<filewatch::FileWatch<std::wstring>>(ws, on_dll_change_callback);
+#ifdef _WIN32
+    std::wstring ws(game_bin_directory.size(), ' ');
+    ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
+    
+    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(ws, on_dll_change_callback);
+#else
+    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
+#endif
+    
 	LOGDEBUG("Setting dll watch");
 }
 

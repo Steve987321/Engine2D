@@ -5,6 +5,8 @@
 namespace Toad
 {
 
+struct AudioSource;
+
 class ENGINE_API Audio : public Object
 {
 public:

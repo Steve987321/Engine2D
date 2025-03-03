@@ -80,7 +80,7 @@ static void SaveINIToCorrectBuffer()
 	*buf = ImGui::SaveIniSettingsToMemory();
 }
 
-static void GameDLLOnChangeCallback(const std::wstring& path, const filewatch::Event e)
+static void GameDLLOnChangeCallback(const TFILEWATCH_STRTYPE& path, const filewatch::Event e)
 {
 	if (should_reload)
 		return;
@@ -310,7 +310,9 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ImGui::BeginTabItem("Animation", nullptr, flags))
 			{
-				if (tab != ANIMATION && ImGui::IsItemHovered() && ImGui::IsMouseDown(0))
+                LOGDEBUGF("{} {} {}", ImGui::IsMouseDown(0), ImGui::IsMouseClicked(0), ImGui::IsMouseReleased(0));
+                
+                if (tab != ANIMATION && ImGui::IsItemHovered() && (ImGui::IsMouseDown(0) || ImGui::IsMouseClicked(0)))
 				{
 					SaveINIToCorrectBuffer();
 					tab = ANIMATION;
