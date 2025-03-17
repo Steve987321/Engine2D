@@ -59,17 +59,27 @@ json Camera::Serialize()
 
 Camera* Camera::GetActiveCamera()
 {
-	return m_activeCam;
+#ifdef TOAD_EDITOR
+	if (m_activeCam)
+        return m_activeCam;
+    else
+        return GetInteractingCamera();
+#else
+    return m_activeCam;
+#endif
 }
 
 void Camera::OnCreate()
 {
 	m_cameras.push_back(this);
-	SetPosition({0.f, 0.f});
-	Vec2u size = GetWindow().getSize();
+    Vec2u size = GetWindow().getSize();
+
+    SetPosition(m_view.getCenter());
 
 	m_view.setSize({(float)size.x, (float)size.y});
-	original_size = m_view.getSize();
+    last_size = Vec2f{(float)size.x, (float)size.y};
+
+    original_size = m_view.getSize();
 }
 
 void Camera::Start()
@@ -87,9 +97,9 @@ void Camera::Update()
 	Object::Update();
 }
 
-const Vec2f& Camera::GetPosition() const 
+const Vec2f& Camera::GetPosition() const
 {
-	return m_view.getCenter();
+    return m_objectPos;
 }
 
 void Camera::SetPosition(const Vec2f& position)
@@ -141,12 +151,14 @@ void Camera::DeactivateCamera()
 
 void Camera::SetSize(const Vec2f& size)
 {
+    last_size = size;
 	m_view.setSize(size);
 }
 
 const Vec2f& Camera::GetSize() const
 {
-	return m_view.getSize();
+    // return m_view.getSize crashes
+    return last_size;
 }
 
 void Camera::Zoom(float factor)

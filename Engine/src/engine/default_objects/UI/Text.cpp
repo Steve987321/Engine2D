@@ -22,27 +22,24 @@ sf::Font GetDefaultFont()
     return f;
 }
 
+sf::Font& GetDefaultFontResource()
+{
+    sf::Font* default_font = ResourceManager::GetFonts().Get("Default");
+    if (default_font == nullptr)
+    {
+        sf::Font f = GetDefaultFont();
+        default_font = ResourceManager::GetFonts().Add("Default", f);
+        return *default_font;
+    }
+    else
+        return *default_font;
+}
+
 Text::Text(std::string_view obj_name)
 {
 	name = obj_name;
 	
-	sf::Font* default_font = ResourceManager::GetFonts().Get("Default");
-	if (default_font == nullptr)
-	{
-		sf::Font arial;
-		if (!arial.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
-		{
-			LOGWARN("Can't find C:\\Windows\\Fonts\\Arial.ttf");
-			return;
-		}
-
-		default_font = ResourceManager::GetFonts().Add("Default", arial);
-		SetFont("Default", *default_font);
-	}
-	else
-	{
-		SetFont("Default", *default_font);
-	}
+    SetFont("Default", GetDefaultFontResource());
 	m_style = TextStyle();
 	ApplyStyle();
 	SetText(obj_name);
@@ -119,7 +116,7 @@ void Text::Update()
 
 const Vec2f& Text::GetPosition() const
 {
-	return m_text.getPosition();
+    return m_objectPos;
 }
 
 void Text::SetPosition(const Vec2f& position)

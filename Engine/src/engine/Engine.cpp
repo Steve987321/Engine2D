@@ -47,6 +47,11 @@ void EventHandler(AppWindow& window);
 void Render(AppWindow& window);
 void CleanUp();
 
+namespace DrawingCanvas
+{
+extern void DrawBuffers(sf::RenderTarget& target);
+}
+
 // finds settings.json and loads them 
 void LoadEngineSettings();
 
@@ -336,6 +341,7 @@ void Render(AppWindow& window)
 	// Update scene to the texture so it can display on the (game) viewport 
 	Scene::current_scene.Render(window_texture);
 	DrawingCanvas::DrawVertices(window_texture);
+    DrawingCanvas::DrawBuffers(window_texture);
 	if (cam != nullptr)
 	{
 		window_texture.setView(cam->GetView());
@@ -344,6 +350,8 @@ void Render(AppWindow& window)
 
 	Scene::current_scene.Render(editor_cam_texture);
 	DrawingCanvas::DrawVertices(editor_cam_texture);
+    DrawingCanvas::DrawBuffers(editor_cam_texture);
+    DrawingCanvas::ClearDrawBuffers();
 
 	if (editor_texture_draw_callback)
 	{
@@ -493,7 +501,7 @@ void SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback)
     dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
 #endif
     
-	LOGDEBUG("Setting dll watch");
+	LOGDEBUG("Dll watch {}", game_bin_directory.string());
 }
 
 void ReleaseGameDLLWatcher()

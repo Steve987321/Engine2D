@@ -1,8 +1,17 @@
 #pragma once
 
+#include <filesystem>
+#include <functional>
+
 namespace filewatch
 {
 	enum class Event;
+}
+
+namespace sf
+{
+	class Event;
+	class RenderTexture;
 }
 
 struct ImGuiContext;
@@ -26,7 +35,6 @@ using FONDLLCHANGE_CALLBACK = std::function<void(const TFILEWATCH_STRTYPE&, cons
 using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
 using Vec2i = sf::Vector2i;
-using Vec2f = sf::Vector2f;
 using Vec2u = sf::Vector2u;
 using Vec3i = sf::Vector3i;
 using Vec3f = sf::Vector3f;
@@ -34,6 +42,37 @@ using Keyboard = sf::Keyboard;
 using IntRect = sf::IntRect;
 using Texture = sf::Texture;
 using Color = sf::Color;
+
+class ENGINE_API Vec2f : public sf::Vector2f
+{
+public:
+    Vec2f();
+    Vec2f(float x, float y);
+    Vec2f(const Vec2f& v);
+    Vec2f(const sf::Vector2f& other);
+    
+    void operator=(const sf::Vector2f& other);
+    
+    Vec2f operator+(const Vec2f& other) const;
+    Vec2f operator-(const Vec2f& other) const;
+    Vec2f operator*(const Vec2f& other) const;
+    Vec2f operator/(const Vec2f& other) const;
+    Vec2f operator+(float scalar) const;
+    Vec2f operator*(float scalar) const;
+    Vec2f operator/(float scalar) const;
+
+    void operator+=(const Vec2f& other);
+    void operator-=(const Vec2f& other);
+    void operator-=(float scalar);
+    void operator+=(float scalar);
+    void operator*=(float scalar);
+    void operator/=(float scalar);
+    
+    float Length() const;
+    Vec2f Normalize() const;
+    float Cross(const Vec2f& v) const;
+    float Dot(const Vec2f& v) const;
+};
 
 class ENGINE_API FloatRect : public sf::FloatRect
 {
@@ -63,7 +102,7 @@ class ENGINE_API Mouse : public sf::Mouse
 {
 public: 
 	static void SetVisible(bool visible);
-	static const Vec2i& GetPosition();
+	static Vec2i GetPosition();
 	static void SetPosition(const Vec2i& pos);
 
 	static inline bool mouse_visible = true;

@@ -361,7 +361,9 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			int32_t index = -1;
 			float x = 0.f;
 			float y = 0.f;
-
+            
+            LOGDEBUGF("{}", object.value());
+            
 			GET_JSON_ELEMENT(props, object.value(), "properties");
 			GET_JSON_ELEMENT(index, object.value(), "index");
 			GET_JSON_ELEMENT(x, props, "posx");
@@ -375,7 +377,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			Camera* camobj = dynamic_cast<Camera*>(newobj);
 
 			newobj->SetPosition({ x,y });
-
+            
 			std::string parent_name = props["parent"].get<std::string>();
 			if (!parent_name.empty())
 			{
@@ -628,7 +630,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 					camobj->DeactivateCamera();
 				}
 			}
-			
+            			
 			for (const auto& script : object.value()["scripts"].items())
 			{
 				auto gscripts = Toad::GetGameScriptsRegister();

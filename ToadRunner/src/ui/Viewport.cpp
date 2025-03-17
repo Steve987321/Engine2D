@@ -400,8 +400,9 @@ namespace ui
 					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 					{
 						starting_rotation = 0;
-						starting_scale = {};
-						starting_position = selected_obj->GetPosition();
+						starting_scale = Vec2f{};
+                        if (selected_obj)
+                            starting_position = selected_obj->GetPosition();
 
 						is_moving_gizmo = true;
 						is_gizmo_pos = true;
@@ -440,10 +441,13 @@ namespace ui
 			{
 				if (ImGui::IsMouseDown(ImGuiMouseButton_Middle))
 				{
+                    // #TODO: multiply by some zoom factor
+                    Vec2f sens_factor = editor_cam.GetSize() / editor_cam.original_size;
+                    
 					ImGuiContext* g = ImGui::GetCurrentContext();
 					ImVec2 d = ImGui::GetMouseDragDelta(ImGuiMouseButton_Middle, 0.f);
 					g->IO.MouseClickedPos[ImGuiMouseButton_Middle] = ImGui::GetMousePos();
-					editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x, d.y));
+					editor_cam.SetPosition(editor_cam.GetPosition() - Vec2f(d.x * sens_factor.x, d.y * sens_factor.y));
 				}
 
 				float mwheel = ImGui::GetIO().MouseWheel;
@@ -560,9 +564,13 @@ namespace ui
 					if (ImGui::Button("Stop"))
 					{
 						Toad::StopGameSession();
-
+                        
 						if (reload_scene_on_stop)
-							Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
+                        {
+                            selected_obj = nullptr; // after reload reset this object if it exists
+                            Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
+                        }
+							
 					}
 				}
 

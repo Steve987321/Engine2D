@@ -17,6 +17,7 @@ struct ENGINE_API TextStyle
 };
 
 ENGINE_API sf::Font GetDefaultFont();
+ENGINE_API sf::Font& GetDefaultFontResource();
 
 class ENGINE_API Text : public Object
 {

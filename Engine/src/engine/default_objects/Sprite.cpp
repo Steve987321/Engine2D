@@ -12,6 +12,8 @@ Sprite::Sprite(std::string_view obj_name)
 	sf::Texture default_tex = sf::Texture();
 	default_tex.create(10, 10);
 	m_sprite = sf::Sprite(default_tex);
+    
+    last_scale = m_sprite.getScale();
 }
 
 Sprite::~Sprite() = default;
@@ -23,7 +25,7 @@ sf::Sprite& Sprite::GetSprite()
 
 const Vec2f& Sprite::GetPosition() const
 {
-	return m_sprite.getPosition();
+    return m_objectPos;
 }
 
 void Sprite::SetPosition(const Vec2f& position)
@@ -51,12 +53,13 @@ float Sprite::GetRotation()
 
 const Vec2f& Sprite::GetScale() const
 {
-	return m_sprite.getScale();
+    return last_scale;
 }
 
 void Sprite::SetScale(const Vec2f& scale)
 {
-	return m_sprite.setScale(scale);
+    last_scale = scale;
+	m_sprite.setScale(scale);
 }
 
 std::filesystem::path& Sprite::GetTextureSourcePath()

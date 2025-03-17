@@ -129,7 +129,6 @@ protected:
 
 	Scene& m_currentScene;
 
-private:
 	// position used only by Object
 	Vec2f m_objectPos{ 0, 0 };
 };

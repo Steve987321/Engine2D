@@ -9,8 +9,6 @@ namespace Screen
 {
     Vec2f ScreenToWorld(const Vec2i& point)
     {
-        sf::RenderTexture& tex = GetActiveRenderTexture();
-
         Camera* current_cam = GetInteractingCamera();
         if (!current_cam) 
             return {-1, -1};

@@ -33,6 +33,7 @@ private:
 	void Update() override;
 
 private:
+    Vec2f last_scale;
 	sf::Sprite m_sprite;
 	std::filesystem::path m_texture_source_path;
 };

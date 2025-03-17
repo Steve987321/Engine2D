@@ -120,7 +120,8 @@ namespace Toad
 
 	const Vec2f& Object::GetScale() const
 	{
-		return {-1, -1};
+        static Vec2f v{-1, -1};
+		return v;
 	}
 
 	void Object::SetScale(const Vec2f& scale)
@@ -129,11 +130,16 @@ namespace Toad
 
 	json Object::Serialize()
 	{
+        json data;
 		json props;
+        
 		props["parent"] = GetParent();
 		props["posx"] = GetPosition().x;
 		props["posy"] = GetPosition().y;
-		return props;
+        
+        data["properties"] = props;
+        data["scripts"] = SerializeScripts();
+		return data;
 	}
 
 	const std::set<std::string>& Object::GetChildren()

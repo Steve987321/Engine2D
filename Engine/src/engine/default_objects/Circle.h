@@ -50,6 +50,7 @@ namespace Toad
 		void Update() override;
 
 	private:
+        Vec2f last_scale;
 		sf::CircleShape m_circle;
 		std::filesystem::path m_texture_source_path;
 	};

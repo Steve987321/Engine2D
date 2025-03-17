@@ -11,7 +11,7 @@ public:
 	explicit Camera(std::string_view obj_name);
 	~Camera();
 
-	Vec2f original_size{};
+	Vec2f original_size{0,0};
 
 	json Serialize() override;
 
@@ -24,7 +24,7 @@ public:
 	void Render(sf::RenderTarget& target) override;
 	void Update() override;
 
-	const Vec2f& GetPosition() const override;
+    const Vec2f& GetPosition() const override;
 	void SetPosition(const Vec2f& position) override;
 
 	float GetRotation() override;
@@ -49,6 +49,7 @@ private:
 	static inline std::vector<Camera*> m_cameras {};
 	static inline Camera* m_activeCam = nullptr;
 	bool m_active = false;
+    Vec2f last_size;
 };
 
 }

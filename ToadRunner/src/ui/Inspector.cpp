@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Inspector.h"
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "ui/UI.h"

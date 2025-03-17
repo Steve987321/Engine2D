@@ -6,6 +6,7 @@
 
 namespace Toad
 {
+
 void StartGameSession()
 {
 	if (begin_play)
@@ -20,7 +21,7 @@ void StopGameSession()
 	if (begin_play)
 		Scene::current_scene.End(nullptr);
 
-	DrawingCanvas::Clear();
+	DrawingCanvas::ClearDrawBuffers();
 
 	begin_play = false;
 }

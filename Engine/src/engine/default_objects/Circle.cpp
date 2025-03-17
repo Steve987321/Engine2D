@@ -11,6 +11,7 @@ namespace Toad
 		name = obj_name;
 
 		m_circle.setRadius(10);
+        last_scale = m_circle.getScale();
 	}
 
 	Circle::~Circle() = default;
@@ -38,7 +39,7 @@ namespace Toad
 
 	const Vec2f& Circle::GetPosition() const
 	{
-		return m_circle.getPosition();
+        return m_objectPos;
 	}
 
 	void Circle::SetPosition(const Vec2f& position)
@@ -64,13 +65,14 @@ namespace Toad
 	}
 
 	void Circle::SetScale(const Vec2f& scale)
-{
+    {
+        last_scale = scale;
 		m_circle.setScale(scale);
 	}
 
 	const Vec2f& Circle::GetScale() const
-{
-		return m_circle.getScale();
+    {
+        return last_scale;
 	}
 
 	void Circle::SetRotation(float degrees)

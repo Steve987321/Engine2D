@@ -7,7 +7,7 @@ namespace Toad
 	class Object;
 }
 
-#include "Engine/systems/ScriptManager.h"
+#include "engine/systems/ScriptManager.h"
 #include "Game.h"
 
 #include "engine/default_scripts/Script.h"
@@ -38,7 +38,6 @@ namespace Toad
 extern "C"
 {
 
-// functions signatures
 typedef void (register_scripts_t)();
 typedef void (register_script_t)();
 typedef Scripts (get_registered_scripts_t)();

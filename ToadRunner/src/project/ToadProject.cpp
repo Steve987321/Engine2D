@@ -85,7 +85,7 @@ namespace project {
 		const std::string premake5 = "premake5.exe";
 		const std::string full_path_to_premake5 = project_path_forwardslash + '/' + premake5;
 #else
-		const std::string premake5 = "premake5";
+		std::string premake5 = "premake5";
 		const std::string& full_path_to_premake5 = premake5;
 #endif
 		const fs::path engine_path_fs = settings.engine_path;
@@ -184,7 +184,7 @@ namespace project {
 #else
 		std::string premake_use_src_arg = "--usesrc";
 #endif
-		const std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} {}",
+		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} {}",
 			full_path_to_premake5,
 			proj_type_str,
 			project_path_forwardslash + "/premake5.lua",
@@ -197,11 +197,40 @@ namespace project {
 		LOGDEBUGF("result: {}", res);
 		if (res != 0)
 		{
-			return 
+#ifdef __APPLE__
+            // try using the full path
+            if (res == 32512)
+            {
+                // for now its just this
+                premake5 = "/opt/homebrew/bin/premake5";
+                
+                // fix the command
+                command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} {}",
+                    full_path_to_premake5,
+                    proj_type_str,
+                    project_path_forwardslash + "/premake5.lua",
+                    engine_path_forwardslash,
+                    settings.name,
+                    premake_use_src_arg);
+                
+                int res = system(command.c_str());
+                LOGDEBUGF("result: {}", res);
+                if (res != 0)
+                {
+                    return
+                    {
+                        CREATE_PROJECT_RES::ERROR,
+                        Toad::format_str("Failed to execute command {}", command)
+                    };
+                }
+            }
+#else
+			return
 			{
 				CREATE_PROJECT_RES::ERROR,
 				Toad::format_str("Failed to execute command {}", command)
 			};
+#endif
 		}
 
 		// create/copy default game/engine files 
@@ -228,7 +257,7 @@ namespace project {
 				e.path().filename().string().find("json") != std::string::npos ||
 				e.path().filename().string().find("SFML-2.6") != std::string::npos ||
 				e.path().filename().string().find("sfml-imgui") != std::string::npos || 
-				e.path().filename().string().find("filewatcher") != std::string::npos)
+				e.path().filename().string().find("filewatch") != std::string::npos)
 			{
 				for (const auto& e2 : fs::recursive_directory_iterator(e.path()))
 				{
@@ -622,8 +651,9 @@ namespace project {
 		PROJECT_TYPE proj_type = DetectProjectType(project_file.parent_path());
 
 		// #TODO should it use the (updated) one in the engine directory or the one in the game directory which may be outdated ?
+        
 #ifdef TOAD_DISTRO
-		const std::string full_command = Toad::format_str(
+		std::string full_command = Toad::format_str(
 			"{} {} --file={} --enginepath={} --projectname={}",
 			premake5,
 			ProjectTypeAsStr(proj_type),
@@ -631,7 +661,7 @@ namespace project {
 			settings.engine_path,
 			project_name);
 #else
-		const std::string full_command = Toad::format_str(
+		std::string full_command = Toad::format_str(
 			"{} {} --file={} --enginepath={} --projectname={} --usesrc",
 			premake5,
 			ProjectTypeAsStr(proj_type),
@@ -640,7 +670,41 @@ namespace project {
 			project_name);
 #endif
 		LOGDEBUGF("Running command: {}", full_command);
-		system(full_command.c_str());
+		int res = system(full_command.c_str());
+        
+#ifdef __APPLE__
+        // try using the full path
+        if (res == 32512)
+        {
+            // for now its just this
+            premake5 = "/opt/homebrew/bin/premake5";
+            
+            // fix the command
+#ifdef TOAD_DISTRO
+        full_command = Toad::format_str(
+            "{} {} --file={} --enginepath={} --projectname={}",
+            premake5,
+            ProjectTypeAsStr(proj_type),
+            (project_file.parent_path() / "premake5.lua").string(),
+            settings.engine_path,
+            project_name);
+#else
+       full_command = Toad::format_str(
+            "{} {} --file={} --enginepath={} --projectname={} --usesrc",
+            premake5,
+            ProjectTypeAsStr(proj_type),
+            (project_file.parent_path() / "premake5.lua").string(),
+            settings.engine_path,
+            project_name);
+#endif
+            int res = system(full_command.c_str());
+            LOGDEBUGF("result: {}", res);
+            if (res != 0)
+            {
+                LOGDEBUGF("Failed to execute command {}", full_command);
+            }
+        }
+#endif
 		return true;
 	}
 
