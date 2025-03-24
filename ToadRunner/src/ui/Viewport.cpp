@@ -570,11 +570,10 @@ namespace ui
                             selected_obj = nullptr; // after reload reset this object if it exists
                             Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
                         }
-							
-					}
+                    }
 				}
 
-				static int fps = 60;
+				static int fps = 30;
 				static bool fps_unlocked = false;
 				ImGui::BeginDisabled(fps_unlocked);
 				if (ImGui::DragInt("FPS", &fps, 1, 10, 100000))
