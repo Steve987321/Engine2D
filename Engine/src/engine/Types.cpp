@@ -123,7 +123,6 @@ float Vec2f::Dot(const Vec2f& v) const
     return x * v.x + y * v.y;
 }
 
-
 void FloatRect::Expand(float v)
 {
 	width += v;

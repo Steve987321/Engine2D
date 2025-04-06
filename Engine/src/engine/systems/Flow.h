@@ -31,7 +31,8 @@ public:
 class Flow
 {
 public:
-
+    // #todo add ctx
+    
 	std::vector<FlowNode> nodes;
 };
 

@@ -221,10 +221,11 @@ namespace Toad
 #endif
 
 		// get the important script functions
-
-		for (auto& [name, script] : game_scripts)
-		{
-		}
+//
+//		for (auto& [name, script] : game_scripts)
+//		{
+//            const std::function<void(Toad::Object* obj)> f = std::bind(&Script::OnUpdate, script, std::placeholders::_1);
+//		}
 	}
 
 	void ScriptManager::SetBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)

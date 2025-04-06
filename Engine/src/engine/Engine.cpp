@@ -287,7 +287,7 @@ void Run()
 #ifdef TOAD_EDITOR
 		if (!window.hasFocus())
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		}
 #else 
 		Mouse::relative_mouse_pos = sf::Mouse::getPosition(window);
@@ -413,6 +413,28 @@ AppWindow& GetWindow()
 {
 	static AppWindow window;
 	return window;
+}
+
+std::filesystem::path GetAssetPath()
+{
+    // use game bin directory
+#ifdef TOAD_EDITOR
+    std::filesystem::path p = game_bin_directory;
+    p = p.parent_path();
+    for (auto& e : std::filesystem::directory_iterator(p))
+    {
+        if (e.path().filename().string().find("Game") != std::string::npos)
+        {
+            p = e.path() / "src" / "assets";
+            assert(std::filesystem::exists(p) && "GetAssetPath() returned invalid path");
+            return p;
+        }
+    }
+#else
+    return GetCurrentPath();
+#endif
+    
+    return {};
 }
 
 void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)

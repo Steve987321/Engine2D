@@ -30,20 +30,30 @@ namespace Toad
 	ENGINE_API sf::RenderTexture& GetWindowTexture();
 
 	ENGINE_API AppWindow& GetWindow();
+    
+    // returns the main assets folder of the game
+    // returns the main directory of the game when packaged.
+    // useful when using external files in ur project
+    ENGINE_API std::filesystem::path GetAssetPath();
 
 	ENGINE_API void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path);
-	// load game.dll 
+
+	// load game.dll
 	ENGINE_API void LoadGameScripts();
+
 	// returns a map of scripts with script name as key, some script could be nullptr
 	ENGINE_API TGAME_SCRIPTS& GetGameScriptsRegister();
+
 	ENGINE_API Toad::Camera& GetEditorCamera();
 
 	ENGINE_API void SetPreUICallback(const FENGINE_PRE_UI_CALLBACK& callback);
 	ENGINE_API void SetEngineUI(const FENGINE_UI& p_ui);
+
 	// use also only for ui
 	ENGINE_API void SetEventCallback(const FEVENT_CALLBACK& callback);
 	ENGINE_API void SetEditorTextureDrawCallback(const FEDITOR_TEXTURE_DRAW_CALLBACK& callback);
 	ENGINE_API void SetOnCloseCallback(const FONCLOSE_CALLBACK& callback);
+
 	ENGINE_API void SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback);
 	ENGINE_API void ReleaseGameDLLWatcher();
 }
