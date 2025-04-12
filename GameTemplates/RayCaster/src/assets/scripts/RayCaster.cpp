@@ -4,7 +4,7 @@
 #include "MapObject.h"
 #include "Map.h"
 
-#include "../helpers/helpers.h"
+#include "../helpers/Helpers.h"
 
 using namespace Toad;
 
@@ -77,7 +77,7 @@ void RayCaster::OnUpdate(Object* obj)
 
 	const int max_ray_dist = 100;
 
-	const Vec2f& pos = obj->GetPosition();
+	const Toad::Vec2f& pos = obj->GetPosition();
 	int direction_deg = (int)obj->GetRotation();
 
 	// counter for checking when a new line can be drawn
@@ -89,12 +89,12 @@ void RayCaster::OnUpdate(Object* obj)
 	{
 		// ray end using the max looking distance
 		float ray_dir_rad = DegToRad(i);
-		Vec2f ray_end = pos + Vec2f{ 
+		Toad::Vec2f ray_end = pos + Toad::Vec2f{ 
 			cosf(ray_dir_rad) * max_ray_dist, 
 			sinf(ray_dir_rad) * max_ray_dist };
 		
 		float ray_hit_distance = FLT_MAX;
-		Vec2f hit = pos;
+		Toad::Vec2f hit = pos;
 		DIRECTION hit_side = DIRECTION::NONE;
 		std::vector<HitSide> ray_collisions{};
 		uint32_t grid_hit = -1;
@@ -186,9 +186,9 @@ void RayCaster::OnUpdate(Object* obj)
 				line_spr.setTexture(*texture);
 				line_spr.setTextureRect(texture_rect);
 				Vec2i size_newi = texture_rect.getSize();
-				Vec2f size_new{ (float)size_newi.x, (float)size_newi.y };
+				Toad::Vec2f size_new{ (float)size_newi.x, (float)size_newi.y };
 
-				Vec2f new_scale;
+				Toad::Vec2f new_scale;
 				new_scale.x = 1;
 				new_scale.y = line_spr.getScale().y / size_new.y;
 

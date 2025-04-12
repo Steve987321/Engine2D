@@ -5,7 +5,7 @@
 #include "Map.h"
 #include "MapObject.h"
 #include "RayCaster.h"
-#include "helpers/helpers.h"
+#include "helpers/Helpers.h"
 
 #include "engine/Types.h"
 
@@ -13,6 +13,57 @@ using namespace Toad;
 
 static RayCaster* ray_caster = nullptr;
 static Map* map = nullptr;
+
+std::ostream& operator<<(std::ostream& o, const Vec2i& v)
+{
+	o << '(' << v.x << ',' << v.y << ')';
+	return o;
+}
+
+void Player::UpdateMouseLook(Object* obj)
+{
+	static bool prev_capture_mouse = Mouse::capture_mouse;
+	if (!Mouse::capture_mouse)
+	{
+		prev_capture_mouse = false;
+		return; 
+	}
+
+	const sf::RenderWindow& window = Toad::GetWindow();
+	Vec2i mouse_pos = Mouse::GetPositionRaw();
+	static Vec2i locked_mouse_pos = {0, 0};
+
+#ifdef TOAD_EDITOR 
+	if (prev_capture_mouse != Mouse::capture_mouse)
+	{
+		// update locked cursor pos 
+		locked_mouse_pos = mouse_pos;
+		prev_capture_mouse = Mouse::capture_mouse;
+	}
+#else 
+	locked_mouse_pos = Vec2i{ 
+		window.getPosition().x + (int)window.getSize().x / 2,  
+		window.getPosition().y + (int)window.getSize().y / 2 
+	};
+#endif 
+
+	Vec2i mouse_delta = mouse_pos - locked_mouse_pos;
+
+	if (mouse_delta.x != 0 || mouse_delta.y != 0)
+	{
+		float dt = Time::GetDeltaTime();
+
+		if (ray_caster)
+			ray_caster->pitch = std::clamp(ray_caster->pitch - mouse_delta.y * mouse_look_sens * dt, -70.f, 70.f);
+
+		obj->SetRotation(obj->GetRotation() + mouse_delta.x * mouse_look_sens * dt);
+	
+		// lock mouse 
+		Mouse::SetPosition(locked_mouse_pos);
+	}
+
+	prev_capture_mouse = Mouse::capture_mouse;
+}
 
 // Called on scene begin 
 void Player::OnStart(Object* obj)
@@ -26,9 +77,7 @@ void Player::OnStart(Object* obj)
 	if (map_obj)
 		map = map_obj->GetScript<Map>("Map");
 	else
-		LOGERRORF("[Player] Can't find grid controller object");
-
-	Mouse::SetVisible(false);
+		LOGERROR("[Player] Can't find grid controller object");
 }
 
 // Called every frame
@@ -39,17 +88,17 @@ void Player::OnUpdate(Object* obj)
 	float rotation_deg = obj->GetRotation();
 	float rotation_rad = DegToRad(rotation_deg);
 	float rotation_rad_right = DegToRad(rotation_deg + 90);
-	Vec2f direction = {
+	Toad::Vec2f direction = {
 		cosf(rotation_rad),
 		sinf(rotation_rad),
 	};
 	
-	Vec2f direction_right = {
+	Toad::Vec2f direction_right = {
 		cosf(rotation_rad_right),
 		sinf(rotation_rad_right),
 	};
 
-	vel = {0, 0};
+	vel = Toad::Vec2f{0, 0};
 
 	if (Input::IsKeyDown(Keyboard::W))
 		vel += direction;
@@ -63,33 +112,7 @@ void Player::OnUpdate(Object* obj)
 	if (Input::IsKeyDown(Keyboard::D))
 		vel += direction_right;
 
-	// mouse look 
-	Vec2i mouse_pos = Mouse::GetPosition();
-
-	// get current window 
-	const sf::RenderWindow& window = Toad::GetWindow();
-
-	// locks mouse at center of window (#TODO: including the editor)
-	const Vec2i locked_mouse_pos = { 
-		window.getPosition().x + (int)window.getSize().x / 2,  
-		window.getPosition().y + (int)window.getSize().y / 2 };
-
-	static Vec2i mouse_pos_prev = locked_mouse_pos;
-	Vec2i mouse_pos_delta = mouse_pos - mouse_pos_prev;
-
-	if (mouse_pos_delta.x != 0 || mouse_pos_delta.y != 0)
-	{
-		float dt = Time::GetDeltaTime();
-
-		if (ray_caster)
-			ray_caster->pitch = std::clamp(ray_caster->pitch - mouse_pos_delta.y * mouse_look_sens * dt, -70.f, 70.f);
-
-		obj->SetRotation(rotation_deg + mouse_pos_delta.x * mouse_look_sens * dt);
-	}
-
-	// lock mouse 
-	Mouse::SetPosition(locked_mouse_pos);
-	mouse_pos_prev = locked_mouse_pos;
+	UpdateMouseLook(obj);
 }
 
 void Player::OnFixedUpdate(Toad::Object* obj)
@@ -97,15 +120,15 @@ void Player::OnFixedUpdate(Toad::Object* obj)
 	if (!map)
 		return;
 
-	Vec2f pos_prev = obj->GetPosition();
-	Vec2f pos = pos_prev + vel * speed * Time::fixed_delta_time;
+	Toad::Vec2f pos_prev = obj->GetPosition();
+	Toad::Vec2f pos = pos_prev + vel * speed * Time::GetFixedDeltaTime();
 	FloatRect player_rect;
 	player_rect.left = pos.x - player_size;
 	player_rect.top = pos.y - player_size;
 	player_rect.width = player_size * 2;
 	player_rect.height = player_size * 2;
 
-	Vec2f solved_pos = pos;
+	Toad::Vec2f solved_pos = pos;
 
 	for (const MapObject* object : map->objects)
 	{

@@ -4,11 +4,9 @@
 
 #include "MapObject.h"
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
 
 using namespace Toad;
-
-Engine& engine = Engine::Get();
 
 // Called on scene begin 
 void Map::OnStart(Object* obj)

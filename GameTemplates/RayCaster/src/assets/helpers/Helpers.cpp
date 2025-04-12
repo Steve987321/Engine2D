@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "engine/Engine.h"
-#include "helpers.h"
+#include "Helpers.h"
 
-bool LineIntersection(Vec2f p1, Vec2f p2, Vec2f p3, Vec2f p4, Vec2f& intersection)
+bool LineIntersection(Toad::Vec2f p1, Toad::Vec2f p2, Toad::Vec2f p3, Toad::Vec2f p4, Toad::Vec2f& intersection)
 {
 	float denom = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
 	if (std::abs(denom) < FLT_EPSILON)
@@ -21,15 +21,15 @@ bool LineIntersection(Vec2f p1, Vec2f p2, Vec2f p3, Vec2f p4, Vec2f& intersectio
 	return false;
 }
 
-bool LineRectIntersection(Vec2f p1, Vec2f p2, sf::FloatRect rect, std::vector<sf::Vector2f>& intersections)
+bool LineRectIntersection(Toad::Vec2f p1, Toad::Vec2f p2, sf::FloatRect rect, std::vector<sf::Vector2f>& intersections)
 {
-	Vec2f intersection;
+	Toad::Vec2f intersection;
 	bool hit = false;
 
-	Vec2f top_left = Vec2f(rect.left, rect.top);
-	Vec2f top_right = Vec2f(rect.left + rect.width, rect.top);
-	Vec2f bottom_left = Vec2f(rect.left, rect.top + rect.height);
-	Vec2f bottom_right = Vec2f(rect.left + rect.width, rect.top + rect.height);
+	Toad::Vec2f top_left = Toad::Vec2f(rect.left, rect.top);
+	Toad::Vec2f top_right = Toad::Vec2f(rect.left + rect.width, rect.top);
+	Toad::Vec2f bottom_left = Toad::Vec2f(rect.left, rect.top + rect.height);
+	Toad::Vec2f bottom_right = Toad::Vec2f(rect.left + rect.width, rect.top + rect.height);
 
 	if (LineIntersection(p1, p2, top_left, top_right, intersection))
 	{
@@ -55,15 +55,15 @@ bool LineRectIntersection(Vec2f p1, Vec2f p2, sf::FloatRect rect, std::vector<sf
 	return hit;
 }
 
-bool LineRectIntersection(Vec2f p1, Vec2f p2, sf::FloatRect rect, std::vector<HitSide>& intersections)
+bool LineRectIntersection(Toad::Vec2f p1, Toad::Vec2f p2, sf::FloatRect rect, std::vector<HitSide>& intersections)
 {
-	Vec2f intersection;
+	Toad::Vec2f intersection;
 	bool hit = false;
 
-	Vec2f top_left = Vec2f(rect.left, rect.top);
-	Vec2f top_right = Vec2f(rect.left + rect.width, rect.top);
-	Vec2f bottom_left = Vec2f(rect.left, rect.top + rect.height);
-	Vec2f bottom_right = Vec2f(rect.left + rect.width, rect.top + rect.height);
+	Toad::Vec2f top_left = Toad::Vec2f(rect.left, rect.top);
+	Toad::Vec2f top_right = Toad::Vec2f(rect.left + rect.width, rect.top);
+	Toad::Vec2f bottom_left = Toad::Vec2f(rect.left, rect.top + rect.height);
+	Toad::Vec2f bottom_right = Toad::Vec2f(rect.left + rect.width, rect.top + rect.height);
 
 	if (LineIntersection(p1, p2, top_left, top_right, intersection))
 	{

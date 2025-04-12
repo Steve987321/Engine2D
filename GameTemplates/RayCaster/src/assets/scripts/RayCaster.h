@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Engine/Engine.h"
+#include "engine/Engine.h"
+#include <numbers>
 
 class GAME_API RayCaster : public Toad::Script
 {
@@ -18,7 +19,7 @@ public:
 
 	constexpr static int fov = 90;
 	constexpr static int fovhalf = fov / 2;
-	constexpr static int fovhalfrad = fovhalf * (std::_Pi_val / 180.f);
+	constexpr static int fovhalfrad = fovhalf * (std::numbers::pi_v<float> / 180.f);
 	constexpr static int line_thickness = 1;
 };
 
