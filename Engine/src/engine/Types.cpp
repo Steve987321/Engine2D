@@ -165,6 +165,11 @@ Vec2i Mouse::GetPosition()
 	return getPosition();
 }
 
+Vec2i Mouse::GetPositionRaw()
+{
+    return getPosition();
+}
+
 void Mouse::SetPosition(const Vec2i& pos)
 {
 #ifdef TOAD_EDITOR

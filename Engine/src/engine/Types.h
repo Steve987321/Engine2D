@@ -103,6 +103,7 @@ class ENGINE_API Mouse : public sf::Mouse
 public: 
 	static void SetVisible(bool visible);
 	static Vec2i GetPosition();
+    static Vec2i GetPositionRaw();
 	static void SetPosition(const Vec2i& pos);
 
 	static inline bool mouse_visible = true;
@@ -123,5 +124,17 @@ struct ENGINE_API AudioSource
 	bool has_valid_buffer;
 };
 
+template <typename T>
+inline Vec2f operator*(T left, const Vec2f& right)
+{
+    return Vec2f(right.x * left, right.y * left);
+}
+
+// put somewhere else? 
+inline std::ostream& operator<<(std::ostream& o, const Toad::Vec2f& v)
+{
+    o << '(' << v.x << ',' << v.y << ')';
+    return o;
+}
 
 }
