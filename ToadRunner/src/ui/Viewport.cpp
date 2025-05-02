@@ -23,7 +23,7 @@ namespace ui
 		bool viewport_opened = ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 		{
 			auto& texture = Toad::GetEditorCameraTexture();
-			const auto content_size = ImGui::GetContentRegionAvail();
+			const ImVec2 content_size = ImGui::GetContentRegionAvail();
 
 			Camera& editor_cam = Toad::GetEditorCamera();
 

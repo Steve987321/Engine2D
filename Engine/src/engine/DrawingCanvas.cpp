@@ -14,6 +14,10 @@ namespace DrawingCanvas
 static std::vector<std::vector<sf::Vertex>> vertices_to_draw;
 static std::vector<std::vector<sf::Vertex>> created_vertexarrays;
 
+struct DrawInfoRect
+{
+    std::array<sf::Vertex, 5> rect;
+};
 struct DrawInfoText
 {
     sf::Text text;
@@ -29,6 +33,7 @@ struct DrawInfoArrow
 
 static std::vector<DrawInfoText> text_to_draw;
 static std::vector<DrawInfoArrow> arrows_to_draw;
+static std::vector<DrawInfoRect> rects_to_draw;
 
 static std::vector<sf::Vertex>& CreateVA(size_t size)
 {
@@ -50,6 +55,11 @@ void DrawBuffers(sf::RenderTarget& target)
         target.draw(arrow.rect.data(), arrow.rect.size(), sf::TriangleStrip);
         target.draw(arrow.hat.data(), arrow.hat.size(), sf::Triangles);
     }
+    
+    for (const DrawInfoRect& rect : rects_to_draw)
+    {
+        target.draw(rect.rect.data(), rect.rect.size(), sf::LineStrip);
+    }
 }
 
 void ModifyVertex(uint32_t i, uint32_t j, const sf::Vertex& v)
@@ -57,10 +67,11 @@ void ModifyVertex(uint32_t i, uint32_t j, const sf::Vertex& v)
     vertices_to_draw[i][j] = v;
 }
 
-void AddVertexArray(size_t i)
+size_t AddVertexArray(size_t i)
 {
     vertices_to_draw.emplace_back();
     vertices_to_draw.back().resize(i, sf::Vertex{ {0, 0}, sf::Color::White, {0, 0} });
+    return vertices_to_draw.size() - 1;
 }
 
 void ClearVertices()
@@ -72,8 +83,8 @@ void ClearDrawBuffers()
 {
     text_to_draw.clear();
     arrows_to_draw.clear();
+    rects_to_draw.clear();
 }
-
 
 void DrawVertices(sf::RenderTarget& target, sf::PrimitiveType type)
 {
@@ -81,7 +92,7 @@ void DrawVertices(sf::RenderTarget& target, sf::PrimitiveType type)
         target.draw(v.data(), v.size(), type);
 }
 
-void DrawText(Vec2f position, std::string_view text, uint32_t char_size)
+void DrawText(const Vec2f& position, std::string_view text, uint32_t char_size)
 {
     sf::Text t(text.data(), GetDefaultFontResource());
     t.setPosition(position.x, position.y);
@@ -90,7 +101,7 @@ void DrawText(Vec2f position, std::string_view text, uint32_t char_size)
     text_to_draw.emplace_back(t);
 }
 
-void DrawArrow(Vec2f position, Vec2f direction, float width, Color color)
+void DrawArrow(const Vec2f& position, const Vec2f& direction, float width, Color color)
 {
     std::array<sf::Vertex, 3> hat;
     std::array<sf::Vertex, 4> rect;
@@ -113,6 +124,19 @@ void DrawArrow(Vec2f position, Vec2f direction, float width, Color color)
     hat[2].position = rect[3].position + perp;
     
     arrows_to_draw.emplace_back(position, direction, rect, hat);
+}
+
+void DrawRect(const Vec2f& min, const Vec2f& max)
+{
+    std::array<sf::Vertex, 5> rect;
+
+    rect[0].position = min;
+    rect[1].position = {max.x, min.y};
+    rect[2].position = max;
+    rect[3].position = {min.x, max.y};
+    rect[4].position = min;
+
+    rects_to_draw.emplace_back(rect);
 }
     
 } // namespace DrawingCanvas
