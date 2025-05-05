@@ -29,7 +29,7 @@ if _ACTION == "xcode4" then
         "../vendor",
         "../vendor/imgui",
         "../vendor/sfml-imgui",
-        "../vendor/SFML-2.6.0/include",
+        "../vendor/SFML-3.0.0/include",
         "../vendor/json/include"
     }
 else 
@@ -39,12 +39,12 @@ else
         "../vendor",
         "../vendor/imgui",
         "../vendor/sfml-imgui",
-        "../vendor/SFML-2.6.0/include",
+        "../vendor/SFML-3.0.0/include",
         "../vendor/json/include"
     }
 end 
     libdirs {
-        "../vendor/SFML-2.6.0/lib"
+        "../vendor/SFML-3.0.0/lib"
     }
 
     filter "system:macosx"

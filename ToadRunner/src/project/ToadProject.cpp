@@ -575,7 +575,7 @@ namespace project {
 #endif
 	}
 
-	bool Update(const ProjectSettings& settings, const fs::path& path)
+    bool Update(const ProjectSettings& settings, const fs::path& path)
 	{
 		if (!fs::exists(path))
 		{

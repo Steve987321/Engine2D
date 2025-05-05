@@ -7,6 +7,7 @@ namespace Toad
 {
 
 Button::Button(std::string_view obj_name)
+	: m_sprite(*ResourceManager::GetTextures().Get("Default"))
 {
 	name = obj_name;
 }
@@ -63,22 +64,24 @@ void Button::LateUpdate()
 
 const Vec2f& Button::GetPosition() const
 {
-	return m_sprite.getPosition();
+	return m_objectPos;
 }
 
 void Button::SetPosition(const Vec2f& position)
 {
+	Object::SetPosition(position);
+
 	m_sprite.setPosition(position);
 }
 
 float Button::GetRotation()
 {
-	return m_sprite.getRotation();
+	return m_sprite.getRotation().asDegrees();
 }
 
 void Button::SetRotation(float degrees)
 {
-	m_sprite.setRotation(degrees);
+	m_sprite.setRotation(sf::degrees(degrees));
 	Object::SetRotation(degrees);
 }
 

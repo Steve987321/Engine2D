@@ -13,9 +13,9 @@ sf::Font GetDefaultFont()
     
     // #TODO: store these font paths somewhere else
 #ifdef _WIN32
-    load_success = f.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf");
+    load_success = f.openFromFile("C:\\Windows\\Fonts\\Arial.ttf");
 #else
-    load_success = f.loadFromFile("/Library/Fonts/Catamaran-Regular.ttf");
+    load_success = f.openFromFile("/Library/Fonts/Catamaran-Regular.ttf");
 #endif
     
     assert(load_success && "Can't load default font");
@@ -36,11 +36,12 @@ sf::Font& GetDefaultFontResource()
 }
 
 Text::Text(std::string_view obj_name)
+	: m_text(GetDefaultFontResource()) 
 {
 	name = obj_name;
 	
     SetFont("Default", GetDefaultFontResource());
-	m_style = TextStyle();
+
 	ApplyStyle();
 	SetText(obj_name);
 }
@@ -129,13 +130,12 @@ void Text::SetPosition(const Vec2f& position)
 void Text::SetRotation(float degrees)
 {
 	Object::SetRotation(degrees);
-
-	m_text.setRotation(degrees);
+	m_text.setRotation(sf::degrees(degrees));
 }
 
 float Text::GetRotation()
 {
-	return m_text.getRotation();
+	return m_text.getRotation().asDegrees();
 }
 
 json Text::Serialize()

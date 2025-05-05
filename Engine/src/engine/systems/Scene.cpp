@@ -272,10 +272,8 @@ sf::IntRect GetRectFromJSON(json obj)
 	GET_JSON_ELEMENT(height, obj, "height");
 
 	return sf::IntRect{
-		obj["left"].get<int>(),
-		obj["top"].get<int>(),
-		obj["width"].get<int>(),
-		obj["height"].get<int>(),
+		{obj["left"].get<int>(), obj["top"].get<int>()},
+		{obj["width"].get<int>(), obj["height"].get<int>()}
 	};
 }
 
@@ -488,7 +486,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				}
 
 				sprite.setColor(fill_col);
-				sprite.setRotation(rotation);
+				sprite.setRotation(sf::degrees(rotation));
 				sprite.setColor(fill_col);
 				sprite.setScale(scale);
 				sprite.setOrigin(origin);
@@ -574,7 +572,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 					{
 						sf::Font arial;
 
-						if (!arial.loadFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
+						if (!arial.openFromFile("C:\\Windows\\Fonts\\Arial.ttf"))
 						{
 							LOGWARN("[Scene] Can't find C:\\Windows\\Fonts\\Arial.ttf");
 						}

@@ -158,25 +158,12 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 		{
 			auto& sprite = sprite_obj->GetSprite();
 
-			const sf::Texture* attached_texture = sprite.getTexture();
+			const sf::Texture& attached_texture = sprite.getTexture();
 
 			ImGui::Text("texture");
 			ImGui::SameLine();
-
-			if (attached_texture != nullptr)
-			{
-				if (ImGui::ImageButton(*attached_texture, { 25, 25 }))
-				{
-					// TODO:
-				}
-			}
-			else
-			{
-				if (ImGui::Button("", { 25, 25 }))
-				{
-
-				}
-			}
+		
+			ImGui::Button("", { 25, 25 });
 
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -217,24 +204,12 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 				ImGui::EndDragDropTarget();
 			}
 
-			if (attached_texture != nullptr)
+			if (!sprite_obj->HasDefaultTexture())
 			{
 				if (ImGui::TreeNode("texture rect"))
 				{
 					sf::IntRect rect = sprite.getTextureRect();
-					if (ImGui::DragInt("left", &rect.left))
-					{
-						sprite.setTextureRect(rect);
-					}
-					if (ImGui::DragInt("top", &rect.top))
-					{
-						sprite.setTextureRect(rect);
-					}
-					if (ImGui::DragInt("width", &rect.width))
-					{
-						sprite.setTextureRect(rect);
-					}
-					if (ImGui::DragInt("height", &rect.height))
+					if (ImGui::DragIntRect("sprite rect", &rect))
 					{
 						sprite.setTextureRect(rect);
 					}
@@ -289,7 +264,7 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 
 			if (attached_texture != nullptr)
 			{
-				if (ImGui::ImageButton(*attached_texture, { 25, 25 }))
+				if (ImGui::ImageButton("texturebutton", *attached_texture, { 25, 25 }))
 				{
 					// TODO:
 				}
@@ -345,22 +320,11 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 				if (ImGui::TreeNode("texture rect"))
 				{
 					sf::IntRect rect = circle.getTextureRect();
-					if (ImGui::DragInt("left", &rect.left))
+					if (ImGui::DragIntRect("circle rect", &rect))
 					{
 						circle.setTextureRect(rect);
 					}
-					if (ImGui::DragInt("top", &rect.top))
-					{
-						circle.setTextureRect(rect);
-					}
-					if (ImGui::DragInt("width", &rect.width))
-					{
-						circle.setTextureRect(rect);
-					}
-					if (ImGui::DragInt("height", &rect.height))
-					{
-						circle.setTextureRect(rect);
-					}
+			
 
 					ImGui::TreePop();
 				}
@@ -538,12 +502,6 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 			{
 				sf::Text& text = text_obj->GetTextObj();
 				Toad::TextStyle text_style = text_obj->GetStyle();
-                if (!text.getFont())
-                {
-                    // invalid font
-                    // probably didn't find the font file
-                    ImGui::TextColored({1, 0, 0, 1}, "Invalid font");
-                }
                
 				if (ImGui::Button("set default font"))
 				{
@@ -596,7 +554,7 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 							else
 							{
 								sf::Font new_font;
-								if (!new_font.loadFromFile(src.string()))
+								if (!new_font.openFromFile(src.string()))
 								{
 									LOGERRORF("Failed to load font from {}", src);
 								}

@@ -2,6 +2,10 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "engine/Engine.h"
+namespace ImStb 
+{
+#include "imgui/imstb_textedit.h"
+}
 
 #include "GameAssetsBrowser.h"
 
@@ -459,7 +463,8 @@ void GameAssetsBrowser::Show()
 						if (texture == nullptr)
 						{
 							sf::Texture new_texture;
-							new_texture.loadFromFile(path.string());
+							bool load_success = new_texture.loadFromFile(path.string());
+							assert(load_success && "Failed to load texture from path");
 							texture = ResourceManager::GetTextures().Add(relative.string(), new_texture);
 						}
 
@@ -551,10 +556,10 @@ void GameAssetsBrowser::Show()
 							ImGuiInputTextState* state = ImGui::GetInputTextState(id);
 							//LOGDEBUGF("{}", state->());
 							//for (; state->Stb.cursor > 0; state->Stb.cursor--);
-							state->Stb.cursor = 0;
-							state->Stb.has_preferred_x = 0;
-							state->Stb.select_end = std::min((int)text_in_select_end, state->CurLenW);
-							state->Stb.select_start = 0;
+							state->Stb->cursor = 0;
+							state->Stb->has_preferred_x = 0;
+							state->Stb->select_end = std::min((int)text_in_select_end, state->TextLen);
+							state->Stb->select_start = 0;
 
 							text_in_select_end = -1;
 						}

@@ -41,9 +41,10 @@ static std::filesystem::path current_path;
 static sf::RenderTexture* interacting_texture = nullptr;
 static std::unique_ptr<sf::RenderTexture> window_texture = nullptr;
 
+static sf::Texture default_texture;
+
 static Camera* interacting_camera = nullptr;
 
-void EventHandler(AppWindow& window);
 void Render(AppWindow& window);
 void CleanUp();
 
@@ -55,70 +56,59 @@ extern void DrawBuffers(sf::RenderTarget& target);
 // finds settings.json and loads them 
 void LoadEngineSettings();
 
-void EventHandler(AppWindow& window)
+static void EventHandler(AppWindow& window)
 {
-	sf::Event e;
-	while (window.pollEvent(e))
+    while (auto e = window.pollEvent())
 	{
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
-		ImGui::SFML::ProcessEvent(window, e);
+		ImGui::SFML::ProcessEvent(window, *e);
 #endif
 #if defined(TOAD_EDITOR)
-		event_callback(e);
+		event_callback(*e);
 #endif
-		switch (e.type)
-		{
-
-		case sf::Event::Closed:
+		if (e->is<sf::Event::Closed>())
 		{
 			StopGameSession();
 			window.close();
 			break;
 		}
 
-		case sf::Event::Resized:
-		{
 #ifdef TOAD_EDITOR
+		if (e->is<sf::Event::Resized>())
+		{
 			// update window texture size to new window size
-			GetWindowTexture().create(window.getSize().x, window.getSize().y);
-			//auto view = m_window.getDefaultView();
-			//view.setSize()
-			//m_window.setView(view);
-				// shape match pixel to coords
+			bool resize_success = GetWindowTexture().resize(window.getSize());
+			assert(resize_success && "Failed to resize window texture to new resized size");
+			break;
+		}
 #endif
-			break;
-		}
 
-		case sf::Event::KeyPressed:
+		if (e->is<sf::Event::KeyPressed>())
 		{
 			if (begin_play)
-				Input::InvokeKeyPressCallbacks(e.key.code);
+				Input::InvokeKeyPressCallbacks(e->getIf<sf::Event::KeyPressed>()->code);
 			break;
 		}
 
-		case sf::Event::KeyReleased:
+		if (e->is<sf::Event::KeyReleased>())
 		{
 			if (begin_play)
-				Input::InvokeKeyReleaseCallbacks(e.key.code);
+				Input::InvokeKeyReleaseCallbacks(e->getIf<sf::Event::KeyReleased>()->code);
 			break;
 		}
 
-		case sf::Event::MouseButtonPressed:
+		if (e->is<sf::Event::MouseButtonPressed>())
 		{
 			if (begin_play)
-				Input::InvokeMousePressCallbacks(e.mouseButton.button);
+				Input::InvokeMousePressCallbacks(e->getIf<sf::Event::MouseButtonPressed>()->button);
 			break;
 		}
-		case sf::Event::MouseButtonReleased:
+        
+		if (e->is<sf::Event::MouseButtonReleased>())
 		{
 			if (begin_play)
-				Input::InvokeMouseReleaseCallbacks(e.mouseButton.button);
+				Input::InvokeMouseReleaseCallbacks(e->getIf<sf::Event::MouseButtonReleased>()->button);
 			break;
-		}
-
-		default:
-			break;
-
 		}
 	}
 }
@@ -167,6 +157,8 @@ bool Init()
 	editor_cam.SetSize({ (float)width, (float)height });
 
 	current_path = get_exe_path().parent_path();
+	
+	ResourceManager::Init();
 
 	for (const auto& e : std::filesystem::recursive_directory_iterator(current_path))
 	{
@@ -261,10 +253,11 @@ bool Init()
 #ifdef TOAD_EDITOR
 	LOGDEBUG("[Engine] Setting up views & textures");
 
-	window_texture->create(window.getSize().x, window.getSize().y);
-
+	bool resize_success = window_texture->resize(window.getSize());
+	assert(resize_success && "Failed to resize window texture");
 	sf::RenderTexture& editor_cam_texture = GetEditorCameraTexture();
-	editor_cam_texture.create(window.getSize().x, window.getSize().y);
+	resize_success = editor_cam_texture.resize(window.getSize());
+	assert(resize_success && "Failed to resize editor cam texture");
 
 	editor_cam.OnCreate();
 #else

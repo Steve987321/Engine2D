@@ -111,14 +111,14 @@ void Camera::SetPosition(const Vec2f& position)
 
 float Camera::GetRotation()
 {
-	return m_view.getRotation();
+	return m_view.getRotation().asDegrees();
 }
 
 void Camera::SetRotation(float degrees)
 {
 	Object::SetRotation(degrees);
 
-	m_view.setRotation(degrees);
+	m_view.setRotation(sf::degrees(degrees));
 }
 
 bool Camera::IsActive() const

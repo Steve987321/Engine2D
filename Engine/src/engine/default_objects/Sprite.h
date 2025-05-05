@@ -11,6 +11,8 @@ public:
 	explicit Sprite(std::string_view obj_name);
 	~Sprite() override;
 
+	bool HasDefaultTexture(); 
+	
 	sf::Sprite& GetSprite();
 	const Vec2f& GetPosition() const override;
 	void SetPosition(const Vec2f& position) override;
@@ -36,6 +38,7 @@ private:
     Vec2f last_scale;
 	sf::Sprite m_sprite;
 	std::filesystem::path m_texture_source_path;
+	bool has_default_texture = true;
 };
 
 }

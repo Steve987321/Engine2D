@@ -1,7 +1,13 @@
 #pragma once
 
 #include "engine/Types.h"
+
 #include "nlohmann/json.hpp"
+#ifdef _WIN32
+#define DEFAULT_FONT_PATH "C:\\Windows\\Fonts\\Arial.ttf"
+#else 
+#define DEFAULT_FONT_PATH "/Library/Fonts/Catamaran-Regular.ttf"
+#endif 
 
 namespace Toad
 {
@@ -17,9 +23,13 @@ namespace ResourceManager
 		
 		explicit ResourcesOfType(std::string_view resource_name)
 			: m_resourceName(resource_name)
-		{}
+		{
+			Add("Default", default_resource);
+		}
 
 	public:
+		static inline T default_resource;
+
 		TDATA& GetData()
 		{
 			return m_data;
@@ -89,6 +99,9 @@ namespace ResourceManager
 
 	// clears all resources
 	ENGINE_API void Clear();
+
+	// sets the default resources
+	ENGINE_API void Init();
 }
 
 }

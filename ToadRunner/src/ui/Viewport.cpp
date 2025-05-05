@@ -63,10 +63,10 @@ namespace ui
 				viewport_size = { (int)image_width, (int)image_height };
 				float f_x = editor_cam.GetSize().x / image_width;
 				float f_y = editor_cam.GetSize().y / image_height;
-
-				Mouse::relative_mouse_pos = {
+				
+				Mouse::SetRelativeMousePosition({
 					(int)((ImGui::GetMousePos().x - pos.x) * f_x),
-					(int)((ImGui::GetMousePos().y - pos.y) * f_y) };
+					(int)((ImGui::GetMousePos().y - pos.y) * f_y)});
 			}
 
 			if (ImGui::BeginDragDropTarget())
@@ -281,7 +281,7 @@ namespace ui
 						{
 							Vec2f drag_pos = selected_obj->GetPosition() + Vec2f{ d.x, d.y };
 
-							const Vec2i& mouse_pos = Mouse::relative_mouse_pos;
+							const Vec2i& mouse_pos = Mouse::GetRelativeMousePosition();
 							Vec2f mouse_world_pos = Screen::ScreenToWorld(mouse_pos);
 
 							// snap to the grid
@@ -711,7 +711,7 @@ namespace ui
 									{
 										for (uint32_t sprite_y = j; sprite_y < j + t.size.y; sprite_y++)
 										{
-											if (image.getPixel(sprite_x, sprite_y) != sf::Color::Transparent)
+											if (image.getPixel({sprite_x, sprite_y}) != sf::Color::Transparent)
 											{
 												skip = false;
 											}

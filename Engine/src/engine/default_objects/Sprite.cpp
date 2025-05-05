@@ -7,16 +7,18 @@ namespace Toad
 {
 
 Sprite::Sprite(std::string_view obj_name)
+	: m_sprite(*ResourceManager::GetTextures().Get("Default"))
 {
-	name = obj_name;
-	sf::Texture default_tex = sf::Texture();
-	default_tex.create(10, 10);
-	m_sprite = sf::Sprite(default_tex);
-    
+	name = obj_name;    
     last_scale = m_sprite.getScale();
 }
 
 Sprite::~Sprite() = default;
+
+bool Sprite::HasDefaultTexture()
+{
+    return has_default_texture;
+}
 
 sf::Sprite& Sprite::GetSprite()
 {
@@ -42,13 +44,12 @@ FloatRect Sprite::GetBounds() const
 void Sprite::SetRotation(float degrees)
 {
 	Object::SetRotation(degrees);
-
-	m_sprite.setRotation(degrees);
+	m_sprite.setRotation(sf::degrees(degrees));
 }
 
 float Sprite::GetRotation()
 {
-	return m_sprite.getRotation();
+	return m_sprite.getRotation().asDegrees();
 }
 
 const Vec2f& Sprite::GetScale() const
@@ -69,6 +70,8 @@ std::filesystem::path& Sprite::GetTextureSourcePath()
 
 void Sprite::SetTexture(const std::filesystem::path& relative_path, const sf::Texture* texture)
 {
+	if (relative_path != "Default")
+		has_default_texture = false;
 	m_texture_source_path = relative_path;
 	m_sprite.setTexture(*texture, true);
 }
@@ -91,20 +94,16 @@ json Sprite::Serialize()
 	sprite_properties["scaley"] = s.getScale().y;
 	sprite_properties["originx"] = s.getOrigin().x;
 	sprite_properties["originy"] = s.getOrigin().y;
-	bool has_texture = s.getTexture() != nullptr;
-	if (has_texture)
-	{
-		sprite_properties["texture_loc"] = GetTextureSourcePath();
-		sf::IntRect tex_rect = s.getTextureRect();
-		json rect;
-		rect["left"] = tex_rect.left;
-		rect["top"] = tex_rect.top;
-		rect["width"] = tex_rect.width;
-		rect["height"] = tex_rect.height;
 
-		sprite_properties["texture_rect"] = rect;
-	}
-	sprite_properties["has_texture"] = has_texture;
+	sprite_properties["texture_loc"] = GetTextureSourcePath();
+	sf::IntRect tex_rect = s.getTextureRect();
+	json rect;
+	rect["left"] = tex_rect.position.x;
+	rect["top"] = tex_rect.position.y;
+	rect["width"] = tex_rect.size.x;
+	rect["height"] = tex_rect.size.y;
+
+	sprite_properties["texture_rect"] = rect;
 
 	s_data["properties"] = sprite_properties;
 	s_data["scripts"] = attached_scripts;

@@ -78,13 +78,12 @@ namespace Toad
 	void Circle::SetRotation(float degrees)
 	{
 		Object::SetRotation(degrees);
-
-		m_circle.setRotation(degrees);
+		m_circle.setRotation(sf::degrees(degrees));
 	}
 
 	float Circle::GetRotation()
 	{
-		return m_circle.getRotation();
+		return m_circle.getRotation().asDegrees();
 	}
 
 	json Circle::Serialize()
@@ -111,10 +110,10 @@ namespace Toad
 			circle_properties["texture_loc"] = GetTextureSourcePath();
 			sf::IntRect tex_rect = c.getTextureRect();
 			json rect;
-			rect["left"] = tex_rect.left;
-			rect["top"] = tex_rect.top;
-			rect["width"] = tex_rect.width;
-			rect["heigth"] = tex_rect.height;
+			rect["left"] = tex_rect.position.x;
+			rect["top"] = tex_rect.position.y;
+			rect["width"] = tex_rect.size.x;
+			rect["heigth"] = tex_rect.size.y;
 
 			circle_properties["texture_rect"] = rect;
 		}

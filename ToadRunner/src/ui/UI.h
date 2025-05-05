@@ -87,6 +87,6 @@ namespace ImGui {
 	bool SliderVec2(std::string_view label, Toad::Vec2f* v, float min = 0, float max = 0);
 	bool SliderVec2i(std::string_view label, int* x, int* y, int min = 0, int max = 0);
 	bool SliderVec2i(std::string_view label, Toad::Vec2i* v, int min = 0, int max = 0);	
+	bool DragIntRect(std::string_view label, Toad::IntRect* r);
 	//bool ColorPicker4(std::string_view label, sf::Color* color)
 }
-

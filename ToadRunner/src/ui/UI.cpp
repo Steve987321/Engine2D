@@ -185,7 +185,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::MenuItem("Test child window"))
 			{
-				AppWindow::AddViewport(sf::VideoMode(500, 500), "abc", sf::Style::Close | sf::Style::Resize);
+				AppWindow::AddViewport(sf::VideoMode({500, 500}), "abc", sf::Style::Close | sf::Style::Resize);
 			}	
 			if (ImGui::MenuItem("Test button"))
 			{
@@ -813,7 +813,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Toad::StopGameSession();
 
 					if (reload_scene_on_stop)
-						Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
+                    {
+                        selected_obj = nullptr; // after reload reset this object if it exists
+                        Scene::current_scene = LoadScene(last_scene_path, asset_browser.GetAssetPath());
+                    }
 				}
 			}
 
@@ -862,7 +865,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
 				if (ImGui::IsItemClicked())
 				{
-					Mouse::capture_mouse = true;
+					Mouse::ShouldCaptureMouse(true);
 
 					if (!mouse_visible_prev)
 						Mouse::SetVisible(false);
@@ -871,7 +874,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Mouse::SetVisible(true);
 
-					Mouse::capture_mouse = false;
+					Mouse::ShouldCaptureMouse(false);
 					mouse_visible_prev = true;
 				}
 				if (ImGui::IsWindowHovered())
@@ -884,10 +887,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 						SetInteractingTexture(&window_texture);
 						float f_x = cam->GetSize().x / image_width;
 						float f_y = cam->GetSize().y / image_height;
-
-						Mouse::relative_mouse_pos = {
+						
+						Mouse::SetRelativeMousePosition({
 						(int)((ImGui::GetMousePos().x - pos.x) * f_x),
-						(int)((ImGui::GetMousePos().y - pos.y) * f_y) };
+						(int)((ImGui::GetMousePos().y - pos.y) * f_y)});
 					}
 					else
 						SetInteractingCamera(&Toad::GetEditorCamera());
@@ -1040,19 +1043,15 @@ void ui::update_ini()
 
 void ui::event_callback(const sf::Event& e)
 {
-	switch (e.type)
+	if (e.is<sf::Event::KeyReleased>() || e.is<sf::Event::KeyPressed>())
 	{
-	case sf::Event::KeyReleased:
-	case sf::Event::MouseButtonReleased:
 		if (is_scene_loaded)
 			scene_history.SaveState();
-		break;
-	case sf::Event::GainedFocus:
+	}
+	else if (e.is<sf::Event::FocusGained>())
+	{
 		if (browser)
 			browser->refresh = true;
-		break;
-	default: 
-		break;
 	}
 }
 
@@ -1243,6 +1242,20 @@ bool ImGui::SliderVec2i(std::string_view label, Vec2i* v, int min, int max)
 bool ImGui::SliderVec2(std::string_view label, Vec2f* v, float min, float max)
 {
 	return ImGui::SliderVec2(label, &v->x, &v->y, min, max);
+}
+
+bool ImGui::DragIntRect(std::string_view label, Toad::IntRect *r)
+{
+	if (ImGui::DragInt("Pos X", &r->position.x))
+		return true; 
+	if (ImGui::DragInt("Pos Y", &r->position.y))
+		return true; 
+	if (ImGui::DragInt("Size X", &r->size.x))
+		return true; 
+	if (ImGui::DragInt("Size Y", &r->size.y))
+		return true; 
+		
+	return false; 
 }
 
 #endif 

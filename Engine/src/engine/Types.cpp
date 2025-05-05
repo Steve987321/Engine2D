@@ -104,7 +104,12 @@ void Vec2f::operator/=(float scalar)
 
 float Vec2f::Length() const
 {
-    return std::sqrt(x * x + y * y);
+    return std::sqrt(LengthSquared());
+}
+
+float Vec2f::LengthSquared() const
+{
+    return x * x + y * y;
 }
 
 Vec2f Vec2f::Normalize() const
@@ -125,23 +130,42 @@ float Vec2f::Dot(const Vec2f& v) const
 
 void FloatRect::Expand(float v)
 {
-	width += v;
-	height += v;
-	left -= v;
-	top -= v;
+    position.x -= v;
+    position.y -= v;
+    size.y += v;
+    size.y += v;
 }
 
 bool FloatRect::Intersects(const FloatRect& other)
 {
-	return intersects(other);
+    Vec2f other_max = other.position + other.size;
+    Vec2f max = position + size;
+	if (position.x > other_max.x)
+        return false;
+    if (position.y > other_max.y)
+        return false; 
+    if (max.x > other.position.x)
+        return false;
+    if (max.y < other.position.y)
+        return false; 
+
+    return true; 
 }
 
 bool FloatRect::Contains(const Vec2f& point)
 {
-	return point.x > left && point.x < left + width && point.y > top && point.y < top + height;
+	return contains(point);
 }
 
-void Mouse::SetVisible(bool visible)
+namespace Mouse
+{
+
+static bool mouse_visible = true;
+static bool capture_mouse = false;
+static Vec2i last_captured_mouse_pos {};
+static Vec2i relative_mouse_pos {};
+
+void SetVisible(bool visible)
 {
 #ifdef TOAD_EDITOR
 	mouse_visible = visible;
@@ -152,7 +176,7 @@ void Mouse::SetVisible(bool visible)
 #endif 
 }
 
-Vec2i Mouse::GetPosition()
+Vec2i GetPosition()
 {
 #ifdef TOAD_EDITOR
 	if (!capture_mouse)
@@ -162,21 +186,38 @@ Vec2i Mouse::GetPosition()
 	return last_captured_mouse_pos;
 #endif 
 
-	return getPosition();
+	return GetPositionRaw();
 }
 
-Vec2i Mouse::GetPositionRaw()
+Vec2i GetPositionRaw()
 {
-    return getPosition();
+    return sf::Mouse::getPosition();
 }
 
-void Mouse::SetPosition(const Vec2i& pos)
+void SetPosition(const Vec2i& pos)
 {
 #ifdef TOAD_EDITOR
 	if (!capture_mouse)
 		return;
 #endif 
-	setPosition(pos);
+	sf::Mouse::setPosition(pos);
+}
+
+void SetRelativeMousePosition(const Vec2i& pos)
+{
+    relative_mouse_pos = pos;
+}
+
+const Vec2i& GetRelativeMousePosition()
+{
+    return relative_mouse_pos;
+}
+
+void ShouldCaptureMouse(bool capture)
+{
+    capture_mouse = capture;
+}
+
 }
 
 }

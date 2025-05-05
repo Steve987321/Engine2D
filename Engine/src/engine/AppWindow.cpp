@@ -17,18 +17,17 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 #if defined(TOAD_EDITOR)
 	LOGDEBUGF("[Engine] Loading editor window {}x{}", window_width, window_height);
 
-	create(sf::VideoMode(window_width, window_height), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::ContextSettings());
+	create(sf::VideoMode({window_width, window_height}), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::State::Windowed, sf::ContextSettings());
 	setFramerateLimit(30);
-
 #ifdef _WIN32
 	// drag drop 
-	HWND window_handle = getSystemHandle();
+	HWND window_handle = getNativeHandle();
 
 	DragAcceptFiles(window_handle, TRUE);
 	orginal_wnd_proc = SetWindowLongPtrA(window_handle, GWLP_WNDPROC, (LONG_PTR)AppWindow::WndProc);
 	ShowWindow(window_handle, SW_NORMAL);
 #else
-	void* window_handle = getSystemHandle();
+	void* window_handle = getNativeHandle();
 #endif
 
 	bool res = ImGui::SFML::Init(*this, false);
@@ -50,7 +49,7 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 #else
 	// TODO: CHENGE DEEZZ
 	LOGDEBUG("[Engine] Creating window");
-	create(sf::VideoMode(window_width, window_height), window_name, style, sf::ContextSettings{});
+	create(sf::VideoMode({window_width, window_height}), window_name, style, sf::State::Windowed, sf::ContextSettings{});
 	setFramerateLimit(frame_limit);
 
 #ifndef NDEBUG // imgui
@@ -113,15 +112,13 @@ void AppWindow::UpdateViewports(const FEVENT_CALLBACK& ecallback)
 	{
 		bool erased = false;
 
-		sf::Event e2;
-		while (!erased && (*it)->pollEvent(e2))
+		auto e2 = (*it)->pollEvent();
+		while (!erased && e2)
 		{
-			ImGui::SFML::ProcessEvent(*(*it), e2);
-			ecallback(e2);
+			ImGui::SFML::ProcessEvent(*(*it), *e2);
+			ecallback(*e2);
 
-			switch (e2.type)
-			{
-			case e2.Closed:
+			if (e2->is<sf::Event::Closed>())
 			{
 				ImGui::SFML::Shutdown(*(*it));
 				(*it)->close();
@@ -129,10 +126,8 @@ void AppWindow::UpdateViewports(const FEVENT_CALLBACK& ecallback)
 				erased = true;
 				break;
 			}
-			default:
-				break;
-
-			}
+            
+            e2 = (*it)->pollEvent();
 		}
 
 		if (!erased)

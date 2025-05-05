@@ -5,20 +5,30 @@
 namespace Toad
 {
 
+static sf::SoundBuffer* GetDefaultSoundBuffer()
+{
+	AudioSource* audio_src = ResourceManager::GetAudioSources().Get("Default");
+	assert(audio_src && "No default audio source in ResourceManager");
+	return &audio_src->sound_buffer;
+}
+
 Audio::Audio(std::string_view obj_name)
+	: m_sound(*GetDefaultSoundBuffer())
 {
 	name = obj_name;
 }
 
 Audio::Audio(const Audio& other)
-	: Object(other)
+	: Object(other), m_sound(*GetDefaultSoundBuffer())
 {
 	name = other.name;
 	m_audioSource = other.m_audioSource;
 	if (m_audioSource != nullptr)
 	{
-		m_music.openFromFile(m_audioSource->full_path.string());
+		bool load_success = m_music.openFromFile(m_audioSource->full_path.string());
+		assert(load_success && "Failed to load audio file from path");
 	}
+	
 	m_sound = other.m_sound;
 	m_playFromSource = other.m_playFromSource;
 	m_sourceFile = other.m_sourceFile;
@@ -88,7 +98,7 @@ json Audio::Serialize()
 	return a_data;
 }
 
-const sf::SoundBuffer* Audio::GetSoundBuffer() const
+const sf::SoundBuffer& Audio::GetSoundBuffer() const
 {
 	return m_sound.getBuffer();
 }
@@ -116,7 +126,8 @@ void Audio::ShouldPlayFromSource(bool play_from_source)
 	if (m_playFromSource)
 	{
 		ResourceManager::GetAudioSources().Remove(m_audioSource->relative_path.string());
-		m_music.openFromFile(file_path.string());
+		bool load_success = m_music.openFromFile(file_path.string());
+		assert(load_success && "Failed to load audio file from path");
 	}
 	else
 	{
@@ -152,11 +163,14 @@ void Audio::SetSource(AudioSource* source)
 
 	if (!source->has_valid_buffer && !m_playFromSource)
 	{
-		source->sound_buffer.loadFromFile(m_sourceFile.string());
+		bool load_file_success = source->sound_buffer.loadFromFile(m_sourceFile.string());
+		assert(load_file_success && "Failed to load sound buffer from file");
 		source->has_valid_buffer = true;
 	}
 
-	m_music.openFromFile(m_sourceFile.string());
+	bool load_file_success = m_music.openFromFile(m_sourceFile.string());
+	assert(load_file_success && "Failed to load sound buffer from file");
+
 	m_sound.setBuffer(source->sound_buffer);
 	m_audioSource = source;
 }

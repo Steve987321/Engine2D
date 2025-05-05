@@ -11,7 +11,7 @@ namespace DrawingCanvas
 	ENGINE_API void ModifyVertex(uint32_t i, uint32_t j, const sf::Vertex& v);
 	ENGINE_API size_t AddVertexArray(size_t i);
 	ENGINE_API void ClearVertices();
-    ENGINE_API void DrawVertices(sf::RenderTarget& target, sf::PrimitiveType type = sf::Points);
+    ENGINE_API void DrawVertices(sf::RenderTarget& target, sf::PrimitiveType type = sf::PrimitiveType::Points);
 
     ENGINE_API void ClearDrawBuffers();
 

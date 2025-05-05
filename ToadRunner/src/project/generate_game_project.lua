@@ -63,28 +63,28 @@ if _OPTIONS["usesrc"] then
         engine_path .. "/Engine/src",
         "vendor",
         "vendor/imgui",
-        "vendor/SFML-2.6.0/include",
+        "vendor/SFML-3.0.0/include",
         "vendor/json/include",
         "%{prj.name}/src",
         "%{prj.name}/src/assets"
     }
     libdirs{
         engine_path .. "/bin/Release-%{cfg.system}-x86_64",
-        "vendor/SFML-2.6.0/lib",
+        "vendor/SFML-3.0.0/lib",
     }
 else
     includedirs{
         engine_path .. "/script_api",
         "vendor",
         "vendor/imgui",
-        "vendor/SFML-2.6.0/include",
+        "vendor/SFML-3.0.0/include",
         "vendor/json/include",
         "%{prj.name}/src",
         "%{prj.name}/src/assets",
     }
     libdirs{
         engine_path .. "/libs",
-        "vendor/SFML-2.6.0/lib",
+        "vendor/SFML-3.0.0/lib",
     }
 end 
 

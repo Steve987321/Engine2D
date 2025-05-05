@@ -26,7 +26,7 @@ public:
 
 	json Serialize() override;
 
-	const sf::SoundBuffer* GetSoundBuffer() const;
+	const sf::SoundBuffer& GetSoundBuffer() const;
 
 public:
 	// will already add resource in the resource manager

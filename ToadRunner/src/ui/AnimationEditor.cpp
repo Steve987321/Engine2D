@@ -15,9 +15,9 @@ namespace Toad
 {
 
 	AnimationEditor::AnimationEditor()
+		: m_spriteSheet(*ResourceManager::GetTextures().Get("Default"))
 	{
 		m_inspectorUI = std::bind(&AnimationEditor::ShowAnimationPropsUI, this);
-		m_previewTexture.create(0, 0);
 
 		m_cam.SetSize({1920, 1080});
 		m_cam.original_size = m_cam.GetSize();
@@ -67,10 +67,11 @@ namespace Toad
 
 						sf::Texture* managed_texture = ResourceManager::GetTextures().Get(path);
 
+						Vec2f pos {managed_texture->getSize().x * i / 2.f, 50};
 						if (managed_texture)
 						{
 							sf::Sprite s(*managed_texture);
-							s.setPosition(managed_texture->getSize().x * i / 2.f, 50);
+							s.setPosition(pos);
 							m_sequence.emplace_back(s);
 							m_textureIds.emplace_back(path);
 						}
@@ -81,7 +82,7 @@ namespace Toad
 							{
 								managed_texture = ResourceManager::GetTextures().Add(path, t);
 								sf::Sprite s(*managed_texture);
-								s.setPosition(managed_texture->getSize().x * i / 2.f, 50);
+								s.setPosition(pos);
 								m_sequence.emplace_back(s);
 								m_textureIds.emplace_back(path);
 							}
@@ -124,8 +125,9 @@ namespace Toad
 						managed_texture = ResourceManager::GetTextures().Add(file, t);
 						m_spriteSheet = sf::Sprite(*managed_texture);
 
-						Vec2u tex_size = m_spriteSheet.getTexture()->getSize();
-						m_previewTexture.create(tex_size.x, tex_size.y);
+						Vec2u tex_size = m_spriteSheet.getTexture().getSize();
+						bool resize_success = m_previewTexture.resize(tex_size);
+						assert(resize_success && "failed to resize previewtexture in animation editor");
 
 						m_textureIds.emplace_back(file);
 					}
@@ -144,7 +146,8 @@ namespace Toad
 				ImGui::SliderVec2i("size", &size, 1);
 				if (ImGui::Button("ok"))
 				{
-					m_previewTexture.create(size.x, size.y);
+					bool resize_success = m_previewTexture.resize({(uint32_t)size.x, (uint32_t)size.y});
+					assert(resize_success && "failed to resize texture");
 					ImGui::CloseCurrentPopup();
 				}
 				if (ImGui::Button("cancel"))

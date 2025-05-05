@@ -8,7 +8,7 @@ proj_dir = os.path.dirname(script_dir)
 if sys.platform == "win32":
 	bin_release_dir = os.path.join(proj_dir, "bin", "Release-windows-x86_64")
 	bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-windows-x86_64")
-	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-2.6.0", "bin")
+	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-3.0.0", "bin")
 	sfml_bin_release_files = [
 		"sfml-audio-2.dll",
 		"sfml-graphics-2.dll",
@@ -27,7 +27,7 @@ if sys.platform == "win32":
 elif sys.platform == "darwin": 
 	bin_release_dir = os.path.join(proj_dir, "bin", "Release-macosx-x86_64")
 	bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-macosx-x86_64")
-	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-2.6.0", "lib")
+	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-3.0.0", "lib")
 	sfml_bin_release_files = [
 		"libsfml-audio.dylib",
 		"libsfml-graphics.dylib",

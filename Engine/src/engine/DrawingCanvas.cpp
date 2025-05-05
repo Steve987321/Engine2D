@@ -52,13 +52,13 @@ void DrawBuffers(sf::RenderTarget& target)
     
     for (const DrawInfoArrow& arrow : arrows_to_draw)
     {
-        target.draw(arrow.rect.data(), arrow.rect.size(), sf::TriangleStrip);
-        target.draw(arrow.hat.data(), arrow.hat.size(), sf::Triangles);
+        target.draw(arrow.rect.data(), arrow.rect.size(), sf::PrimitiveType::TriangleStrip);
+        target.draw(arrow.hat.data(), arrow.hat.size(), sf::PrimitiveType::Triangles);
     }
     
     for (const DrawInfoRect& rect : rects_to_draw)
     {
-        target.draw(rect.rect.data(), rect.rect.size(), sf::LineStrip);
+        target.draw(rect.rect.data(), rect.rect.size(), sf::PrimitiveType::LineStrip);
     }
 }
 
@@ -94,8 +94,8 @@ void DrawVertices(sf::RenderTarget& target, sf::PrimitiveType type)
 
 void DrawText(const Vec2f& position, std::string_view text, uint32_t char_size)
 {
-    sf::Text t(text.data(), GetDefaultFontResource());
-    t.setPosition(position.x, position.y);
+    sf::Text t(GetDefaultFontResource(), text.data());
+    t.setPosition(position);
     t.setCharacterSize(char_size);
     
     text_to_draw.emplace_back(t);

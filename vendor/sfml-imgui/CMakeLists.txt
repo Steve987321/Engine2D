@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.13)
-project(imgui_sfml VERSION 2.6 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.22)
+project(imgui_sfml VERSION 3.0.0 LANGUAGES CXX)
 
 option(IMGUI_SFML_FIND_SFML "Use find_package to find SFML" ON)
-option(IMGUI_SFML_IMGUI_DEMO "Build imgui_demo.cpp" ON)
 option(IMGUI_SFML_ENABLE_WARNINGS "Enable compiler warnings" OFF)
+option(IMGUI_SFML_DISABLE_OBSOLETE_FUNCTIONS "Disable obsolete ImGui functions" OFF)
 
 # If you want to use your own user config when compiling ImGui, please set the following variables
 # For example, if you have your config in /path/to/dir/with/config/myconfig.h, set the variables as follows:
@@ -26,7 +26,7 @@ if(IMGUI_SFML_FIND_SFML)
   if(NOT BUILD_SHARED_LIBS)
     set(SFML_STATIC_LIBRARIES ON)
   endif()
-  find_package(SFML 2.5 REQUIRED COMPONENTS graphics)
+  find_package(SFML 3 REQUIRED COMPONENTS Graphics)
 endif()
 
 # ImGui does not provide native support for CMakeLists, workaround for now to have
@@ -38,7 +38,7 @@ if(NOT IMGUI_DIR)
 endif()
 
 # This uses FindImGui.cmake provided in ImGui-SFML repo for now
-find_package(ImGui 1.87 REQUIRED)
+find_package(ImGui 1.91.1 REQUIRED)
 
 # These headers will be installed alongside ImGui-SFML
 set(IMGUI_PUBLIC_HEADERS
@@ -50,10 +50,6 @@ set(IMGUI_PUBLIC_HEADERS
   ${IMGUI_INCLUDE_DIR}/imstb_truetype.h
   ${IMGUI_INCLUDE_DIR}/misc/cpp/imgui_stdlib.h
 )
-
-if(IMGUI_SFML_IMGUI_DEMO)
-  list(APPEND IMGUI_SOURCES ${IMGUI_DEMO_SOURCES})
-endif()
 
 # CMake 3.11 and later prefer to choose GLVND, but we choose legacy OpenGL just because it's safer
 # (unless the OpenGL_GL_PREFERENCE was explicitly set)
@@ -74,8 +70,7 @@ target_include_directories(ImGui-SFML PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_compile_features(ImGui-SFML PUBLIC cxx_std_11)
-target_link_libraries(ImGui-SFML PUBLIC sfml-graphics OpenGL::GL)
+target_link_libraries(ImGui-SFML PUBLIC SFML::Graphics OpenGL::GL)
 if(WIN32 AND MINGW)
   target_link_libraries(ImGui-SFML PUBLIC imm32)
 endif()
@@ -83,6 +78,9 @@ if(BUILD_SHARED_LIBS)
   target_compile_definitions(ImGui-SFML PRIVATE IMGUI_SFML_SHARED_LIB)
   set_target_properties(ImGui-SFML PROPERTIES DEFINE_SYMBOL "IMGUI_SFML_EXPORTS")
   set_target_properties(ImGui-SFML PROPERTIES DEBUG_POSTFIX "_d")
+endif()
+if(IMGUI_SFML_DISABLE_OBSOLETE_FUNCTIONS)
+  target_compile_definitions(ImGui-SFML PUBLIC IMGUI_DISABLE_OBSOLETE_FUNCTIONS)
 endif()
 
 # Add compiler warnings
@@ -148,7 +146,13 @@ if(IMGUI_SFML_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
+option(IMGUI_SFML_BUILD_TESTING "Build ImGui-SFML tests" OFF)
+if(IMGUI_SFML_BUILD_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
 add_custom_target(tidy
-  COMMAND run-clang-tidy -quiet -p ${CMAKE_BINARY_DIR} *.cpp examples/**/*.cpp
+  COMMAND run-clang-tidy -quiet -p ${CMAKE_BINARY_DIR} *.cpp examples/**/*.cpp tests/*.cpp
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
