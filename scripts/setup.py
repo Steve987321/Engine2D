@@ -10,18 +10,18 @@ if sys.platform == "win32":
 	bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-windows-x86_64")
 	sfml_bin_dir = os.path.join(proj_dir, "vendor", "SFML-3.0.0", "bin")
 	sfml_bin_release_files = [
-		"sfml-audio-2.dll",
-		"sfml-graphics-2.dll",
-		"sfml-system-2.dll",
-		"sfml-network-2.dll",
-		"sfml-window-2.dll",
+		"sfml-audio-3.dll",
+		"sfml-graphics-3.dll",
+		"sfml-system-3.dll",
+		"sfml-network-3.dll",
+		"sfml-window-3.dll",
 	]
 	sfml_bin_debug_files = [
-		"sfml-audio-d-2.dll",
-		"sfml-graphics-d-2.dll",
-		"sfml-system-d-2.dll",
-		"sfml-network-d-2.dll",
-		"sfml-window-d-2.dll",
+		"sfml-audio-d-3.dll",
+		"sfml-graphics-d-3.dll",
+		"sfml-system-d-3.dll",
+		"sfml-network-d-3.dll",
+		"sfml-window-d-3.dll",
 	]
 
 elif sys.platform == "darwin": 
@@ -34,16 +34,16 @@ elif sys.platform == "darwin":
 		"libsfml-system.dylib",
 		"libsfml-network.dylib",
 		"libsfml-window.dylib",
-		"libsfml-audio.2.6.dylib",
-		"libsfml-graphics.2.6.dylib",
-		"libsfml-system.2.6.dylib",
-		"libsfml-network.2.6.dylib",
-		"libsfml-window.2.6.dylib",
-		"libsfml-audio.2.6.dylib",
-		"libsfml-graphics.2.6.0.dylib",
-		"libsfml-system.2.6.0.dylib",
-		"libsfml-network.2.6.0.dylib",
-		"libsfml-window.2.6.0.dylib",
+		"libsfml-audio.3.0.dylib",
+		"libsfml-graphics.3.0.dylib",
+		"libsfml-system.3.0.dylib",
+		"libsfml-network.3.0.dylib",
+		"libsfml-window.3.0.dylib",
+		"libsfml-audio.3.0.dylib",
+		"libsfml-graphics.3.0.0.dylib",
+		"libsfml-system.3.0.0.dylib",
+		"libsfml-network.3.0.0.dylib",
+		"libsfml-window.3.0.0.dylib",
 	]
 	sfml_bin_debug_files = sfml_bin_release_files
 

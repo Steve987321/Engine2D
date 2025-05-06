@@ -9,10 +9,13 @@ namespace Toad
 
 namespace ResourceManager
 {
-	static ResourcesOfType<sf::Texture> textures{ "Texture" };
-	static ResourcesOfType<sf::Font> fonts{ "Font" };
+	// special case for textures as these can't be created before sfml initializes 
+	static ResourcesOfType<sf::Texture> textures{ "Textures" };
+	static ResourcesOfType<sf::Font> fonts{ "Fonts" };
 	static ResourcesOfType<FSM> fsms{ "FSM" };
 	static AudioSourceResources audio_sources{ "AudioSource" };
+
+	static std::vector<std::any> default_resources;
 
 	bool AudioSourceResources::Remove(std::string_view id)
 	{
@@ -57,10 +60,19 @@ namespace ResourceManager
 
 	void Init()
 	{
-		bool resize_success = textures.default_resource.resize({5, 5});
+		// set default resources 
+		sf::Texture default_texture;
+		sf::Font default_font; 
+		bool resize_success = default_texture.resize({5, 5});
 		assert(resize_success && "Can't resize default texture");
-		bool load_success = fonts.default_resource.openFromFile(DEFAULT_FONT_PATH);
+		bool load_success = default_font.openFromFile(DEFAULT_FONT_PATH);
 		assert(load_success && "Can't load default font");
+
+		// add them to their managers 
+		textures.Add("Default", default_texture);
+		fonts.Add("Default", default_font);
+		audio_sources.Add("Default", {});
+		fsms.Add("Default", {});
 	}
 
 }

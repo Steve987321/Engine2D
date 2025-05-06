@@ -649,6 +649,7 @@ namespace project {
 #endif
 
 		PROJECT_TYPE proj_type = DetectProjectType(project_file.parent_path());
+		// #TODO: should probably add an extra option to generate chosen project type instead of automatically deciding
 
 		// #TODO should it use the (updated) one in the engine directory or the one in the game directory which may be outdated ?
         

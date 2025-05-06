@@ -43,36 +43,36 @@ using IntRect = sf::IntRect;
 using Texture = sf::Texture;
 using Color = sf::Color;
 
-class ENGINE_API Vec2f : public sf::Vector2f
+class Vec2f : public sf::Vector2f
 {
 public:
-    Vec2f();
-    Vec2f(float x, float y);
-    Vec2f(const Vec2f& v);
-    Vec2f(const sf::Vector2f& other);
+    ENGINE_API Vec2f();
+    ENGINE_API Vec2f(float x, float y);
+    ENGINE_API Vec2f(const Vec2f& v);
+    ENGINE_API Vec2f(const sf::Vector2f& other);
     
-    void operator=(const sf::Vector2f& other);
+    ENGINE_API void operator=(const sf::Vector2f& other);
     
-    Vec2f operator+(const Vec2f& other) const;
-    Vec2f operator-(const Vec2f& other) const;
-    Vec2f operator*(const Vec2f& other) const;
-    Vec2f operator/(const Vec2f& other) const;
-    Vec2f operator+(float scalar) const;
-    Vec2f operator*(float scalar) const;
-    Vec2f operator/(float scalar) const;
+    ENGINE_API Vec2f operator+(const Vec2f& other) const;
+    ENGINE_API Vec2f operator-(const Vec2f& other) const;
+    ENGINE_API Vec2f operator*(const Vec2f& other) const;
+    ENGINE_API Vec2f operator/(const Vec2f& other) const;
+    ENGINE_API Vec2f operator+(float scalar) const;
+    ENGINE_API Vec2f operator*(float scalar) const;
+    ENGINE_API Vec2f operator/(float scalar) const;
 
-    void operator+=(const Vec2f& other);
-    void operator-=(const Vec2f& other);
-    void operator-=(float scalar);
-    void operator+=(float scalar);
-    void operator*=(float scalar);
-    void operator/=(float scalar);
+    ENGINE_API void operator+=(const Vec2f& other);
+    ENGINE_API void operator-=(const Vec2f& other);
+    ENGINE_API void operator-=(float scalar);
+    ENGINE_API void operator+=(float scalar);
+    ENGINE_API void operator*=(float scalar);
+    ENGINE_API void operator/=(float scalar);
     
-    float Length() const;
-	float LengthSquared() const;
-    Vec2f Normalize() const;
-    float Cross(const Vec2f& v) const;
-    float Dot(const Vec2f& v) const;
+    ENGINE_API float Length() const;
+	ENGINE_API float LengthSquared() const;
+    ENGINE_API Vec2f Normalize() const;
+    ENGINE_API float Cross(const Vec2f& v) const;
+    ENGINE_API float Dot(const Vec2f& v) const;
 };
 
 class ENGINE_API FloatRect : public sf::FloatRect

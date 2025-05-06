@@ -15,6 +15,7 @@ namespace Toad
 // ids are relative paths
 namespace ResourceManager
 {
+	// Used to store resources of type T 
 	template<typename T>
 	class ENGINE_API ResourcesOfType
 	{
@@ -24,12 +25,9 @@ namespace ResourceManager
 		explicit ResourcesOfType(std::string_view resource_name)
 			: m_resourceName(resource_name)
 		{
-			Add("Default", default_resource);
 		}
 
 	public:
-		static inline T default_resource;
-
 		TDATA& GetData()
 		{
 			return m_data;

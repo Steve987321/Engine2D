@@ -5,10 +5,7 @@
 namespace Toad
 {
 
-Vec2f::Vec2f()
-    : sf::Vector2f()
-{
-}
+Vec2f::Vec2f() = default;
 
 Vec2f::Vec2f(float x, float y)
     : sf::Vector2f(x, y)

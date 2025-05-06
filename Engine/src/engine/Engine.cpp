@@ -41,8 +41,6 @@ static std::filesystem::path current_path;
 static sf::RenderTexture* interacting_texture = nullptr;
 static std::unique_ptr<sf::RenderTexture> window_texture = nullptr;
 
-static sf::Texture default_texture;
-
 static Camera* interacting_camera = nullptr;
 
 void Render(AppWindow& window);
