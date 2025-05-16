@@ -174,7 +174,7 @@ The steps below will show the minimum steps required on how to create an example
 			circle->SetFillColor(new_color);
 		};
 
-        sf::FloatRect bounds = obj->GetBounds();
+        FloatRect bounds = obj->GetBounds();
 
         // get the camera this is currently being used (aka interacting camera)
         // in the editor this can be either the viewport cam or the game cam depending which one is currently being interacted with
