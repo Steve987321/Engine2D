@@ -24,7 +24,7 @@ project "Game"
         "../../Engine/src",
         "../../vendor",
         "../../vendor/imgui",
-        "../../vendor/SFML-2.6.0/include",
+        "../../vendor/SFML-3.0.0/include",
         "../../vendor/json/include", 
         "src",
         "src/assets"
@@ -34,14 +34,14 @@ project "Game"
         "../../Engine/src",
         "../../vendor",
         "../../vendor/imgui",
-        "../../vendor/SFML-2.6.0/include",
+        "../../vendor/SFML-3.0.0/include",
         "../../vendor/json/include", 
         "src",
         "src/assets"
     }
     end 
     libdirs {
-        "../../vendor/SFML-2.6.0/lib"
+        "../../vendor/SFML-3.0.0/lib"
     }
 
     links {

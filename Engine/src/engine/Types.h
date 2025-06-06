@@ -122,7 +122,14 @@ struct ENGINE_API AudioSource
 template <typename T>
 inline Vec2f operator*(T left, const Vec2f& right)
 {
-    return Vec2f(right.x * left, right.y * left);
+    if constexpr (std::is_same<T, sf::Vector2<float>>::value)
+    {
+        return Vec2f(right.x * left.x, right.y * left.y);
+    }
+    else 
+    {
+        return Vec2f(right.x * left, right.y * left);
+    } 
 }
 
 // put somewhere else? 
