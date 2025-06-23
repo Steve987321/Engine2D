@@ -163,7 +163,7 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 			ImGui::Text("texture");
 			ImGui::SameLine();
 		
-			ImGui::Button("", { 25, 25 });
+			ImGui::Button("texture dragger", { 25, 25 });
 
 			if (ImGui::BeginDragDropTarget())
 			{
