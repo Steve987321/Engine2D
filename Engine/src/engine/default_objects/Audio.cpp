@@ -158,20 +158,27 @@ void Audio::SetSource(AudioSource* source)
 #else
 	m_sourceFile = source->relative_path;
 #endif
-
+        
 	assert(!m_sourceFile.empty());
-
+    
 	if (!source->has_valid_buffer && !m_playFromSource)
 	{
-		bool load_file_success = source->sound_buffer.loadFromFile(m_sourceFile.string());
-		assert(load_file_success && "Failed to load sound buffer from file");
-		source->has_valid_buffer = true;
+        bool opened_file = source->sound_buffer.loadFromFile(m_sourceFile.string());
+		source->has_valid_buffer = opened_file;
 	}
 
-	bool load_file_success = m_music.openFromFile(m_sourceFile.string());
-	assert(load_file_success && "Failed to load sound buffer from file");
+    bool opened_file = m_music.openFromFile(m_sourceFile.string());
 
-	m_sound.setBuffer(source->sound_buffer);
+    if (!opened_file)
+    {
+        LOGERRORF("[Audio] Failed to open '{}'. Setting default audiosource", m_sourceFile.string());
+        
+        m_sound.setBuffer(*GetDefaultSoundBuffer());
+        m_playFromSource = false;
+    }
+    else
+        m_sound.setBuffer(source->sound_buffer);
+    
 	m_audioSource = source;
 }
 
