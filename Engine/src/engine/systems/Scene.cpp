@@ -366,7 +366,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			GET_JSON_ELEMENT(index, object.value(), "index");
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
-
+            
 			Object* newobj = scene.AddToScene(T(object.key()), Toad::begin_play, index).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
@@ -431,6 +431,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 #endif
 						new_tex = ResourceManager::GetTextures().Add(rel_path_str, tex);
 					}
+                    
 					circleobj->SetTexture(rel_path_str, new_tex);
 					circle.setTextureRect(tex_rect);
 				}
@@ -449,7 +450,6 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				sf::Vector2f origin = {};
 				uint32_t u32fill_col = 0;
 				float rotation = 0;
-				bool has_texture = false;
 
 				GET_JSON_ELEMENT(u32fill_col, props, "fill_col");
 				GET_JSON_ELEMENT(scale.x, props, "scalex");
@@ -457,33 +457,30 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 				GET_JSON_ELEMENT(origin.x, props, "originx");
 				GET_JSON_ELEMENT(origin.y, props, "originy");
 				GET_JSON_ELEMENT(rotation, props, "rotation");
-				GET_JSON_ELEMENT(has_texture, props, "has_texture");
 
 				fill_col = sf::Color(u32fill_col);
 
-				if (has_texture)
-				{
-					std::string path_str;
-					json rect;
+                std::string path_str;
+                json rect;
 
-					GET_JSON_ELEMENT(path_str, props, "texture_loc");
-					GET_JSON_ELEMENT(rect, props, "texture_rect");
+                GET_JSON_ELEMENT(path_str, props, "texture_loc");
+                GET_JSON_ELEMENT(rect, props, "texture_rect");
 
-					sf::Texture* new_tex = ResourceManager::GetTextures().Get(path_str);
-					sf::IntRect tex_rect = GetRectFromJSON(rect);
+                sf::Texture* new_tex = ResourceManager::GetTextures().Get(path_str);
+                sf::IntRect tex_rect = GetRectFromJSON(rect);
 
-					if (new_tex == nullptr)
-					{
+                if (new_tex == nullptr)
+                {
 #ifdef TOAD_EDITOR
-						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
+                    sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
 #else
-						sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
+                    sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
 #endif
-						new_tex = ResourceManager::GetTextures().Add(path_str, tex);
-					}
-					spriteobj->SetTexture(path_str, new_tex);
-					sprite.setTextureRect(tex_rect);
-				}
+                    new_tex = ResourceManager::GetTextures().Add(path_str, tex);
+                }
+                
+                spriteobj->SetTexture(path_str, new_tex);
+                sprite.setTextureRect(tex_rect);
 
 				sprite.setColor(fill_col);
 				sprite.setRotation(sf::degrees(rotation));
