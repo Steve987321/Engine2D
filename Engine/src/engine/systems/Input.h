@@ -9,8 +9,8 @@ namespace Toad
 
 namespace Input
 {
-	typedef void(*FKEY_CALLBACK)(sf::Keyboard::Key);
-	typedef void(*FMOUSE_CALLBACK)(sf::Mouse::Button);
+	using FKEY_CALLBACK = std::function<void(sf::Keyboard::Key)>;
+	using FMOUSE_CALLBACK = std::function<void(sf::Mouse::Button)>;
 
 	ENGINE_API bool IsKeyDown(sf::Keyboard::Key key);
 	ENGINE_API bool IsMouseDown(sf::Mouse::Button button);
