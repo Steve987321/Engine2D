@@ -255,8 +255,8 @@ namespace project {
 		for (const auto& e : fs::directory_iterator(engine_path_fs / "vendor"))
 			if (e.path().filename().string().find("imgui") != std::string::npos ||
 				e.path().filename().string().find("json") != std::string::npos ||
-				e.path().filename().string().find("SFML-2.6") != std::string::npos ||
-				e.path().filename().string().find("sfml-imgui") != std::string::npos || 
+				e.path().filename().string().find("SFML-3") != std::string::npos ||
+				e.path().filename().string().find("sfml-imgui") != std::string::npos ||
 				e.path().filename().string().find("filewatch") != std::string::npos)
 			{
 				for (const auto& e2 : fs::recursive_directory_iterator(e.path()))
@@ -528,6 +528,7 @@ namespace project {
 
 		// clear possible previous resources
 		Toad::ResourceManager::Clear();
+        Toad::ResourceManager::Init();
 
 		current_project = settings;
 		
