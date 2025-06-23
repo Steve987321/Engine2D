@@ -113,7 +113,7 @@ namespace Toad
 			rect["left"] = tex_rect.position.x;
 			rect["top"] = tex_rect.position.y;
 			rect["width"] = tex_rect.size.x;
-			rect["heigth"] = tex_rect.size.y;
+			rect["height"] = tex_rect.size.y;
 
 			circle_properties["texture_rect"] = rect;
 		}
