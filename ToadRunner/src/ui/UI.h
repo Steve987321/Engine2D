@@ -31,7 +31,7 @@ namespace ui
 	inline std::string ini_main_buf;
 	inline std::string ini_anim_buf;
 
-	// when to show '*' for unsaved changes
+	// when false, will show '*' for unsaved changes
 	inline bool saved_scene = true;
 
 	// reload scripts when tabbing back in

@@ -778,7 +778,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	if (tab == MAIN)
 	{
 		// SCENE/HIERARCHY
-		ui::ShowSceneHierarchy();
+        ShowSceneHierarchy(message_queue);
 
 		ImGui::Begin("Inspector", nullptr);
 		{

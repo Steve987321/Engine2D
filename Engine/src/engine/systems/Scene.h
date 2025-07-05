@@ -73,7 +73,7 @@ public:
 	///	Also checks if name of object is already here.
 	///
 	template <class T>
-	std::shared_ptr<T> AddToScene(T&& object, bool is_begin_play = true, int32_t index = -1)
+	std::shared_ptr<T> AddToScene(T&& object, bool is_begin_play = true, int32_t index = -1, bool insert = false)
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
@@ -170,9 +170,18 @@ public:
 			{
 				if ((size_t)index + 1 > objects_all.size())
 					objects_all.resize((size_t)index + 1);
-
-				objects_all[index] = std::make_shared<T>(object);
-				objects_all[index]->OnCreate();
+				
+				if (insert)
+				{
+					objects_all.insert(objects_all.begin() + index, std::make_shared<T>(object));
+					objects_all[index]->OnCreate();
+				}
+				else
+				{
+					objects_all[index] = std::make_shared<T>(object);
+					objects_all[index]->OnCreate();
+				}
+				
 				return std::dynamic_pointer_cast<T>(objects_all[index]);
 			}
 		}
@@ -209,7 +218,7 @@ ENGINE_API Scene& LoadScene(const std::filesystem::path& path, const std::filesy
 // for path specify only the folder to save to 
 ENGINE_API void SaveScene(Scene& scene, const std::filesystem::path& path);
 
-ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {}, bool delete_old_objects = true);
+ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder = {}, bool delete_old_objects = true, bool insert = false);
 
 extern Scene empty_scene;
 

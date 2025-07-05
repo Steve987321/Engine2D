@@ -58,6 +58,7 @@ namespace ResourceManager
 			auto it = m_data.find(id.data());
 			if (it != m_data.end())
 			{
+                LOGDEBUGF("[ResourceManage] Removing resource type '{}' with id '{}'", m_resourceName, id.data());
 				m_data.erase(it);
 				return true;
 			}
@@ -67,6 +68,7 @@ namespace ResourceManager
 
 		virtual void Clear()
 		{
+            LOGDEBUGF("[ResourceManager] Clearing resources of type '{}'", m_resourceName);
 			m_data.clear();
 		}
 

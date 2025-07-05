@@ -1,8 +1,10 @@
 #pragma once
 
-namespace ui
+namespace Toad
 {
+    class MessageQueue;
+
 	inline bool hierarchy_clicked_object = false;
 
-	void ShowSceneHierarchy();
+	void ShowSceneHierarchy(MessageQueue& message_queue);
 }

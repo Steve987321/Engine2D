@@ -36,7 +36,7 @@ sf::Font& GetDefaultFontResource()
 }
 
 Text::Text(std::string_view obj_name)
-	: m_text(GetDefaultFontResource()) 
+	: m_text(GetDefaultFontResource())
 {
 	name = obj_name;
 	

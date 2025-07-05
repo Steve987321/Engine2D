@@ -341,7 +341,7 @@ void SaveScene(Scene& scene, const std::filesystem::path& path)
 }
 
 template <typename T>
-ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesystem::path& asset_folder = {})
+inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesystem::path& asset_folder = {}, bool insert = false)
 {
 #ifdef TOAD_EDITOR
 	assert(!asset_folder.empty() && "asset_folder argument should be used when in toad editor");
@@ -367,7 +367,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
             
-			Object* newobj = scene.AddToScene(T(object.key()), Toad::begin_play, index).get();
+			Object* newobj = scene.AddToScene(T(object.key()), Toad::begin_play, index, insert).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
@@ -744,7 +744,7 @@ ENGINE_API inline void LoadSceneObjectsOfType(json objects, Scene& scene, const 
 	}
 }
 
-ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder, bool delete_old_objects)
+void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder, bool delete_old_objects, bool insert)
 {
 	if (objects.contains("objects"))
 	{
@@ -761,12 +761,12 @@ ENGINE_API void LoadSceneObjects(json objects, Scene& scene, const std::filesyst
 					obj->Destroy();
 			
 		auto& objectsall = objects["objects"];
-		LoadSceneObjectsOfType<Object>(objectsall["empty"], scene, asset_folder);
-		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder);
-		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder);
-		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder);
-		LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder);
-		LoadSceneObjectsOfType<Camera>(objectsall["cameras"], scene, asset_folder);
+		LoadSceneObjectsOfType<Object>(objectsall["empty"], scene, asset_folder, insert);
+		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder, insert);
+		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder, insert);
+		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder, insert);
+		LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder, insert);
+		LoadSceneObjectsOfType<Camera>(objectsall["cameras"], scene, asset_folder, insert);
 
 		if (restart) 
 		{

@@ -15,8 +15,6 @@ namespace ResourceManager
 	static ResourcesOfType<FSM> fsms{ "FSM" };
 	static AudioSourceResources audio_sources{ "AudioSource" };
 
-	static std::vector<std::any> default_resources;
-
 	bool AudioSourceResources::Remove(std::string_view id)
 	{
 		if (auto it = m_data.find(id.data());
@@ -52,8 +50,9 @@ namespace ResourceManager
 
 	void Clear()
 	{
+        // #TODO: Only calls audio_sources.Clear()
 		textures.Clear();
-		audio_sources.Clear();
+        audio_sources.Clear();
 		fonts.Clear();
 		fsms.Clear();
 	}
@@ -62,7 +61,8 @@ namespace ResourceManager
 	{
 		// set default resources 
 		sf::Texture default_texture;
-		sf::Font default_font; 
+    
+		sf::Font default_font;
 		bool resize_success = default_texture.resize({5, 5});
 		assert(resize_success && "Can't resize default texture");
 		bool load_success = default_font.openFromFile(DEFAULT_FONT_PATH);

@@ -8,30 +8,320 @@
 #include "engine/Engine.h"
 #include "engine/PlaySession.h"
 
+#include "MessageQueue.h"
+
 #include "UI.h"
 
 using json = nlohmann::ordered_json;
-using namespace Toad;
 
-namespace ui
+namespace Toad
 {
-	void ShowSceneHierarchy()
+    struct IterateChildrenState
+    {
+        bool ignore_mouse_click = false;
+        bool cursor_index_is_under;
+        bool check_range;
+        int index;
+        size_t prev_cursor_index;
+        size_t cursor_index;
+        std::string drag_drop_extra_check_parent;
+        std::string drag_drop_extra_check_child;
+        std::set<std::string> scene_objects_set{};
+        std::vector<std::string> scene_objects{};
+    };
+
+    static void IterateChildren(Object* obj, bool dontchangeskip, IterateChildrenState& state)
+    {
+        state.index++;
+        static bool skip = false;
+
+        const auto drag_drop = [&state](bool& skip, Object* obj) {
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (ui::selected_obj && obj)
+                    LOGDEBUGF("dragging {1} to {0}", obj->name, ui::selected_obj->name);
+                
+                if (obj)
+                    state.drag_drop_extra_check_parent = obj->name;
+                if (ui::selected_obj)
+                    state.drag_drop_extra_check_child = ui::selected_obj->name;
+
+                bool move_object = ImGui::AcceptDragDropPayload("move object");
+                if (move_object)
+                {
+                    if (ui::selected_obj != nullptr)
+                    {
+                        ui::selected_obj->SetParent(obj);
+                    }
+                    for (const std::string& o : ui::selected_objects)
+                    {
+                        Object* as_object = Scene::current_scene.GetSceneObject(o).get();
+
+                        if (as_object != nullptr)
+                            as_object->SetParent(obj);
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
+            if (ImGui::BeginDragDropSource())
+            {
+                if (!skip)
+                {
+                    if (ui::selected_obj != nullptr)
+                    {
+                        if (!ui::selected_objects.contains(obj->name) && ui::selected_obj->name != obj->name)
+                        {
+                            ui::selected_objects.clear();
+                            ui::selected_obj = obj;
+                        }
+                        ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
+                    }
+                    else
+                    {
+                        ui::selected_obj = obj;
+                    }
+                }
+                skip = true;
+                ImGui::EndDragDropSource();
+            }
+        };
+
+        if (!state.scene_objects_set.contains(obj->name))
+        {
+            state.scene_objects.emplace_back(obj->name);
+            state.scene_objects_set.emplace(obj->name);
+        }
+
+        if (obj->GetChildren().empty())
+        {
+            if (ImGui::Selectable(obj->name.c_str(), ui::selected_objects.contains(obj->name) || (ui::selected_obj != nullptr && ui::selected_obj->name == obj->name)))
+            {
+                if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && ui::selected_obj != nullptr && ui::selected_obj->name != obj->name)
+                {
+                    if (ui::selected_objects.contains(obj->name))
+                    {
+                        ui::selected_objects.erase(obj->name);
+                    }
+                    else
+                    {
+                        ui::selected_objects.insert(obj->name);
+                    }
+                }
+                else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && ui::selected_obj != nullptr && ui::selected_obj->name != obj->name)
+                {
+                    state.check_range = true;
+                    state.cursor_index = state.index;
+                    state.cursor_index_is_under = state.cursor_index > state.prev_cursor_index;
+                }
+                else
+                {
+                    state.prev_cursor_index = state.index;
+                    ui::selected_obj = obj;
+                    ui::selected_objects.clear();
+                }
+            }
+            if (ImGui::IsItemHovered())
+            {
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    if (ui::selected_objects.empty())
+                    {
+                        ui::selected_obj = obj;
+                    }
+                    state.prev_cursor_index = state.index;
+
+                    ImGui::PushOverrideID(ui::scene_modify_popup_id);
+                    ImGui::OpenPopup("SceneModifyPopup");
+                    ImGui::PopID();
+
+                    state.ignore_mouse_click = true;
+                }
+            }
+        }
+        else
+        {
+            ImGuiTreeNodeFlags node_flags = 0;
+            node_flags |= ImGuiTreeNodeFlags_OpenOnArrow;
+            if (ui::selected_objects.contains(obj->name) || (ui::selected_obj != nullptr && ui::selected_obj->name == obj->name))
+            {
+                node_flags |= ImGuiTreeNodeFlags_Selected;
+            }
+
+            if (ImGui::TreeNodeEx(obj->name.c_str(), node_flags))
+            {
+                // root/parent widget
+                if (ImGui::IsItemHovered())
+                {
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                    {
+                        if (ui::selected_objects.empty())
+                        {
+                            ui::selected_obj = obj;
+                        }
+                        state.prev_cursor_index = state.index;
+                        if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+                        {
+                            ImGui::PushOverrideID(ui::scene_modify_popup_id);
+                            ImGui::OpenPopup("SceneModifyPopup");
+                            ImGui::PopID();
+                            state.ignore_mouse_click = true;
+                        }
+                    }
+                    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && ui::selected_obj != nullptr && ui::selected_obj->name != obj->name)
+                        {
+                            if (ui::selected_objects.contains(obj->name))
+                                ui::selected_objects.erase(obj->name);
+                            else
+                                ui::selected_objects.insert(obj->name);
+                        }
+                        else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && ui::selected_obj != nullptr && ui::selected_obj->name != obj->name)
+                        {
+                            state.check_range = true;
+                            state.cursor_index = state.index;
+                            state.cursor_index_is_under = state.cursor_index > state.prev_cursor_index;
+                        }
+                        else
+                        {
+                            state.prev_cursor_index = state.index;
+                            ui::selected_obj = obj;
+                            ui::selected_objects.clear();
+                        }
+                    }
+                }
+
+                if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                    drag_drop(skip, obj);
+
+                for (Object* child : obj->GetChildrenAsObjects())
+                {
+                    if (!state.scene_objects_set.contains(child->name))
+                    {
+                        state.scene_objects.emplace_back(child->name);
+                        state.scene_objects_set.emplace(child->name);
+                    }
+
+                    IterateChildren(child, true, state);
+
+                    if (ImGui::IsItemHovered())
+                    {
+                        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                        {
+                            if (ui::selected_objects.empty())
+                                ui::selected_obj = child;
+
+                            state.prev_cursor_index = state.index;
+                            if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+                            {
+                                ImGui::PushOverrideID(ui::scene_modify_popup_id);
+                                ImGui::OpenPopup("SceneModifyPopup");
+                                ImGui::PopID();
+                                state.ignore_mouse_click = true;
+                            }
+                        }
+                        else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                        {
+                            if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && ui::selected_obj != nullptr && ui::selected_obj->name != child->name)
+                            {
+                                if (ui::selected_objects.contains(child->name))
+                                    ui::selected_objects.erase(child->name);
+                                else
+                                    ui::selected_objects.insert(child->name);
+                            }
+                            else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && ui::selected_obj != nullptr && ui::selected_obj->name != child->name)
+                            {
+                                state.check_range = true;
+                                state.cursor_index = state.index;
+                                state.cursor_index_is_under = state.cursor_index > state.prev_cursor_index;
+                            }
+                            else
+                            {
+                                state.prev_cursor_index = state.index;
+                                ui::selected_obj = child;
+                                skip = true;
+                                ui::selected_objects.clear();
+                            }
+                        }
+                    }
+
+                    if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+                        drag_drop(skip, child);
+                }
+
+                ImGui::TreePop();
+            }
+            else
+            {
+                if (ImGui::IsItemHovered())
+                {
+                    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                    {
+                        if (ui::selected_objects.empty())
+                        {
+                            ui::selected_obj = obj;
+                        }
+                        state.prev_cursor_index = state.index;
+                        if (!ImGui::IsPopupOpen("SceneModifyPopup"))
+                        {
+                            ImGui::PushOverrideID(ui::scene_modify_popup_id);
+                            ImGui::OpenPopup("SceneModifyPopup");
+                            ImGui::PopID();
+                            state.ignore_mouse_click = true;
+                        }
+                    }
+                    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && ui::selected_obj != nullptr && ui::selected_obj->name != obj->name)
+                        {
+                            if (ui::selected_objects.contains(obj->name))
+                            {
+                                ui::selected_objects.erase(obj->name);
+                            }
+                            else
+                            {
+                                ui::selected_objects.insert(obj->name);
+                            }
+                        }
+                        else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && ui::selected_obj != nullptr && ui::selected_obj->name != obj->name)
+                        {
+                            state.check_range = true;
+                            state.cursor_index = state.index;
+                            state.cursor_index_is_under = state.cursor_index > state.prev_cursor_index;
+                        }
+                        else
+                        {
+                            state.prev_cursor_index = state.index;
+                            ui::selected_obj = obj;
+                            ui::selected_objects.clear();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!skip)
+        {
+            drag_drop(skip, obj);
+        }
+
+        if (!dontchangeskip)
+            skip = false;
+    }
+
+	void ShowSceneHierarchy(MessageQueue& message_queue)
 	{
 		// make sure this is only true on click
 		hierarchy_clicked_object = false;
+        
+        std::vector<std::pair<std::string, std::string>> set_object_childs = {};
+        
+        static IterateChildrenState iterate_children_state;
+        iterate_children_state.index = 0;
+        iterate_children_state.scene_objects.clear();
+        iterate_children_state.scene_objects_set.clear();
 
 		ImGui::Begin("Scene", nullptr);
-		std::vector<std::pair<std::string, std::string>> set_object_childs = {};
-		int index = 0;
-		static size_t prev_cursor_index = 0;
-		static size_t cursor_index = 0;
-		static bool cursor_index_is_under = false;
-		static bool check_range = false;
-		static std::string drag_drop_extra_check_parent;
-		static std::string drag_drop_extra_check_child;
-
-		std::vector<std::string> scene_objects{};
-		std::set<std::string> scene_objects_set{};
 
 		if (ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper))
 		{
@@ -41,27 +331,33 @@ namespace ui
 			{
 				if (!scene.path.empty())
 				{
-					saved_scene = true;
+					ui::saved_scene = true;
 					SaveScene(scene, scene.path.parent_path());
+                    
+                    MessageQueueMessage msg;
+                    msg.msg = "Saved scene";
+                    msg.category = MessageCategory::GAME;
+                    msg.show_time_ms = 2000;
+                    msg.type = MessageType::INFO;
+
+                    message_queue.AddToMessageQueue(msg);
 				}
 			}
-			if (ImGui::IsKeyPressed(ImGuiKey_C))
+			else if (ImGui::IsKeyPressed(ImGuiKey_C))
 			{
 				std::vector<Object*> objects;
 				size_t count = 0;
-				if (selected_obj != nullptr)
+				if (ui::selected_obj != nullptr)
 				{
 					count++;
-					objects.emplace_back(selected_obj);
+					objects.emplace_back(ui::selected_obj);
 				}
-				count += selected_objects.size();
+				count += ui::selected_objects.size();
 
 				objects.reserve(count);
 
-				for (const std::string& name : selected_objects)
-				{
+				for (const std::string& name : ui::selected_objects)
 					objects.emplace_back(scene.GetSceneObject(name).get());
-				}
 
 				json data = scene.Serialize(objects);
 				std::stringstream ss;
@@ -76,7 +372,7 @@ namespace ui
 				try
 				{
 					json data_json = json::parse(data);
-					LoadSceneObjects(data_json, scene, "asset_browser.GetAssetPath()", false);
+					LoadSceneObjects(data_json, scene, "asset_browser.GetAssetPath()", false, true);
 				}
 				catch (const json::parse_error& e)
 				{
@@ -85,305 +381,17 @@ namespace ui
 			}
 		}
 
-		ImGui::SeparatorText((saved_scene ? Scene::current_scene.name : Scene::current_scene.name + '*').c_str());
-		bool ignore_mouse_click = false;
+		ImGui::SeparatorText((ui::saved_scene ? Scene::current_scene.name : Scene::current_scene.name + '*').c_str());
 		std::queue<std::string> remove_objects_queue;
-
-		// #TODO: fix drag and drop ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#&(*^!@(*&$^!(*&@$^*!(@
-		const std::function<void(Object*, bool) > recursive_iterate_children = [&](Object* obj, bool dontchangeskip)
-			{
-				index++;
-				static bool skip = false;
-
-				const auto drag_drop = [](bool& skip, Object* obj) {
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (selected_obj && obj)
-							LOGDEBUGF("dragging {1} to {0}", obj->name, selected_obj->name);
-                        
-                        if (obj)
-                            drag_drop_extra_check_parent = obj->name;
-                        if (selected_obj)
-                            drag_drop_extra_check_child = selected_obj->name;
-
-						if (ImGui::AcceptDragDropPayload("move object"))
-						{
-							if (selected_obj != nullptr)
-							{
-								selected_obj->SetParent(obj);
-							}
-							for (const std::string& o : selected_objects)
-							{
-								Object* as_object = Scene::current_scene.GetSceneObject(o).get();
-
-								if (as_object != nullptr)
-								{
-									as_object->SetParent(obj);
-								}
-							}
-						}
-						ImGui::EndDragDropTarget();
-					}
-					if (ImGui::BeginDragDropSource())
-					{
-						if (!skip)
-						{
-							if (selected_obj != nullptr)
-							{
-								if (!selected_objects.contains(obj->name) && selected_obj->name != obj->name)
-								{
-									selected_objects.clear();
-									selected_obj = obj;
-								}
-								ImGui::SetDragDropPayload("move object", obj->name.c_str(), obj->name.length());
-							}
-							else
-							{
-								selected_obj = obj;
-							}
-						}
-						skip = true;
-						ImGui::EndDragDropSource();
-					}
-					};
-
-				if (!scene_objects_set.contains(obj->name))
-				{
-					scene_objects.emplace_back(obj->name);
-					scene_objects_set.emplace(obj->name);
-				}
-
-				if (obj->GetChildren().empty())
-				{
-					if (ImGui::Selectable(obj->name.c_str(), selected_objects.contains(obj->name) || (selected_obj != nullptr && selected_obj->name == obj->name)))
-					{
-						if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != obj->name)
-						{
-							if (selected_objects.contains(obj->name))
-							{
-								selected_objects.erase(obj->name);
-							}
-							else
-							{
-								selected_objects.insert(obj->name);
-							}
-						}
-						else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != obj->name)
-						{
-							check_range = true;
-							cursor_index = index;
-							cursor_index_is_under = cursor_index > prev_cursor_index;
-						}
-						else
-						{
-							prev_cursor_index = index;
-							selected_obj = obj;
-							selected_objects.clear();
-						}
-					}
-					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-					{
-						if (selected_objects.empty())
-						{
-							selected_obj = obj;
-						}
-						prev_cursor_index = index;
-
-						ImGui::PushOverrideID(scene_modify_popup_id);
-						ImGui::OpenPopup("SceneModifyPopup");
-						ImGui::PopID();
-
-						ignore_mouse_click = true;
-					}
-				}
-				else
-				{
-					ImGuiTreeNodeFlags node_flags = 0;
-					node_flags |= ImGuiTreeNodeFlags_OpenOnArrow;
-					if (selected_objects.contains(obj->name) || (selected_obj != nullptr && selected_obj->name == obj->name))
-					{
-						node_flags |= ImGuiTreeNodeFlags_Selected;
-					}
-
-					if (ImGui::TreeNodeEx(obj->name.c_str(), node_flags))
-					{
-						// root/parent widget
-						if (ImGui::IsItemHovered())
-						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-							{
-								if (selected_objects.empty())
-								{
-									selected_obj = obj;
-								}
-								prev_cursor_index = index;
-								if (!ImGui::IsPopupOpen("SceneModifyPopup"))
-								{
-									ImGui::PushOverrideID(scene_modify_popup_id);
-									ImGui::OpenPopup("SceneModifyPopup");
-									ImGui::PopID();
-									ignore_mouse_click = true;
-								}
-							}
-							else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != obj->name)
-								{
-									if (selected_objects.contains(obj->name))
-									{
-										selected_objects.erase(obj->name);
-									}
-									else
-									{
-										selected_objects.insert(obj->name);
-									}
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != obj->name)
-								{
-									check_range = true;
-									cursor_index = index;
-									cursor_index_is_under = cursor_index > prev_cursor_index;
-								}
-								else
-								{
-									prev_cursor_index = index;
-									selected_obj = obj;
-									selected_objects.clear();
-								}
-							}
-						}
-
-						if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-							drag_drop(skip, obj);
-
-						for (Object* child : obj->GetChildrenAsObjects())
-						{
-							if (!scene_objects_set.contains(child->name))
-							{
-								scene_objects.emplace_back(child->name);
-								scene_objects_set.emplace(child->name);
-							}
-
-							recursive_iterate_children(child, true);
-
-							if (ImGui::IsItemHovered())
-							{
-								if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-								{
-									if (selected_objects.empty())
-									{
-										selected_obj = child;
-									}
-									prev_cursor_index = index;
-									if (!ImGui::IsPopupOpen("SceneModifyPopup"))
-									{
-										ImGui::PushOverrideID(scene_modify_popup_id);
-										ImGui::OpenPopup("SceneModifyPopup");
-										ImGui::PopID();
-										ignore_mouse_click = true;
-									}
-								}
-								else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-								{
-									if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != child->name)
-									{
-										if (selected_objects.contains(child->name))
-										{
-											selected_objects.erase(child->name);
-										}
-										else
-										{
-											selected_objects.insert(child->name);
-										}
-									}
-									else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != child->name)
-									{
-										check_range = true;
-										cursor_index = index;
-										cursor_index_is_under = cursor_index > prev_cursor_index;
-									}
-									else
-									{
-										prev_cursor_index = index;
-										selected_obj = child;
-										skip = true;
-										selected_objects.clear();
-									}
-								}
-							}
-
-							if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-								drag_drop(skip, child);
-						}
-
-						ImGui::TreePop();
-					}
-					else
-					{
-						if (ImGui::IsItemHovered())
-						{
-							if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-							{
-								if (selected_objects.empty())
-								{
-									selected_obj = obj;
-								}
-								prev_cursor_index = index;
-								if (!ImGui::IsPopupOpen("SceneModifyPopup"))
-								{
-									ImGui::PushOverrideID(scene_modify_popup_id);
-									ImGui::OpenPopup("SceneModifyPopup");
-									ImGui::PopID();
-									ignore_mouse_click = true;
-								}
-							}
-							else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-							{
-								if ((ImGui::IsKeyDown(ImGuiKey_LeftCtrl) || ImGui::IsKeyDown(ImGuiKey_ModSuper)) && selected_obj != nullptr && selected_obj->name != obj->name)
-								{
-									if (selected_objects.contains(obj->name))
-									{
-										selected_objects.erase(obj->name);
-									}
-									else
-									{
-										selected_objects.insert(obj->name);
-									}
-								}
-								else if (ImGui::IsKeyDown(ImGuiKey_LeftShift) && selected_obj != nullptr && selected_obj->name != obj->name)
-								{
-									check_range = true;
-									cursor_index = index;
-									cursor_index_is_under = cursor_index > prev_cursor_index;
-								}
-								else
-								{
-									prev_cursor_index = index;
-									selected_obj = obj;
-									selected_objects.clear();
-								}
-							}
-						}
-					}
-				}
-
-				if (!skip)
-				{
-					drag_drop(skip, obj);
-				}
-
-				if (!dontchangeskip)
-					skip = false;
-			};
-
+		
 		if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 		{
-			if (selected_obj != nullptr)
+			if (ui::selected_obj != nullptr)
 			{
-				selected_obj->Destroy();
-				selected_obj = nullptr;
+				ui::selected_obj->Destroy();
+				ui::selected_obj = nullptr;
 			}
-			for (const std::string& s : selected_objects)
+			for (const std::string& s : ui::selected_objects)
 			{
 				Scene::current_scene.GetSceneObject(s)->Destroy();
 				remove_objects_queue.emplace(s);
@@ -394,16 +402,16 @@ namespace ui
 		{
 			// make sure we only iterate over root objects
 			if (!obj->GetParent().empty())
-			{
 				continue;
-			}
 
-			recursive_iterate_children(obj.get(), false);
+			IterateChildren(obj.get(), false, iterate_children_state);
 		}
 
-		// do some extra checks beucase the recursive_iterate_children is not good 
+		// do some extra checks beucase the IterateChildren is not good 
 		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 		{
+            auto& drag_drop_extra_check_parent = iterate_children_state.drag_drop_extra_check_parent;
+            auto& drag_drop_extra_check_child = iterate_children_state.drag_drop_extra_check_child;
 			if (!drag_drop_extra_check_parent.empty() || !drag_drop_extra_check_child.empty())
 			{
 				// get them as objects 
@@ -420,47 +428,45 @@ namespace ui
 					drag_drop_extra_check_child.clear();
                     
                     child_obj->SetParent(parent_obj.get());
-
 				}
 			}
 		}
 
-		if (check_range)
+		if (iterate_children_state.check_range)
 		{
 			std::vector<std::string> keys;
 			int origin = 0;
-			int j = 0;
-			for (const std::string& name : scene_objects)
+			int i = 0;
+			for (const std::string& name : iterate_children_state.scene_objects)
 			{
-				j++;
-				if (name == selected_obj->name)
-				{
-					origin = j;
-				}
+				i++;
+				if (name == ui::selected_obj->name)
+					origin = i;
+
 				keys.push_back(name);
 			}
 
 			//LOGDEBUGF("prev_index={} is_under={} cursor_index={} origin={}", prev_cursor_index, cursor_index_is_under, cursor_index, origin);
-			cursor_index = std::clamp(cursor_index, (size_t)0, keys.size());
+			iterate_children_state.cursor_index = std::clamp(iterate_children_state.cursor_index, (size_t)0, keys.size());
 
-			selected_objects.clear();
+			ui::selected_objects.clear();
 			int dest = 0;
-			if (cursor_index_is_under)
+			if (iterate_children_state.cursor_index_is_under)
 			{
-				dest = static_cast<int>(cursor_index);
+				dest = static_cast<int>(iterate_children_state.cursor_index);
 			}
 			else
 			{
-				dest = static_cast<int>(cursor_index);
+				dest = static_cast<int>(iterate_children_state.cursor_index);
 				origin -= 2;
 			}
-			for (int i = origin; cursor_index_is_under ? i < dest : i >= dest - 1; cursor_index_is_under ? i++ : i--)
+			for (int i = origin; iterate_children_state.cursor_index_is_under ? i < dest : i >= dest - 1; iterate_children_state.cursor_index_is_under ? i++ : i--)
 			{
 				LOGDEBUGF("{} {}", i, keys[i]);
-				selected_objects.insert(keys[i]);
+				ui::selected_objects.insert(keys[i]);
 			}
 
-			check_range = false;
+			iterate_children_state.check_range = false;
 		}
 
 		bool hovering_scene_hierarchy = ImGui::IsMouseHoveringRect(ImGui::GetWindowPos(), ImGui::GetWindowPos() + ImGui::GetWindowSize());
@@ -468,8 +474,8 @@ namespace ui
 		{
 			if (!ImGui::IsAnyItemHovered() && hovering_scene_hierarchy)
 			{
-				selected_obj = nullptr;
-				selected_objects.clear();
+				ui::selected_obj = nullptr;
+				ui::selected_objects.clear();
 			}
 		}
 
@@ -484,7 +490,7 @@ namespace ui
 			ImGui::SetWindowFocus("Inspector");
 		}
 
-		if (!ignore_mouse_click && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		if (!iterate_children_state.ignore_mouse_click && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		{
 			if (hovering_scene_hierarchy)
 			{
@@ -526,36 +532,35 @@ namespace ui
 			ImGui::EndPopup();
 		}
 
-		ImGui::PushOverrideID(scene_modify_popup_id);
+		ImGui::PushOverrideID(ui::scene_modify_popup_id);
 		if (ImGui::BeginPopup("SceneModifyPopup"))
 		{
-			// multiple objects
-			if (!selected_objects.empty())
-			{
-				if (ImGui::MenuItem("Delete"))
-				{
-					if (selected_obj != nullptr)
-					{
-						remove_objects_queue.push(selected_obj->name);
-					}
+            if (ImGui::MenuItem("Delete"))
+            {
+                if (ui::selected_obj != nullptr)
+                    remove_objects_queue.push(ui::selected_obj->name);
 
-					for (const std::string& name : selected_objects)
-					{
-						remove_objects_queue.push(name);
-					}
-				}
-			}
-			else
-			{
-				// singular object 
-				if (ImGui::MenuItem("Delete"))
-				{
-					if (selected_obj != nullptr)
-					{
-						remove_objects_queue.push(selected_obj->name);
-					}
-				}
-			}
+                if (!ui::selected_objects.empty())
+                {
+                    for (const std::string& name : ui::selected_objects)
+                        remove_objects_queue.push(name);
+                }
+            }
+            if (ImGui::MenuItem("UnParent"))
+            {
+                if (ui::selected_obj != nullptr)
+                    ui::selected_obj->SetParent(nullptr);
+
+                if (!ui::selected_objects.empty())
+                {
+                    for (const std::string& name : ui::selected_objects)
+                    {
+                        auto obj = Scene::current_scene.GetSceneObject(name);
+                        if (obj)
+                            obj->SetParent(nullptr);
+                    }
+                }
+            }
 
 			ImGui::EndPopup();
 		}
@@ -564,13 +569,12 @@ namespace ui
 		while (!remove_objects_queue.empty())
 		{
 			const std::string& front = remove_objects_queue.front();
-			selected_obj = nullptr;
-			selected_objects.erase(front);
-			Object* obj = Scene::current_scene.GetSceneObject(front).get();
+			ui::selected_obj = nullptr;
+			ui::selected_objects.erase(front);
+			auto obj = Scene::current_scene.GetSceneObject(front);
 			if (obj != nullptr)
-			{
 				obj->Destroy();
-			}
+                
 			remove_objects_queue.pop();
 		}
 

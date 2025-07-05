@@ -23,8 +23,7 @@ namespace Toad
 			starting_pos = ImGui::GetContentRegionAvail();
 			starting_pos.y += 50.f;
 		}
-		
-		constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
+
 		uint32_t i = 0;
 		ImDrawList* draw = ImGui::GetForegroundDrawList();
 
