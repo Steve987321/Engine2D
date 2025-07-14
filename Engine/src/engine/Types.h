@@ -73,6 +73,7 @@ public:
     ENGINE_API Vec2f Normalize() const;
     ENGINE_API float Cross(const Vec2f& v) const;
     ENGINE_API float Dot(const Vec2f& v) const;
+    ENGINE_API float Distance(const Vec2f& v) const;
 };
 
 class ENGINE_API FloatRect : public sf::FloatRect
@@ -99,6 +100,8 @@ private:
 
 namespace Mouse
 {
+    using Button = sf::Mouse::Button;
+    
 	ENGINE_API void SetVisible(bool visible);
 	ENGINE_API Vec2i GetPosition();
 	ENGINE_API Vec2i GetPositionRaw();

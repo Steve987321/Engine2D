@@ -27,7 +27,7 @@ void RayCaster::OnStart(Object* obj)
 	Script::OnStart(obj);
 
 	// set origin of this object (for better visuals)
-	Circle* circle = get_object_as_type<Circle>(obj);
+	Circle* circle = GetObjectAsType<Circle>(obj);
 	if (circle) 
 	{
 		float half_radius = circle->GetCircle().getRadius() / 2.f;
@@ -36,7 +36,7 @@ void RayCaster::OnStart(Object* obj)
 
 	std::shared_ptr<Object> floor_obj = Scene::current_scene.GetSceneObject("Floor");
 	if (floor_obj)
-		floor_sprite = get_object_as_type<Sprite>(floor_obj.get());
+		floor_sprite = GetObjectAsType<Sprite>(floor_obj.get());
 
 	if (!floor_obj || !floor_sprite)
 		LOGERRORF("[RayCaster] Can't find floor object, obj:{}, sprite:{}", (void*)floor_obj.get(), (void*)floor_sprite);

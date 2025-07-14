@@ -112,7 +112,7 @@ private:
 		std::cout << "] [";
 
 		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::GREY));
-		std::cout << get_date_str("%H:%M:%S");
+		std::cout << GetDateAsString("%H:%M:%S");
 
 		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
 		std::cout << "] ";
@@ -122,7 +122,7 @@ private:
 
 		SetConsoleTextAttribute(m_stdoutHandle, static_cast<unsigned short>(CONSOLE_COLOR::WHITE));
 #else
-		std::cout << '[' << logTypeAsStr[log_type] << "] [" << get_date_str("%H:%M:%S") << "] " << str << std::endl;
+		std::cout << '[' << logTypeAsStr[log_type] << "] [" << GetDateAsString("%H:%M:%S") << "] " << str << std::endl;
 #endif
 	}
 
@@ -147,7 +147,7 @@ private:
 		}
 
 		if (create_log_file)
-			LogToFile(get_date_str("[%T]") + ' ' + formatted_str);
+			LogToFile(GetDateAsString("[%T]") + ' ' + formatted_str);
 
 		for (const FLOG_CALLBACK& f : m_callbacks)
 		{

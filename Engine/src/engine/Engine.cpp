@@ -154,7 +154,7 @@ bool Init()
 	editor_cam.SetPosition({ 0, 0 });
 	editor_cam.SetSize({ (float)width, (float)height });
 
-	current_path = get_exe_path().parent_path();
+	current_path = GetExePath().parent_path();
 	
 	ResourceManager::Init();
 

@@ -32,25 +32,25 @@ namespace Toad
 
 	/// @brief fast random number generator with bounds
 	/// @return fast int in range (inclusive) 
-	ENGINE_API int rand_int(int min, int max);
+	ENGINE_API int RandInt(int min, int max);
 	
 	/// @brief fast random number generator with bounds
 	/// @return fast float in range (inclusive) 
-	ENGINE_API float rand_float(float min, float max);
+	ENGINE_API float RandFloat(float min, float max);
+
+	ENGINE_API float DegToRad(float degrees);
+
+	ENGINE_API float RadToDeg(float radians);
 
 	/// Returns the date as a string with the given format
-	ENGINE_API std::string get_date_str(std::string_view format);
+	ENGINE_API std::string GetDateAsString(std::string_view format);
 
-	ENGINE_API std::filesystem::path get_exe_path();
+	ENGINE_API std::filesystem::path GetExePath();
 
-	ENGINE_API float distance(const Vec2f& a, const Vec2f& b);
-
-	ENGINE_API float deg_to_rad(float degrees);
-
-	ENGINE_API float rad_to_deg(float radians);
+    ENGINE_API void PathToPreferred(std::string& path_str);
 
 	template<typename T>
-	ENGINE_API inline bool get_json_element(T& val, const nlohmann::ordered_json& data, std::string_view key, std::string error_msg = "") noexcept
+	ENGINE_API inline bool GetJsonElement(T& val, const nlohmann::ordered_json& data, std::string_view key, std::string error_msg = "") noexcept
 	{
 		if (data.contains(key) && !data.at(key).is_null())
 		{
@@ -75,13 +75,13 @@ namespace Toad
 	ENGINE_API std::string GetFileContents(const char* file);
 
 	template<class T>
-	T* get_object_as_type(Object* obj)
+	T* GetObjectAsType(Object* obj)
 	{
 		return dynamic_cast<T*>(obj);
 	}
 
 	template<class T>
-	T* get_script_as_type(Script* script)
+	T* GetScriptAsType(Script* script)
 	{
 		return dynamic_cast<T*>(script);
 	}

@@ -29,7 +29,7 @@ namespace Toad
 			m_logFile.open(GetLogFolder() + PATH_SEPARATOR + logFileName);
 
 			// log the date in the beginning
-			LogToFile(get_date_str("%Y %d %b \n"));
+			LogToFile(GetDateAsString("%Y %d %b \n"));
 		}
 	}
 
@@ -72,7 +72,7 @@ namespace Toad
 
 	std::string Logger::GetLogFolder()
 	{
-		return get_exe_path().string();
+		return GetExePath().string();
 	}
 
 	void Logger::LogToFile(const std::string_view str)

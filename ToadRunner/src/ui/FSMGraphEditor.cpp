@@ -352,8 +352,8 @@ namespace ui
 		json fsm_data;
 		json imgui_data;
 
-		bool fsm_data_res = get_json_element(fsm_data, data, "fsm");
-		bool imgui_data_res = get_json_element(imgui_data, data, "imgui");
+		bool fsm_data_res = GetJsonElement(fsm_data, data, "fsm");
+		bool imgui_data_res = GetJsonElement(imgui_data, data, "imgui");
 
 		if (!fsm_data_res)
 		{

@@ -11,7 +11,7 @@ void TestScript::OnStart(Object* obj)
 {
 	Script::OnStart(obj);
 
-	circle = get_object_as_type<Circle>(obj);
+	circle = GetObjectAsType<Circle>(obj);
 
 	if (circle == nullptr)
 		LOGERROR("CIRCLE IS NULL");
@@ -33,9 +33,9 @@ void TestScript::OnFixedUpdate(Toad::Object* obj)
 
 	const auto change_c_col = []
 		{
-			auto rand_r = rand_int(0, 255);
-			auto rand_g = rand_int(0, 255);
-			auto rand_b = rand_int(0, 255);
+			auto rand_r = RandInt(0, 255);
+			auto rand_g = RandInt(0, 255);
+			auto rand_b = RandInt(0, 255);
 			circle->GetCircle().setFillColor(sf::Color(rand_r, rand_g, rand_b));
 		};
 

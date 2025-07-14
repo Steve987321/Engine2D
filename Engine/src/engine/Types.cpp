@@ -8,17 +8,17 @@ namespace Toad
 Vec2f::Vec2f() = default;
 
 Vec2f::Vec2f(float x, float y)
-    : sf::Vector2f(x, y)
+: sf::Vector2f(x, y)
 {
 }
 
 Vec2f::Vec2f(const Vec2f& v)
-    : sf::Vector2f(v)
+: sf::Vector2f(v)
 {
 }
 
 Vec2f::Vec2f(const sf::Vector2f& v)
-    : sf::Vector2f(v)
+: sf::Vector2f(v)
 {
 }
 
@@ -123,6 +123,11 @@ float Vec2f::Cross(const Vec2f &v) const
 float Vec2f::Dot(const Vec2f& v) const
 {
     return x * v.x + y * v.y;
+}
+
+float Vec2f::Distance(const Vec2f& v) const
+{
+    return std::sqrtf(powf(v.x - x, 2) + powf(v.y - y, 2));
 }
 
 void FloatRect::Expand(float v)

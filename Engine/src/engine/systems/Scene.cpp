@@ -20,6 +20,26 @@ Scene empty_scene;
 Scene& Scene::current_scene = empty_scene;
 std::vector<Scene> Scene::scenes;
 
+/// @brief Get a valid texture from the resource manager
+/// @param possible_id the id from the resource manager, if it doesn't exist a new one is created from the (path) id
+static Texture& GetValidTexture(std::string_view possible_id)
+{
+    PathToPreferred(rel_path_str);
+    
+    sf::Texture* new_tex = ResourceManager::GetTextures().Get(rel_path_str);
+
+    if (new_tex == nullptr)
+    {
+#ifdef TOAD_EDITOR
+        sf::Texture tex = GetTexFromPath(asset_folder / rel_path_str);
+#else
+        sf::Texture tex = GetTexFromPath(texture_path);
+#endif
+        new_tex = ResourceManager::GetTextures().Add(rel_path_str, tex);
+    }
+    
+}
+
 void Scene::SetScene(Scene* scene)
 {
 	current_scene.End(scene);
@@ -414,25 +434,28 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 				if (has_texture)
 				{
 					std::string rel_path_str;
-					json rect; 
+					json rect;
 
 					GET_JSON_ELEMENT(rel_path_str, props, "texture_loc");
 					GET_JSON_ELEMENT(rect, props, "texture_rect");
+                    
+                    std::filesystem::path rel_path = rel_path_str;
+                    rel_path.make_preferred();
 
-					sf::Texture* new_tex = ResourceManager::GetTextures().Get(rel_path_str);
+                    sf::Texture* new_tex = ResourceManager::GetTextures().Get(rel_path.string());
 					sf::IntRect tex_rect = GetRectFromJSON(rect);
 
 					if (new_tex == nullptr)
 					{
 #ifdef TOAD_EDITOR
-						sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(rel_path_str));
+						sf::Texture tex = GetTexFromPath(asset_folder / rel_path);
 #else
 						sf::Texture tex = GetTexFromPath(std::filesystem::path(rel_path_str));
 #endif
 						new_tex = ResourceManager::GetTextures().Add(rel_path_str, tex);
 					}
                     
-					circleobj->SetTexture(rel_path_str, new_tex);
+					circleobj->SetTexture(rel_path.string(), new_tex);
 					circle.setTextureRect(tex_rect);
 				}
 				circle.setFillColor(fill_col);
@@ -460,26 +483,16 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 
 				fill_col = sf::Color(u32fill_col);
 
-                std::string path_str;
+                std::string rel_path_str;
                 json rect;
 
-                GET_JSON_ELEMENT(path_str, props, "texture_loc");
+                GET_JSON_ELEMENT(rel_path_str, props, "texture_loc");
                 GET_JSON_ELEMENT(rect, props, "texture_rect");
-
-                sf::Texture* new_tex = ResourceManager::GetTextures().Get(path_str);
-                sf::IntRect tex_rect = GetRectFromJSON(rect);
-
-                if (new_tex == nullptr)
-                {
-#ifdef TOAD_EDITOR
-                    sf::Texture tex = GetTexFromPath(asset_folder / std::filesystem::path(path_str));
-#else
-                    sf::Texture tex = GetTexFromPath(std::filesystem::path(path_str));
-#endif
-                    new_tex = ResourceManager::GetTextures().Add(path_str, tex);
-                }
+       
+                sf::Texture& new_tex = GetValidTexture(rel_path_str);
                 
-                spriteobj->SetTexture(path_str, new_tex);
+                sf::IntRect tex_rect = GetRectFromJSON(rect);
+                spriteobj->SetTexture(rel_path_str, &new_tex);
                 sprite.setTextureRect(tex_rect);
 
 				sprite.setColor(fill_col);

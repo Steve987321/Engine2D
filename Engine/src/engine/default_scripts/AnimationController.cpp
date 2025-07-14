@@ -26,7 +26,7 @@ void AnimationController::OnLateUpdate(Object* obj)
 {
 	// #TODO tie to the animation frames rate 
 
-	if (get_object_as_type<Toad::Sprite>(obj))
+	if (GetObjectAsType<Toad::Sprite>(obj))
 
 	if (m_isPlaying)
 	{

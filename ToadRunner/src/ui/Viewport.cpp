@@ -329,7 +329,7 @@ namespace ui
 							}
 							else if (is_gizmo_rotation)
 							{
-								float deg = rad_to_deg(std::atan2f(d.y, d.x));
+								float deg = RadToDeg(std::atan2f(d.y, d.x));
 								selected_obj->SetRotation(starting_rotation + deg);
 							}
 						}

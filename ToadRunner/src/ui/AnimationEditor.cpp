@@ -50,7 +50,7 @@ namespace Toad
 				}
 				m_textureIds.clear();
 
-				std::vector<std::string> files = GetPathFiles(get_exe_path().string(), "PNG or JPG (*.png;*.jpg)\0*.png;*.jpg\0 PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
+				std::vector<std::string> files = GetPathFiles(GetExePath().string(), "PNG or JPG (*.png;*.jpg)\0*.png;*.jpg\0 PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
 				if (!files.empty())
 				{
 					const std::string& dir = files[0];
@@ -108,7 +108,7 @@ namespace Toad
 				// #TODO: Drag and drop from game assets, don't allow files from other directories other then game assets directory 
 				//
 
-				std::string file = GetPathFile(get_exe_path().string(), "PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
+				std::string file = GetPathFile(GetExePath().string(), "PNG (*.png)\0*.png\0 JPG (*.jpg)\0*.jpg\0");
 				sf::Texture* managed_texture = ResourceManager::GetTextures().Get(file);
 				if (managed_texture)
 				{

@@ -1,0 +1,1 @@
+{"objects":{"empty":{"Sim":{"properties":{"parent":"","posx":0.0,"posy":0.0},"scripts":{"Sim":[null,null,null,null,null,null]},"index":0}},"circles":null,"sprites":null,"audios":null,"texts":null,"cameras":{"Camera":{"properties":{"parent":"","posx":-30.0,"posy":-47.49717712402344,"rotation":0.0,"cam_active":true,"sizex":260.0,"sizey":150.0},"scripts":null,"index":1}}}}

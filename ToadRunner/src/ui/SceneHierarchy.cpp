@@ -18,16 +18,16 @@ namespace Toad
 {
     struct IterateChildrenState
     {
+        std::set<std::string> scene_objects_set{};
+        std::vector<std::string> scene_objects{};
+        std::string drag_drop_extra_check_parent;
+        std::string drag_drop_extra_check_child;
+        size_t prev_cursor_index;
+        size_t cursor_index;
         bool ignore_mouse_click = false;
         bool cursor_index_is_under;
         bool check_range;
         int index;
-        size_t prev_cursor_index;
-        size_t cursor_index;
-        std::string drag_drop_extra_check_parent;
-        std::string drag_drop_extra_check_child;
-        std::set<std::string> scene_objects_set{};
-        std::vector<std::string> scene_objects{};
     };
 
     static void IterateChildren(Object* obj, bool dontchangeskip, IterateChildrenState& state)

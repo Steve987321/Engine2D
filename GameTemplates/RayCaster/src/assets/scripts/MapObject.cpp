@@ -10,7 +10,7 @@ using namespace Toad;
 void MapObject::OnStart(Object* obj)
 {
 	Script::OnStart(obj);
-	spr = get_object_as_type<Sprite>(obj);
+	spr = GetObjectAsType<Sprite>(obj);
 	if (!spr)
 	{
 		LOGERRORF("[MapObject] Object isn't of type Sprite, {}", obj->name);

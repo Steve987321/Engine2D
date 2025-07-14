@@ -6,21 +6,21 @@ namespace Toad
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	
-	int rand_int(int min, int max)
+	int RandInt(int min, int max)
 	{
 		assert(min <= max);
 		std::uniform_int_distribution<int> dis(min, max);
 		return dis(gen);
 	}
 
-	float rand_float(float min, float max)
+	float RandFloat(float min, float max)
 	{
 		assert(min <= max);
 		std::uniform_real_distribution<float> dis(min, max);
 		return dis(gen);
 	}
 
-	std::string get_date_str(std::string_view format)
+	std::string GetDateAsString(std::string_view format)
 	{
 		std::ostringstream ss;
 		std::string time;
@@ -38,7 +38,7 @@ namespace Toad
 		return ss.str();
 	}
 
-	std::filesystem::path get_exe_path()
+	std::filesystem::path GetExePath()
 	{
 #ifdef _WIN32
 		char path[MAX_PATH];
@@ -52,17 +52,21 @@ namespace Toad
 #endif
 	}
 
-	float distance(const Vec2f& a, const Vec2f& b)
-	{
-		return std::sqrtf(powf(b.x - a.x, 2) + powf(b.y - a.y, 2));
-	}
+    void PathToPreferred(std::string& path_str)
+    {
+#ifdef __APPLE__
+        std::ranges::replace(path_str, '\\', PATH_SEPARATOR);
+#else
+        std::ranges::replace(path_str, '/', PATH_SEPARATOR);
+#endif
+    }
 
-	float deg_to_rad(float degrees)
+	float DegToRad(float degrees)
 	{
 		return degrees * (std::numbers::pi_v<float> / 180.f);
 	}
 
-	float rad_to_deg(float radians)
+	float RadToDeg(float radians)
 	{
 		return radians * (180.f / std::numbers::pi_v<float>);
 	}

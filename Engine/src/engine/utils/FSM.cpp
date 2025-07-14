@@ -162,18 +162,18 @@ namespace Toad
 		json vars_data;
 		json states_data;
 
-		if (!get_json_element(res.name, data, "name"))
+		if (!GetJsonElement(res.name, data, "name"))
 			res.name = "INVALID_NAME";
 
-		get_json_element(vars_data, data, "vars");
-		get_json_element(states_data, data, "states");
+		GetJsonElement(vars_data, data, "vars");
+		GetJsonElement(states_data, data, "states");
 		// #TODO: add transitions bruv
 
 		// vars 
 		json vars_flt_data;
 		json vars_i32_data;
-		get_json_element(vars_flt_data, vars_data, "flt");
-		get_json_element(vars_i32_data, vars_data, "i32");
+		GetJsonElement(vars_flt_data, vars_data, "flt");
+		GetJsonElement(vars_i32_data, vars_data, "i32");
 
 		for (auto& item : vars_flt_data.items())
 			res.varsflt.emplace_back(item.key(), item.value());
@@ -204,10 +204,10 @@ namespace Toad
 
 			json flt_cond_data;
 			json i32_cond_data;
-			get_json_element(prev_state_name, transition, "prev_state");
-			get_json_element(next_state_name, transition, "next_state");
-			get_json_element(flt_cond_data, transition, "flt_cond");
-			get_json_element(i32_cond_data, transition, "i32_cond");
+			GetJsonElement(prev_state_name, transition, "prev_state");
+			GetJsonElement(next_state_name, transition, "next_state");
+			GetJsonElement(flt_cond_data, transition, "flt_cond");
+			GetJsonElement(i32_cond_data, transition, "i32_cond");
 
 			// get states from names
 			int prev_state = 0;
@@ -360,14 +360,14 @@ namespace Toad
 	{
 		int a_index;
 		int b_index;
-		get_json_element(a_index, data, "a");
-		get_json_element(b_index, data, "b");
+		GetJsonElement(a_index, data, "a");
+		GetJsonElement(b_index, data, "b");
 
 		CompareType compare_type = CompareType::EQUAL;
-		get_json_element(compare_type, data, "compare");
+		GetJsonElement(compare_type, data, "compare");
 
 		FSMVariableType type;
-		get_json_element(type, data, "type");
+		GetJsonElement(type, data, "type");
 
 		return {&fsm, a_index, b_index, type, compare_type};
 	}
