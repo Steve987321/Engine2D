@@ -20,6 +20,9 @@ scripts/output
 # ImGui
 imgui.ini
 
+# Cmake build
+build/
+
 # Bin directories
 bin/
 bin-intermediate/
