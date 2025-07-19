@@ -133,6 +133,13 @@ end
         symbols "Off"
         optimize "On"
 
+        removefiles{
+            "src/ui/**.cpp",
+            "src/ui/**.h",
+            "src/project/**.cpp",
+            "src/project/**.h",
+        }
+
     filter "configurations:DebugNoEditor"
         defines {
             "_DEBUG",

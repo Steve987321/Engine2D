@@ -538,7 +538,10 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 							LOGERRORF("[Scene] Loading soundbuffer file from path {} failed", full_path);
 						}
 #else
-						sb.loadFromFile(new_audio_source.relative_path.string());
+						if (!sb.loadFromFile(new_audio_source.relative_path.string()))
+						{
+							LOGERRORF("[Scene] Loading soundbuffer file from path {} failed", new_audio_source.relative_path.string());
+						}
 #endif
 
 						new_audio_source.sound_buffer = sf::SoundBuffer(sb);

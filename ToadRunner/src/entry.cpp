@@ -2,7 +2,9 @@
 #include <EngineCore.h>
 #include <engine/Engine.h>
 
+#ifdef TOAD_EDITOR
 #include "ui/UI.h"
+#endif 
 
 #ifdef _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, int nCmdShow)

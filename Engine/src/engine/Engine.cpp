@@ -281,7 +281,7 @@ void Run()
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		}
 #else 
-		Mouse::relative_mouse_pos = sf::Mouse::getPosition(window);
+		Mouse::SetRelativeMousePosition(sf::Mouse::getPosition(window));
 #endif
 		Time::UpdateDeltaTime();
 

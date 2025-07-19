@@ -9,7 +9,7 @@ namespace Screen
 {
     Vec2f ScreenToWorld(const Vec2i& point)
     {
-        Camera* current_cam = GetInteractingCamera();
+        Camera* current_cam = Camera::GetActiveCamera();
         if (!current_cam) 
             return {-1, -1};
 
