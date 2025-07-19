@@ -47,6 +47,11 @@ end
         "../vendor/SFML-3.0.0/lib"
     }
 
+    filter "system:windows"   
+        disablewarnings {
+            "4275" -- C4275 can be ignored in Visual C++ if you are deriving from a type in the C++ Standard Library, from std::runtime_error 
+        }
+
     filter "system:macosx"
         links {
             "OpenGL.framework",
