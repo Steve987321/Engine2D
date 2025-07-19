@@ -86,7 +86,8 @@ public:
 
 	FloatRect(const sf::FloatRect& r)
 	{
-		*this = r;
+        position = r.position;
+        size = r.size;
 	}
 
 public:
