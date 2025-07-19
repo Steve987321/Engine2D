@@ -26,4 +26,6 @@ int main(int argc, char** argv)
 	ImGui::SetCurrentContext(Toad::GetWindow().GetImGuiContext());
 	
 	Toad::Run();
+
+	return 0;
 }

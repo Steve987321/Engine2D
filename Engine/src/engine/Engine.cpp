@@ -52,7 +52,7 @@ extern void DrawBuffers(sf::RenderTarget& target);
 }
 
 // finds settings.json and loads them 
-void LoadEngineSettings();
+// void LoadEngineSettings();
 
 static void EventHandler(AppWindow& window)
 {
