@@ -4,6 +4,7 @@ import shutil
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 proj_dir = os.path.dirname(script_dir)
+print(proj_dir)
 
 if sys.platform == "win32":
 	bin_release_dir = os.path.join(proj_dir, "bin", "Release-windows-x86_64")
@@ -65,9 +66,11 @@ if os.path.exists(sfml_bin_dir):
 		else:
 			sfml_bin_debug_files[i] = file
 else: 
+	print(f"SFML bin directory doesn't exist: '{sfml_bin_dir}'")
 	sys.exit(1)
 
 if not is_valid: 
+	print("invalid")
 	sys.exit(1)
 
 print("Creating output directories")

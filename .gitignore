@@ -24,7 +24,7 @@ imgui.ini
 build/
 
 # Bin directories
-bin/
+/bin/
 bin-intermediate/
 
 # Prerequisites
