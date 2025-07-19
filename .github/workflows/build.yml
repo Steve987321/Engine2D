@@ -22,7 +22,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        build-config: [Distro, Release, Debug]
+        build-config: [Distro, Release, ReleaseNoEditor]
 
     steps:
     - name: Checkout
