@@ -172,6 +172,9 @@ namespace ui
 			static float starting_rotation = 0;
 			static Vec2f starting_position = {};
 
+			// mouse object select 
+			static ImVec2 select_cursor_pos = {};
+
 			ImVec2 gizmo_pos;
 			static Vec2i selected_gizmo = { 0, 0 }; // #TODO enum 
 			static ImU32 gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 0.5f });
@@ -417,24 +420,6 @@ namespace ui
 				{
 					gizmo_col_xy = ImGui::ColorConvertFloat4ToU32({ 1, 0, 0, 0.5f });
 				}
-
-				//// scale
-				//if (ImGui::IsKeyPressed(ImGuiKey_S))
-				//{
-				//	gizmo_begin_cursor = ImGui::GetMousePos();
-				//	is_moving_gizmo = true;
-				//	is_gizmo_scale = true;
-				//	starting_scale = selected_obj->GetScale();
-				//}
-
-				//// rotation
-				//if (ImGui::IsKeyPressed(ImGuiKey_R))
-				//{
-				//	gizmo_begin_cursor = ImGui::GetMousePos();
-				//	is_moving_gizmo = true;
-				//	is_gizmo_rotation = true;
-				//	starting_rotation = selected_obj->GetRotation();
-				//}
 			}
 
 			if (viewport_opened && ImGui::IsWindowFocused())
@@ -529,7 +514,6 @@ namespace ui
 						//	selected_objects.clear();
 						//}
 					}
-
 					if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
 					{
 						// only selected one object
@@ -540,6 +524,57 @@ namespace ui
 						}
 
 						inspector_ui = std::bind(&ui::object_inspector, std::ref(selected_obj), std::ref(asset_browser));
+					}
+					
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+					{
+						ImVec2 mouse_pos = { ImGui::GetMousePos().x - pos.x, ImGui::GetMousePos().y - pos.y};
+
+						bool found_obj = false;
+
+						const auto set_selected_obj = [&](Toad::Object* obj)
+						{
+							select_cursor_pos = mouse_pos;
+							selected_obj = obj;
+							found_obj = true;
+						};
+
+						for (const auto& obj : Scene::current_scene.objects_all)
+						{
+							FloatRect obj_bounds = obj->GetBounds();
+
+							Vec2f obj_pos_screen = Screen::WorldToScreen(obj_bounds.position, editor_cam, {image_width, image_height}, {pos.x, pos.y});
+							Vec2f obj_pos_size_screen = Screen::WorldToScreen(obj_bounds.position + obj_bounds.size, editor_cam, {image_width, image_height}, {pos.x, pos.y});
+
+							ImRect obj_rect_screen(obj_pos_screen.x, obj_pos_screen.y, obj_pos_size_screen.x, obj_pos_size_screen.y);
+
+							if (obj_rect_screen.Contains(mouse_pos + pos))
+							{
+								// at the same mouse position get an object other then the previous selected objects 
+								// #TODO: this now only works between two object and switches between them 
+								// first refactor 
+								if (select_cursor_pos == mouse_pos)
+								{
+									if (selected_obj == obj.get())
+										continue;
+									else
+									{
+										set_selected_obj(obj.get());
+										break;
+									}
+								}
+								else
+								{
+									set_selected_obj(obj.get());
+									break;
+								}
+							}
+						}
+						if (!found_obj)
+						{
+							selected_obj = nullptr;	
+							selected_objects.clear();
+						}
 					}
 				}
 			}
