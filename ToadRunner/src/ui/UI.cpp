@@ -95,7 +95,7 @@ static void ScriptReload()
 		return;
 
 	bool game_was_playing = false;
-	if (Toad::begin_play)
+	if (Toad::IsBeginPlay())
 	{
 		game_was_playing = true;
 		Toad::StopGameSession();
@@ -310,8 +310,6 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (ImGui::BeginTabItem("Animation", nullptr, flags))
 			{
-                LOGDEBUGF("{} {} {}", ImGui::IsMouseDown(0), ImGui::IsMouseClicked(0), ImGui::IsMouseReleased(0));
-                
                 if (tab != ANIMATION && ImGui::IsItemHovered() && (ImGui::IsMouseDown(0) || ImGui::IsMouseClicked(0)))
 				{
 					SaveINIToCorrectBuffer();
@@ -796,7 +794,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			// button from viewport 
 			static fs::path last_scene_path;
 
-			if (!Toad::begin_play)
+			if (!Toad::IsBeginPlay())
 			{
 				if (ImGui::Button("Play"))
 				{
@@ -990,7 +988,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 		{
 			if (ImGui::IsKeyDown(ImGuiKey_LeftShift))
 			{
-				if (Toad::begin_play)
+				if (Toad::IsBeginPlay())
 					Toad::StopGameSession();
 
 				selected_obj = nullptr;
@@ -999,7 +997,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			}
 			else
 			{
-				if (Toad::begin_play)
+				if (Toad::IsBeginPlay())
 					Toad::StopGameSession();
 
 				selected_obj = nullptr;

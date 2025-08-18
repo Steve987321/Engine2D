@@ -7,6 +7,13 @@
 namespace Toad
 {
 
+static bool begin_play = false;
+
+bool IsBeginPlay()
+{
+	return begin_play;
+}
+
 void StartGameSession()
 {
 	if (begin_play)

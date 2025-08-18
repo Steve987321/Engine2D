@@ -81,6 +81,7 @@ namespace project {
 		path_as_forward_slash(engine_path_forwardslash);
 		path_as_forward_slash(project_path_forwardslash);
 
+		// #TODO: CHANGE 
 #ifdef _WIN32
 		const std::string premake5 = "premake5.exe";
 		const std::string full_path_to_premake5 = project_path_forwardslash + '/' + premake5;
@@ -531,6 +532,7 @@ namespace project {
         Toad::ResourceManager::Init();
 
 		current_project = settings;
+		Toad::SetProjectPath(current_project.project_path);
 		
 		return
 		{

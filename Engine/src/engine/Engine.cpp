@@ -37,6 +37,7 @@ static Camera editor_cam{ "EditorCamera" };
 static DllHandle curr_dll{};
 
 static std::filesystem::path current_path;
+static std::filesystem::path project_path;
 
 static sf::RenderTexture* interacting_texture = nullptr;
 static std::unique_ptr<sf::RenderTexture> window_texture = nullptr;
@@ -45,11 +46,6 @@ static Camera* interacting_camera = nullptr;
 
 void Render(AppWindow& window);
 void CleanUp();
-
-namespace DrawingCanvas
-{
-extern void DrawBuffers(sf::RenderTarget& target);
-}
 
 // finds settings.json and loads them 
 // void LoadEngineSettings();
@@ -83,28 +79,26 @@ static void EventHandler(AppWindow& window)
 
 		if (e->is<sf::Event::KeyPressed>())
 		{
-			if (begin_play)
+			if (IsBeginPlay())
 				Input::InvokeKeyPressCallbacks(e->getIf<sf::Event::KeyPressed>()->code);
 			break;
 		}
-
-		if (e->is<sf::Event::KeyReleased>())
+		else if (e->is<sf::Event::KeyReleased>())
 		{
-			if (begin_play)
+			if (IsBeginPlay())
 				Input::InvokeKeyReleaseCallbacks(e->getIf<sf::Event::KeyReleased>()->code);
 			break;
 		}
 
 		if (e->is<sf::Event::MouseButtonPressed>())
 		{
-			if (begin_play)
+			if (IsBeginPlay())
 				Input::InvokeMousePressCallbacks(e->getIf<sf::Event::MouseButtonPressed>()->button);
 			break;
 		}
-        
-		if (e->is<sf::Event::MouseButtonReleased>())
+		else if (e->is<sf::Event::MouseButtonReleased>())
 		{
-			if (begin_play)
+			if (IsBeginPlay())
 				Input::InvokeMouseReleaseCallbacks(e->getIf<sf::Event::MouseButtonReleased>()->button);
 			break;
 		}
@@ -124,6 +118,11 @@ Toad::Camera* GetInteractingCamera()
 void SetInteractingCamera(Camera* cam)
 {
 	interacting_camera = cam;
+}
+
+void SetProjectPath(const std::filesystem::path& path)
+{
+	project_path = path;	
 }
 
 const std::filesystem::path& GetCurrentPath()
@@ -216,7 +215,7 @@ bool Init()
 			}
 			catch (std::exception& e)
 			{
-				LOGDEBUGF("[Engine] Failed to parse {}", entry.path().string());
+				LOGDEBUGF("[Engine] Failed to parse file: '{}', '{}'", entry.path().string(), e.what());
 				continue;
 			}
 
@@ -259,11 +258,12 @@ bool Init()
 
 	editor_cam.OnCreate();
 #else
-	begin_play = true;
 	if (starting_scene)
 		Scene::SetScene(starting_scene);
 	else
 		Scene::SetScene(&Scene::scenes[0]);
+		
+	StartGameSession();
 #endif
 
 	return true;
@@ -297,7 +297,7 @@ void Run()
 #endif 
 #ifdef TOAD_EDITOR
 		// update objects 
-		if (begin_play)
+		if (IsBeginPlay())
 		{
 			Scene::current_scene.Update();
 		}
@@ -331,8 +331,6 @@ void Render(AppWindow& window)
 
 	// Update scene to the texture so it can display on the (game) viewport 
 	Scene::current_scene.Render(window_texture);
-	DrawingCanvas::DrawVertices(window_texture);
-    DrawingCanvas::DrawBuffers(window_texture);
 	if (cam != nullptr)
 	{
 		window_texture.setView(cam->GetView());
@@ -340,8 +338,6 @@ void Render(AppWindow& window)
 	window_texture.display();
 
 	Scene::current_scene.Render(editor_cam_texture);
-	DrawingCanvas::DrawVertices(editor_cam_texture);
-    DrawingCanvas::DrawBuffers(editor_cam_texture);
     DrawingCanvas::ClearDrawBuffers();
 
 	if (editor_texture_draw_callback)
@@ -410,7 +406,7 @@ std::filesystem::path GetAssetPath()
 {
     // use game bin directory
 #ifdef TOAD_EDITOR
-    std::filesystem::path p = game_bin_directory;
+    std::filesystem::path p = project_path;
     p = p.parent_path();
     for (auto& e : std::filesystem::directory_iterator(p))
     {

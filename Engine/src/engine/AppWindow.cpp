@@ -97,12 +97,12 @@ void AppWindow::RecreateImGuiContext()
 
 void AppWindow::AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style)
 {
-	auto window = std::make_shared<sf::RenderWindow>();
+	auto window = std::make_unique<sf::RenderWindow>();
 	window->create(mode, title.data(), style);
 	window->setFramerateLimit(30);
 	bool res = ImGui::SFML::Init(*window, true);
 	LOGDEBUGF("[AddViewport] ImGui SFML Init result: {}", res);
-	viewports.emplace_back(window);
+	viewports.push_back(std::move(window));
 }
 
 void AppWindow::UpdateViewports(const FEVENT_CALLBACK& ecallback)

@@ -506,23 +506,23 @@ namespace Toad
 			if (ImGui::BeginMenu("Create"))
 			{
 				if (ImGui::MenuItem("Empty Object"))
-					Scene::current_scene.AddToScene(Object("Object"), Toad::begin_play);
+					Scene::current_scene.AddToScene(Object("Object"));
 
 				if (ImGui::MenuItem("Circle"))
-					Scene::current_scene.AddToScene(Circle("Circle"), Toad::begin_play);
+					Scene::current_scene.AddToScene(Circle("Circle"));
 
 				if (ImGui::MenuItem("Sprite"))
-					Scene::current_scene.AddToScene(Sprite("Sprite"), Toad::begin_play);
+					Scene::current_scene.AddToScene(Sprite("Sprite"));
 
 				if (ImGui::MenuItem("Audio"))
-					Scene::current_scene.AddToScene(Audio("Audio"), Toad::begin_play);
+					Scene::current_scene.AddToScene(Audio("Audio"));
 
 				if (ImGui::MenuItem("Text"))
-					Scene::current_scene.AddToScene(Text("Text"), Toad::begin_play);
+					Scene::current_scene.AddToScene(Text("Text"));
 
 				if (ImGui::MenuItem("Camera"))
 				{
-					Camera* cam = Scene::current_scene.AddToScene(Camera("Camera"), Toad::begin_play).get();
+					Camera* cam = Scene::current_scene.AddToScene(Camera("Camera")).get();
 					cam->ActivateCamera();
 				}
 

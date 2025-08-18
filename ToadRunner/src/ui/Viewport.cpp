@@ -82,7 +82,7 @@ namespace ui
 					}
 					else
 					{
-						Sprite* added_obj = Scene::current_scene.AddToScene(Sprite("Sprite"), Toad::begin_play).get();
+						Sprite* added_obj = Scene::current_scene.AddToScene(Sprite("Sprite")).get();
 
 						added_obj->SetTexture(data.path, stex);
 						added_obj->GetSprite().setTextureRect(data.tex_rect);
@@ -584,7 +584,7 @@ namespace ui
 			{
 				static fs::path last_scene_path;
 
-				if (!Toad::begin_play)
+				if (!Toad::IsBeginPlay())
 				{
 					if (ImGui::Button("Play"))
 					{

@@ -5,6 +5,7 @@
 #include "nlohmann/json.hpp"
 
 #include "engine/Types.h"
+#include "engine/systems/Tags.h"
 #include "engine/default_scripts/Script.h"
 
 namespace Toad
@@ -126,6 +127,8 @@ protected:
 
 	std::set<std::string> m_children{};
 	std::string m_parent;
+
+	Tags m_tags{*this};
 
 	Scene& m_currentScene;
 

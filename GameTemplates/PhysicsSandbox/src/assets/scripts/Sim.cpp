@@ -314,7 +314,7 @@ void Sim::OnImGui(Object* obj, ImGuiContext* ctx)
 
 	ImGui::BeginChild("VM options", {command_menu_window_size.x / 2.f - 10.f, command_menu_window_size.y});
 
-	ImGui::BeginDisabled(!begin_play);
+	ImGui::BeginDisabled(!IsBeginPlay());
 	if (ImGui::Button("Compile & Run"))
 	{
 		bytecodes.clear();

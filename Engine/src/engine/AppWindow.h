@@ -38,7 +38,7 @@ private:
 
 	static inline std::queue<std::filesystem::path> dropped_files_queue {};
 
-	static inline std::vector<std::shared_ptr<sf::RenderWindow>> viewports {};
+	static inline std::vector<std::unique_ptr<sf::RenderWindow>> viewports {};
 	ImGuiIO* io = nullptr;
 };
 

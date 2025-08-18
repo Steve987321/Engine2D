@@ -20,19 +20,19 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
   )
   set_target_properties("Game" PROPERTIES
     OUTPUT_NAME "Game"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Debug-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Debug-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Debug-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Debug-macosx-x86_64"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Debug-macosx-x86_64"
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Debug-macosx-x86_64"
   )
 endif()
 target_include_directories("Game" PRIVATE
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src/assets>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src/assets>
 )
 target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:Debug>:_DEBUG>
@@ -42,7 +42,7 @@ target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:Debug>:_USRDLL>
 )
 target_link_directories("Game" PRIVATE
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Game"
   $<$<CONFIG:Debug>:Engine>
@@ -78,19 +78,19 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
   )
   set_target_properties("Game" PROPERTIES
     OUTPUT_NAME "Game"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Release-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Release-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Release-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Release-macosx-x86_64"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Release-macosx-x86_64"
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Release-macosx-x86_64"
   )
 endif()
 target_include_directories("Game" PRIVATE
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src/assets>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src/assets>
 )
 target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:Release>:NDEBUG>
@@ -100,7 +100,7 @@ target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:Release>:_USRDLL>
 )
 target_link_directories("Game" PRIVATE
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Game"
   $<$<CONFIG:Release>:Engine>
@@ -136,19 +136,19 @@ if(CMAKE_BUILD_TYPE STREQUAL ReleaseNoEditor)
   )
   set_target_properties("Game" PROPERTIES
     OUTPUT_NAME "Game"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/ReleaseNoEditor-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/ReleaseNoEditor-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/ReleaseNoEditor-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/ReleaseNoEditor-macosx-x86_64"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/ReleaseNoEditor-macosx-x86_64"
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/ReleaseNoEditor-macosx-x86_64"
   )
 endif()
 target_include_directories("Game" PRIVATE
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src/assets>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src/assets>
 )
 target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:NDEBUG>
@@ -157,7 +157,7 @@ target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:GAME_IS_EXPORT>
 )
 target_link_directories("Game" PRIVATE
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Game"
   $<$<CONFIG:ReleaseNoEditor>:Engine>
@@ -193,19 +193,19 @@ if(CMAKE_BUILD_TYPE STREQUAL DebugNoEditor)
   )
   set_target_properties("Game" PROPERTIES
     OUTPUT_NAME "Game"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/DebugNoEditor-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/DebugNoEditor-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/DebugNoEditor-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/DebugNoEditor-macosx-x86_64"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/DebugNoEditor-macosx-x86_64"
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/DebugNoEditor-macosx-x86_64"
   )
 endif()
 target_include_directories("Game" PRIVATE
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src/assets>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src/assets>
 )
 target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:DebugNoEditor>:_DEBUG>
@@ -214,7 +214,7 @@ target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:DebugNoEditor>:_USRDLL>
 )
 target_link_directories("Game" PRIVATE
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Game"
   $<$<CONFIG:DebugNoEditor>:Engine>
@@ -250,19 +250,19 @@ if(CMAKE_BUILD_TYPE STREQUAL Distro)
   )
   set_target_properties("Game" PROPERTIES
     OUTPUT_NAME "Game"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Distro-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Distro-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/bin/Distro-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Distro-macosx-x86_64"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Distro-macosx-x86_64"
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/bin/Distro-macosx-x86_64"
   )
 endif()
 target_include_directories("Game" PRIVATE
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src/assets>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/imgui>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/json/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/GameTemplates/Game/src/assets>
 )
 target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:Distro>:NDEBUG>
@@ -273,7 +273,7 @@ target_compile_definitions("Game" PRIVATE
   $<$<CONFIG:Distro>:_USRDLL>
 )
 target_link_directories("Game" PRIVATE
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Game"
   $<$<CONFIG:Distro>:Engine>

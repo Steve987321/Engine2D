@@ -3,6 +3,7 @@
 #include <EngineCore.h>
 #include "nlohmann/json.hpp"
 #include "engine/default_objects/Object.h"
+#include "engine/PlaySession.h"
 
 namespace Toad
 {
@@ -73,7 +74,7 @@ public:
 	///	Also checks if name of object is already here.
 	///
 	template <class T>
-	std::shared_ptr<T> AddToScene(T&& object, bool is_begin_play = true, int32_t index = -1, bool insert = false)
+	std::shared_ptr<T> AddToScene(T&& object, int32_t index = -1, bool insert = false)
 	{
 		static_assert(std::is_base_of_v<Object, T>, "Trying to add object of scene that doesn't inherit from Toad::Object class");
 
@@ -151,7 +152,7 @@ public:
 
 		object.name = obj_name;
 
-		if (is_begin_play)
+		if (IsBeginPlay())
 		{
 			// add to a queue 
 			add_objects.emplace_back(std::make_shared<T>(object), index);
@@ -191,7 +192,7 @@ public:
 	///
 	/// Removes an object from the scene with the given name.
 	///
-	void RemoveFromScene(std::string_view obj_name, bool is_begin_play = true);
+	void RemoveFromScene(std::string_view obj_name);
 
 	///
 	/// @returns 

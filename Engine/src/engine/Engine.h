@@ -19,6 +19,7 @@ namespace Toad
 	ENGINE_API void SetInteractingCamera(Camera* cam);
 #endif
 
+	ENGINE_API void SetProjectPath(const std::filesystem::path& path);
 	ENGINE_API const std::filesystem::path& GetCurrentPath();
 	ENGINE_API void SetCurrentPath(const std::filesystem::path& path);
 

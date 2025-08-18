@@ -7,15 +7,19 @@ namespace Toad
 
 namespace Screen
 {
+    // don't use this 
+    // #TODO: fix
     Vec2f ScreenToWorld(const Vec2i& point)
     {
-        Camera* current_cam = Camera::GetActiveCamera();
+        Camera* current_cam = GetInteractingCamera();
         if (!current_cam) 
             return {-1, -1};
 
         return ScreenToWorld(point, *current_cam);
     }
 
+    // don't use this
+    // #TODO: fix, 
     Vec2f ScreenToWorld(const Vec2i& point, const Camera& cam)
     {
         sf::RenderTexture& tex = GetActiveRenderTexture();

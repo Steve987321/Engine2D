@@ -90,7 +90,7 @@ void Scene::SetScene(Scene* scene)
 
 	current_scene = *scene;
 
-	if (begin_play)
+	if (IsBeginPlay())
 		current_scene.Start();
 }
 
@@ -175,9 +175,9 @@ void Scene::End(Scene* next_scene)
 	}
 }
 
-void Scene::RemoveFromScene(std::string_view obj_name, bool is_begin_play)
+void Scene::RemoveFromScene(std::string_view obj_name)
 {
-	if (is_begin_play)
+	if (IsBeginPlay())
 		remove_objects.emplace_back(obj_name);
 	else
 	{
@@ -389,7 +389,7 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 			GET_JSON_ELEMENT(x, props, "posx");
 			GET_JSON_ELEMENT(y, props, "posy");
             
-			Object* newobj = scene.AddToScene(T(object.key()), Toad::begin_play, index, insert).get();
+			Object* newobj = scene.AddToScene(T(object.key()), index, insert).get();
 			Sprite* spriteobj = dynamic_cast<Sprite*>(newobj);
 			Circle* circleobj = dynamic_cast<Circle*>(newobj);
 			Audio* audioobj = dynamic_cast<Audio*>(newobj);
@@ -755,7 +755,7 @@ void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& a
 	if (objects.contains("objects"))
 	{
 		bool restart = false;
-		if (Toad::begin_play)
+		if (Toad::IsBeginPlay())
 		{
 			restart = true;
 			Toad::StopGameSession();

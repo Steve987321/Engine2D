@@ -130,6 +130,12 @@ float Vec2f::Distance(const Vec2f& v) const
     return std::sqrtf(powf(v.x - x, 2) + powf(v.y - y, 2));
 }
 
+Vec2f Vec2f::GetEndPosition(float angle, float range)
+{
+    float rad = angle * (std::numbers::pi_v<float> / 180.0f);
+    return {x + std::cos(rad) * range, y + std::sin(rad) * range};
+}
+
 void FloatRect::Expand(float v)
 {
     position.x -= v;

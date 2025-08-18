@@ -6,10 +6,12 @@
 
 namespace Toad
 {
-	Object::Object(): name("Object"), m_currentScene(Scene::current_scene)
+	Object::Object()
+		: name("Object"), m_currentScene(Scene::current_scene)
 	{}
 
-	Object::Object(std::string_view name): name(name), m_currentScene(Scene::current_scene)
+	Object::Object(std::string_view name)
+		: name(name), m_currentScene(Scene::current_scene)
 	{}
 
 	Object::~Object() = default;
@@ -234,7 +236,7 @@ namespace Toad
 		}
 
 		SetParent(nullptr);
-		m_currentScene.RemoveFromScene(name, Toad::begin_play);
+		m_currentScene.RemoveFromScene(name);
 	}
 
 	json Object::SerializeScripts() const

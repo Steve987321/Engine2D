@@ -59,6 +59,8 @@
         "Engine/src/engine/systems/Scene.h"
         "Engine/src/engine/systems/ScriptManager.cpp"
         "Engine/src/engine/systems/ScriptManager.h"
+        "Engine/src/engine/systems/Tags.cpp"
+        "Engine/src/engine/systems/Tags.h"
         "Engine/src/engine/systems/Time.cpp"
         "Engine/src/engine/systems/Time.h"
         "Engine/src/engine/systems/Timer.cpp"
@@ -81,32 +83,25 @@
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set_target_properties("Engine" PROPERTIES
     OUTPUT_NAME "Engine"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Debug-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Debug-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Debug-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Debug-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Debug-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Debug-macosx-x86_64
   )
 endif()
-
 if(APPLE)
-  find_library(COCOA_FRAMEWORK Cocoa)
-  find_library(IOKIT_FRAMEWORK IOKit)
-  find_library(COREVIDEO_FRAMEWORK CoreVideo)
-  find_library(OPENGL_FRAMEWORK OpenGL)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
 endif()
-
-message(COCOA_FRAMEWORK="${COCOA_FRAMEWORK}")
-message(IOKIT_FRAMEWORK="${IOKIT_FRAMEWORK}")
-message(COREVIDEO_FRAMEWORK="${COREVIDEO_FRAMEWORK}")
-message(OPENGL_FRAMEWORK="${OPENGL_FRAMEWORK}")
-
 target_include_directories("Engine" PRIVATE
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Debug>:_DEBUG>
@@ -115,13 +110,13 @@ target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Debug>:TOAD_EDITOR>
 )
 target_link_directories("Engine" PRIVATE
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Engine"
-  $<$<CONFIG:Debug>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:Debug>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:Debug>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:Debug>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:Debug>:sfml-system>
   $<$<CONFIG:Debug>:sfml-window>
   $<$<CONFIG:Debug>:sfml-graphics>
@@ -149,19 +144,25 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL Release)
   set_target_properties("Engine" PROPERTIES
     OUTPUT_NAME "Engine"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Release-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Release-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Release-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Release-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Release-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Release-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("Engine" PRIVATE
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Release>:NDEBUG>
@@ -169,13 +170,13 @@ target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Release>:TOAD_EDITOR>
 )
 target_link_directories("Engine" PRIVATE
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Engine"
-  $<$<CONFIG:Release>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:Release>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:Release>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:Release>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:Release>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:Release>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:Release>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:Release>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:Release>:sfml-system>
   $<$<CONFIG:Release>:sfml-window>
   $<$<CONFIG:Release>:sfml-graphics>
@@ -203,32 +204,38 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL ReleaseNoEditor)
   set_target_properties("Engine" PROPERTIES
     OUTPUT_NAME "Engine"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/ReleaseNoEditor-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/ReleaseNoEditor-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/ReleaseNoEditor-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/ReleaseNoEditor-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/ReleaseNoEditor-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/ReleaseNoEditor-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("Engine" PRIVATE
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:NDEBUG>
   $<$<CONFIG:ReleaseNoEditor>:ENGINE_IS_EXPORT>
 )
 target_link_directories("Engine" PRIVATE
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Engine"
-  $<$<CONFIG:ReleaseNoEditor>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:ReleaseNoEditor>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:ReleaseNoEditor>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:ReleaseNoEditor>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:ReleaseNoEditor>:sfml-system>
   $<$<CONFIG:ReleaseNoEditor>:sfml-window>
   $<$<CONFIG:ReleaseNoEditor>:sfml-graphics>
@@ -256,19 +263,25 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL DebugNoEditor)
   set_target_properties("Engine" PROPERTIES
     OUTPUT_NAME "Engine"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/DebugNoEditor-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/DebugNoEditor-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/DebugNoEditor-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/DebugNoEditor-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/DebugNoEditor-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/DebugNoEditor-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("Engine" PRIVATE
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:DebugNoEditor>:_DEBUG>
@@ -276,13 +289,13 @@ target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:DebugNoEditor>:ENGINE_IS_EXPORT>
 )
 target_link_directories("Engine" PRIVATE
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Engine"
-  $<$<CONFIG:DebugNoEditor>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:DebugNoEditor>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:DebugNoEditor>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:DebugNoEditor>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:DebugNoEditor>:sfml-system>
   $<$<CONFIG:DebugNoEditor>:sfml-window>
   $<$<CONFIG:DebugNoEditor>:sfml-graphics>
@@ -310,19 +323,25 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL Distro)
   set_target_properties("Engine" PROPERTIES
     OUTPUT_NAME "Engine"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Distro-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Distro-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Distro-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Distro-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Distro-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/Distro-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("Engine" PRIVATE
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/GameTemplates/Game/src>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Distro>:NDEBUG>
@@ -331,13 +350,13 @@ target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Distro>:TOAD_DISTRO>
 )
 target_link_directories("Engine" PRIVATE
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("Engine"
-  $<$<CONFIG:Distro>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:Distro>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:Distro>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:Distro>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:Distro>:sfml-system>
   $<$<CONFIG:Distro>:sfml-window>
   $<$<CONFIG:Distro>:sfml-graphics>

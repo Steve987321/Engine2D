@@ -74,6 +74,7 @@ public:
     ENGINE_API float Cross(const Vec2f& v) const;
     ENGINE_API float Dot(const Vec2f& v) const;
     ENGINE_API float Distance(const Vec2f& v) const;
+    ENGINE_API Vec2f GetEndPosition(float angle, float range);
 };
 
 class ENGINE_API FloatRect : public sf::FloatRect

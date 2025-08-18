@@ -52,26 +52,26 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
   )
   set_target_properties("ToadRunner" PROPERTIES
     OUTPUT_NAME "ToadRunner"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Debug-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Debug-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Debug-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Debug-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Debug-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Debug-macosx-x86_64
   )
 endif()
 if(APPLE)
-  find_library(COCOA_FRAMEWORK Cocoa)
-  find_library(IOKIT_FRAMEWORK IOKit)
-  find_library(COREVIDEO_FRAMEWORK CoreVideo)
-  find_library(OPENGL_FRAMEWORK OpenGL)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
 endif()
 target_include_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src/scripts>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src/scripts>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../Engine/src>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/imgui>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Debug>:_DEBUG>
@@ -79,14 +79,14 @@ target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Debug>:TOAD_EDITOR>
 )
 target_link_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:Debug>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("ToadRunner"
   $<$<CONFIG:Debug>:Engine>
-  $<$<CONFIG:Debug>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:Debug>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:Debug>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:Debug>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:Debug>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:Debug>:sfml-system>
   $<$<CONFIG:Debug>:sfml-window>
   $<$<CONFIG:Debug>:sfml-graphics>
@@ -115,20 +115,26 @@ if(CMAKE_BUILD_TYPE STREQUAL Release)
   )
   set_target_properties("ToadRunner" PROPERTIES
     OUTPUT_NAME "ToadRunner"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Release-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Release-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Release-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Release-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Release-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Release-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src/scripts>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src/scripts>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../Engine/src>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/imgui>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Release>:NDEBUG>
@@ -136,14 +142,14 @@ target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Release>:TOAD_EDITOR>
 )
 target_link_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:Release>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("ToadRunner"
   $<$<CONFIG:Release>:Engine>
-  $<$<CONFIG:Release>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:Release>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:Release>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:Release>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:Release>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:Release>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:Release>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:Release>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:Release>:sfml-system>
   $<$<CONFIG:Release>:sfml-window>
   $<$<CONFIG:Release>:sfml-graphics>
@@ -172,33 +178,39 @@ if(CMAKE_BUILD_TYPE STREQUAL ReleaseNoEditor)
   )
   set_target_properties("ToadRunner" PROPERTIES
     OUTPUT_NAME "ToadRunner"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/ReleaseNoEditor-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/ReleaseNoEditor-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/ReleaseNoEditor-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/ReleaseNoEditor-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/ReleaseNoEditor-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/ReleaseNoEditor-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src/scripts>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src/scripts>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../Engine/src>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/imgui>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:NDEBUG>
 )
 target_link_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:ReleaseNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("ToadRunner"
   $<$<CONFIG:ReleaseNoEditor>:Engine>
-  $<$<CONFIG:ReleaseNoEditor>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:ReleaseNoEditor>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:ReleaseNoEditor>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:ReleaseNoEditor>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:ReleaseNoEditor>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:ReleaseNoEditor>:sfml-system>
   $<$<CONFIG:ReleaseNoEditor>:sfml-window>
   $<$<CONFIG:ReleaseNoEditor>:sfml-graphics>
@@ -227,34 +239,40 @@ if(CMAKE_BUILD_TYPE STREQUAL DebugNoEditor)
   )
   set_target_properties("ToadRunner" PROPERTIES
     OUTPUT_NAME "ToadRunner"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/DebugNoEditor-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/DebugNoEditor-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/DebugNoEditor-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/DebugNoEditor-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/DebugNoEditor-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/DebugNoEditor-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src/scripts>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src/scripts>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../Engine/src>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/imgui>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:DebugNoEditor>:_DEBUG>
   $<$<CONFIG:DebugNoEditor>:_CONSOLE>
 )
 target_link_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:DebugNoEditor>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("ToadRunner"
   $<$<CONFIG:DebugNoEditor>:Engine>
-  $<$<CONFIG:DebugNoEditor>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:DebugNoEditor>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:DebugNoEditor>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:DebugNoEditor>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:DebugNoEditor>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:DebugNoEditor>:sfml-system>
   $<$<CONFIG:DebugNoEditor>:sfml-window>
   $<$<CONFIG:DebugNoEditor>:sfml-graphics>
@@ -263,8 +281,10 @@ target_link_libraries("ToadRunner"
 )
 target_compile_options("ToadRunner" PRIVATE
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-m64>
+  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-O0>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-g>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
+  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O0>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
 )
@@ -283,20 +303,26 @@ if(CMAKE_BUILD_TYPE STREQUAL Distro)
   )
   set_target_properties("ToadRunner" PROPERTIES
     OUTPUT_NAME "ToadRunner"
-    ARCHIVE_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Distro-macosx-x86_64"
-    LIBRARY_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Distro-macosx-x86_64"
-    RUNTIME_OUTPUT_DIRECTORY "/Users/stefan/Developer/Steve987321/Engine2D/bin/Distro-macosx-x86_64"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Distro-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Distro-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/Distro-macosx-x86_64
   )
 endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
 target_include_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/ToadRunner/src/scripts>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/Engine/src>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/imgui>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/sfml-imgui>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/include>
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/json/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src/scripts>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../Engine/src>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/imgui>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Distro>:NDEBUG>
@@ -305,14 +331,14 @@ target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Distro>:TOAD_DISTRO>
 )
 target_link_directories("ToadRunner" PRIVATE
-  $<$<CONFIG:Distro>:/Users/stefan/Developer/Steve987321/Engine2D/vendor/SFML-3.0.0/lib>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/lib>
 )
 target_link_libraries("ToadRunner"
   $<$<CONFIG:Distro>:Engine>
-  $<$<CONFIG:Distro>:${OPENGL_FRAMEWORK}>
-  $<$<CONFIG:Distro>:${COCOA_FRAMEWORK}>
-  $<$<CONFIG:Distro>:${IOKIT_FRAMEWORK}>
-  $<$<CONFIG:Distro>:${COREVIDEO_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:Distro>:${CoreVideo_FRAMEWORK}>
   $<$<CONFIG:Distro>:sfml-system>
   $<$<CONFIG:Distro>:sfml-window>
   $<$<CONFIG:Distro>:sfml-graphics>

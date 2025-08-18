@@ -4,9 +4,8 @@
 
 namespace Toad
 {
-	inline bool begin_play = false;
-
-	void ENGINE_API StartGameSession();
-	void ENGINE_API StopGameSession();
+	ENGINE_API bool IsBeginPlay();
+	ENGINE_API void StartGameSession();
+	ENGINE_API void StopGameSession();
 };
 
