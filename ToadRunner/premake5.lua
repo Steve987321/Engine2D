@@ -138,13 +138,6 @@ end
         symbols "Off"
         optimize "On"
 
-        removefiles{
-            "src/ui/**.cpp",
-            "src/ui/**.h",
-            "src/project/**.cpp",
-            "src/project/**.h",
-        }
-
     filter "configurations:DebugNoEditor"
         defines {
             "_DEBUG",
@@ -153,6 +146,17 @@ end
 
         runtime "Debug"
         symbols "On"
+        optimize "Off"
+
+    filter "configurations:DebugNoEditor or configurations:ReleaseNoEditor"
+        removefiles{
+            "src/ui/**.cpp",
+            "src/ui/**.h",
+            "src/project/**.cpp",
+            "src/project/**.h",
+            "vendor/imgui/**.cpp",
+            "vendor/imgui/**.h",
+        }
 
     filter "system:macosx"
         links {
