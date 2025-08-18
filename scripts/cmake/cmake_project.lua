@@ -84,7 +84,7 @@ function m.generate(prj)
 		end
 
 		-- output dir
-		local output_dir = project.getrelative(cfg.project, cfg.buildtarget.directory)
+		local output_dir = prj.name .. '/' .. project.getrelative(cfg.project, cfg.buildtarget.directory)
 		_p(1,'set_target_properties("%s" PROPERTIES', prj.name)
 		_p(2, 'OUTPUT_NAME "%s"', cfg.buildtarget.basename)
 		_p(2, 'ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/%s', output_dir)
