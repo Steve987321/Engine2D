@@ -21,7 +21,6 @@ local cmake = p.modules.cmake
 cmake.project = {}
 local m = cmake.project
 
-
 function m.getcompiler(cfg)
 	local default = iif(cfg.system == p.WINDOWS, "msc", "clang")
 	local toolset = p.tools[_OPTIONS.cc or cfg.toolset or default]
@@ -85,18 +84,44 @@ function m.generate(prj)
 		end
 
 		-- output dir
+		local output_dir = project.getrelative(cfg.project, cfg.buildtarget.directory)
 		_p(1,'set_target_properties("%s" PROPERTIES', prj.name)
 		_p(2, 'OUTPUT_NAME "%s"', cfg.buildtarget.basename)
-		_p(2, 'ARCHIVE_OUTPUT_DIRECTORY "%s"', cfg.buildtarget.directory)
-		_p(2, 'LIBRARY_OUTPUT_DIRECTORY "%s"', cfg.buildtarget.directory)
-		_p(2, 'RUNTIME_OUTPUT_DIRECTORY "%s"', cfg.buildtarget.directory)
+		_p(2, 'ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/%s', output_dir)
+		_p(2, 'LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/%s', output_dir)
+		_p(2, 'RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/%s', output_dir)
 		_p(1,')')
 		_p('endif()')
+
+		-- vars for macosx frameworks 
+		local mac_frameworks = {}
+
+		-- for macos use findlibraries
+		if cfg.system == "macosx" then 
+			for _, link in ipairs(config.getlinks(cfg, "system", "fullpath")) do
+				local pos = string.find(link, ".framework")
+				if pos ~= nil then 
+					if #mac_frameworks == 0 then 
+						_p("if(APPLE)")
+					end 
+
+					local framework_name = string.sub(link, 1, pos - 1)
+					local framework_var_name = framework_name .. "_FRAMEWORK"
+					mac_frameworks[#mac_frameworks + 1] = framework_var_name
+					_p("find_library(%s %s)", framework_var_name, framework_name)
+				end 
+			end
+
+			if #mac_frameworks > 0 then 
+				_p("endif()")
+			end
+		end 
 
 		-- include dirs
 		_p('target_include_directories("%s" PRIVATE', prj.name)
 		for _, includedir in ipairs(cfg.includedirs) do
-			_x(1, '$<$<CONFIG:%s>:%s>', cmake.cfgname(cfg), includedir)
+			local include_dir_relative = prj.name .. '/'.. project.getrelative(cfg.project, includedir)
+			_x(1, '$<$<CONFIG:%s>:${CMAKE_CURRENT_SOURCE_DIR}/%s>', cmake.cfgname(cfg), include_dir_relative)
 		end
 		_p(')')
 
@@ -110,7 +135,8 @@ function m.generate(prj)
 		-- lib dirs
 		_p('target_link_directories("%s" PRIVATE', prj.name)
 		for _, libdir in ipairs(cfg.libdirs) do
-			_p(1, '$<$<CONFIG:%s>:%s>', cmake.cfgname(cfg), libdir)
+			local lib_dir_relative = prj.name .. '/'.. project.getrelative(cfg.project, libdir)
+			_p(1, '$<$<CONFIG:%s>:${CMAKE_CURRENT_SOURCE_DIR}/%s>', cmake.cfgname(cfg), lib_dir_relative)
 		end
 		_p(')')
 
@@ -129,8 +155,12 @@ function m.generate(prj)
 		  _p(1, '-Wl,--end-group')
 		  _p(1, '-Wl,--start-group')
 		end
-		for _, link in ipairs(config.getlinks(cfg, "system", "fullpath")) do
-			_p(1, '$<$<CONFIG:%s>:%s>', cmake.cfgname(cfg), link)
+		for i, link in ipairs(config.getlinks(cfg, "system", "fullpath")) do
+			if string.find(link, ".framework") ~= nil then 
+				_p(1, '$<$<CONFIG:%s>:${%s}>', cmake.cfgname(cfg), mac_frameworks[i])
+			else 
+				_p(1, '$<$<CONFIG:%s>:%s>', cmake.cfgname(cfg), link)
+			end 
 		end
 		if uselinkgroups then
 		  _p(1, '-Wl,--end-group')
@@ -181,11 +211,13 @@ function m.generate(prj)
 			standard["C++14"] = 14
 			standard["C++17"] = 17
 			standard["C++20"] = 20
+			standard["C++23"] = 23
 			standard["gnu++98"] = 98
 			standard["gnu++11"] = 11
 			standard["gnu++14"] = 14
 			standard["gnu++17"] = 17
 			standard["gnu++20"] = 20
+			standard["gnu++23"] = 23
 
 			local extentions = iif(cfg.cppdialect:find('^gnu') == nil, 'NO', 'YES')
 			local pic = iif(cfg.pic == 'On', 'True', 'False')
