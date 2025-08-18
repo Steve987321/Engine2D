@@ -11,7 +11,11 @@ namespace Screen
     // #TODO: fix
     Vec2f ScreenToWorld(const Vec2i& point)
     {
+#ifdef TOAD_EDITOR
         Camera* current_cam = GetInteractingCamera();
+#else 
+        Camera* current_cam = Camera::GetActiveCamera();
+#endif 
         if (!current_cam) 
             return {-1, -1};
 
