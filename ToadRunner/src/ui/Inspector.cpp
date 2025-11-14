@@ -11,6 +11,72 @@
 namespace ui
 {
 
+template<typename... Ts> 
+static void ShowReflection(Toad::ReflectVars<Ts...>& reflection)
+{
+    const char* no_var_found_msg = "This variable is not found/exposed in this script, Resave the scene or re-expose the variable";
+    
+    (std::for_each(reflection.template Get<Ts>().data.begin(), reflection.template Get<Ts>().data.end(), 
+        [&](auto& e){
+            auto& [name, var] = e;
+            const char* name_c = std::string(name).c_str();
+            if constexpr (std::is_pointer_v<Ts>)
+            {
+                if (!var)
+                {
+                    ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name_c);
+                    ImGui::SameLine();
+                    HelpMarker(no_var_found_msg);
+                    return;
+                }
+
+                using non_pointer_t = std::remove_pointer_t<Ts>;
+
+                // check bool first before checking integral
+                if constexpr (std::is_same_v<non_pointer_t, bool>)
+                {
+                    ImGui::Checkbox(name_c, var);
+                }
+                else if constexpr (std::is_same_v<non_pointer_t, std::string>)
+                {
+                    char buf[100];
+                    strncpy(buf, var->c_str(), sizeof buf);
+                    if (ImGui::InputText(name_c, buf, sizeof buf))
+                        *var = buf;
+                }
+                else if constexpr (std::is_integral_v<non_pointer_t>)
+                {
+                    int min = (int)std::numeric_limits<non_pointer_t>::min();
+                    int max = (int)std::numeric_limits<non_pointer_t>::max();
+                    ImGui::DragInt(name_c, (int*)var, 1.0f, min, max);
+                }
+                else if constexpr (std::is_floating_point_v<non_pointer_t>)
+                {
+                    ImGui::DragFloat(name_c, var);
+                }
+               
+                ImGui::SameLine();
+                ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
+            }
+            else if constexpr (std::is_same_v<Toad::SerializedEnum, Ts>)
+            {
+                ImGui::Text("is_ptr: %d", var.is_ptr);
+                if (var.is_ptr)
+                    ImGui::Text("val: %p", var.data.ptr);
+                else 
+                    ImGui::Text("val: %d", var.data.value);
+                ImGui::Text("enum_name: %s", std::string(var.enum_name).c_str());
+                ImGui::Text("enumerators: ");
+                int i = 0;
+                for (const auto& s : var.enumerators)
+                {
+                    ImGui::Text("[%d] %s", i, std::string(s).c_str());
+                    i++;
+                }
+            }
+        }), ...);
+}
+
 void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& asset_browser)
 {
 	using namespace Toad;
@@ -231,6 +297,16 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 			(uint8_t)(col[1] * 255.f),
 			(uint8_t)(col[2] * 255.f),
 			(uint8_t)(col[3] * 255.f) });
+
+        ImGui::Button("shader dragger");
+        if (ImGui::BeginDragDropTarget())
+        {   
+            const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("move file");
+			if (payload != nullptr)
+			{
+                
+            }
+        }
 
 		Vec2f scale = sprite.getScale();
 		if (ImGui::DragFloat("scale x", &scale.x))
@@ -742,104 +818,7 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 				ImGui::SameLine();
 				ImGui::TextColored({ 0.2f,0.8f,0.2f,1.f }, "%p", script);
 
-				auto script_vars = script->GetReflection().Get();
-				const char* no_var_found_msg = "This variable is not found/exposed in this script, Resave the scene or re-expose the variable";
-				for (auto& [name, var] : script_vars.str)
-				{
-					if (var)
-					{
-						char buf[100];
-						strncpy(buf, var->c_str(), sizeof buf);
-						if (ImGui::InputText(name.c_str(), buf, sizeof buf))
-						{
-							*var = buf;
-						}
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
-					}
-					else
-					{
-						ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
-						ImGui::SameLine();
-						HelpMarker(no_var_found_msg);
-					}
-				}
-				for (auto& [name, var] : script_vars.b)
-				{
-					if (var)
-					{
-						ImGui::Checkbox(name.c_str(), var);
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
-					}
-					else
-					{
-						ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
-						ImGui::SameLine();
-						HelpMarker(no_var_found_msg);
-					}
-				}
-				for (auto& [name, var] : script_vars.flt)
-				{
-					if (var)
-					{
-						ImGui::DragFloat(name.c_str(), var);
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
-					}
-					else
-					{
-						ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
-						ImGui::SameLine();
-						HelpMarker(no_var_found_msg);
-					}
-
-				}
-				for (auto& [name, var] : script_vars.i8)
-				{
-					if (var)
-					{
-						ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i8_min, i8_max);
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
-					}
-					else
-					{
-						ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
-						ImGui::SameLine();
-						HelpMarker(no_var_found_msg);
-					}
-				}
-				for (auto& [name, var] : script_vars.i16)
-				{
-					if (var)
-					{
-						ImGui::DragInt(name.c_str(), (int*)var, 1.0f, i16_min, i16_max);
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
-					}
-					else
-					{
-						ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
-						ImGui::SameLine();
-						HelpMarker(no_var_found_msg);
-					}
-				}
-				for (auto& [name, var] : script_vars.i32)
-				{
-					if (var)
-					{
-						ImGui::DragInt(name.c_str(), var);
-						ImGui::SameLine();
-						ImGui::TextColored({ 0.2f,0.2f,0.2f,1.f }, "%p", var);
-					}
-					else
-					{
-						ImGui::TextColored({ 1.f,0.f,0.f,1.f }, "%s is null", name.c_str());
-						ImGui::SameLine();
-						HelpMarker(no_var_found_msg);
-					}
-				}
+                ShowReflection<ReflectTypes>(script->GetReflection());
 
 				ImGui::SeparatorText("OnEditorUI");
 

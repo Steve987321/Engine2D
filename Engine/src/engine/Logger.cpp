@@ -60,12 +60,24 @@ namespace Toad
 #endif
 	}
 
-	void Logger::AddCallback(const FLOG_CALLBACK& callback)
+	size_t Logger::AddCallback(const FLOG_CALLBACK& callback)
 	{
 		m_callbacks.emplace_back(callback);
+        return m_callbacks.size() - 1; 
 	}
 
-	void Logger::ClearLogOnceMessages()
+    void Logger::ClearCallbacks()
+    {
+        m_callbacks.clear();
+    }
+
+    void Logger::RemoveCallback(size_t id)
+    {
+        if (id < m_callbacks.size())
+            m_callbacks.erase(m_callbacks.begin() + id);
+    }
+
+    void Logger::ClearLogOnceMessages()
 	{
 		m_loggedOnceMessages.clear();
 	}

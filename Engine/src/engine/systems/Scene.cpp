@@ -81,6 +81,23 @@ static Texture& GetValidTexture(std::string& possible_id, const std::filesystem:
     return *new_tex;
 }
 
+template <typename... Ts> 
+static void UpdateVarsOnScript(Script* new_script, Reflection& reflection, json script_json)
+{
+    std::cout << script_json << std::endl; 
+
+    // auto& items = script_json.value().items();
+    // (std::for_each(items.begin(), items.end(), 
+    // [&](auto& e){
+    //     const auto& j = e.value().items(); 
+    //     Ts* var = reflection.GetVar<T*>(j.key());
+    //     if (var)
+    //         *var = j.value().get<T>();
+    //     else 
+    //         LOGWARNF("[Scene] Script variable {} for script {} is null and is getting disabled, make sure it's exposed. At {}", j.key().c_str(), script.key().c_str(), __PRETTY_FUNCTION__);
+    // }), ...);
+}
+
 void Scene::SetScene(Scene* scene)
 {
 	current_scene.End(scene);
@@ -647,84 +664,9 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 					newobj->AddScript(it->second->Clone());
 					newobj->GetScript(script.key())->ExposeVars();
 					auto new_attached_script = newobj->GetScript(it->first);
-					auto& vars = new_attached_script->GetReflection().Get();
-
-					int i = 0;
-					for (const auto& script_vars : script.value().items())
-					{
-						switch (i++)
-						{
-						case (int)TypesMap::b:
-							for (const auto& j : script_vars.value().items())
-							{
-								if (vars.b[j.key()])
-									*vars.b[j.key()] = j.value().get<bool>();
-								else
-								{
-									LOGWARNF("[Scene] Script variable (bool) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
-								}
-							}
-							break;
-						case (int)TypesMap::flt:
-							for (const auto& j : script_vars.value().items())
-							{
-								if (vars.flt[j.key()])
-									*vars.flt[j.key()] = j.value().get<float>();
-								else
-								{
-									LOGWARNF("[Scene] Script variable (float) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
-								}
-							}
-							break;
-						case (int)TypesMap::i8:
-							for (const auto& j : script_vars.value().items())
-							{
-								if (vars.i8[j.key()])
-									*vars.i8[j.key()] = j.value().get<int8_t>();
-								else
-								{
-									LOGWARNF("[Scene] Script variable (int8) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
-								}
-							}
-							break;
-						case (int)TypesMap::i16:
-							for (const auto& j : script_vars.value().items())
-							{
-								if (vars.i16[j.key()])
-									*vars.i16[j.key()] = j.value().get<int16_t>();
-								else
-								{
-									LOGWARNF("[Scene] Script variable (int16) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
-								}
-							}
-							break;
-						case (int)TypesMap::i32:
-							for (const auto& j : script_vars.value().items())
-							{
-								if (vars.i32[j.key()])
-									*vars.i32[j.key()] = j.value().get<int32_t>();
-								else
-								{
-									LOGWARNF("[Scene] Script variable (int32) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
-								}
-							}
-							break;
-						case (int)TypesMap::str:
-							for (const auto& j : script_vars.value().items())
-							{
-								if (vars.str[j.key()])
-									*vars.str[j.key()] = j.value().get<std::string>();
-								else
-								{
-									LOGWARNF("[Scene] Script variable (string) {} for script {} is null and is getting skipped & disabled, make sure it's exposed", j.key().c_str(), script.key().c_str());
-								}
-							}
-							break;
-						default:
-							LOGWARNF("Unknown type for script_vars iteration: {} key: {} value: {}", i, script_vars.key(), script_vars.value());
-							break;
-						}
-					}
+					auto& vars = new_attached_script->GetReflection();
+                    
+					UpdateVarsOnScript<ReflectTypes>(new_attached_script, vars, script);
 				}
 				else
 				{

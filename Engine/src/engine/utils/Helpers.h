@@ -75,13 +75,13 @@ namespace Toad
 	ENGINE_API std::string GetFileContents(const char* file);
 
 	template<class T>
-	T* GetObjectAsType(Object* obj)
+	ENGINE_API T* GetObjectAsType(Object* obj)
 	{
 		return dynamic_cast<T*>(obj);
 	}
 
 	template<class T>
-	T* GetScriptAsType(Script* script)
+	ENGINE_API T* GetScriptAsType(Script* script)
 	{
 		return dynamic_cast<T*>(script);
 	}

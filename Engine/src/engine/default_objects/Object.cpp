@@ -242,73 +242,10 @@ namespace Toad
 	json Object::SerializeScripts() const
 	{
 		json attached_scripts;
-		for (auto it : m_attachedScripts)
+		for (const auto& it : m_attachedScripts)
 		{
-			const auto& reflection_vars = it.second->GetReflection().Get();
-			const auto& bs = reflection_vars.b;
-			const auto& flts = reflection_vars.flt;
-			const auto& i8s = reflection_vars.i8;
-			const auto& i16s = reflection_vars.i16;
-			const auto& i32s = reflection_vars.i32;
-			const auto& strs = reflection_vars.str;
-
-			json bs_data;
-			for (const auto& [name, val] : bs)
-			{
-				if (val)
-					bs_data[name] = *val;
-				else
-					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
-			}
-			json flts_data;
-			for (const auto& [name, val] : flts)
-			{
-				if (val)
-					flts_data[name] = *val;
-				else
-					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
-			}
-			json i8s_data;
-			for (const auto& [name, val] : i8s)
-			{
-				if (val)
-					i8s_data[name] = *val;
-				else
-					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
-			}
-			json i16s_data;
-			for (const auto& [name, val] : i16s)
-			{
-				if (val)
-					i16s_data[name] = *val;
-				else
-					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
-			}
-			json i32s_data;
-			for (const auto& [name, val] : i32s)
-			{
-				if (val)
-					i32s_data[name] = *val;
-				else
-					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
-			}
-			json strs_data;
-			for (const auto& [name, val] : strs)
-			{
-				if (val)
-					strs_data[name] = *val;
-				else
-					LOGWARNF("[Object::SerializeScripts] variable {} is null", name);
-			}
-			attached_scripts[it.first] =
-			{
-				bs_data,
-				flts_data,
-				i8s_data,
-				i16s_data,
-				i32s_data,
-				strs_data
-			};
+			Reflection& reflection = it.second->GetReflection();
+            attached_scripts[it.first] = reflection.Serialize();
 		}
 
 		return attached_scripts;

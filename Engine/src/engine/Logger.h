@@ -61,7 +61,12 @@ public:
 	/// Closes console and log file 
 	void DisposeLogger();
 
-	void AddCallback(const FLOG_CALLBACK& callback);
+    /// Returns ID 
+	size_t AddCallback(const FLOG_CALLBACK& callback);
+
+    void ClearCallbacks();
+
+    void RemoveCallback(size_t id);
 
 	// Clears stored logs that should only be logged once
 	void ClearLogOnceMessages();

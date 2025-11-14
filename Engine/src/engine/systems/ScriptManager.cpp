@@ -21,7 +21,7 @@ namespace Toad
 	void ScriptManager::LoadScripts()
 	{
 		namespace fs = std::filesystem;
-		using object_script = struct { std::string script_name; ReflectVarsCopy reflection; };
+		using object_script = struct { std::string script_name; ReflectionCopy reflection; };
 		std::unordered_map <std::string, std::vector<object_script>> objects_with_scripts{};
 
 		for (auto& [_, script] : game_scripts)
@@ -40,8 +40,7 @@ namespace Toad
 
 			for (auto i = scripts.begin(); i != scripts.end();)
 			{
-				ReflectVarsCopy vars;
-				i->second->GetReflection().Get().copy(vars);
+				ReflectionCopy vars = i->second->GetReflection().Copy();
 				objects_with_scripts[obj->name].emplace_back(object_script{ i->first, vars });
 
 				obj->RemoveScript(i->first);
@@ -159,11 +158,9 @@ namespace Toad
 		for (auto& obj : Scene::current_scene.objects_all)
 		{
 			if (!objects_with_scripts.contains(obj->name))
-			{
 				continue;
-			}
 
-			const auto& prev_obj_state = objects_with_scripts[obj->name];
+			auto& prev_obj_state = objects_with_scripts[obj->name];
 
 			for (auto& [attached_script_name, old_reflection_vars] : prev_obj_state)
 			{
@@ -176,32 +173,9 @@ namespace Toad
 					// memcpy(p, it->second, sizeof(*it->second));
 					obj->AddScript(it->second->Clone());
 					obj->GetScript(it->first)->ExposeVars();
-					auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection().Get();
+					auto& new_reflection_vars = obj->GetScript(it->first)->GetReflection();
 
-					for (auto& [name, v] : new_reflection_vars.str)
-						for (auto& [newname, newv] : old_reflection_vars.str)
-							if (newname == name)
-								*v = newv;
-					for (auto& [name, v] : new_reflection_vars.b)
-						for (auto& [newname, newv] : old_reflection_vars.b)
-							if (newname == name)
-								*v = newv;
-					for (auto& [name, v] : new_reflection_vars.flt)
-						for (auto& [newname, newv] : old_reflection_vars.flt)
-							if (newname == name)
-								*v = newv;
-					for (auto& [name, v] : new_reflection_vars.i8)
-						for (auto& [newname, newv] : old_reflection_vars.i8)
-							if (newname == name)
-								*v = newv;
-					for (auto& [name, v] : new_reflection_vars.i16)
-						for (auto& [newname, newv] : old_reflection_vars.i16)
-							if (newname == name)
-								*v = newv;
-					for (auto& [name, v] : new_reflection_vars.i32)
-						for (auto& [newname, newv] : old_reflection_vars.i32)
-							if (newname == name)
-								*v = newv;
+                    new_reflection_vars.Update(old_reflection_vars);
 
 					LOGDEBUGF("[ScriptManager] Updated Script {} on Object {}", attached_script_name, obj->name);
 				}
