@@ -152,7 +152,7 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
     template<typename T>
     ENGINE_API T& GetVar(std::string_view name)
     {
-        return GetVars<T>().data[name];
+        return Get<T>().data[name];
     }
 
     template<typename T>

@@ -82,20 +82,33 @@ static Texture& GetValidTexture(std::string& possible_id, const std::filesystem:
 }
 
 template <typename... Ts> 
-static void UpdateVarsOnScript(Script* new_script, Reflection& reflection, json script_json)
+static void UpdateVarsOnScript(Script* new_script, Reflection& reflection, const std::string& script_name, const json& script)
 {
-    std::cout << script_json << std::endl; 
+    const auto& items = script.items();
+    (std::for_each(items.begin(), items.end(), 
+    [&](auto& e){
+        if (!e.value().contains(type_name<Ts>()))
+            return; 
 
-    // auto& items = script_json.value().items();
-    // (std::for_each(items.begin(), items.end(), 
-    // [&](auto& e){
-    //     const auto& j = e.value().items(); 
-    //     Ts* var = reflection.GetVar<T*>(j.key());
-    //     if (var)
-    //         *var = j.value().get<T>();
-    //     else 
-    //         LOGWARNF("[Scene] Script variable {} for script {} is null and is getting disabled, make sure it's exposed. At {}", j.key().c_str(), script.key().c_str(), __PRETTY_FUNCTION__);
-    // }), ...);
+        if constexpr (std::is_same_v<Ts, SerializedEnum>)
+        {
+            // 
+        }
+        else
+        {
+            for (const auto& it : e.value()[type_name<Ts>()].items())
+            {
+                for (const auto& [key, new_value] : it.value().items())
+                {
+                    Ts& var = reflection.GetVar<Ts>(key);
+                    if (var)
+                        *var = new_value.template get<std::remove_pointer_t<Ts>>();
+                    else 
+                        LOGWARNF("[Scene] Script variable {} for script {} is null and is getting disabled, make sure it's exposed. At {}", key, script_name.c_str(), __PRETTY_FUNCTION__);
+                }
+            } 
+        }
+    }), ...);
 }
 
 void Scene::SetScene(Scene* scene)
@@ -666,7 +679,7 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 					auto new_attached_script = newobj->GetScript(it->first);
 					auto& vars = new_attached_script->GetReflection();
                     
-					UpdateVarsOnScript<ReflectTypes>(new_attached_script, vars, script);
+					UpdateVarsOnScript<ReflectTypes>(new_attached_script, vars, script.key(), script.value());
 				}
 				else
 				{
