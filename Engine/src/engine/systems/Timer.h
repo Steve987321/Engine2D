@@ -5,18 +5,18 @@
 namespace Toad
 {
 
-class ENGINE_API Timer
+class Timer
 {
 public:
 	using TClock = std::chrono::high_resolution_clock;
 
-	explicit Timer(bool start = false);
-	~Timer();
+	ENGINE_API explicit Timer(bool start = false);
+	ENGINE_API ~Timer();
 
-	void Start();
+	ENGINE_API void Start();
 
 	template<typename TDur = std::chrono::milliseconds>
-	float Elapsed() const
+	ENGINE_API float Elapsed() const
 	{
 		return (float)std::chrono::duration_cast<TDur>(TClock::now() - m_start).count();
 	}

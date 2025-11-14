@@ -132,7 +132,7 @@ namespace Toad
 
 	void Circle::Render(sf::RenderTarget& target)
 	{
-		target.draw(m_circle);
+		target.draw(m_circle, render_state);
 	}
 
 	void Circle::Update()

@@ -7,12 +7,19 @@
 
 namespace Toad
 {
-	void MessageQueue::AddToMessageQueue(MessageQueueMessage msg)
+	size_t MessageQueue::AddToMessageQueue(MessageQueueMessage msg)
 	{
 		m_messageQueue.emplace_back(msg, Toad::Timer{true});
+        return m_messageQueue.size() - 1;
 	}
 
-	void MessageQueue::Show()
+    void MessageQueue::RemoveMessage(size_t id)
+    {
+        if (id < m_messageQueue.size())
+            m_messageQueue.erase(m_messageQueue.begin() + id);
+    }
+
+    void MessageQueue::Show()
 	{
 		const ImVec2 prev_cursor_pos = ImGui::GetCursorPos();
 
@@ -27,7 +34,7 @@ namespace Toad
 		uint32_t i = 0;
 		ImDrawList* draw = ImGui::GetForegroundDrawList();
 
-		for (auto& [message, timer] : m_messageQueue)
+		for (const auto& [message, _] : m_messageQueue)
 		{
 			ImFont* font = ImGui::GetDefaultFont();
 			const float font_size = 23;
@@ -74,7 +81,7 @@ namespace Toad
 		auto it = m_messageQueue.begin();
 		while (it != m_messageQueue.end())
 		{
-			if (it->second.Elapsed<>() > it->first.show_time_ms)
+			if (!it->first.permanent && it->second.Elapsed<>() > it->first.show_time_ms)
 				it = m_messageQueue.erase(it);
 			else 
 				it++;

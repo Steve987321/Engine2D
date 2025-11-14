@@ -257,6 +257,7 @@ namespace project {
 			if (e.path().filename().string().find("imgui") != std::string::npos ||
 				e.path().filename().string().find("json") != std::string::npos ||
 				e.path().filename().string().find("SFML-3") != std::string::npos ||
+				e.path().filename().string().find("magic_enum") != std::string::npos ||
 				e.path().filename().string().find("sfml-imgui") != std::string::npos ||
 				e.path().filename().string().find("filewatch") != std::string::npos)
 			{
@@ -530,6 +531,10 @@ namespace project {
 		// clear possible previous resources
 		Toad::ResourceManager::Clear();
         Toad::ResourceManager::Init();
+
+        Toad::DrawingCanvas::ClearDrawBuffers();
+        for (auto& canvas : Toad::DrawingCanvas::GetCanvases())
+            canvas->ClearVertices();
 
 		current_project = settings;
 		Toad::SetProjectPath(current_project.project_path);

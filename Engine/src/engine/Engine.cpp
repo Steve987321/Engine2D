@@ -1,8 +1,11 @@
 #include "pch.h"
 
-#ifndef NDEBUG
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui/imgui.h" 
+#include "imgui-SFML.h"
 #endif
+
 #include "engine/Engine.h"
 #include "engine/Settings.h"
 
@@ -14,8 +17,6 @@
 #include "engine/systems/Time.h"
 #include "engine/systems/Timer.h"
 #include "utils/Wrappers.h"
-#include <imgui/imgui.h>
-#include "imgui-SFML.h"
 
 namespace Toad
 {
@@ -329,7 +330,6 @@ void Render(AppWindow& window)
 	window_texture.clear();
 	editor_cam_texture.clear();
 
-	// Update scene to the texture so it can display on the (game) viewport 
 	Scene::current_scene.Render(window_texture);
 	if (cam != nullptr)
 	{

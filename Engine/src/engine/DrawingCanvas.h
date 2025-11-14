@@ -17,6 +17,7 @@ public:
     ENGINE_API static void DrawArrow(const Vec2f& position, const Vec2f& direction, float width = 5.f, Color color = Color(255, 255, 0, 255));
     ENGINE_API static void DrawRect(const Vec2f& min, const Vec2f& max);
     ENGINE_API static void ClearDrawBuffers();
+    ENGINE_API static std::unordered_set<DrawingCanvas*>& GetCanvases();
 
     // static void DrawVerticesAllCanvases(sf::RenderTarget& target, sf::PrimitiveType type = sf::PrimitiveType::Points);
     // static void DrawBuffersAllCanvases(sf::RenderTarget& target);
@@ -30,7 +31,7 @@ public:
     // @note Should only be used by the engine runtime
     ENGINE_API void DrawBuffers(sf::RenderTarget& target);
 
-private: 
+    private: 
     struct DrawInfoRect
     {
         std::array<sf::Vertex, 5> rect;

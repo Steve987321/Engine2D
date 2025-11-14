@@ -38,6 +38,7 @@ struct MessageQueueMessage
 	float show_time_ms = 1000.f;
 	MessageType type = MessageType::INFO;
 	MessageCategory category = MessageCategory::OTHER;
+    bool permanent = false;
 };
 
 
@@ -50,7 +51,10 @@ public:
 	{}
 
 public:
-	void AddToMessageQueue(MessageQueueMessage msg_type);
+    // Return id of message 
+	size_t AddToMessageQueue(MessageQueueMessage msg_type);
+    void RemoveMessage(size_t id);
+
 	void Show();
 
 private:

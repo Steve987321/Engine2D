@@ -14,11 +14,7 @@
 #define ENGINE_API __declspec(dllimport)
 #endif
 #else
-#ifdef ENGINE_IS_EXPORT
 #define ENGINE_API 
-#else
-#define ENGINE_API 
-#endif
 #endif
 
 #if !defined(TOAD_EDITOR) && defined(NDEBUG) 

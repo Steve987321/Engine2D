@@ -7,8 +7,6 @@ namespace Toad
 
 namespace Screen
 {
-    // don't use this 
-    // #TODO: fix
     Vec2f ScreenToWorld(const Vec2i& point)
     {
 #ifdef TOAD_EDITOR
@@ -22,8 +20,6 @@ namespace Screen
         return ScreenToWorld(point, *current_cam);
     }
 
-    // don't use this
-    // #TODO: fix, 
     Vec2f ScreenToWorld(const Vec2i& point, const Camera& cam)
     {
         sf::RenderTexture& tex = GetActiveRenderTexture();

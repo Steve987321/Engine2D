@@ -128,12 +128,15 @@ protected:
 	std::set<std::string> m_children{};
 	std::string m_parent;
 
+    sf::RenderStates render_state = sf::RenderStates::Default;
+
 	Tags m_tags{*this};
 
 	Scene& m_currentScene;
 
 	// position used only by Object
 	Vec2f m_objectPos{ 0, 0 };
+
 };
 
 }

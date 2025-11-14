@@ -113,7 +113,7 @@ json Sprite::Serialize()
 
 void Sprite::Render(sf::RenderTarget& target)
 {
-	target.draw(m_sprite);
+	target.draw(m_sprite, render_state);
 }
 
 void Sprite::Start()

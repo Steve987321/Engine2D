@@ -126,6 +126,11 @@ void DrawingCanvas::DrawBuffers(sf::RenderTarget& target)
     }
 }
 
+std::unordered_set<DrawingCanvas*>& DrawingCanvas::GetCanvases()
+{
+    return canvases;
+}
+
 std::vector<sf::Vertex>& DrawingCanvas::CreateVA(size_t size)
 {
     created_vertexarrays.emplace_back();
