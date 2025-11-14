@@ -60,11 +60,12 @@ project(game_project_name)
 
 if _OPTIONS["usesrc"] then 
     includedirs{
-        engine_path .. "/Engine/src",
+        engine_path .. "/engine/src",
         "vendor",
         "vendor/imgui",
         "vendor/SFML-3.0.0/include",
         "vendor/json/include",
+        "vendor/magic_enum/include"
         "%{prj.name}/src",
         "%{prj.name}/src/assets"
     }
@@ -79,6 +80,7 @@ else
         "vendor/imgui",
         "vendor/SFML-3.0.0/include",
         "vendor/json/include",
+        "vendor/magic_enum/include"
         "%{prj.name}/src",
         "%{prj.name}/src/assets",
     }

@@ -31,8 +31,8 @@ project "ToadRunner"
         "../vendor/imgui/backends/**",
     }
 
-if _ACTION == "xcode4" then
-    externalincludedirs {
+    include_dirs = 
+    {
         "src",
         "src/scripts",
         "../Engine/src",
@@ -41,17 +41,16 @@ if _ACTION == "xcode4" then
         "../vendor/sfml-imgui",
         "../vendor/SFML-3.0.0/include",
         "../vendor/json/include",
+        "../vendor/magic_enum/include"
+    }
+
+if _ACTION == "xcode4" then
+    externalincludedirs {
+        include_dirs
     }
 else 
     includedirs {
-        "src",
-        "src/scripts",
-        "../Engine/src",
-        "../vendor",
-        "../vendor/imgui",
-        "../vendor/sfml-imgui",
-        "../vendor/SFML-3.0.0/include",
-        "../vendor/json/include",
+       include_dirs
     }
 end
     libdirs {

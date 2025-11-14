@@ -102,6 +102,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/magic_enum/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Debug>:_DEBUG>
@@ -163,6 +164,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/magic_enum/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Release>:NDEBUG>
@@ -223,6 +225,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/magic_enum/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:NDEBUG>
@@ -282,6 +285,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/magic_enum/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:DebugNoEditor>:_DEBUG>
@@ -342,6 +346,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/magic_enum/include>
 )
 target_compile_definitions("Engine" PRIVATE
   $<$<CONFIG:Distro>:NDEBUG>

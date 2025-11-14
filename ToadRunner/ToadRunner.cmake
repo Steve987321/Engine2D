@@ -72,6 +72,7 @@ target_include_directories("ToadRunner" PRIVATE
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/magic_enum/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Debug>:_DEBUG>
@@ -135,6 +136,7 @@ target_include_directories("ToadRunner" PRIVATE
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/magic_enum/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Release>:NDEBUG>
@@ -198,6 +200,7 @@ target_include_directories("ToadRunner" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/magic_enum/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:NDEBUG>
@@ -259,6 +262,7 @@ target_include_directories("ToadRunner" PRIVATE
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/magic_enum/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:DebugNoEditor>:_DEBUG>
@@ -323,6 +327,7 @@ target_include_directories("ToadRunner" PRIVATE
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/magic_enum/include>
 )
 target_compile_definitions("ToadRunner" PRIVATE
   $<$<CONFIG:Distro>:NDEBUG>
