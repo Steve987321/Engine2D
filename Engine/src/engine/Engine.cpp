@@ -358,7 +358,7 @@ void Render(AppWindow& window)
 	ImGui::SFML::Render(window);
 	AppWindow::UpdateViewports(event_callback);
 #else
-#ifndef NDEBUG
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
@@ -528,8 +528,10 @@ void CleanUp()
 
 	window_texture.release();
 
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	LOGDEBUG("shutting down imgui");
 	ImGui::SFML::Shutdown();
+#endif
 
 	LOGDEBUG("closing window");
 	GetWindow().close();
