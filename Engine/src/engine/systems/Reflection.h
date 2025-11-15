@@ -35,8 +35,8 @@ struct SerializedEnum
 
     bool is_ptr = false;
     
-    std::string_view enum_name;
-    std::vector<std::string_view> enumerators; 
+    std::string enum_name;
+    std::vector<std::string> enumerators; 
 
     json Serialize() const 
     {
@@ -65,7 +65,7 @@ SERIALIZABLE_TYPE(std::string*)
 template<typename T>
 struct ReflectVarsOfT
 {
-    std::unordered_map<std::string_view, T> data;
+    std::unordered_map<std::string, T> data;
 
     json Serialize() const
     {
@@ -115,13 +115,13 @@ struct ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
     }
 
     template<typename T>
-    ENGINE_API T& GetVar(std::string_view name)
+    ENGINE_API T& GetVar(const std::string& name)
     {
         return Get<T>().data[name];
     }
 
     template<typename T>
-    ENGINE_API void Add(std::string_view name, T value)
+    ENGINE_API void Add(const std::string& name, T value)
     {
         if (std::is_enum_v<T>)
             AddEnum(name, value);
@@ -150,29 +150,34 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
     }
 
     template<typename T>
-    ENGINE_API T& GetVar(std::string_view name)
+    ENGINE_API T& GetVar(const std::string& name)
     {
         return Get<T>().data[name];
     }
 
     template<typename T>
-    ENGINE_API void Add(std::string_view name, T value)
+    ENGINE_API void Add(const std::string& name, T value)
     {
-        if constexpr (std::is_enum_v<T>)
+        if constexpr (std::is_enum_v<std::remove_pointer_t<T>>)
             AddEnum(name, value);
         else
             ReflectVarsOfT<T>::data[name] = value;
     }
 
     template<typename T>
-    ENGINE_API void AddEnum(std::string_view name, T* value)
+    ENGINE_API void AddEnum(const std::string& name, T value)
     {
-        auto enum_values = magic_enum::enum_values<T>();
         SerializedEnum serialized;
-        serialized.enum_name = magic_enum::enum_name(*value);
+        serialized.enum_name = magic_enum::enum_type_name<decltype(*value)>();
         serialized.data.ptr = (int*)value;
         serialized.is_ptr = true;
-        serialized.enumerators = {enum_values.begin(), enum_values.end()};
+
+        using non_pointer_t = std::remove_pointer_t<T>;
+        auto enum_names = magic_enum::enum_names<non_pointer_t>();
+        serialized.enumerators.reserve(enum_names.size()); 
+        for (auto& e : enum_names)
+            serialized.enumerators.emplace_back(e);
+
         ReflectVarsOfT<SerializedEnum>::data[name] = serialized;
     }
 
@@ -183,7 +188,11 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
         for (const auto& [n, v] : ReflectVarsOfT<T>::data)
         {
             if constexpr (std::is_same_v<T, SerializedEnum>)
+            {
                 res.data[n] = v;
+                res.data[n].is_ptr = false;
+                res.data[n].data.value = *v.data.ptr;
+            }
             else 
                 res.data[n] = *v;
         }

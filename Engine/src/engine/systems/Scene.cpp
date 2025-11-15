@@ -707,33 +707,34 @@ inline void LoadSceneObjectsOfType(json objects, Scene& scene, const std::filesy
 
 void LoadSceneObjects(json objects, Scene& scene, const std::filesystem::path& asset_folder, bool delete_old_objects, bool insert)
 {
-	if (objects.contains("objects"))
-	{
-		bool restart = false;
-		if (Toad::IsBeginPlay())
-		{
-			restart = true;
-			Toad::StopGameSession();
-		}
+    if (!objects.contains("objects"))
+    {
+        LOGWARN("No objects loaded because scene file doesn't contain objects");
+        return;
+    }
 
-		if (delete_old_objects)
-			for (const auto& obj : Scene::current_scene.objects_all)
-				if (obj)
-					obj->Destroy();
-			
-		auto& objectsall = objects["objects"];
-		LoadSceneObjectsOfType<Object>(objectsall["empty"], scene, asset_folder, insert);
-		LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder, insert);
-		LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder, insert);
-		LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder, insert);
-		LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder, insert);
-		LoadSceneObjectsOfType<Camera>(objectsall["cameras"], scene, asset_folder, insert);
+    bool restart = false;
+    if (Toad::IsBeginPlay())
+    {
+        restart = true;
+        Toad::StopGameSession();
+    }
 
-		if (restart) 
-		{
-			Toad::StartGameSession();
-		}
-	}
+    if (delete_old_objects)
+        for (const auto& obj : Scene::current_scene.objects_all)
+            if (obj)
+                obj->Destroy();
+        
+    auto& objectsall = objects["objects"];
+    LoadSceneObjectsOfType<Object>(objectsall["empty"], scene, asset_folder, insert);
+    LoadSceneObjectsOfType<Circle>(objectsall["circles"], scene, asset_folder, insert);
+    LoadSceneObjectsOfType<Sprite>(objectsall["sprites"], scene, asset_folder, insert);
+    LoadSceneObjectsOfType<Audio>(objectsall["audios"], scene, asset_folder, insert);
+    LoadSceneObjectsOfType<Text>(objectsall["texts"], scene, asset_folder, insert);
+    LoadSceneObjectsOfType<Camera>(objectsall["cameras"], scene, asset_folder, insert);
+
+    if (restart) 
+        Toad::StartGameSession();
 }
 
 }

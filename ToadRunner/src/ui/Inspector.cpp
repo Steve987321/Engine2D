@@ -19,7 +19,7 @@ static void ShowReflection(Toad::ReflectVars<Ts...>& reflection)
     (std::for_each(reflection.template Get<Ts>().data.begin(), reflection.template Get<Ts>().data.end(), 
         [&](auto& e){
             auto& [name, var] = e;
-            const char* name_c = std::string(name).c_str();
+            const char* name_c = name.c_str();
             if constexpr (std::is_pointer_v<Ts>)
             {
                 if (!var)
@@ -65,12 +65,12 @@ static void ShowReflection(Toad::ReflectVars<Ts...>& reflection)
                     ImGui::Text("val: %p", var.data.ptr);
                 else 
                     ImGui::Text("val: %d", var.data.value);
-                ImGui::Text("enum_name: %s", std::string(var.enum_name).c_str());
+                ImGui::Text("enum_name: %s", var.enum_name.c_str());
                 ImGui::Text("enumerators: ");
                 int i = 0;
                 for (const auto& s : var.enumerators)
                 {
-                    ImGui::Text("[%d] %s", i, std::string(s).c_str());
+                    ImGui::Text("[%d] %s", i, s.c_str());
                     i++;
                 }
             }
