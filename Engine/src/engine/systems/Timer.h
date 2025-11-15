@@ -16,7 +16,7 @@ public:
 	ENGINE_API void Start();
 
 	template<typename TDur = std::chrono::milliseconds>
-	ENGINE_API float Elapsed() const
+	float Elapsed() const
 	{
 		return (float)std::chrono::duration_cast<TDur>(TClock::now() - m_start).count();
 	}

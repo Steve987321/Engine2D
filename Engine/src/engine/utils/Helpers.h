@@ -50,7 +50,7 @@ namespace Toad
     ENGINE_API void PathToPreferred(std::string& path_str);
 
 	template<typename T>
-	ENGINE_API inline bool GetJsonElement(T& val, const nlohmann::ordered_json& data, std::string_view key, std::string error_msg = "") noexcept
+	inline bool GetJsonElement(T& val, const nlohmann::ordered_json& data, std::string_view key, std::string error_msg = "") noexcept
 	{
 		if (data.contains(key) && !data.at(key).is_null())
 		{
@@ -75,13 +75,13 @@ namespace Toad
 	ENGINE_API std::string GetFileContents(const char* file);
 
 	template<class T>
-	ENGINE_API T* GetObjectAsType(Object* obj)
+	T* GetObjectAsType(Object* obj)
 	{
 		return dynamic_cast<T*>(obj);
 	}
 
 	template<class T>
-	ENGINE_API T* GetScriptAsType(Script* script)
+	T* GetScriptAsType(Script* script)
 	{
 		return dynamic_cast<T*>(script);
 	}

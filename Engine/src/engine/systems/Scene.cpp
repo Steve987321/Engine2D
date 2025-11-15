@@ -104,7 +104,7 @@ static void UpdateVarsOnScript(Script* new_script, Reflection& reflection, const
                     if (var)
                         *var = new_value.template get<std::remove_pointer_t<Ts>>();
                     else 
-                        LOGWARNF("[Scene] Script variable {} for script {} is null and is getting disabled, make sure it's exposed. At {}", key, script_name.c_str(), __PRETTY_FUNCTION__);
+                        LOGWARNF("[Scene] Script variable {} for script {} is null and is getting disabled, make sure it's exposed.", key, script_name.c_str());
                 }
             } 
         }

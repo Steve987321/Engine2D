@@ -11,7 +11,7 @@
 
 namespace Toad
 {
-
+    
 using json = nlohmann::ordered_json;
 
 // Define string identifier for type X
@@ -25,7 +25,7 @@ inline std::string_view type_name()
     return "Unknown";
 }
 
-struct SerializedEnum
+struct ENGINE_API SerializedEnum
 {
     union Data
     {    
@@ -63,7 +63,7 @@ SERIALIZABLE_TYPE(std::string*)
 #define ReflectTypes SerializedEnum, bool*, int8_t*, int16_t*, int32_t*, int64_t*, float*, std::string*
 
 template<typename T>
-struct ReflectVarsOfT
+struct ENGINE_API ReflectVarsOfT
 {
     std::unordered_map<std::string, T> data;
 
@@ -100,28 +100,28 @@ struct ReflectVarsOfT
 };
 
 template<typename... Ts>
-struct ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
+struct ENGINE_API ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
 {
     template<typename T>
-    ENGINE_API ReflectVarsOfT<T>& Get()
+    ReflectVarsOfT<T>& Get()
     {
         return static_cast<ReflectVarsOfT<T>&>(*this);
     }
 
     template<typename T>
-    ENGINE_API const ReflectVarsOfT<T>& GetCRef() const 
+    const ReflectVarsOfT<T>& GetCRef() const 
     {
         return static_cast<const ReflectVarsOfT<T>&>(*this);
     }
 
     template<typename T>
-    ENGINE_API T& GetVar(const std::string& name)
+    T& GetVar(const std::string& name)
     {
         return Get<T>().data[name];
     }
 
     template<typename T>
-    ENGINE_API void Add(const std::string& name, T value)
+    void Add(const std::string& name, T value)
     {
         if (std::is_enum_v<T>)
             AddEnum(name, value);
@@ -130,33 +130,33 @@ struct ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
     }
 
     template<typename T>
-    ENGINE_API void Add(const ReflectVarsOfT<T>& vars)
+    void Add(const ReflectVarsOfT<T>& vars)
     {
         ReflectVarsOfT<T>::data.insert(vars.data.begin(), vars.data.end());
     }
 };
 
 template<typename... Ts>
-struct ReflectVars : ReflectVarsOfT<Ts>...
+struct ENGINE_API ReflectVars : ReflectVarsOfT<Ts>...
 {
     ReflectVars()
         : ReflectVarsOfT<Ts>()...
     {}
 
     template<typename T>
-    ENGINE_API ReflectVarsOfT<T>& Get()
+    ReflectVarsOfT<T>& Get()
     {
         return (ReflectVarsOfT<T>&)(*this);
     }
 
     template<typename T>
-    ENGINE_API T& GetVar(const std::string& name)
+    T& GetVar(const std::string& name)
     {
         return Get<T>().data[name];
     }
 
     template<typename T>
-    ENGINE_API void Add(const std::string& name, T value)
+    void Add(const std::string& name, T value)
     {
         if constexpr (std::is_enum_v<std::remove_pointer_t<T>>)
             AddEnum(name, value);
@@ -165,7 +165,7 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
     }
 
     template<typename T>
-    ENGINE_API void AddEnum(const std::string& name, T value)
+    void AddEnum(const std::string& name, T value)
     {
         SerializedEnum serialized;
         serialized.enum_name = magic_enum::enum_type_name<decltype(*value)>();
@@ -182,7 +182,7 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
     }
 
     template<typename T>
-    ENGINE_API ReflectVarsOfT<std::remove_pointer_t<T>> CopyVars() const 
+    ReflectVarsOfT<std::remove_pointer_t<T>> CopyVars() const 
     {
         ReflectVarsOfT<std::remove_pointer_t<T>> res;
         for (const auto& [n, v] : ReflectVarsOfT<T>::data)
@@ -200,19 +200,19 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
         return res;
     }
 
-    ENGINE_API ReflectVarsCopy<Ts...> Copy() const 
+    ReflectVarsCopy<Ts...> Copy() const 
     {
         ReflectVarsCopy<Ts...> res;
         (res.template Add<std::remove_pointer_t<Ts>>(CopyVars<Ts>()), ...);
         return res; 
     }
 
-    ENGINE_API void Clear()
+    void Clear()
     {
         (ReflectVarsOfT<Ts>::data.clear(), ...);
     }
 
-    ENGINE_API json Serialize() 
+    json Serialize() 
     {
         json res; 
         (res.push_back(Get<Ts>().Serialize()), ...);
@@ -220,7 +220,7 @@ struct ReflectVars : ReflectVarsOfT<Ts>...
     }
 
     // update overlapping vars 
-    ENGINE_API void Update(const ReflectVarsCopy<Ts...>& reflection)
+    void Update(const ReflectVarsCopy<Ts...>& reflection)
     {
         (std::for_each(Get<Ts>().data.begin(), Get<Ts>().data.end(),
             [&reflection](auto& e)
