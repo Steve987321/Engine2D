@@ -102,6 +102,9 @@ void AppWindow::AddViewport(const sf::VideoMode& mode, std::string_view title, u
 	window->setFramerateLimit(30);
 	bool res = ImGui::SFML::Init(*window, true);
 	LOGDEBUGF("[AddViewport] ImGui SFML Init result: {}", res);
+    if (!res)
+        return;
+
 	viewports.push_back(std::move(window));
 }
 
@@ -148,6 +151,14 @@ void AppWindow::UpdateViewports(const FEVENT_CALLBACK& ecallback)
 std::queue<std::filesystem::path>& AppWindow::GetDroppedFilesQueue()
 {
 	return dropped_files_queue;
+}
+
+void AppWindow::CleanUpViewports() 
+{
+    for (auto& v : viewports)
+        v->close();
+    
+    viewports.clear();
 }
 
 #ifdef _WIN32

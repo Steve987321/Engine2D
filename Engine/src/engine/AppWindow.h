@@ -28,6 +28,8 @@ public:
 
 	static std::queue<std::filesystem::path>& GetDroppedFilesQueue();
 
+    static void CleanUpViewports();
+
 #ifdef _WIN32
 	static inline LONG_PTR orginal_wnd_proc = NULL;
 	static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);

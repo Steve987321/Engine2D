@@ -350,13 +350,13 @@ void Render(AppWindow& window)
 
 	// imgui
 	render_ui(ImGui::GetCurrentContext());
+	AppWindow::UpdateViewports(event_callback);
 
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
 
 	ImGui::SFML::Render(window);
-	AppWindow::UpdateViewports(event_callback);
 #else
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	for (auto& obj : Scene::current_scene.objects_all)
@@ -535,6 +535,8 @@ void CleanUp()
 
 	LOGDEBUG("closing window");
 	GetWindow().close();
+
+    AppWindow::CleanUpViewports();
 }
 
 Camera& GetEditorCamera()
