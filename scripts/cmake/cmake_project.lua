@@ -104,7 +104,7 @@ function m.generate(prj)
 					if #mac_frameworks == 0 then 
 						_p("if(APPLE)")
 					end 
-
+                    -- findlibraries not wokring on game project? generate_game_project.lua (spaceship example) opengl is nil
 					local framework_name = string.sub(link, 1, pos - 1)
 					local framework_var_name = framework_name .. "_FRAMEWORK"
 					mac_frameworks[#mac_frameworks + 1] = framework_var_name
@@ -152,12 +152,16 @@ function m.generate(prj)
 		end
 		if uselinkgroups then
 		  -- System libraries don't depend on the project
+		  -- System libraries don't depend on  the project
 		  _p(1, '-Wl,--end-group')
 		  _p(1, '-Wl,--start-group')
 		end
+
+        local frameworks_it = 1
 		for i, link in ipairs(config.getlinks(cfg, "system", "fullpath")) do
 			if string.find(link, ".framework") ~= nil then 
-				_p(1, '$<$<CONFIG:%s>:${%s}>', cmake.cfgname(cfg), mac_frameworks[i])
+				_p(1, '$<$<CONFIG:%s>:${%s}>', cmake.cfgname(cfg), mac_frameworks[frameworks_it])
+                frameworks_it = frameworks_it + 1
 			else 
 				_p(1, '$<$<CONFIG:%s>:%s>', cmake.cfgname(cfg), link)
 			end 
