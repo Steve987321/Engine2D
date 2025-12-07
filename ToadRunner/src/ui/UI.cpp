@@ -181,7 +181,61 @@ void ui::engine_ui(ImGuiContext* ctx)
 	
 	if (ImGui::BeginMenuBar())
 	{
-		if (ImGui::BeginMenu("Engine"))
+        if (ImGui::BeginMenu("Project"))
+        {
+            if (ImGui::MenuItem("Create Project.."))
+			{
+				settings.engine_path = GetEngineDirectory().string();
+				LOGDEBUGF("Engine path: {}", settings.engine_path);
+				ImGui::PushOverrideID(project_creation_popup_id);
+				ImGui::OpenPopup("CreateProject");
+				ImGui::PopID();
+			}
+			if (ImGui::MenuItem("Load Project.."))
+			{
+				project_load_popup_select = true;
+
+				ImGui::PushOverrideID(project_load_popup_id);
+				ImGui::OpenPopup("LoadProject");
+				ImGui::PopID();
+			}
+			ImGui::BeginDisabled(project::current_project.name.empty());
+			if (ImGui::MenuItem("Update Project (Rerun Premake5 path=prjpath)"))
+			{
+				if (settings.engine_path.empty())
+					settings.engine_path = GetEngineDirectory().string();
+
+				if (!project::Update(settings, project::current_project.project_path))
+					LOGERRORF("Failed to update project {}", project::current_project.project_path);
+			}
+            if (ImGui::MenuItem("Update or Generate CMAKELISTS"))
+            {
+                if (settings.engine_path.empty())
+					settings.engine_path = GetEngineDirectory().string();
+                
+                settings.project_gen_type = project::PROJECT_TYPE::CMake;
+
+                if (!project::Update(settings, project::current_project.project_path, false))
+                    LOGERRORF("Failed to update project {}", project::current_project.project_path);
+            }
+			if (ImGui::MenuItem("Package.."))
+			{
+				ImGui::PushOverrideID(project_package_popup_id);
+				ImGui::OpenPopup("PackageProject");
+				ImGui::PopID();
+			}
+			if (ImGui::MenuItem("Project Settings.."))
+			{
+				ImGui::PushOverrideID(project_settings_popup_id);
+				ImGui::OpenPopup("ProjectSettings");
+				ImGui::PopID();
+			}
+			ImGui::EndDisabled();
+
+            ImGui::EndMenu();
+        }
+
+		if (ImGui::BeginMenu("Engine Test"))
 		{
 			if (ImGui::MenuItem("Test child window"))
 			{
@@ -196,49 +250,10 @@ void ui::engine_ui(ImGuiContext* ctx)
 				msg.type = MessageType::INFO;
 				message_queue.AddToMessageQueue(msg);
 			}
-			if (ImGui::MenuItem("Create Project.."))
-			{
-				settings.engine_path = GetEngineDirectory().string();
-				LOGDEBUGF("Engine path: {}", settings.engine_path);
-				ImGui::PushOverrideID(project_creation_popup_id);
-				ImGui::OpenPopup("CreateProject");
-				ImGui::PopID();
-
-			}
-			if (ImGui::MenuItem("Load Project.."))
-			{
-				project_load_popup_select = true;
-
-				ImGui::PushOverrideID(project_load_popup_id);
-				ImGui::OpenPopup("LoadProject");
-				ImGui::PopID();
-			}
-			ImGui::BeginDisabled(project::current_project.name.empty());
-			if (ImGui::MenuItem("Update Project"))
-			{
-				if (settings.engine_path.empty())
-					settings.engine_path = GetEngineDirectory().string();
-
-				if (!project::Update(settings, project::current_project.project_path))
-					LOGERRORF("Failed to update project {}", project::current_project.project_path);
-			}
-			if (ImGui::MenuItem("Package.."))
-			{
-				ImGui::PushOverrideID(project_package_popup_id);
-				ImGui::OpenPopup("PackageProject");
-				ImGui::PopID();
-			}
-			if (ImGui::MenuItem("Project Settings.."))
-			{
-				ImGui::PushOverrideID(project_settings_popup_id);
-				ImGui::OpenPopup("ProjectSettings");
-				ImGui::PopID();
-			}
-			ImGui::EndDisabled();
 			ImGui::EndMenu();
 		}
-		
-		if (ImGui::BeginMenu("Scripts"))
+				
+        if (ImGui::BeginMenu("Scripts"))
 		{
 			ImGui::BeginDisabled(project::current_project.name.empty());
 			if (ImGui::MenuItem("Reload"))
@@ -405,6 +420,8 @@ void ui::engine_ui(ImGuiContext* ctx)
                 }
                 ImGui::EndCombo();
             }
+
+            ImGui::Checkbox("Copy libs", &settings.use_own_libs);
 
 			ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.string().c_str());
 

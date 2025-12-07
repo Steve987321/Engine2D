@@ -22,7 +22,7 @@ files = [
     (("bin", "ReleaseNoEditor-windows-x86_64", "ToadRunner.exe"), ("bin",), "ToadRunnerNoEditor.exe"),
     (("bin", "DebugNoEditor-windows-x86_64", "ToadRunner.exe"), ("bin", "debug"), "ToadRunnerNoEditorDebug.exe"),
     (("bin", "DebugNoEditor-windows-x86_64", "Engine.dll"), ("bin", "debug"), ""),
-    (("ToadRunner", "src", "project", "generate_game_project.lua"), ("scripts",), ""),
+    (("scripts", "generate_game_project.lua"), ("scripts",), ""),
     (("ToadRunner", "imgui.ini"), ("",), ""),
     (("Game", "src", ), ("game_templates", "src"), ""),
     (("vendor", "bin", "premake5.exe"), ("bin",), ""),

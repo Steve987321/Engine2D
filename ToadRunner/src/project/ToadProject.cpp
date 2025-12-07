@@ -16,6 +16,18 @@ namespace project {
 	namespace fs = std::filesystem;
 	using json = nlohmann::ordered_json;
 
+    struct PremakeCmdArgs
+    {
+        std::string_view    premake;
+        PROJECT_TYPE        proj_type; 
+        fs::path            proj_file;
+        std::string_view    proj_name;
+        fs::path            engine_path;
+        fs::path            script_dir;
+        bool                use_src;
+        bool                use_own_libs;
+    };
+
 	// '/' to '\'
 	static void path_as_backslash(std::string& s)
 	{
@@ -35,6 +47,140 @@ namespace project {
 				c = '/';
 		}
 	}
+
+    static bool VerifySettingsPaths(const ProjectSettings& settings, CREATE_PROJECT_RES_INFO& ri)
+    {
+		if (!fs::is_directory(settings.project_path))
+		{
+			ri = 
+			{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Directory {} doesn't exist for project", settings.project_path)
+			};
+
+            return false;
+		}
+
+		if (!fs::is_empty(settings.project_path))
+		{
+#ifdef _WIN32
+            // change to warning, choose to add/overwrite directory contents
+            return
+            {
+                CREATE_PROJECT_RES::ERROR,
+                Toad::format_str("Project directory isn't empty {}", settings.project_path)
+            };
+#else
+            // on mac ignore .DS_STORE
+			for (const auto& entry : fs::directory_iterator(settings.project_path))
+			{
+				if (entry.is_directory())
+				{
+					// change to warning, choose to add/overwrite directory contents
+					ri =
+					{
+						CREATE_PROJECT_RES::ERROR,
+						Toad::format_str("Project directory isn't empty {}", settings.project_path)
+					};
+                    return false;
+				}
+			}
+#endif
+		}
+		
+        if (!fs::is_directory(settings.engine_path))
+		{
+			ri = 
+			{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Directory {} doesn't exist for engine path", settings.engine_path)
+			};
+
+            return false;
+		}
+
+        return true; 
+    }
+
+    static bool EnsureCmakeGenScripts(const fs::path& proj_path, const fs::path& engine_path, fs::path& scripts_dir)
+    {
+        if (fs::exists(proj_path / "scripts" / "cmake"))
+            scripts_dir = proj_path;
+        else if (fs::exists(engine_path / "scripts" / "cmake"))
+            scripts_dir = engine_path;
+        else 
+            return false;
+
+        // check require "scripts/cmake" line in premake5.lua
+
+        fs::path premake5_file_path = proj_path / "premake5.lua";
+
+        if (!fs::exists(premake5_file_path))
+            return false;
+        
+        std::ifstream premake5_file(premake5_file_path);
+
+        if (!premake5_file)
+            return false; 
+
+        std::string original_content((std::istreambuf_iterator<char>(premake5_file)), std::istreambuf_iterator<char>());
+
+        premake5_file.close();
+
+        std::string cmake_require_line = "require \"scripts/cmake\"";
+
+        if (original_content.find(cmake_require_line) != std::string::npos)
+            return true; 
+
+        std::string new_content = cmake_require_line + "\n\n" + original_content;
+
+        std::ofstream out_file(premake5_file_path, std::ios::trunc);
+        if (!out_file)
+            return false;
+
+        out_file << new_content;
+
+        return true;
+    }
+
+    // args will be modified depending on failure of running command 
+    // fail_count is used for failure on non windows systems, don't use 
+    static bool DoPremakeCommand(PremakeCmdArgs& args, int fail_count = 0)
+    {
+        std::string full_command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={}",
+            args.premake,
+			ProjectTypeAsStr(args.proj_type),
+			(args.proj_file.parent_path() / "premake5.lua").string(),
+			args.engine_path,
+			args.proj_name);
+
+        if (!args.script_dir.empty())
+            full_command += Toad::format_str(" --scripts={}", args.script_dir);      
+
+        if (args.use_src)
+            full_command += " --usesrc";
+
+        if (args.use_own_libs)
+            full_command += " --ownlibs";
+
+		LOGDEBUGF("Running command: {}", full_command);
+		int res = system(full_command.c_str());
+        
+        LOGDEBUGF("Command res: {}", res);
+
+#ifdef __APPLE__
+        // try using the full path
+        if (res == 32512 && fail_count < 3)
+        {
+            // for now its just this
+            args.premake = "/opt/homebrew/bin/premake5";
+            
+            return DoPremakeCommand(args, fail_count++);
+        }
+#endif 
+
+        return res == 0; 
+    }
 
 #ifdef _WIN32
 	bool OpenSln(const fs::path& path, const misc::Editor& editor)
@@ -70,16 +216,95 @@ namespace project {
 #endif
 
 	// very minimal checking 
-	extern bool VerifyEnginePathContents(const fs::path& path, CREATE_PROJECT_RES_INFO& ri);
+
+	static bool VerifyEnginePathContents(const fs::path& path, CREATE_PROJECT_RES_INFO& ri)
+	{
+#ifdef TOAD_DISTRO
+		// check for libs, script_api, vendor  
+		if (!fs::is_directory(path / "bin"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have libs/ folder in parent : {}", path)
+			};
+
+			return false;
+		}
+		if (!fs::is_directory(path / "libs"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have libs/ folder in parent : {}", path)
+			};
+
+			return false;
+		}
+		if (!fs::is_directory(path / "script_api"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have script_api/ folder in parent : {}", path)
+			};
+
+			return false;
+		}
+		if (!fs::is_directory(path / "game_templates"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have game_template/ folder in parent : {}", path)
+			};
+
+			return false;
+		}
+		if (!fs::is_directory(path / "scripts"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have scripts/ folder in parent : {}", path)
+			};
+
+		}
+#else
+		// check for runner and vendor (and engine/src/pch.h?) 
+		if (!fs::is_directory(path / "ToadRunner"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have ToadRunner/ folder in parent : {}", path)
+			};
+
+			return false;
+		}
+		if (!fs::is_directory(path / "vendor"))
+		{
+			ri = CREATE_PROJECT_RES_INFO{
+				CREATE_PROJECT_RES::PATH_NOT_EXIST,
+				Toad::format_str("Invalid engine path, doesn't have vendor/ folder in parent : {}", path)
+			};
+
+			return false;
+		}
+		std::string bin_output = "Release-" + std::string(PLATFORM_AS_STRING) + "-x86_64";
+		std::string lib_file = LIB_FILE_PREFIX + std::string("Engine") + LIB_FILE_EXT;
+		if (!fs::exists(path / "bin" / bin_output / lib_file))
+		{
+			LOGWARNF("[Project] No lib files build in Release, which is needed for project. Please build the engine in Release : {} Doesn't exist", path / "bin" / bin_output / lib_file);
+		}
+#endif
+		return true;
+	}
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings, const std::string& selected_template)
 	{
 		std::string project_path_forwardslash = settings.project_path.string();
 		std::string engine_path_forwardslash = settings.engine_path.string();
-		std::string proj_type_str = ProjectTypeAsStr(settings.project_gen_type);
 
 		path_as_forward_slash(engine_path_forwardslash);
 		path_as_forward_slash(project_path_forwardslash);
+
+        const fs::path& engine_path_fs = settings.engine_path;
+		const fs::path generate_game_lua = engine_path_fs / "scripts" / "generate_game_project.lua";
 
 		// #TODO: CHANGE 
 #ifdef _WIN32
@@ -89,68 +314,22 @@ namespace project {
 		std::string premake5 = "premake5";
 		const std::string& full_path_to_premake5 = premake5;
 #endif
-		const fs::path engine_path_fs = settings.engine_path;
-
+	
 #ifdef TOAD_DISTRO
-		const fs::path generate_game_lua = engine_path_fs / "scripts" / "generate_game_project.lua";
 		const fs::path bin_path = engine_path_fs.string() + "/bin/" + premake5;
 #else
-		const fs::path generate_game_lua = engine_path_fs / "ToadRunner" / "src" / "project" / "generate_game_project.lua";
 		const fs::path bin_path = engine_path_fs.string() + "/vendor/bin/" + premake5;
 #endif
 
-		// verify settings paths 
-		if (!fs::is_directory(settings.project_path))
-		{
-			return
-			{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Directory {} doesn't exist for project", settings.project_path)
-			};
-		}
-
-#ifdef _WIN32
-		if (!fs::is_empty(settings.project_path))
-		{
-			// change to warning, choose to add/overwrite directory contents
-			return
-			{
-				CREATE_PROJECT_RES::ERROR,
-				Toad::format_str("Project directory isn't empty {}", settings.project_path)
-			};
-		}
-#else
-		if (!fs::is_empty(settings.project_path))
-		{
-			for (const auto& entry : fs::directory_iterator(settings.project_path))
-			{
-				if (entry.is_directory())
-				{
-					// change to warning, choose to add/overwrite directory contents
-					return
-					{
-						CREATE_PROJECT_RES::ERROR,
-						Toad::format_str("Project directory isn't empty {}", settings.project_path)
-					};
-				}
-			}
-		}
-#endif
-		if (!fs::is_directory(settings.engine_path))
-		{
-			return
-			{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Directory {} doesn't exist for engine path", settings.engine_path)
-			};
-		}
-
 		CREATE_PROJECT_RES_INFO ri;
-		if (!VerifyEnginePathContents(settings.engine_path, ri))
-		{
-			return ri;
-		}
 
+        if (!VerifySettingsPaths(settings, ri))
+            return ri; 
+
+		if (!VerifyEnginePathContents(settings.engine_path, ri))
+			return ri;
+
+        // copy project premake file 
 		fs::copy_file(generate_game_lua, settings.project_path / "premake5.lua", fs::copy_options::overwrite_existing);
 		
 		// copy premake executable, only needed for windows
@@ -164,81 +343,11 @@ namespace project {
 		}
 #endif // _WIN32
 
-//#ifdef TOAD_DISTRO
-//		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={}", 
-//			project_path_forwardslash + '/' + premake5,
-//			proj_type_str, 
-//			project_path_forwardslash + "/premake5.lua",
-//			engine_path_forwardslash,
-//			settings.name);
-//#else
-//		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} --usesrc",
-//			project_path_forwardslash + '/' + premake5,
-//			proj_type_str,
-//			project_path_forwardslash + "/premake5.lua",
-//			engine_path_forwardslash,
-//			settings.name);
-//#endif
-
-#ifdef TOAD_DISTRO
-		std::string premake_use_src_arg = "";
-#else
-		std::string premake_use_src_arg = "--usesrc";
-#endif
-		std::string command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} {}",
-			full_path_to_premake5,
-			proj_type_str,
-			project_path_forwardslash + "/premake5.lua",
-			engine_path_forwardslash,
-			settings.name,
-			premake_use_src_arg);
-
-		LOGDEBUGF("{}", command.c_str());
-		int res = system(command.c_str());
-		LOGDEBUGF("result: {}", res);
-		if (res != 0)
-		{
-#ifdef __APPLE__
-            // try using the full path
-            if (res == 32512)
-            {
-                // for now its just this
-                premake5 = "/opt/homebrew/bin/premake5";
-                
-                // fix the command
-                command = Toad::format_str("{} {} --file={} --enginepath={} --projectname={} {}",
-                    full_path_to_premake5,
-                    proj_type_str,
-                    project_path_forwardslash + "/premake5.lua",
-                    engine_path_forwardslash,
-                    settings.name,
-                    premake_use_src_arg);
-                
-                int res = system(command.c_str());
-                LOGDEBUGF("result: {}", res);
-                if (res != 0)
-                {
-                    return
-                    {
-                        CREATE_PROJECT_RES::ERROR,
-                        Toad::format_str("Failed to execute command {}", command)
-                    };
-                }
-            }
-#else
-			return
-			{
-				CREATE_PROJECT_RES::ERROR,
-				Toad::format_str("Failed to execute command {}", command)
-			};
-#endif
-		}
-
 		// create/copy default game/engine files 
 
 		std::string game_path = project_path_forwardslash + "/" + settings.name + "_Game/src";
-//#ifdef TOAD_DISTRO
-		try
+
+        try
 		{
 			fs::create_directories(game_path);
 		}
@@ -247,7 +356,8 @@ namespace project {
 			std::cout << e.what() << std::endl;
 		}
 
-		// vendor is global for now 
+        if (settings.use_own_libs)
+        {
 #ifdef TOAD_DISTRO
 		fs::copy(engine_path_fs / "game_templates" / selected_template / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 		fs::copy(engine_path_fs / "game_templates" / "vendor", project_path_forwardslash + "/vendor", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
@@ -278,100 +388,46 @@ namespace project {
 					}
 				}
 			}
-		//fs::copy(engine_path_fs / "Game" / "vendor", project_path_forwardslash + "/vendor", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 #endif 
-//#else
-		//std::string runner_src_path = project_path_forwardslash + "/ToadRunner/src";
-		//std::string engine_src_path = project_path_forwardslash + "/Engine/src";
-		//std::string vendor_path = project_path_forwardslash + "/vendor";
-		//try
-		//{
-		//	fs::create_directory(engine_src_path);
-		//	fs::create_directory(runner_src_path);
-		//	fs::create_directory(game_path);
-		//	fs::create_directory(vendor_path);
-		//}
-		//catch(fs::filesystem_error e)
-		//{
-		//	std::cout << e.what() << std::endl;
-		//}
-
-		//// Engine
-		//for (const auto& entry : fs::recursive_directory_iterator(engine_path_fs)) {
-		//	if (entry.path().has_filename())
-		//		if (entry.path().filename().string() == "pch.h")
-		//		{
-		//			fs::copy_file(entry.path().string(), fs::path(engine_src_path + "/pch.h"));
-		//			break;
-		//		}
-		//}
-		//
-		//// Game
-		//fs::copy(engine_path_fs.string() + "/Game/src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
-
-		//// ToadRunner
-		//fs::copy(engine_path_fs.string() + "/ToadRunner/src", runner_src_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
-
-		//// Vendor
-		//for (const auto& entry : fs::recursive_directory_iterator(fs::path(engine_path_fs / "vendor")))
-		//{
-		//	// ignore /vendor/bin /examples /imgui/misc /docs /doc
-		//	auto strpath = entry.path().string();
-		//	if (strpath.find(Toad::format_str("vendor{}bin", PATH_SEPARATOR)) != std::string::npos ||
-		//		strpath.find("examples") != std::string::npos ||
-		//		strpath.find(Toad::format_str("imgui{}misc", PATH_SEPARATOR)) != std::string::npos ||
-		//		strpath.find("docs") != std::string::npos ||
-		//		strpath.find("doc") != std::string::npos
-		//		)
-		//	{
-		//		continue;
-		//	}
-
-		//	if (entry.is_directory())
-		//	{
-		//		// very weird?
-		//		auto pos = entry.path().string().find("vendor");
-		//		if (pos != std::string::npos)
-		//		{
-		//			std::string relative = entry.path().string().substr(pos);
-		//			fs::create_directories(settings.project_path + PATH_SEPARATOR + relative);
-		//		}
-
-		//	}
-		//	else if (entry.is_regular_file())
-		//	{
-		//		auto pos = entry.path().string().find("vendor");
-		//		if (pos != std::string::npos)
-		//		{
-		//			std::string relative = entry.path().string().substr(pos);
-		//			fs::copy_file(entry.path(), settings.project_path + PATH_SEPARATOR + relative, fs::copy_options::overwrite_existing);
-		//		}
-		//	}
-		//}
-//#endif
-		// run premake again for new files 
-
-		res = system(command.c_str());
-		if (res != 0)
-		{
-			return 
-			{
-				CREATE_PROJECT_RES::ERROR,
-				Toad::format_str("Failed to execute command {}", command)
-			};
-		}
+        }
 
 		// project file 
-		json data = json::object();
-		data["name"] = settings.name;
+        fs::path proj_file_path = fs::path(settings.project_path) / (settings.name + FILE_EXT_TOADPROJECT);
+		std::ofstream proj_file(proj_file_path);
 
-		std::ofstream engine_file(fs::path(settings.project_path) / (settings.name + FILE_EXT_TOADPROJECT));
-
-		if (engine_file.is_open())
+		if (proj_file.is_open())
 		{
-			engine_file << std::setw(4) << data;
-			engine_file.close();
+            json data = settings.ToJSON();
+
+			proj_file << std::setw(4) << data;
+			proj_file.close();
 		}
+
+        // generate project files after adding sources 
+
+        fs::path scripts_dir_arg;
+        if (settings.project_gen_type == PROJECT_TYPE::CMake)
+        {
+            if (!EnsureCmakeGenScripts(settings.project_path, settings.engine_path, scripts_dir_arg))
+                return {
+                    CREATE_PROJECT_RES::ERROR,
+                    "Failed to verify cmake generator scripts"
+                };
+        }
+
+        PremakeCmdArgs args;
+        args.premake = premake5;
+        args.proj_type = settings.project_gen_type;
+        args.proj_file = proj_file_path;
+        args.proj_name = settings.name;
+        args.engine_path = settings.engine_path;
+        args.script_dir = scripts_dir_arg;
+        args.use_own_libs = settings.use_own_libs;
+
+#ifndef TOAD_DISTRO 
+        args.use_src = true; 
+#endif 
+        DoPremakeCommand(args);
 
 		auto load_proj_res = Load(settings.project_path.string());
 		if (load_proj_res.res != LOAD_PROJECT_RES::OK)
@@ -396,21 +452,14 @@ namespace project {
 					(Toad::format_str("Failed to create {} instance", misc::current_editor.name))
 				};
 			}
-#endif
-			return
-			{
-				CREATE_PROJECT_RES::OK,
-				Toad::format_str("Created project {}", settings.name)
-			};
-		}
-		else
-		{
-			return 
-			{
-				CREATE_PROJECT_RES::OK,
-				Toad::format_str("Created project {}", settings.name)
-			};
-		}
+#endif	
+        }
+
+        return
+        {
+            CREATE_PROJECT_RES::OK,
+            Toad::format_str("Created project {}", settings.name)
+        };
 	}
 
 	// sets current_project 
@@ -440,37 +489,11 @@ namespace project {
 				};
 			}
 
-			std::ifstream project_file(path);
-
-			if (project_file.is_open())
-			{
-				try
-				{
-					json data = json::parse(project_file);
-
-					settings.name = data["name"];
-                    settings.project_path = fs::path(path).string();
-					
-					GET_JSON_ELEMENT(settings.editor_cam_pos.x, data, "editor_cam_posx");
-					GET_JSON_ELEMENT(settings.editor_cam_pos.y, data, "editor_cam_posy");
-					GET_JSON_ELEMENT(settings.editor_cam_size.x, data, "editor_cam_sizex");
-					GET_JSON_ELEMENT(settings.editor_cam_size.y, data, "editor_cam_sizex");					
-				}
-				catch(json::parse_error& e)
-				{
-					project_file.close();
-
-					current_project = settings;
-
-					return
-					{
-						LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
-						Toad::format_str("Parse error at {}, {}. While parsing {}", e.byte, e.what(), path)
-					};
-				}
-
-				project_file.close();
-			}
+			auto ri = settings.Deserialize(path);
+            if (ri.res != LOAD_PROJECT_RES::OK)
+            {
+                return ri;
+            }
 		}
 
 		if (fs::is_directory(path))
@@ -583,7 +606,7 @@ namespace project {
 #endif
 	}
 
-    bool Update(const ProjectSettings& settings, const fs::path& path)
+    bool Update(const ProjectSettings& settings, const fs::path& path, bool detect_proj_type)
 	{
 		if (!fs::exists(path))
 		{
@@ -599,9 +622,9 @@ namespace project {
 
 		fs::path project_file = path;
 
-		if (fs::is_directory(path))
+		if (fs::is_directory(project_file))
 		{
-			for (const auto& entry : fs::directory_iterator(path))
+			for (const auto& entry : fs::directory_iterator(project_file))
 			{
 				if (entry.path().extension() == FILE_EXT_TOADPROJECT)
 				{
@@ -656,64 +679,44 @@ namespace project {
 		premake5 = "premake5";
 #endif
 
-		PROJECT_TYPE proj_type = DetectProjectType(project_file.parent_path());
+        PROJECT_TYPE proj_type;
+
+        if (detect_proj_type)
+		    proj_type = DetectProjectType(project_file.parent_path());
+        else 
+            proj_type = settings.project_gen_type;
+
+        fs::path scripts_dir_arg;
+
+        if (proj_type == PROJECT_TYPE::CMake)
+        {
+            if (!EnsureCmakeGenScripts(project_file.parent_path(), settings.engine_path, scripts_dir_arg))
+            {
+                LOGERROR("[Project] Cmake generator script can't be verified, Continuing updating project files...");
+
+                // detect anyways 
+		        proj_type = DetectProjectType(project_file.parent_path());
+            }
+        }
+
 		// #TODO: should probably add an extra option to generate chosen project type instead of automatically deciding
 
 		// #TODO should it use the (updated) one in the engine directory or the one in the game directory which may be outdated ?
         
-#ifdef TOAD_DISTRO
-		std::string full_command = Toad::format_str(
-			"{} {} --file={} --enginepath={} --projectname={}",
-			premake5,
-			ProjectTypeAsStr(proj_type),
-			(project_file.parent_path() / "premake5.lua").string(),
-			settings.engine_path,
-			project_name);
-#else
-		std::string full_command = Toad::format_str(
-			"{} {} --file={} --enginepath={} --projectname={} --usesrc",
-			premake5,
-			ProjectTypeAsStr(proj_type),
-			(project_file.parent_path() / "premake5.lua").string(),
-			settings.engine_path,
-			project_name);
-#endif
-		LOGDEBUGF("Running command: {}", full_command);
-		int res = system(full_command.c_str());
-        
-#ifdef __APPLE__
-        // try using the full path
-        if (res == 32512)
-        {
-            // for now its just this
-            premake5 = "/opt/homebrew/bin/premake5";
-            
-            // fix the command
-#ifdef TOAD_DISTRO
-        full_command = Toad::format_str(
-            "{} {} --file={} --enginepath={} --projectname={}",
-            premake5,
-            ProjectTypeAsStr(proj_type),
-            (project_file.parent_path() / "premake5.lua").string(),
-            settings.engine_path,
-            project_name);
-#else
-       full_command = Toad::format_str(
-            "{} {} --file={} --enginepath={} --projectname={} --usesrc",
-            premake5,
-            ProjectTypeAsStr(proj_type),
-            (project_file.parent_path() / "premake5.lua").string(),
-            settings.engine_path,
-            project_name);
-#endif
-            int res = system(full_command.c_str());
-            LOGDEBUGF("result: {}", res);
-            if (res != 0)
-            {
-                LOGDEBUGF("Failed to execute command {}", full_command);
-            }
-        }
-#endif
+        PremakeCmdArgs args;
+        args.premake = premake5;
+        args.proj_type = proj_type;
+        args.proj_file = project_file;
+        args.proj_name = project_name;
+        args.engine_path = settings.engine_path;
+        args.script_dir = scripts_dir_arg;
+        args.use_own_libs = settings.use_own_libs;
+
+#ifndef TOAD_DISTRO 
+        args.use_src = true; 
+#endif 
+        return DoPremakeCommand(args);
+
 		return true;
 	}
 
@@ -799,104 +802,80 @@ namespace project {
         switch(r){
             case PROJECT_TYPE::VS_2022:
                 return "vs2022";
-                break;
             case PROJECT_TYPE::VS_2019:
                 return "vs2019";
-                break;
             case PROJECT_TYPE::VS_2015:
                 return "vs2015";
-                break;
             case PROJECT_TYPE::Makefile:
                 return "gmake2";
-                break;
             case PROJECT_TYPE::Codelite:
                 return "codelite";
-                break;
             case PROJECT_TYPE::Xcode:
                 return "xcode4";
-                break;
+            case PROJECT_TYPE::CMake:
+                return "cmake";
             default:
                 return "invalid";
-                break;
         }
     }
 
-	bool VerifyEnginePathContents(const fs::path& path, CREATE_PROJECT_RES_INFO& ri)
-	{
-#ifdef TOAD_DISTRO
-		// check for libs, script_api, vendor  
-		if (!fs::is_directory(path / "bin"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have libs/ folder in parent : {}", path)
-			};
+    nlohmann::json ProjectSettings::ToJSON() const 
+    {
+        nlohmann::json data;
+        data["name"] = name;
+        data["editor_cam_sizex"] = editor_cam_size.x;
+        data["editor_cam_sizey"] = editor_cam_size.y;	
+        data["editor_cam_posx"] = editor_cam_pos.x;
+        data["editor_cam_posy"] = editor_cam_pos.y;
+        data["use_own_libs"] = use_own_libs;
+        return data;
+    }
 
-			return false;
-		}
-		if (!fs::is_directory(path / "libs"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have libs/ folder in parent : {}", path)
-			};
+    LOAD_PROJECT_RES_INFO ProjectSettings::Deserialize(const std::filesystem::path &file) 
+    {
+        std::ifstream project_file(file);
 
-			return false;
-		}
-		if (!fs::is_directory(path / "script_api"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have script_api/ folder in parent : {}", path)
-			};
+        if (!project_file.is_open())
+            return
+            {
+                LOAD_PROJECT_RES::FAILED_TO_OPEN,
+                Toad::format_str("Failed to open project file: {}", file),
+                *this
+            };
 
-			return false;
-		}
-		if (!fs::is_directory(path / "game_templates"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have game_template/ folder in parent : {}", path)
-			};
+        try
+        {
+            json data = json::parse(project_file);
 
-			return false;
-		}
-		if (!fs::is_directory(path / "scripts"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have scripts/ folder in parent : {}", path)
-			};
+            project_path = fs::path(file).string();
+            
+            GET_JSON_ELEMENT(name, data, "name");
+            GET_JSON_ELEMENT(editor_cam_pos.x, data, "editor_cam_posx");
+            GET_JSON_ELEMENT(editor_cam_pos.y, data, "editor_cam_posy");
+            GET_JSON_ELEMENT(editor_cam_size.x, data, "editor_cam_sizex");
+            GET_JSON_ELEMENT(editor_cam_size.y, data, "editor_cam_sizex");		
+            GET_JSON_ELEMENT(use_own_libs, data, "use_own_libs");
+        }
+        catch(json::parse_error& e)
+        {
+            project_file.close();
 
-		}
-#else
-		// check for runner and vendor (and engine/src/pch.h?) 
-		if (!fs::is_directory(path / "ToadRunner"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have ToadRunner/ folder in parent : {}", path)
-			};
+            return
+            {
+                LOAD_PROJECT_RES::INVALID_PROJECT_FILE,
+                Toad::format_str("Parse error at {}, {}. While parsing {}", e.byte, e.what(), file),
+                *this
+            };
+        }
 
-			return false;
-		}
-		if (!fs::is_directory(path / "vendor"))
-		{
-			ri = CREATE_PROJECT_RES_INFO{
-				CREATE_PROJECT_RES::PATH_NOT_EXIST,
-				Toad::format_str("Invalid engine path, doesn't have vendor/ folder in parent : {}", path)
-			};
+        project_file.close();
 
-			return false;
-		}
-		std::string bin_output = "Release-" + std::string(PLATFORM_AS_STRING) + "-x86_64";
-		std::string lib_file = LIB_FILE_PREFIX + std::string("Engine") + LIB_FILE_EXT;
-		if (!fs::exists(path / "bin" / bin_output / lib_file))
-		{
-			LOGWARNF("[Project] No lib files build in Release, which is needed for project. Please build the engine in Release : {} Doesn't exist", path / "bin" / bin_output / lib_file);
-		}
-#endif
-		return true;
-	}
+        return     
+        {
+            LOAD_PROJECT_RES::OK,
+            "OK",
+            *this
+        };
+    }
 
-}
+} 

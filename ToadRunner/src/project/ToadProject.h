@@ -63,17 +63,13 @@ namespace project {
         VS_2019,
         VS_2015,
         Makefile,
+        CMake,
         Codelite,
         Xcode,
     };
 
-	enum class LOAD_PROJECT_RES
-	{
-		OK,
-		DOESNT_EXIST,
-		INVALID_PROJECT_FILE,
-	};
-	
+    struct LOAD_PROJECT_RES_INFO;
+
 	struct ProjectSettings
 	{
 		std::string name;
@@ -83,18 +79,26 @@ namespace project {
 		PROJECT_TYPE project_gen_type;
 		Toad::Vec2f editor_cam_size = {1280, 720};
 		Toad::Vec2f editor_cam_pos = {0, 0};
+        bool use_own_libs = false;
 
-		nlohmann::json to_json() const
-		{
-			nlohmann::json data;
-			data["name"] = name;
-			data["project_path"] = project_path;
-			data["editor_cam_sizex"] = editor_cam_size.x;
-			data["editor_cam_sizey"] = editor_cam_size.y;	
-			data["editor_cam_posx"] = editor_cam_pos.x;
-			data["editor_cam_posy"] = editor_cam_pos.y;
-			return data;
-		}
+		nlohmann::json ToJSON() const;
+        LOAD_PROJECT_RES_INFO Deserialize(const std::filesystem::path& file);
+	};
+
+
+	enum class LOAD_PROJECT_RES
+	{
+		OK,
+		DOESNT_EXIST,
+        FAILED_TO_OPEN,
+		INVALID_PROJECT_FILE,
+	};
+
+    struct LOAD_PROJECT_RES_INFO 
+	{
+		LOAD_PROJECT_RES res;
+		std::string description;
+		ProjectSettings settings;
 	};
 
 	// little information about the project template
@@ -111,13 +115,6 @@ namespace project {
 		sf::Texture image_preview;
 
 		bool image_preview_loaded = false;
-	};
-
-	struct LOAD_PROJECT_RES_INFO 
-	{
-		LOAD_PROJECT_RES res;
-		std::string description;
-		ProjectSettings settings;
 	};
 
 	// active project 
@@ -138,7 +135,7 @@ namespace project {
 	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
 
 	// rerun premake path=projectpath
-	bool Update(const ProjectSettings& settings, const std::filesystem::path& path);
+	bool Update(const ProjectSettings& settings, const std::filesystem::path& path, bool detect_proj_type = true);
 
 	std::vector<ProjectTemplate> GetAvailableTemplates(const std::filesystem::path& path);
 }
