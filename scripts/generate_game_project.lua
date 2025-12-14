@@ -22,6 +22,10 @@ if not _OPTIONS["enginepath"] then
 error("Error: The --enginepath argument is required.")
 end
 
+if _ACTION == "cmake" then
+require "scripts/cmake"
+end 
+
 output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 engine_path = _OPTIONS["enginepath"]
 game_project_name = _OPTIONS["projectname"] .. "_Game"
