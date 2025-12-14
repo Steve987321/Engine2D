@@ -12,6 +12,8 @@
       "ToadRunner/src/project/Misc.cpp"
       "ToadRunner/src/project/Misc.h"
       "ToadRunner/src/project/NewScriptClass.h"
+      "ToadRunner/src/project/Package.cpp"
+      "ToadRunner/src/project/Package.h"
       "ToadRunner/src/project/ToadProject.cpp"
       "ToadRunner/src/project/ToadProject.h"
       "ToadRunner/src/ui/AnimationEditor.cpp"

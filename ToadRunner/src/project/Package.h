@@ -2,6 +2,11 @@
 
 #include "EngineCore.h"
 
+namespace project
+{
+    struct ProjectSettings;
+}
+
 namespace Toad
 {
 
@@ -21,7 +26,7 @@ public:
 	
 	// When distributing on mac make sure the required Frameworks are also available on the users computer 
 	// manually add frameworks to the rpath Library/Frameworks or ../Frameworks
-	bool CreatePackage(const CreatePackageParams& params);
+	bool CreatePackage(const project::ProjectSettings& settings, const CreatePackageParams& params);
 
 private:
 	bool RunBuildSystemWithArgs(const std::filesystem::path& build_program, std::string_view args);

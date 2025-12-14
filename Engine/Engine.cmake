@@ -65,8 +65,6 @@
         "Engine/src/engine/systems/Time.h"
         "Engine/src/engine/systems/Timer.cpp"
         "Engine/src/engine/systems/Timer.h"
-          "Engine/src/engine/systems/build/Package.cpp"
-          "Engine/src/engine/systems/build/Package.h"
         "Engine/src/engine/utils/BezierCurve.cpp"
         "Engine/src/engine/utils/BezierCurve.h"
         "Engine/src/engine/utils/DLib.cpp"

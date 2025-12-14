@@ -4,6 +4,7 @@
 
 #include "Package.h"
 
+#include "project/ToadProject.h"
 #include "engine/Engine.h"
 
 namespace Toad
@@ -19,7 +20,7 @@ namespace Toad
 	{
 	}
 
-	bool Package::CreatePackage(const CreatePackageParams& params)
+	bool Package::CreatePackage(const project::ProjectSettings& settings, const CreatePackageParams& params)
 	{
 		const std::string build_config_arg = params.is_debug ? "Debug" : "Release";
 		const std::string build_config_arg_lower = params.is_debug ? "debug" : "release";
@@ -60,6 +61,9 @@ namespace Toad
 
 		fs::path project_file_path;
 #ifdef _WIN32
+        if (!project::Update(settings))
+            return false;
+        
 		// look for sln 
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
@@ -76,6 +80,11 @@ namespace Toad
 			return false;
 		}
 #else
+        project::ProjectSettings temp_settings = settings;
+        temp_settings.project_gen_type = project::PROJECT_TYPE::Makefile;
+        if (!project::Update(temp_settings, false))
+            return false;
+
 		// look for makefile
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
@@ -175,7 +184,7 @@ namespace Toad
 			return false;
 		}
 #else 
-		int build_res = system(Toad::format_str("cd {} && make config={}", project_file_path.parent_path(), build_config_arg_lower).c_str());
+		int build_res = system(Toad::format_str("cd {} && make -j config={}", project_file_path.parent_path(), build_config_arg_lower).c_str());
 
 		if (build_res != 0)
 		{
@@ -364,6 +373,8 @@ namespace Toad
 			}
 		}
 #endif 
+
+        LOGDEBUG("Done packaging");
 
 		return true;
 	}
