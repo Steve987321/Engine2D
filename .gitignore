@@ -17,9 +17,6 @@ Makefile
 ToadRunner/*.TSCENE
 scripts/output
 
-# ImGui
-imgui.ini
-
 # Cmake build
 build/
 
