@@ -50,6 +50,14 @@ if _OPTIONS["usesrc"] then
             engine_path .. "/bin/Release-%{cfg.system}-x86_64",
             engine_path .. "/vendor/SFML-3.0.0/lib",
         }
+        sources = 
+        {
+            "%{prj.name}/src/**.cpp",
+            "%{prj.name}/src/**.h",
+            "vendor/imgui/**.cpp",
+            "vendor/implot/**.cpp",
+            "vendor/sfml-imgui/imgui-SFML.cpp",
+        }
     else 
         -- use paths from the engine 
         include_dirs = 
@@ -69,10 +77,19 @@ if _OPTIONS["usesrc"] then
             engine_path .. "/bin/Release-%{cfg.system}-x86_64",
             "vendor/SFML-3.0.0/lib",
         }
+        sources = 
+        {
+            "%{prj.name}/src/**.cpp",
+            "%{prj.name}/src/**.h",
+            engine_path .. "/vendor/imgui/**.cpp",
+            engine_path .. "/vendor/sfml-imgui/imgui-SFML.cpp",
+            engine_path .. "/vendor/implot/**.cpp",
+        }
     end 
 else -- distro 
     if _OPTIONS["ownlibs"] then
-        include_dirs{
+        include_dirs = 
+        {
             engine_path .. "/script_api",
             engine_path .. "/game_templates/vendor/magic_enum/include",
             "vendor/imgui",
@@ -82,12 +99,22 @@ else -- distro
             "%{prj.name}/src",
             "%{prj.name}/src/assets",
         }
-        lib_dirs{
+        lib_dirs = 
+        {
             engine_path .. "/libs",
             "vendor/SFML-3.0.0/lib",
         }
+        sources = 
+        {
+            "%{prj.name}/src/**.cpp",
+            "%{prj.name}/src/**.h",
+            "vendor/imgui/**.cpp",
+            "vendor/sfml-imgui/imgui-SFML.cpp",
+            "vendor/implot/**.cpp",
+        }
     else 
-        include_dirs{
+        include_dirs = 
+        {
             engine_path .. "/script_api",
             engine_path .. "/game_templates/vendor",
             engine_path .. "/game_templates/vendor/magic_enum/include",
@@ -98,9 +125,18 @@ else -- distro
             "%{prj.name}/src",
             "%{prj.name}/src/assets",
         }
-        lib_dirs{
+        lib_dirs = 
+        {
             engine_path .. "/libs",
             engine_path .. "/game_templates/vendor/SFML-3.0.0/lib",
+        }
+        sources = 
+        {
+            "%{prj.name}/src/**.cpp",
+            "%{prj.name}/src/**.h",
+            engine_path .. "/game_templates/vendor/imgui/**.cpp",
+            engine_path .. "/game_templates/vendor/sfml-imgui/imgui-SFML.cpp",
+            engine_path .. "/game_templates/vendor/implot/**.cpp",
         }
     end 
 end
@@ -127,11 +163,7 @@ project(game_project_name)
     objdir("bin-intermediate/" ..output_dir .. "/")
 
     files {
-        "%{prj.name}/src/**.cpp",
-        "%{prj.name}/src/**.h",
-        "vendor/imgui/**.cpp",
-        "vendor/implot/**.cpp",
-        "vendor/sfml-imgui/imgui-SFML.cpp",
+        sources
     }
 
     removefiles {

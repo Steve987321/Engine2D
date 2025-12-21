@@ -288,8 +288,16 @@ namespace Toad
 		}
 
 #ifdef TOAD_DISTRO
-		fs::path bin = params.is_debug ? proj_engine_dir / "bin" / "debug" : proj_engine_dir / "bin";
-		fs::path runner = params.is_debug ? "ToadRunnerNoEditorDebug.exe" : "ToadRunnerNoEditor.exe";
+        
+        bool copy_debug_sfml = params.build_cfg == Package::BuildConfig::DEBUG;
+        fs::path sfml_bin_dir;
+        if (copy_debug_sfml)
+            sfml_bin_dir = proj_engine_dir / "bin" / "debug";
+        else 
+            sfml_bin_dir = proj_engine_dir / "bin";
+
+		fs::path bin = proj_engine_dir / "bin" ;
+		std::string runner = Toad::format_str("ToadRunnerNoEditor{}{}", build_config_arg, EXE_FILE_EXT);
 
 		// others in bin (Engine) 
 		for (const auto& entry : fs::directory_iterator(proj_engine_dir / "bin"))
@@ -301,7 +309,7 @@ namespace Toad
 		}
 
 		// sfml 
-		for (const auto& entry : fs::directory_iterator(params.is_debug ? bin : proj_engine_dir))
+		for (const auto& entry : fs::directory_iterator(sfml_bin_dir))
 		{
 			if (entry.path().string().find("sfml") != std::string::npos && entry.path().extension() == ".dll")
 			{
@@ -314,7 +322,7 @@ namespace Toad
 		try {
 			json data = json::parse(proj_file_f);
 			std::string gamename = data["name"];
-			fs::copy_file(bin / runner, out_dir / (gamename + ".exe"));
+			fs::copy_file(bin / runner, out_dir / (gamename + EXE_FILE_EXT));
 		}
 		catch (json::parse_error& e)
 		{
