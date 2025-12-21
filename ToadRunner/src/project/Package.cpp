@@ -248,6 +248,12 @@ namespace Toad
 			if (entry.path().extension() == LIB_FILE_EXT)
 			{
 				fs::copy_file(entry.path(), out_dir / entry.path().filename(), fs::copy_options::overwrite_existing);
+
+            #ifdef __APPLE__
+                // on mac we need to adjust the dependency reference of libEngine.dylib to be relative
+                std::string command = Toad::format_str("cd {} && install_name_tool -change /usr/local/lib/libEngine.dylib @loader_path/libEngine.dylib {}", out_dir.string(), entry.path().string());
+                system(command.c_str());
+            #endif 
 			}
 		}
 

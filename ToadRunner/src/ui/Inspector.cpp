@@ -824,7 +824,7 @@ void object_inspector(Toad::Object*& selected_obj, const ui::GameAssetsBrowser& 
 
 				static bool once = false;
 
-				script->OnEditorUI(selected_obj, ImGui::GetCurrentContext());
+				script->OnEditorUI(selected_obj, GetUIContext());
 
 				ImGui::TreePop();
 			}

@@ -135,7 +135,9 @@ namespace project {
 	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
 
 	// rerun premake path=projectpath
-	bool Update(const ProjectSettings& settings, const std::filesystem::path& path, bool detect_proj_type = true);
+	bool Update(const ProjectSettings& settings, bool detect_proj_type = true);
+
+    bool ResetPremakeFile(const ProjectSettings& settings);
 
 	std::vector<ProjectTemplate> GetAvailableTemplates(const std::filesystem::path& path);
 }

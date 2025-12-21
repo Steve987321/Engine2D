@@ -5,6 +5,7 @@
 #include "Misc.h"
 
 #include "ui/GameAssetsBrowser.h"
+#include "ui/MessageQueue.h"
 
 #include "nlohmann/json.hpp"
 
@@ -606,11 +607,11 @@ namespace project {
 #endif
 	}
 
-    bool Update(const ProjectSettings& settings, const fs::path& path, bool detect_proj_type)
+    bool Update(const ProjectSettings& settings, bool detect_proj_type)
 	{
-		if (!fs::exists(path))
+		if (!fs::exists(settings.project_path))
 		{
-			LOGERRORF("[Project] {} doesn't exist", path);
+			LOGERRORF("[Project] {} doesn't exist", settings.project_path);
 			return false;
 		}
 
@@ -620,7 +621,7 @@ namespace project {
 			return false;
 		}
 
-		fs::path project_file = path;
+		fs::path project_file = settings.project_path;
 
 		if (fs::is_directory(project_file))
 		{
@@ -636,7 +637,7 @@ namespace project {
 
 		if (fs::is_directory(project_file))
 		{
-			LOGERRORF("[Project] Can't find project file in {}", path);
+			LOGERRORF("[Project] Can't find project file in {}", settings.project_path);
 			return false;
 		}
 
@@ -644,7 +645,7 @@ namespace project {
 
 		if (!project_file_contents)
 		{
-			LOGERRORF("[Project] Can't read {}", path);
+			LOGERRORF("[Project] Can't read {}", settings.project_path);
 			return false;
 		}
 
@@ -653,7 +654,7 @@ namespace project {
 			data = json::parse(project_file_contents);
 		}
 		catch (json::parse_error& e) {
-			LOGERRORF("[Project] Failed to parse {}, {}", path, e.what());
+			LOGERRORF("[Project] Failed to parse {}, {}", settings.project_path, e.what());
 			return false;
 		}
 		
@@ -720,7 +721,26 @@ namespace project {
 		return true;
 	}
 
-	std::vector<ProjectTemplate> GetAvailableTemplates(const fs::path& engine_path)
+    bool ResetPremakeFile(const ProjectSettings &settings) 
+    {
+        using namespace Toad; 
+
+        if (!fs::exists(settings.project_path / "premake5.lua"))
+        {
+            MessageQueueMessage msg;
+            msg.category = MessageCategory::OTHER;
+            msg.type = MessageType::ERROR;
+            msg.msg = Toad::format_str("No premake5.lua found in: '{}'", settings.project_path);
+            MessageQueue::AddToMessageQueue(msg);
+            return false;
+        }
+
+        // #TODO Finsih
+        
+        return true;
+    }
+
+    std::vector<ProjectTemplate> GetAvailableTemplates(const fs::path& engine_path)
 	{
 		std::vector<ProjectTemplate> res;
 

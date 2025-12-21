@@ -168,6 +168,20 @@ void GameAssetsBrowser::Show()
 			{
 				refresh = true;
 			}
+            ImGui::SameLine();
+            if (ImGui::Button("Make"))
+            {
+                // implement building from the editor 
+            }   
+            ImGui::SameLine();
+            if (ImGui::Button("Code"))
+            {
+                system(Toad::format_str("code {}", project::current_project.project_path.parent_path()).c_str());
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("code %s", project::current_project.project_path.parent_path().c_str());
+            }
 
 			static fs::path selected;
 			static bool renaming = false;
@@ -368,7 +382,7 @@ void GameAssetsBrowser::Show()
 								break;
 							}
 #else 
-							if (!project::Update(project::current_project, project::current_project.project_path))
+							if (!project::Update(project::current_project))
 							{
 								LOGERROR("Failed to update project after adding scripts");
 							}
@@ -678,7 +692,7 @@ bool GameAssetsBrowser::CreateCPPScript(std::string_view script_name)
 		return false;
 	}
 #else 
-	if (!project::Update(project::current_project, project::current_project.project_path))
+	if (!project::Update(project::current_project))
 	{
 		LOGERROR("Failed to update project after adding scripts");
 		return false;

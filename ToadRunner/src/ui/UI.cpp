@@ -22,12 +22,12 @@
 #include "ui/SceneHierarchy.h"
 #include "ui/Viewport.h"
 
-#include "engine/systems/build/Package.h"
 #include "engine/utils/Helpers.h"
 #include "engine/systems/Animation.h"
 #include "engine/Types.h"
 #include "engine/PlaySession.h"
 
+#include "project/Package.h"
 #include "project/ToadProject.h"
 #include "SceneHistory.h"
 #include "utils/FileDialog.h"
@@ -38,7 +38,6 @@ using namespace Toad;
 
 static SceneHistory scene_history{};
 static ui::GameAssetsBrowser* browser = nullptr;
-static MessageQueue message_queue{ MessageQueuePlacement::RIGHT };
 
 static bool is_scene_loaded = false;
 static bool load_ini = true; 
@@ -114,7 +113,7 @@ static void ScriptReload()
 	msg.show_time_ms = 2000;
 	msg.type = MessageType::INFO;
 
-	message_queue.AddToMessageQueue(msg);
+	MessageQueue::AddToMessageQueue(msg);
 
 	should_reload = false;
 }
@@ -177,7 +176,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	ImGui::Begin("DockSpace", nullptr, dock_window_flags);
 	ImGui::DockSpace(ImGui::GetID("DockSpace"));
 
-	message_queue.Show();
+	MessageQueue::Show();
 	
 	if (ImGui::BeginMenuBar())
 	{
@@ -205,7 +204,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (settings.engine_path.empty())
 					settings.engine_path = GetEngineDirectory().string();
 
-				if (!project::Update(settings, project::current_project.project_path))
+				if (!project::Update(settings))
 					LOGERRORF("Failed to update project {}", project::current_project.project_path);
 			}
             if (ImGui::MenuItem("Update or Generate CMAKELISTS"))
@@ -215,9 +214,13 @@ void ui::engine_ui(ImGuiContext* ctx)
                 
                 settings.project_gen_type = project::PROJECT_TYPE::CMake;
 
-                if (!project::Update(settings, project::current_project.project_path, false))
+                if (!project::Update(settings, false))
                     LOGERRORF("Failed to update project {}", project::current_project.project_path);
             }
+            if(ImGui::MenuItem("Reset premake file"))
+            {
+
+            }                
 			if (ImGui::MenuItem("Package.."))
 			{
 				ImGui::PushOverrideID(project_package_popup_id);
@@ -248,8 +251,16 @@ void ui::engine_ui(ImGuiContext* ctx)
 				msg.msg = "Successfully initialized engine";
 				msg.show_time_ms = 2000.f;
 				msg.type = MessageType::INFO;
-				message_queue.AddToMessageQueue(msg);
+				MessageQueue::AddToMessageQueue(msg);
 			}
+            if(ImGui::MenuItem("Test button 2"))
+            {
+                MessageQueueMessage msg;
+                msg.category = MessageCategory::OTHER;
+                msg.type = MessageType::ERROR;
+                msg.msg = Toad::format_str("No premake5.lua found in: '{}'", settings.project_path);
+                MessageQueue::AddToMessageQueue(msg);
+            }
 			ImGui::EndMenu();
 		}
 				
@@ -400,7 +411,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::InputText("name", name, 30))
 				settings.name = name;
 
-            const char* project_types[] = {"Visual Studio 2022", "Visual Studio 2019", "Visual Studio 2015", "Makefile", "Codelite", "Xcode"};
+            const char* project_types[] = {"Visual Studio 2022", "Visual Studio 2019", "Visual Studio 2015", "Makefile", "Codelite", "Xcode", "CMake"};
 
 #ifdef _WIN32
             static const char* current_type_preview = "Visual Studio 2022";
@@ -539,7 +550,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 			if (!path.empty()){
 				lri = project::Load(path);
-
+                settings = project::current_project;
+                
 				std::string game_folder;
 
 				for (const auto& entry : std::filesystem::directory_iterator(std::filesystem::path(path).parent_path()))
@@ -647,7 +659,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			p.build_system_file_path = misc::current_editor.path;
 			p.engine_path = settings.engine_path;
 			p.is_debug = debug_build;
-			package.CreatePackage(p);
+			package.CreatePackage(settings, p);
 		}
 		ImGui::EndDisabled();
 
@@ -793,7 +805,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 	if (tab == MAIN)
 	{
 		// SCENE/HIERARCHY
-        ShowSceneHierarchy(message_queue);
+        ShowSceneHierarchy();
 
 		ImGui::Begin("Inspector", nullptr);
 		{
