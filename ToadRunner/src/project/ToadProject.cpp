@@ -671,12 +671,23 @@ namespace project {
 
 		std::string premake5;
 #ifdef _WIN32
-		// in project 
+
+#ifdef TOAD_DISTRO
+		const std::filesystem::path engine_relative_premake5_exe = "bin\\premake5.exe";
+#else 
+		const std::filesystem::path engine_relative_premake5_exe = "vendor\\bin\\premake5.exe";
+#endif 
+
 		premake5 = (project_file.parent_path() / "premake5.exe").string();
 		if (!fs::exists(premake5))
 		{
-			LOGERRORF("[Project] Can't find premake5.exe in {}", project_file.parent_path());
-			return false;
+			LOGWARNF("[Project] Can't find premake5.exe: '{}'", premake5);
+			premake5 = (settings.engine_path / engine_relative_premake5_exe).string();
+			if (!fs::exists(premake5))
+			{
+				LOGERRORF("[Project] Can't find premake5.exe: '{}'", premake5);
+				return false;
+			}
 		}
 #else
 		premake5 = "premake5";
@@ -829,7 +840,7 @@ namespace project {
             case PROJECT_TYPE::VS_2015:
                 return "vs2015";
             case PROJECT_TYPE::Makefile:
-                return "gmake2";
+                return "gmake";
             case PROJECT_TYPE::Codelite:
                 return "codelite";
             case PROJECT_TYPE::Xcode:

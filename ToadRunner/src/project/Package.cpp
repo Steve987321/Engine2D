@@ -76,7 +76,10 @@ namespace Toad
 
 		fs::path project_file_path;
 #ifdef _WIN32
-        if (!project::Update(settings))
+		// #TODO: make sure gen type is vs2022 on windows 
+		auto settings_copy = settings;
+		settings_copy.project_gen_type = project::PROJECT_TYPE::VS_2022;
+        if (!project::Update(settings_copy, false))
             return false;
         
 		// look for sln 

@@ -66,7 +66,11 @@ namespace ResourceManager
 		bool resize_success = default_texture.resize({5, 5});
 		assert(resize_success && "Can't resize default texture");
 		bool load_success = default_font.openFromFile(DEFAULT_FONT_PATH);
-		assert(load_success && "Can't load default font");
+
+		if (!load_success)
+		{
+			LOGWARNF("No default font found: '{}'", DEFAULT_FONT_PATH);
+		}
 
 		// add them to their managers 
 		textures.Add("Default", default_texture);

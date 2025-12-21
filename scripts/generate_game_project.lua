@@ -39,6 +39,7 @@ if _OPTIONS["usesrc"] then
             "vendor",
             "vendor/magic_enum/include",
             "vendor/imgui",
+            "vendor/implot",
             "vendor/SFML-3.0.0/include",
             "vendor/json/include",
             "%{prj.name}/src",
@@ -57,6 +58,7 @@ if _OPTIONS["usesrc"] then
             engine_path .. "/vendor",
             engine_path .. "/vendor/magic_enum/include",
             engine_path .. "/vendor/imgui",
+            engine_path .. "/vendor/implot",
             engine_path .. "/vendor/SFML-3.0.0/include",
             engine_path .. "/vendor/json/include",
             "%{prj.name}/src",
@@ -74,6 +76,7 @@ else -- distro
             engine_path .. "/script_api",
             engine_path .. "/game_templates/vendor/magic_enum/include",
             "vendor/imgui",
+            "vendor/implot",
             "vendor/SFML-3.0.0/include",
             "vendor/json/include",
             "%{prj.name}/src",
@@ -89,6 +92,7 @@ else -- distro
             engine_path .. "/game_templates/vendor",
             engine_path .. "/game_templates/vendor/magic_enum/include",
             engine_path .. "/game_templates/vendor/imgui",
+            engine_path .. "/game_templates/vendor/imploot",
             engine_path .. "/game_templates/vendor/SFML-3.0.0/include",
             engine_path .. "/game_templates/vendor/json/include",
             "%{prj.name}/src",
@@ -126,6 +130,7 @@ project(game_project_name)
         "%{prj.name}/src/**.cpp",
         "%{prj.name}/src/**.h",
         "vendor/imgui/**.cpp",
+        "vendor/implot/**.cpp",
         "vendor/sfml-imgui/imgui-SFML.cpp",
     }
 
@@ -133,6 +138,7 @@ project(game_project_name)
         "vendor/imgui/examples/**",
         "vendor/imgui/misc/**",
         "vendor/imgui/backends/**",
+        "vendor/implot/examples/**",
     }
     
     includedirs{
@@ -195,10 +201,11 @@ project(game_project_name)
     filter "configurations:Test"
         defines {
             "_DEBUG",
+            "_USRDLL",
             "GAME_IS_EXPORT"
         }
 
-        runtime "Release"
+        runtime "Debug"
         symbols "On"
         optimize "On"
 
@@ -250,7 +257,7 @@ project(game_project_name)
             "sfml-graphics-d",
             "sfml-audio-d",
         }
-    filter {"system:windows", "configurations:Release or configurations:Dev"}
+    filter {"system:windows", "configurations:Release or configurations:Dev or configurations:Test"}
         defines {
             "SFML_STATIC",
         }

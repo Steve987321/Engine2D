@@ -4,7 +4,7 @@
 
 #include "nlohmann/json.hpp"
 #ifdef _WIN32
-#define DEFAULT_FONT_PATH "C:\\Windows\\Fonts\\Arial.ttf"
+#define DEFAULT_FONT_PATH "C:/Windows/Fonts/arial.ttf"
 #else 
 #define DEFAULT_FONT_PATH "/Library/Fonts/Catamaran-Regular.ttf"
 #endif 

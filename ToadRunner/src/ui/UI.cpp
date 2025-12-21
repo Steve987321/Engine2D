@@ -199,7 +199,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::PopID();
 			}
 			ImGui::BeginDisabled(project::current_project.name.empty());
-			if (ImGui::MenuItem("Update Project (Rerun Premake5 path=prjpath)"))
+			if (ImGui::MenuItem("Generate Project Files (Auto detect)"))
 			{
 				if (settings.engine_path.empty())
 					settings.engine_path = GetEngineDirectory().string();
@@ -207,7 +207,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (!project::Update(settings))
 					LOGERRORF("Failed to update project {}", project::current_project.project_path);
 			}
-            if (ImGui::MenuItem("Update or Generate CMAKELISTS"))
+            if (ImGui::MenuItem("Generate Project Files (CMAKELISTS)"))
             {
                 if (settings.engine_path.empty())
 					settings.engine_path = GetEngineDirectory().string();
@@ -217,6 +217,16 @@ void ui::engine_ui(ImGuiContext* ctx)
                 if (!project::Update(settings, false))
                     LOGERRORF("Failed to update project {}", project::current_project.project_path);
             }
+			if (ImGui::MenuItem("Generate Project Files (VS2022)"))
+			{
+				if (settings.engine_path.empty())
+					settings.engine_path = GetEngineDirectory().string();
+
+				settings.project_gen_type = project::PROJECT_TYPE::VS_2022;
+
+				if (!project::Update(settings, false))
+					LOGERRORF("Failed to update project {}", project::current_project.project_path);
+			}
             if(ImGui::MenuItem("Reset premake file"))
             {
 

@@ -152,7 +152,7 @@ end
             "_DEBUG",
         }
 
-        runtime "Release"
+        runtime "Debug"
         symbols "On"
         optimize "On"
 
@@ -183,7 +183,7 @@ end
             "sfml-audio-d",
             "sfml-network-d",
         }
-    filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro"}
+    filter {"system:windows", "configurations:ReleaseNoEditor or configurations:Release or configurations:Distro or configurations:TestNoEditor"}
         links {
             "sfml-system",
             "sfml-window",
