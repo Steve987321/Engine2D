@@ -83,7 +83,7 @@ void Sim::OnStart(Object* obj)
 {
 	Script::OnStart(obj);
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 	txt_to_draw.clear();
 #endif 
 
@@ -293,7 +293,7 @@ static std::string InstructionToStr(VM::Instruction instr)
 	// std::cout << s << std::endl;
 }
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 void Sim::OnImGui(Object* obj, const UICtx& ctx)
 {
 	UI_APPLY_CTX(ctx);

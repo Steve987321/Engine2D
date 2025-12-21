@@ -5,7 +5,6 @@
 
 #include "utils/DLib.h"
 #include "filewatch/filewatch.h"
-#include "imgui/imgui_internal.h"
 
 struct AppSettings;
 
@@ -47,7 +46,9 @@ namespace Toad
 
 	ENGINE_API Toad::Camera& GetEditorCamera();
 
+#ifdef USE_IMGUI 
     ENGINE_API const UICtx& GetUIContext();
+#endif 
 
 	ENGINE_API void SetPreUICallback(const FENGINE_PRE_UI_CALLBACK& callback);
 	ENGINE_API void SetEngineUI(const FENGINE_UI& p_ui);

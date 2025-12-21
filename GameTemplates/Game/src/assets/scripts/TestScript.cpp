@@ -94,7 +94,7 @@ void TestScript::OnEditorUI(Toad::Object* obj, ImGuiContext* ctx)
 }
 #endif
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 void TestScript::OnImGui(Toad::Object* obj, const UICtx& ctx)
 {
 	UI_APPLY_CTX(ctx);

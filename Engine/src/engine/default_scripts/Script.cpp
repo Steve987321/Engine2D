@@ -44,7 +44,7 @@ void Script::OnEditorUI(Object* obj, const UICtx& ctx)
 }
 #endif
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 void Script::OnImGui(Object* obj, const UICtx& ctx)
 {
 }

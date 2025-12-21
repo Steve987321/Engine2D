@@ -1,12 +1,5 @@
 #include "pch.h"
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui/imgui.h" 
-#include "implot/implot.h"
-#include "imgui-SFML.h"
-#endif
-
 #include "engine/Engine.h"
 #include "engine/Settings.h"
 
@@ -19,6 +12,13 @@
 #include "engine/systems/Timer.h"
 #include "utils/Wrappers.h"
 #include "Engine.h"
+
+#ifdef USE_IMGUI
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui/imgui.h" 
+#include "implot/implot.h"
+#include "imgui-SFML.h"
+#endif
 
 namespace Toad
 {
@@ -45,7 +45,7 @@ static std::unique_ptr<sf::RenderTexture> window_texture = nullptr;
 
 static Camera* interacting_camera = nullptr;
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 static UICtx ui_ctx;
 #endif 
 
@@ -59,7 +59,7 @@ static void EventHandler(AppWindow& window)
 {
     while (auto e = window.pollEvent())
 	{
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 		ImGui::SFML::ProcessEvent(window, *e);
 #endif
 #if defined(TOAD_EDITOR)
@@ -110,6 +110,7 @@ static void EventHandler(AppWindow& window)
 	}
 }
 
+#ifdef TOAD_EDITOR 
 void SetInteractingTexture(sf::RenderTexture* texture)
 {
 	interacting_texture = texture;
@@ -124,6 +125,7 @@ void SetInteractingCamera(Camera* cam)
 {
 	interacting_camera = cam;
 }
+#endif 
 
 void SetProjectPath(const std::filesystem::path& path)
 {
@@ -288,7 +290,7 @@ bool Init()
 	StartGameSession();
 #endif
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
     ui_ctx.imgui_ctx = ImGui::GetCurrentContext();
     ui_ctx.implot_ctx = ImPlot::GetCurrentContext();
 #endif 
@@ -315,7 +317,7 @@ void Run()
 		// handle events 
 		EventHandler(window);
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 		if (pre_ui_callback)
 			pre_ui_callback();
 
@@ -387,7 +389,7 @@ void Render(AppWindow& window)
 	Scene::current_scene.Render(window);
     DrawingCanvas::ClearDrawBuffers();
 
-    #if defined(TOAD_EDITOR) || !defined(NDEBUG)
+    #ifdef USE_IMGUI
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ui_ctx);
@@ -556,7 +558,7 @@ void CleanUp()
 
 	window_texture.release();
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 	LOGDEBUG("shutting down imgui");
 	ImGui::SFML::Shutdown();
     ImPlot::DestroyContext();
@@ -573,9 +575,13 @@ Camera& GetEditorCamera()
 	return editor_cam;
 }
 
+#ifdef USE_IMGUI
+
 const UICtx& GetUIContext()
 {
     return ui_ctx;
 }
+
+#endif 
 
 } // namespace Toad

@@ -6,9 +6,15 @@
 
 #include <functional>
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 #include "imgui/imgui.h"
 #include "implot/implot.h"
+
+struct UICtx
+{
+    ImGuiContext* imgui_ctx = nullptr;
+    ImPlotContext* implot_ctx = nullptr;
+};
 #endif
 
 #define EXPOSE_VAR(T) m_reflection.Add(#T, &(T))
@@ -25,13 +31,6 @@ Script* Clone() override											\
 	script->ExposeVars();											\
 	return dynamic_cast<Script*>(script);							\
 }
-
-// gets passed with ui functions 
-struct UICtx
-{
-    ImGuiContext* imgui_ctx = nullptr;
-    ImPlotContext* implot_ctx = nullptr;
-};
 
 #define UI_APPLY_CTX(ctx)                   \
 ImGui::SetCurrentContext(ctx.imgui_ctx);    \
@@ -57,7 +56,7 @@ public:
 #ifdef TOAD_EDITOR
 	virtual void OnEditorUI(Object* obj, const UICtx& ctx);
 #endif 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 	virtual void OnImGui(Object* obj, const UICtx& ctx);
 #endif 
 

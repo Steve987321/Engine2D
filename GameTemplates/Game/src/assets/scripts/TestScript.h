@@ -20,7 +20,7 @@ public:
 #ifdef TOAD_EDITOR
 	void OnEditorUI(Toad::Object* obj, const UICtx& ctx) override;
 #endif
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 	void OnImGui(Toad::Object* obj, const UICtx& ctx) override;
 #endif 
 };

@@ -15,7 +15,7 @@ public:
 	void OnStart(Toad::Object* obj) override;
 	void OnUpdate(Toad::Object* obj) override;
 //
-//#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+//#ifdef USE_IMGUI
 //	virtual void OnImGui(Toad::Object* obj, const UICtx& ctx);
 //#endif 
 

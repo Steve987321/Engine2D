@@ -2,7 +2,7 @@
 
 #include "engine/FormatStr.h"
 
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 	inline std::unordered_map<const char*, std::string> txt_to_draw = {};
 
 	template <typename ...T>	
@@ -43,7 +43,7 @@ public:
 #ifdef TOAD_EDITOR
 	void OnEditorUI(Toad::Object* obj, const UICtx& ctx) override;
 #endif
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#ifdef USE_IMGUI
 	void OnImGui(Toad::Object* obj, const UICtx& ctx) override;
 #endif 
 };

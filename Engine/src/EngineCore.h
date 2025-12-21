@@ -52,3 +52,7 @@
 #define EXE_FILE_EXT ".exe"
 #define PLATFORM_AS_STRING "windows"
 #endif
+
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+#define USE_IMGUI
+#endif 

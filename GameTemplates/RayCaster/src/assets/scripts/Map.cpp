@@ -29,7 +29,7 @@ void Map::OnUpdate(Object* obj)
 
 }
 //
-//#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+//#ifdef USE_IMGUI
 //void Map::OnImGui(Object* obj, ImGuiContext* ctx)
 //{
 //	ImGui::SetCurrentContext(ctx);
