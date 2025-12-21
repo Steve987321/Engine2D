@@ -608,14 +608,30 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::CloseCurrentPopup();
 		}
 		static std::string output_path;
-		static bool debug_build = false;
+        static Package::BuildConfig build_cfg = Package::BuildConfig::RELEASE; 
+        static const char* build_cfg_str = Package::GetBuildConfigArg(build_cfg);
 
 		ImGui::Text("selected path: %s", output_path.c_str());
 		if (ImGui::Button("Select output directory"))
 		{			
 			output_path = GetPathDialog("select output directory", std::filesystem::current_path().string());
 		} 
-		ImGui::Checkbox("Debug build", &debug_build);
+
+        if (ImGui::BeginCombo("Build Config", build_cfg_str))
+        {
+            for (int i = 0; i < (int)Package::BuildConfig::_count; i++)
+            {
+                Package::BuildConfig i_cfg = (Package::BuildConfig)i;
+                bool selected = (int)build_cfg == i;
+                if (ImGui::Selectable(Package::GetBuildConfigArg(i_cfg), &selected))
+                {
+                    build_cfg_str = Package::GetBuildConfigArg(i_cfg);
+                    build_cfg = i_cfg;
+                }
+            }
+            ImGui::EndCombo();
+        }
+
 		ImGui::BeginDisabled(output_path.empty());
 		if (ImGui::Button("Create"))
 		{
@@ -658,7 +674,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			p.output_dir_path = output_path;
 			p.build_system_file_path = misc::current_editor.path;
 			p.engine_path = settings.engine_path;
-			p.is_debug = debug_build;
+			p.build_cfg = build_cfg;
 			package.CreatePackage(settings, p);
 		}
 		ImGui::EndDisabled();

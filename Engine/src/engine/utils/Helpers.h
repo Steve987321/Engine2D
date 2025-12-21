@@ -45,6 +45,8 @@ namespace Toad
 	/// Returns the date as a string with the given format
 	ENGINE_API std::string GetDateAsString(std::string_view format);
 
+    ENGINE_API std::string ToLower(std::string_view str);
+
 	ENGINE_API std::filesystem::path GetExePath();
 
     ENGINE_API void PathToPreferred(std::string& path_str);

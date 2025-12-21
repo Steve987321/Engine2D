@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <format>
+#include <mutex>
 
 #include "utils/Helpers.h"
 
@@ -139,7 +140,7 @@ private:
 	template<typename ... Args>
 	void Log(const std::string_view frmt, LOG_TYPE log_type, bool log_once, Args&& ... args)
 	{
-		std::lock_guard lock(m_mutex);
+		std::scoped_lock lock(m_mutex);
 
 		std::string formatted_str = format_str(frmt, args...);
 

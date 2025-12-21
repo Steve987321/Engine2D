@@ -101,11 +101,11 @@ target_compile_options("ToadRunner" PRIVATE
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:C>>:-g>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-g>
-  $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set_target_properties("ToadRunner" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE False
@@ -165,11 +165,11 @@ target_compile_options("ToadRunner" PRIVATE
   $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:C>>:-O2>
   $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O2>
-  $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL Release)
   set_target_properties("ToadRunner" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE False
@@ -227,11 +227,11 @@ target_compile_options("ToadRunner" PRIVATE
   $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:C>>:-O2>
   $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O2>
-  $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL ReleaseNoEditor)
   set_target_properties("ToadRunner" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE False
@@ -292,11 +292,75 @@ target_compile_options("ToadRunner" PRIVATE
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O0>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
-  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL DebugNoEditor)
   set_target_properties("ToadRunner" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+    POSITION_INDEPENDENT_CODE False
+    INTERPROCEDURAL_OPTIMIZATION False
+  )
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL TestNoEditor)
+  add_dependencies("ToadRunner"
+    "Engine"
+  )
+  set_target_properties("ToadRunner" PROPERTIES
+    OUTPUT_NAME "ToadRunner"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/TestNoEditor-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/TestNoEditor-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../bin/TestNoEditor-macosx-x86_64
+  )
+endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
+target_include_directories("ToadRunner" PRIVATE
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/src/scripts>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../Engine/src>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/imgui>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/sfml-imgui>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/json/include>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/magic_enum/include>
+)
+target_compile_definitions("ToadRunner" PRIVATE
+  $<$<CONFIG:TestNoEditor>:_DEBUG>
+)
+target_link_directories("ToadRunner" PRIVATE
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/ToadRunner/../vendor/SFML-3.0.0/lib>
+)
+target_link_libraries("ToadRunner"
+  $<$<CONFIG:TestNoEditor>:Engine>
+  $<$<CONFIG:TestNoEditor>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:${CoreVideo_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:sfml-system>
+  $<$<CONFIG:TestNoEditor>:sfml-window>
+  $<$<CONFIG:TestNoEditor>:sfml-graphics>
+  $<$<CONFIG:TestNoEditor>:sfml-audio>
+  $<$<CONFIG:TestNoEditor>:sfml-network>
+)
+target_compile_options("ToadRunner" PRIVATE
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-m64>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-O2>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-g>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O2>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
+)
+if(CMAKE_BUILD_TYPE STREQUAL TestNoEditor)
+  set_target_properties("ToadRunner" PROPERTIES
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE False
@@ -357,11 +421,11 @@ target_compile_options("ToadRunner" PRIVATE
   $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:C>>:-O2>
   $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-O2>
-  $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL Distro)
   set_target_properties("ToadRunner" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE False

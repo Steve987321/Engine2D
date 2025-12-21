@@ -44,8 +44,6 @@
           "Engine/src/engine/default_objects/UI/Button.h"
           "Engine/src/engine/default_objects/UI/Text.cpp"
           "Engine/src/engine/default_objects/UI/Text.h"
-        "Engine/src/engine/default_scripts/AnimationController.cpp"
-        "Engine/src/engine/default_scripts/AnimationController.h"
         "Engine/src/engine/default_scripts/Script.cpp"
         "Engine/src/engine/default_scripts/Script.h"
         "Engine/src/engine/systems/Animation.cpp"
@@ -129,9 +127,11 @@ target_link_libraries("Engine"
 )
 target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:C>>:-m64>
+  $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:C>>:-O0>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:C>>:-fPIC>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:C>>:-g>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-m64>
+  $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-O0>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-g>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
@@ -314,14 +314,79 @@ target_link_libraries("Engine"
 )
 target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-m64>
+  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-O0>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-fPIC>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:C>>:-g>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
+  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O0>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
 )
 if(CMAKE_BUILD_TYPE STREQUAL DebugNoEditor)
+  set_target_properties("Engine" PROPERTIES
+    CXX_STANDARD 20
+    CXX_STANDARD_REQUIRED YES
+    CXX_EXTENSIONS NO
+    POSITION_INDEPENDENT_CODE True
+    INTERPROCEDURAL_OPTIMIZATION False
+  )
+endif()
+if(CMAKE_BUILD_TYPE STREQUAL TestNoEditor)
+  set_target_properties("Engine" PROPERTIES
+    OUTPUT_NAME "Engine"
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/TestNoEditor-macosx-x86_64
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/TestNoEditor-macosx-x86_64
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Engine/../bin/TestNoEditor-macosx-x86_64
+  )
+endif()
+if(APPLE)
+find_library(OpenGL_FRAMEWORK OpenGL)
+find_library(Cocoa_FRAMEWORK Cocoa)
+find_library(IOKit_FRAMEWORK IOKit)
+find_library(CoreVideo_FRAMEWORK CoreVideo)
+endif()
+target_include_directories("Engine" PRIVATE
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/src>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/implot>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/magic_enum/include>
+)
+target_compile_definitions("Engine" PRIVATE
+  $<$<CONFIG:TestNoEditor>:_DEBUG>
+  $<$<CONFIG:TestNoEditor>:ENGINE_IS_EXPORT>
+)
+target_link_directories("Engine" PRIVATE
+  $<$<CONFIG:TestNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/lib>
+)
+target_link_libraries("Engine"
+  $<$<CONFIG:TestNoEditor>:${OpenGL_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:${Cocoa_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:${IOKit_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:${CoreVideo_FRAMEWORK}>
+  $<$<CONFIG:TestNoEditor>:sfml-system>
+  $<$<CONFIG:TestNoEditor>:sfml-window>
+  $<$<CONFIG:TestNoEditor>:sfml-graphics>
+  $<$<CONFIG:TestNoEditor>:sfml-audio>
+  $<$<CONFIG:TestNoEditor>:sfml-network>
+)
+target_compile_options("Engine" PRIVATE
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-m64>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-O2>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-fPIC>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:C>>:-g>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O2>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+)
+if(CMAKE_BUILD_TYPE STREQUAL TestNoEditor)
   set_target_properties("Engine" PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED YES

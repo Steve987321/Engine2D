@@ -30,13 +30,85 @@ output_dir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 engine_path = _OPTIONS["enginepath"]
 game_project_name = _OPTIONS["projectname"] .. "_Game"
 
+if _OPTIONS["usesrc"] then 
+    if _OPTIONS["ownlibs"] then
+        -- use paths from own project folder 
+        include_dirs = 
+        {
+            engine_path .. "/engine/src",
+            "vendor",
+            "vendor/magic_enum/include",
+            "vendor/imgui",
+            "vendor/SFML-3.0.0/include",
+            "vendor/json/include",
+            "%{prj.name}/src",
+            "%{prj.name}/src/assets"
+        }
+        lib_dirs = 
+        {
+            engine_path .. "/bin/Release-%{cfg.system}-x86_64",
+            engine_path .. "/vendor/SFML-3.0.0/lib",
+        }
+    else 
+        -- use paths from the engine 
+        include_dirs = 
+        {
+            engine_path .. "/engine/src",
+            engine_path .. "/vendor",
+            engine_path .. "/vendor/magic_enum/include",
+            engine_path .. "/vendor/imgui",
+            engine_path .. "/vendor/SFML-3.0.0/include",
+            engine_path .. "/vendor/json/include",
+            "%{prj.name}/src",
+            "%{prj.name}/src/assets"
+        }
+        lib_dirs = 
+        {
+            engine_path .. "/bin/Release-%{cfg.system}-x86_64",
+            "vendor/SFML-3.0.0/lib",
+        }
+    end 
+else -- distro 
+    if _OPTIONS["ownlibs"] then
+        include_dirs{
+            engine_path .. "/script_api",
+            engine_path .. "/game_templates/vendor/magic_enum/include",
+            "vendor/imgui",
+            "vendor/SFML-3.0.0/include",
+            "vendor/json/include",
+            "%{prj.name}/src",
+            "%{prj.name}/src/assets",
+        }
+        lib_dirs{
+            engine_path .. "/libs",
+            "vendor/SFML-3.0.0/lib",
+        }
+    else 
+        include_dirs{
+            engine_path .. "/script_api",
+            engine_path .. "/game_templates/vendor",
+            engine_path .. "/game_templates/vendor/magic_enum/include",
+            engine_path .. "/game_templates/vendor/imgui",
+            engine_path .. "/game_templates/vendor/SFML-3.0.0/include",
+            engine_path .. "/game_templates/vendor/json/include",
+            "%{prj.name}/src",
+            "%{prj.name}/src/assets",
+        }
+        lib_dirs{
+            engine_path .. "/libs",
+            engine_path .. "/game_templates/vendor/SFML-3.0.0/lib",
+        }
+    end 
+end
+
 workspace(_OPTIONS["projectname"])
     architecture "x64"
     configurations{
         "Release",
         "Debug", 
-        "Dev", -- same as release but defines TOAD_EDITOR
-        "DevDebug", -- with debugging symbols and debugging runtime library
+        "Dev",          -- same as release but defines TOAD_EDITOR
+        "DevDebug",     -- with debugging symbols and debugging runtime library
+        "Test",         -- optimizations and debugging info, also enables UI
     }
     
     startproject (game_project_name)
@@ -45,7 +117,7 @@ project(game_project_name)
     location(game_project_name)
     kind "SharedLib"
     language "C++"
-    cppdialect "C++20"
+    cppdialect "C++23"
 
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
@@ -63,71 +135,12 @@ project(game_project_name)
         "vendor/imgui/backends/**",
     }
     
-if _OPTIONS["usesrc"] then 
-
-    if _OPTIONS["ownlibs"] then 
-        includedirs{
-            engine_path .. "/engine/src",
-            "vendor",
-            "vendor/magic_enum/include",
-            "vendor/imgui",
-            "vendor/SFML-3.0.0/include",
-            "vendor/json/include",
-            "%{prj.name}/src",
-            "%{prj.name}/src/assets"
-        }
-        libdirs{
-            engine_path .. "/bin/Release-%{cfg.system}-x86_64",
-            engine_path .. "/vendor/SFML-3.0.0/lib",
-        }
-    else 
-       includedirs{
-            engine_path .. "/engine/src",
-            engine_path .. "/vendor",
-            engine_path .. "/vendor/magic_enum/include",
-            engine_path .. "/vendor/imgui",
-            engine_path .. "/vendor/SFML-3.0.0/include",
-            engine_path .. "/vendor/json/include",
-            "%{prj.name}/src",
-            "%{prj.name}/src/assets"
-        }
-        libdirs{
-            engine_path .. "/bin/Release-%{cfg.system}-x86_64",
-            "vendor/SFML-3.0.0/lib",
-        }
-    end 
-else -- distro 
-    if _OPTIONS["ownlibs"] then 
-        includedirs{
-            engine_path .. "/script_api",
-            engine_path .. "/game_templates/vendor/magic_enum/include",
-            "vendor/imgui",
-            "vendor/SFML-3.0.0/include",
-            "vendor/json/include",
-            "%{prj.name}/src",
-            "%{prj.name}/src/assets",
-        }
-        libdirs{
-            engine_path .. "/libs",
-            "vendor/SFML-3.0.0/lib",
-        }
-    else 
-        includedirs{
-            engine_path .. "/script_api",
-            engine_path .. "/game_templates/vendor",
-            engine_path .. "/game_templates/vendor/magic_enum/include",
-            engine_path .. "/game_templates/vendor/imgui",
-            engine_path .. "/game_templates/vendor/SFML-3.0.0/include",
-            engine_path .. "/game_templates/vendor/json/include",
-            "%{prj.name}/src",
-            "%{prj.name}/src/assets",
-        }
-        libdirs{
-            engine_path .. "/libs",
-            "vendor/SFML-3.0.0/lib",
-        }
-    end 
-end 
+    includedirs{
+        include_dirs
+    }
+    libdirs{
+        lib_dirs
+    }
 
     filter "system:windows"
         staticruntime "Off"
@@ -178,6 +191,16 @@ end
         runtime "Debug"
         symbols "On"
         optimize "Off"
+
+    filter "configurations:Test"
+        defines {
+            "_DEBUG",
+            "GAME_IS_EXPORT"
+        }
+
+        runtime "Release"
+        symbols "On"
+        optimize "On"
 
     -- platform 
 

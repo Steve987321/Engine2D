@@ -8,6 +8,7 @@ workspace "Onion"
         "Release", 
         "ReleaseNoEditor",
         "DebugNoEditor",
+        "TestNoEditor",
         "Distro",
     }
 

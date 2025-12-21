@@ -121,7 +121,7 @@ The steps below will show the minimum steps required on how to create an example
         // Called in the inspector 
         void OnEditorUI(Toad::Object* obj, const UICtx& ctx) override;
     #endif
-    #if defined(TOAD_EDITOR) || !defined(NDEBUG)
+    #ifdef USE_IMGUI
         // Write imgui code here, for in the editor and debug builds
         void OnImGui(Toad::Object* obj, const UICtx& ctx) override;
     #endif 
@@ -249,7 +249,7 @@ The steps below will show the minimum steps required on how to create an example
     }
     #endif
 
-    #if defined(TOAD_EDITOR) || !defined(NDEBUG)
+    #ifdef USE_IMGUI
     void ExampleScript::OnImGui(Object* obj, ImGuiContext* ctx)
     {
         // because we are working with DLL files we need to share the imgui state between modules

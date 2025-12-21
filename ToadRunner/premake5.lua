@@ -9,7 +9,7 @@ project "ToadRunner"
     filter {}
     
     language "C++"
-    cppdialect "C++20"
+    cppdialect "C++23"
 
     targetdir ("../bin/" .. output_dir .. "/")
     objdir ("../bin-intermediate/" .. output_dir .. "/")
@@ -147,7 +147,16 @@ end
         symbols "On"
         optimize "Off"
 
-    filter "configurations:DebugNoEditor or configurations:ReleaseNoEditor"
+    filter "configurations:TestNoEditor"
+        defines {
+            "_DEBUG",
+        }
+
+        runtime "Release"
+        symbols "On"
+        optimize "On"
+
+    filter "configurations:DebugNoEditor or configurations:ReleaseNoEditor or configurations:TestNoEditor"
         removefiles{
             "src/ui/**.cpp",
             "src/ui/**.h",

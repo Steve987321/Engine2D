@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.16)
 
-set(PREMAKE_BUILD_TYPES "Debug" "Release" "ReleaseNoEditor" "DebugNoEditor" "Distro")
+set(PREMAKE_BUILD_TYPES "Debug" "Release" "ReleaseNoEditor" "DebugNoEditor" "TestNoEditor" "Distro")
 get_property(multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(multi_config)
   set(CMAKE_CONFIGURATION_TYPES "${PREMAKE_BUILD_TYPES}" CACHE STRING "list of supported configuration types" FORCE)
@@ -27,6 +27,8 @@ set(CMAKE_C_FLAGS_RELEASENOEDITOR "")
 set(CMAKE_CXX_FLAGS_RELEASENOEDITOR "")
 set(CMAKE_C_FLAGS_DEBUGNOEDITOR "")
 set(CMAKE_CXX_FLAGS_DEBUGNOEDITOR "")
+set(CMAKE_C_FLAGS_TESTNOEDITOR "")
+set(CMAKE_CXX_FLAGS_TESTNOEDITOR "")
 set(CMAKE_C_FLAGS_DISTRO "")
 set(CMAKE_CXX_FLAGS_DISTRO "")
 

@@ -38,7 +38,14 @@ namespace Toad
 		return ss.str();
 	}
 
-	std::filesystem::path GetExePath()
+    std::string ToLower(std::string_view str) 
+    {
+        std::string s {str};
+        std::ranges::transform(s, s.begin(), [](unsigned char c){return std::tolower(c);});
+        return s;
+    }
+
+        std::filesystem::path GetExePath()
 	{
 #ifdef _WIN32
 		char path[MAX_PATH];

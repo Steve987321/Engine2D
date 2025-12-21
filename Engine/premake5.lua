@@ -1,7 +1,7 @@
 project "Engine"
     kind "SharedLib"
     language "C++"
-    cppdialect "C++20"
+    cppdialect "C++23"
     
     targetdir ("../bin/" .. output_dir .. "/")
     objdir ("../bin-intermediate/" .. output_dir .. "/")
@@ -90,6 +90,7 @@ end
 
         runtime "Debug"
         symbols "On"
+        optimize "Off"
     
     filter "configurations:Release" 
         defines {
@@ -99,6 +100,7 @@ end
         }
 
         runtime "Release"
+        symbols "Off"
         optimize "On"
 
     filter "configurations:Distro"
@@ -119,6 +121,7 @@ end
         }
 
         runtime "Release"
+        symbols "Off"
         optimize "On"
 
     filter "configurations:DebugNoEditor"
@@ -129,7 +132,18 @@ end
         }
 
         runtime "Debug"
+        optimize "Off"
         symbols "On"
+    
+    filter "configurations:TestNoEditor"
+        defines {
+            "_DEBUG",
+            "ENGINE_IS_EXPORT",
+        }
+
+        runtime "Release"
+        symbols "On"
+        optimize "On"
 
     filter "system:macosx"
         links {

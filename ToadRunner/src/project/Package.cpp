@@ -12,6 +12,21 @@ namespace Toad
 	namespace fs = std::filesystem;
 	using json = nlohmann::ordered_json;
 
+    const char* Package::GetBuildConfigArg(const BuildConfig& cfg)
+    {
+        switch(cfg)
+        {
+            case Package::BuildConfig::RELEASE:
+                return "Release";
+            case Package::BuildConfig::DEBUG:
+                return "Debug";
+            case Package::BuildConfig::TEST:
+                return "Test";
+            default:
+                return "";
+        }
+    }
+
 	Package::Package()
 	{
 	}
@@ -22,8 +37,8 @@ namespace Toad
 
 	bool Package::CreatePackage(const project::ProjectSettings& settings, const CreatePackageParams& params)
 	{
-		const std::string build_config_arg = params.is_debug ? "Debug" : "Release";
-		const std::string build_config_arg_lower = params.is_debug ? "debug" : "release";
+		std::string_view build_config_arg = GetBuildConfigArg(params.build_cfg);
+		const std::string build_config_arg_lower = ToLower(build_config_arg);
 
 		const fs::path proj_dir = params.project_file_path.parent_path();
 		const fs::path proj_bin_path = proj_dir / "bin" / Toad::format_str("{}-{}-x86_64", build_config_arg, PLATFORM_AS_STRING);
@@ -184,7 +199,9 @@ namespace Toad
 			return false;
 		}
 #else 
-		int build_res = system(Toad::format_str("cd {} && make -j config={}", project_file_path.parent_path(), build_config_arg_lower).c_str());
+        std::string build_command = Toad::format_str("cd {} && make -j config={}", project_file_path.parent_path(), build_config_arg_lower);
+		LOGDEBUGF("[Package] Running command: {}", build_command);
+        int build_res = system(build_command.c_str());
 
 		if (build_res != 0)
 		{
@@ -219,11 +236,21 @@ namespace Toad
 
 		// #TODO add compression
 		// copy assets (no scripts)
+
+        const std::set<std::string_view> source_extensions = 
+        {
+            ".cpp",
+            ".c",
+            ".cc",
+            ".h",
+            ".hpp",
+            ".hh",
+        };
 		for (const auto& entry : fs::recursive_directory_iterator(proj_assets_path))
 		{
 			// skip source script files 
-			if (entry.path().extension() == ".cpp" || entry.path().extension() == ".h")
-				continue;
+            if (source_extensions.contains(entry.path().extension().string()))
+                continue;
 
 			fs::path destination = out_dir / fs::relative(entry.path(), proj_assets_path);
 
@@ -304,11 +331,7 @@ namespace Toad
 		//	}
 		//}
 #else 
-		fs::path bin;
-		if (params.is_debug)
-			bin = proj_engine_dir / "bin" / format_str("DebugNoEditor-{}-x86_64", PLATFORM_AS_STRING);
-		else
-			bin = proj_engine_dir / "bin" / format_str("ReleaseNoEditor-{}-x86_64", PLATFORM_AS_STRING);
+		fs::path bin = proj_engine_dir / "bin" / format_str("{}NoEditor-{}-x86_64", build_config_arg, PLATFORM_AS_STRING);
 
 		std::string runner_name = format_str("ToadRunner{}", EXE_FILE_EXT);
 		std::string engine_dl_name = format_str("{}Engine{}", LIB_FILE_PREFIX, LIB_FILE_EXT);
