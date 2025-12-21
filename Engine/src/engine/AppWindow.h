@@ -6,14 +6,25 @@
 
 namespace sf
 {
-	class Event;
-	class RenderWindow;
+
+class Event;
+class RenderWindow;
+
 }
 
 namespace Toad
 {
-	struct AppSettings;
-	class Camera;
+
+struct AppSettings;
+class Camera;
+
+void DefaultViewportUI();
+
+struct Viewport
+{
+    std::function<void()> ui;
+    std::unique_ptr<sf::RenderWindow> window;
+};
 
 class ENGINE_API AppWindow : public sf::RenderWindow
 {
@@ -22,7 +33,7 @@ public:
 	ImGuiContext* GetImGuiContext();
 
 	void RecreateImGuiContext();
-	static void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style);
+	static void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style, std::function<void()> ui = DefaultViewportUI);
 
 	static void UpdateViewports(const FEVENT_CALLBACK& callback);
 
@@ -40,7 +51,7 @@ private:
 
 	static inline std::queue<std::filesystem::path> dropped_files_queue {};
 
-	static inline std::vector<std::unique_ptr<sf::RenderWindow>> viewports {};
+	static inline std::vector<Viewport> viewports {};
 	ImGuiIO* io = nullptr;
 };
 

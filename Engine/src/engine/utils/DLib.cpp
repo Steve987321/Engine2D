@@ -13,13 +13,14 @@ namespace Toad
 #endif
 	}
 
-	void DLibFree(DllHandle handle)
+	void DLibFree(DllHandle& handle)
 	{
 #ifdef _WIN32
 		FreeLibrary(handle);
 #else
 		dlclose(handle);
 #endif
+        handle = nullptr;
 	}
 
 	DllAddress DLibGetAddress(DllHandle handle, std::string_view name)
@@ -37,7 +38,11 @@ namespace Toad
 		// #TODO: look at FormatMessage
 		return std::to_string(GetLastError());
 #else
-		return dlerror();
+        char* err= dlerror(); 
+        if (!err)
+            return "none";
+        else 
+		    return err;
 #endif  
 	}
 }

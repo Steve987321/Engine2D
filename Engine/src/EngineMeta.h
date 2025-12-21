@@ -8,6 +8,7 @@
 #include "engine/DrawingCanvas.h"
 #include "engine/AppWindow.h"
 
+#include "engine/systems/InputMac.h"
 #include "engine/systems/Input.h"
 #include "engine/systems/Scene.h"
 #include "engine/systems/ResourceManager.h"

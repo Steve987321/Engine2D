@@ -34,11 +34,12 @@ using FONCLOSE_CALLBACK = std::function<void(int)>;
 using FONDLLCHANGE_CALLBACK = std::function<void(const TFILEWATCH_STRTYPE&, const filewatch::Event)>;
 using TGAME_SCRIPTS = std::unordered_map<std::string, Script*>;
 
+namespace Keyboard = sf::Keyboard;
+
 using Vec2i = sf::Vector2i;
 using Vec2u = sf::Vector2u;
 using Vec3i = sf::Vector3i;
 using Vec3f = sf::Vector3f;
-namespace Keyboard = sf::Keyboard;
 using IntRect = sf::IntRect;
 using Texture = sf::Texture;
 using Color = sf::Color;
@@ -77,7 +78,7 @@ public:
     ENGINE_API Vec2f GetEndPosition(float angle, float range);
 };
 
-class ENGINE_API FloatRect : public sf::FloatRect
+class FloatRect : public sf::FloatRect
 {
 public:
 	FloatRect()
@@ -92,9 +93,9 @@ public:
 	}
 
 public:
-	void Expand(float v);
-	bool Intersects(const FloatRect& other);
-	bool Contains(const Vec2f& point);
+	ENGINE_API void Expand(float v);
+	ENGINE_API bool Intersects(const FloatRect& other);
+	ENGINE_API bool Contains(const Vec2f& point);
 
 private:
 	using sf::FloatRect::contains;
@@ -116,7 +117,7 @@ namespace Mouse
     ENGINE_API void ShouldCaptureMouse(bool capture);
 };
 
-struct ENGINE_API AudioSource
+struct AudioSource
 {
 	std::filesystem::path full_path;
 	std::filesystem::path relative_path;

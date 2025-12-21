@@ -14,8 +14,8 @@ namespace Toad
 	// Returns a dll handle by the given name 
 	DllHandle DLibOpen(std::string_view name);
 
-	// Closes a dll handle 
-	void DLibFree(DllHandle handle);
+	// Closes a dll handle and sets to nullptr
+	void DLibFree(DllHandle& handle);
 
 	// Returns the addres of a symbol inside a dll handle 
 	DllAddress DLibGetAddress(DllHandle handle, std::string_view name);

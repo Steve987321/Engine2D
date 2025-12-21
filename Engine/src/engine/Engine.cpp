@@ -364,6 +364,9 @@ void Render(AppWindow& window)
 	ImGui::SFML::Render(window);
 #else
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
+	Scene::current_scene.Render(window);
+    DrawingCanvas::ClearDrawBuffers();
+
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ImGui::GetCurrentContext());

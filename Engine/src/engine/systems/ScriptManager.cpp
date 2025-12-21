@@ -4,6 +4,9 @@
 #include "engine/default_scripts/Script.h"
 #include "engine/systems/Scene.h"
 #include "engine/systems/Input.h"
+#ifdef __APPLE__
+#include "engine/systems/InputMac.h"
+#endif 
 #include "engine/utils/DLib.h"
 #include "engine/systems/Timer.h"
 
@@ -20,6 +23,8 @@ namespace Toad
 
 	void ScriptManager::LoadScripts()
 	{
+        LOGDEBUG("Scripts loading");
+
 		namespace fs = std::filesystem;
 		using object_script = struct { std::string script_name; ReflectionCopy reflection; };
 		std::unordered_map <std::string, std::vector<object_script>> objects_with_scripts{};
@@ -228,9 +233,13 @@ namespace Toad
 
 	}
 
-	TGAME_SCRIPTS& ScriptManager::GetScripts()
-	{
-		return game_scripts;
-	}
+    DllHandle Toad::ScriptManager::GetDLLHandle() 
+    {
+        return current_dll;
+    }
 
+    TGAME_SCRIPTS &ScriptManager::GetScripts()
+    {
+        return game_scripts;
+    }
 }

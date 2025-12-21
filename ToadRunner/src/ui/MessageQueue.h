@@ -43,23 +43,13 @@ struct MessageQueueMessage
 
 
 // vertical imgui message queue
-class MessageQueue
+namespace MessageQueue
 {
-public:
-	MessageQueue(MessageQueuePlacement placement)
-		: m_placement(placement)
-	{}
-
-public:
     // Return id of message 
 	size_t AddToMessageQueue(MessageQueueMessage msg_type);
     void RemoveMessage(size_t id);
 
 	void Show();
-
-private:
-	std::vector<std::pair<MessageQueueMessage, Timer>> m_messageQueue{};
-	MessageQueuePlacement m_placement = MessageQueuePlacement::RIGHT;
 };
 
 }

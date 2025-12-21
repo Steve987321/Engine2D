@@ -309,7 +309,7 @@ namespace Toad
             skip = false;
     }
 
-	void ShowSceneHierarchy(MessageQueue& message_queue)
+	void ShowSceneHierarchy()
 	{
 		// make sure this is only true on click
 		hierarchy_clicked_object = false;
@@ -340,7 +340,7 @@ namespace Toad
                     msg.show_time_ms = 2000;
                     msg.type = MessageType::INFO;
 
-                    message_queue.AddToMessageQueue(msg);
+                    MessageQueue::AddToMessageQueue(msg);
 				}
 			}
 			else if (ImGui::IsKeyPressed(ImGuiKey_C))

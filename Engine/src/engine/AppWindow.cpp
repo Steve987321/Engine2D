@@ -8,6 +8,7 @@
 
 #include "imgui-SFML.h"
 #include "imgui.h"
+#include "implot/implot.h"
 
 namespace Toad
 {
@@ -29,7 +30,6 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 #else
 	void* window_handle = getNativeHandle();
 #endif
-
 	bool res = ImGui::SFML::Init(*this, false);
 	LOGDEBUGF("[Engine] ImGui SFML Init result: {}", res);
 	io = &ImGui::GetIO();
@@ -37,6 +37,9 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 	io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io->IniFilename = NULL;
 
+    // implot 
+    ImPlot::CreateContext();
+    
 	// io->Fonts->Clear();
 	io->Fonts->AddFontDefault();
 	// io->Fonts->Build();
@@ -63,9 +66,13 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 	io->Fonts->AddFontDefault();
 	// io->Fonts->Build();
 	ImGui::SFML::UpdateFontTexture();
+
+    // implot 
+    ImPlot::CreateContext();
 #endif
 	return true;
 #endif
+
 }
 
 ImGuiContext* AppWindow::GetImGuiContext()
@@ -95,7 +102,7 @@ void AppWindow::RecreateImGuiContext()
 	}
 }
 
-void AppWindow::AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style)
+void AppWindow::AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style, std::function<void()> FUI)
 {
 	auto window = std::make_unique<sf::RenderWindow>();
 	window->create(mode, title.data(), style);
@@ -105,7 +112,7 @@ void AppWindow::AddViewport(const sf::VideoMode& mode, std::string_view title, u
     if (!res)
         return;
 
-	viewports.push_back(std::move(window));
+	viewports.push_back({.ui = FUI, .window = std::move(window)});
 }
 
 void AppWindow::UpdateViewports(const FEVENT_CALLBACK& ecallback)
@@ -114,35 +121,32 @@ void AppWindow::UpdateViewports(const FEVENT_CALLBACK& ecallback)
 	while (it != viewports.end())
 	{
 		bool erased = false;
-
-		auto e2 = (*it)->pollEvent();
+        Viewport& viewport = *it;
+		auto e2 = viewport.window->pollEvent();
 		while (!erased && e2)
 		{
-			ImGui::SFML::ProcessEvent(*(*it), *e2);
+			ImGui::SFML::ProcessEvent(*viewport.window, *e2);
 			ecallback(*e2);
 
 			if (e2->is<sf::Event::Closed>())
 			{
-				ImGui::SFML::Shutdown(*(*it));
-				(*it)->close();
+				ImGui::SFML::Shutdown(*viewport.window);
+				viewport.window->close();
 				it = viewports.erase(it);
 				erased = true;
 				break;
 			}
             
-            e2 = (*it)->pollEvent();
+            e2 = viewport.window->pollEvent();
 		}
 
 		if (!erased)
 		{
-			ImGui::SFML::Update(*(*it), Time::GetDeltaTimeRaw());
-			(*it)->clear(sf::Color::Black);
-			ImGui::Begin("abc");
-			ImGui::Text("ABC");
-
-			ImGui::End();
-			ImGui::SFML::Render(*(*it));
-			(*it)->display();
+			ImGui::SFML::Update(*viewport.window, Time::GetDeltaTimeRaw());
+			viewport.window->clear(sf::Color::Black);
+            viewport.ui();
+			ImGui::SFML::Render(*viewport.window);
+			viewport.window->display();
 			++it;
 		}
 	}
@@ -156,7 +160,7 @@ std::queue<std::filesystem::path>& AppWindow::GetDroppedFilesQueue()
 void AppWindow::CleanUpViewports() 
 {
     for (auto& v : viewports)
-        v->close();
+        v.window->close();
     
     viewports.clear();
 }
@@ -190,4 +194,11 @@ LRESULT CALLBACK AppWindow::WndProc(HWND handle, UINT message, WPARAM wparam, LP
 }
 #endif
 
+void DefaultViewportUI() 
+{
+    ImGui::Begin("No UI has been set");
+    ImGui::Text("Window doesn't have ui");
+    ImGui::End();
 }
+
+} // namespace Toad
