@@ -8,6 +8,7 @@
 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 #include "imgui/imgui.h"
+#include "implot/implot.h"
 #endif
 
 #define EXPOSE_VAR(T) m_reflection.Add(#T, &(T))
@@ -24,6 +25,17 @@ Script* Clone() override											\
 	script->ExposeVars();											\
 	return dynamic_cast<Script*>(script);							\
 }
+
+// gets passed with ui functions 
+struct UICtx
+{
+    ImGuiContext* imgui_ctx = nullptr;
+    ImPlotContext* implot_ctx = nullptr;
+};
+
+#define UI_APPLY_CTX(ctx)                   \
+ImGui::SetCurrentContext(ctx.imgui_ctx);    \
+ImPlot::SetCurrentContext(ctx.implot_ctx)   
 
 namespace Toad
 {
@@ -43,10 +55,10 @@ public:
 	virtual void OnStart(Object* obj);
 	virtual void OnRender(Object* obj, sf::RenderTarget& target);
 #ifdef TOAD_EDITOR
-	virtual void OnEditorUI(Object* obj, ImGuiContext* ctx);
+	virtual void OnEditorUI(Object* obj, const UICtx& ctx);
 #endif 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
-	virtual void OnImGui(Object* obj, ImGuiContext* ctx);
+	virtual void OnImGui(Object* obj, const UICtx& ctx);
 #endif 
 
 	virtual void OnEnd(Object* obj, Scene* next_scene);

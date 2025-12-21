@@ -47,6 +47,8 @@ namespace Toad
 
 	ENGINE_API Toad::Camera& GetEditorCamera();
 
+    ENGINE_API const UICtx& GetUIContext();
+
 	ENGINE_API void SetPreUICallback(const FENGINE_PRE_UI_CALLBACK& callback);
 	ENGINE_API void SetEngineUI(const FENGINE_UI& p_ui);
 

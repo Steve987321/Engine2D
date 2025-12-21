@@ -18,9 +18,9 @@ public:
 	void ExposeVars() override;
 
 #ifdef TOAD_EDITOR
-	void OnEditorUI(Toad::Object* obj, ImGuiContext* ctx) override;
+	void OnEditorUI(Toad::Object* obj, const UICtx& ctx) override;
 #endif
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
-	void OnImGui(Toad::Object* obj, ImGuiContext* ctx) override;
+	void OnImGui(Toad::Object* obj, const UICtx& ctx) override;
 #endif 
 };

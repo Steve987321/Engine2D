@@ -5,7 +5,7 @@
 #ifdef _WIN32
 #define GAME_API __declspec(dllexport)
 #else
-#define GAME_API 
+#define GAME_API __attribute__((__visibility__("default")))
 #endif
 
 #include "pch.h"
@@ -13,20 +13,11 @@
 
 struct AppSettings
 {
-	const char* window_name;
-	int window_width;
-	int window_height;
-	int frame_limit;
-	uint32_t style;
-};
-
-inline AppSettings game_settings
-{
-	"Game",
-	1280,
-	720,
-	60,
-	sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize,
+	std::string window_name = "Game";
+	int window_width = 1280;
+	int window_height = 720;
+	int frame_limit = 60;
+	uint32_t style = sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize;
 };
 
 extern "C"

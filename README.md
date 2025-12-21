@@ -119,11 +119,11 @@ The steps below will show the minimum steps required on how to create an example
 
     #ifdef TOAD_EDITOR
         // Called in the inspector 
-        void OnEditorUI(Toad::Object* obj, ImGuiContext* ctx) override;
+        void OnEditorUI(Toad::Object* obj, const UICtx& ctx) override;
     #endif
     #if defined(TOAD_EDITOR) || !defined(NDEBUG)
         // Write imgui code here, for in the editor and debug builds
-        void OnImGui(Toad::Object* obj, ImGuiContext* ctx) override;
+        void OnImGui(Toad::Object* obj, const UICtx& ctx) override;
     #endif 
 
     private:

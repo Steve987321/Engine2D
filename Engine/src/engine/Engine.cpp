@@ -3,6 +3,7 @@
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui.h" 
+#include "implot/implot.h"
 #include "imgui-SFML.h"
 #endif
 
@@ -17,6 +18,7 @@
 #include "engine/systems/Time.h"
 #include "engine/systems/Timer.h"
 #include "utils/Wrappers.h"
+#include "Engine.h"
 
 namespace Toad
 {
@@ -35,8 +37,6 @@ static std::unique_ptr<filewatch::FileWatch<TFILEWATCH_STRTYPE>> dll_file_watch 
 static Camera editor_cam{ "EditorCamera" };
 // multiple windows
 
-static DllHandle curr_dll{};
-
 static std::filesystem::path current_path;
 static std::filesystem::path project_path;
 
@@ -44,6 +44,10 @@ static sf::RenderTexture* interacting_texture = nullptr;
 static std::unique_ptr<sf::RenderTexture> window_texture = nullptr;
 
 static Camera* interacting_camera = nullptr;
+
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+static UICtx ui_ctx;
+#endif 
 
 void Render(AppWindow& window);
 void CleanUp();
@@ -234,10 +238,20 @@ bool Init()
 
 	// #TODO: change to a .ini or .json
 	::AppSettings gsettings;
+
+    DllHandle curr_dll = ScriptManager::GetDLLHandle();
+
+    LOGDEBUGF("curr_dll: {}", (void*)(curr_dll));
+
 	if (curr_dll != nullptr)
 	{
         auto get_game_settings = reinterpret_cast<get_game_settings_t*>(DLibGetAddress(curr_dll, "get_game_settings"));
-		gsettings = get_game_settings();
+        LOGDEBUGF("DLGetError: {}", DLGetError());
+		LOGDEBUGF("get_game_settings: {}", (void*)(get_game_settings));
+        if (!get_game_settings)
+            LOGERROR("Couldn't get game settings");
+        else 
+            gsettings = get_game_settings();
 	}
 
 #ifdef TOAD_EDITOR
@@ -248,6 +262,8 @@ bool Init()
 	gsettings.window_name = "Engine 2D";
 #endif 
 	AppWindow& window = GetWindow();
+
+    LOGDEBUGF("Creating window ({})", gsettings.window_name);
 
 	if (!window.Create(gsettings.window_width, gsettings.window_height, gsettings.frame_limit, gsettings.style, gsettings.window_name))
 		return false;
@@ -271,6 +287,11 @@ bool Init()
 		
 	StartGameSession();
 #endif
+
+#if defined(TOAD_EDITOR) || !defined(NDEBUG)
+    ui_ctx.imgui_ctx = ImGui::GetCurrentContext();
+    ui_ctx.implot_ctx = ImPlot::GetCurrentContext();
+#endif 
 
 	return true;
 }
@@ -359,21 +380,20 @@ void Render(AppWindow& window)
 
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
-			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
+			script->OnImGui(obj.get(), ui_ctx);
 
 	ImGui::SFML::Render(window);
 #else
-#if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	Scene::current_scene.Render(window);
     DrawingCanvas::ClearDrawBuffers();
 
+    #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
-			script->OnImGui(obj.get(), ImGui::GetCurrentContext());
+			script->OnImGui(obj.get(), ui_ctx);
 
 	ImGui::SFML::Render(window);
 #endif 
-	Scene::current_scene.Render(window);
 
 	if (cam != nullptr)
 	{
@@ -539,6 +559,7 @@ void CleanUp()
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
 	LOGDEBUG("shutting down imgui");
 	ImGui::SFML::Shutdown();
+    ImPlot::DestroyContext();
 #endif
 
 	LOGDEBUG("closing window");
@@ -552,4 +573,9 @@ Camera& GetEditorCamera()
 	return editor_cam;
 }
 
+const UICtx& GetUIContext()
+{
+    return ui_ctx;
 }
+
+} // namespace Toad

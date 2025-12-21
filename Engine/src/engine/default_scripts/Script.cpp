@@ -39,13 +39,13 @@ void Script::OnRender(Object* obj, sf::RenderTarget& target)
 }
 
 #ifdef TOAD_EDITOR
-void Script::OnEditorUI(Object* obj, ImGuiContext* ctx)
+void Script::OnEditorUI(Object* obj, const UICtx& ctx)
 {
 }
 #endif
 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
-void Script::OnImGui(Object* obj, ImGuiContext* ctx)
+void Script::OnImGui(Object* obj, const UICtx& ctx)
 {
 }
 #endif

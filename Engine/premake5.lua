@@ -13,6 +13,7 @@ project "Engine"
         "src/**.h",
         "src/**.mm",
         "../vendor/imgui/**.cpp",
+        "../vendor/implot/**.cpp",
         "../vendor/sfml-imgui/imgui-SFML.cpp",
     }
 
@@ -28,6 +29,7 @@ project "Engine"
         "../GameTemplates/Game/src",
         "../vendor",
         "../vendor/imgui",
+        "../vendor/implot",
         "../vendor/sfml-imgui",
         "../vendor/SFML-3.0.0/include",
         "../vendor/json/include",

@@ -88,16 +88,16 @@ void TestScript::ExposeVars()
 #ifdef TOAD_EDITOR
 void TestScript::OnEditorUI(Toad::Object* obj, ImGuiContext* ctx)
 {
-	ImGui::SetCurrentContext(ctx);
+	UI_APPLY_CTX(ctx);
 
 	ImGui::Text("Velocity: %f %f", velx, vely);
 }
 #endif
 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
-void TestScript::OnImGui(Toad::Object* obj, ImGuiContext* ctx)
+void TestScript::OnImGui(Toad::Object* obj, const UICtx& ctx)
 {
-	ImGui::SetCurrentContext(ctx);
+	UI_APPLY_CTX(ctx);
 
 	ImGui::Begin("[TestScript] Controller menu");
 

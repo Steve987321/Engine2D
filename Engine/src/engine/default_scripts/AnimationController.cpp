@@ -41,8 +41,10 @@ void AnimationController::OnLateUpdate(Object* obj)
 }
 
 #ifdef TOAD_EDITOR
-void AnimationController::OnEditorUI(Object* obj, ImGuiContext* ctx)
+void AnimationController::OnEditorUI(Object* obj, const UICtx& ctx)
 {
+    UI_APPLY_CTX(ctx);
+
 	Script::OnEditorUI(obj, ctx);
 	if (m_attachedAnimation)
 	{

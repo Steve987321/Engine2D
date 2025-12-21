@@ -294,9 +294,9 @@ static std::string InstructionToStr(VM::Instruction instr)
 }
 
 #if defined(TOAD_EDITOR) || !defined(NDEBUG)
-void Sim::OnImGui(Object* obj, ImGuiContext* ctx)
+void Sim::OnImGui(Object* obj, const UICtx& ctx)
 {
-	ImGui::SetCurrentContext(ctx);
+	UI_APPLY_CTX(ctx);
 
 	ImGui::Begin("[Sim] command menu");
 

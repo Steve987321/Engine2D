@@ -4,6 +4,10 @@
       "vendor/imgui/imgui_draw.cpp"
       "vendor/imgui/imgui_tables.cpp"
       "vendor/imgui/imgui_widgets.cpp"
+        "vendor/implot/.github/example_implot.cpp"
+      "vendor/implot/implot.cpp"
+      "vendor/implot/implot_demo.cpp"
+      "vendor/implot/implot_items.cpp"
       "vendor/sfml-imgui/imgui-SFML.cpp"
     "Engine/src/EngineCore.h"
     "Engine/src/EngineMeta.h"
@@ -51,6 +55,8 @@
         "Engine/src/engine/systems/Flow.h"
         "Engine/src/engine/systems/Input.cpp"
         "Engine/src/engine/systems/Input.h"
+        "Engine/src/engine/systems/InputMac.cpp"
+        "Engine/src/engine/systems/InputMac.h"
         "Engine/src/engine/systems/Reflection.cpp"
         "Engine/src/engine/systems/Reflection.h"
         "Engine/src/engine/systems/ResourceManager.cpp"
@@ -97,6 +103,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/implot>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Debug>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
@@ -159,6 +166,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/implot>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Release>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
@@ -220,6 +228,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/implot>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:ReleaseNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
@@ -280,6 +289,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/implot>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:DebugNoEditor>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
@@ -341,6 +351,7 @@ target_include_directories("Engine" PRIVATE
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../GameTemplates/Game/src>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/imgui>
+  $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/implot>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/sfml-imgui>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/SFML-3.0.0/include>
   $<$<CONFIG:Distro>:${CMAKE_CURRENT_SOURCE_DIR}/Engine/../vendor/json/include>
