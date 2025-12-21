@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "Input.h"
 
+#ifdef __APPLE__
+#include "InputMac.h"
+#endif 
+
 namespace Toad
 {
 
@@ -13,8 +17,12 @@ namespace Input
 
 	bool IsKeyDown(sf::Keyboard::Key key)
 	{
+    #ifdef __APPLE__
+        return InputMac::IsKeyDown(key);
+    #else 
 		return sf::Keyboard::isKeyPressed(key);
-	}
+    #endif
+    }
 
 	bool IsMouseDown(sf::Mouse::Button button)
 	{

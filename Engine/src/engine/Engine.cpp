@@ -227,6 +227,11 @@ bool Init()
 	}
 #endif
 
+#ifdef __APPLE__
+    Input::AddKeyPressCallback(InputMac::MacKeyPressCallback);
+    Input::AddKeyReleaseCallback(InputMac::MacKeyReleaseCallback);
+#endif 
+
 	// #TODO: change to a .ini or .json
 	::AppSettings gsettings;
 	if (curr_dll != nullptr)

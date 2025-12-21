@@ -31,6 +31,6 @@ namespace Input
 	ENGINE_API const std::vector<FKEY_CALLBACK>& GetAllKeyReleaseCallbacks();
 	ENGINE_API const std::vector<FMOUSE_CALLBACK>& GetAllMousePressCallbacks();
 	ENGINE_API const std::vector<FMOUSE_CALLBACK>& GetAllMouseReleaseCallbacks();
-};
+}
 
 }

@@ -51,6 +51,11 @@ namespace Toad
 		// clear Input callbacks 
 		Input::Clear();
 
+    #ifdef __APPLE__
+        Input::AddKeyPressCallback(InputMac::MacKeyPressCallback);
+        Input::AddKeyReleaseCallback(InputMac::MacKeyReleaseCallback);
+    #endif 
+
 		if (current_dll)
 		{
 			DLibFree(current_dll);
