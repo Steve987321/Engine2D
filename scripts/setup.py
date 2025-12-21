@@ -6,6 +6,12 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 proj_dir = os.path.dirname(script_dir)
 print(proj_dir)
 
+imgui_ini_files = [
+    os.path.join(proj_dir, "imgui-anim.ini"),
+    os.path.join(proj_dir, "imgui-main.ini"),
+    os.path.join(proj_dir, "imgui.ini"),
+]
+
 if sys.platform == "win32":
 	bin_release_dir = os.path.join(proj_dir, "bin", "Release-windows-x86_64")
 	bin_debug_dir = os.path.join(proj_dir, "bin", "Debug-windows-x86_64")
@@ -84,3 +90,8 @@ for file in sfml_bin_release_files:
 for file in sfml_bin_debug_files: 
 	print(f"Copying {file} to {bin_debug_dir}")
 	shutil.copy2(file, bin_debug_dir)
+
+for file in imgui_ini_files:
+    shutil.copy2(file, bin_debug_dir)
+    shutil.copy2(file, bin_release_dir)
+    
