@@ -25,7 +25,7 @@ inline std::string_view type_name()
     return "Unknown";
 }
 
-struct ENGINE_API SerializedEnum
+struct SerializedEnum
 {
     union Data
     {    
@@ -63,7 +63,7 @@ SERIALIZABLE_TYPE(std::string*)
 #define ReflectTypes SerializedEnum, bool*, int8_t*, int16_t*, int32_t*, int64_t*, float*, std::string*
 
 template<typename T>
-struct ENGINE_API ReflectVarsOfT
+struct ReflectVarsOfT
 {
     std::unordered_map<std::string, T> data;
 
@@ -100,7 +100,7 @@ struct ENGINE_API ReflectVarsOfT
 };
 
 template<typename... Ts>
-struct ENGINE_API ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
+struct ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
 {
     template<typename T>
     ReflectVarsOfT<T>& Get()
@@ -137,7 +137,7 @@ struct ENGINE_API ReflectVarsCopy : ReflectVarsOfT<std::remove_pointer_t<Ts>>...
 };
 
 template<typename... Ts>
-struct ENGINE_API ReflectVars : ReflectVarsOfT<Ts>...
+struct ReflectVars : ReflectVarsOfT<Ts>...
 {
     ReflectVars()
         : ReflectVarsOfT<Ts>()...
