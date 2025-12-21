@@ -75,8 +75,8 @@ namespace project {
 		std::string name;
 		std::filesystem::path project_path;
 		std::filesystem::path engine_path;
-		PROJECT_FLAGS project_flags;
-		PROJECT_TYPE project_gen_type;
+		PROJECT_FLAGS project_flags = PROJECT_FLAGS::NO_VENDOR_COPY;
+		PROJECT_TYPE project_gen_type = PROJECT_TYPE::Makefile;
 		Toad::Vec2f editor_cam_size = {1280, 720};
 		Toad::Vec2f editor_cam_pos = {0, 0};
         bool use_own_libs = false;

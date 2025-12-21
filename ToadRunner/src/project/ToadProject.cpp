@@ -66,11 +66,13 @@ namespace project {
 		{
 #ifdef _WIN32
             // change to warning, choose to add/overwrite directory contents
-            return
+            ri = 
             {
                 CREATE_PROJECT_RES::ERROR,
                 Toad::format_str("Project directory isn't empty {}", settings.project_path)
             };
+
+			return false;
 #else
             // on mac ignore .DS_STORE
 			for (const auto& entry : fs::directory_iterator(settings.project_path))

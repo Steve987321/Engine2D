@@ -18,7 +18,7 @@ namespace Toad
 struct AppSettings;
 class Camera;
 
-void DefaultViewportUI();
+ENGINE_API void DefaultViewportUI();
 
 struct Viewport
 {
@@ -26,20 +26,20 @@ struct Viewport
     std::unique_ptr<sf::RenderWindow> window;
 };
 
-class ENGINE_API AppWindow : public sf::RenderWindow
+class AppWindow : public sf::RenderWindow
 {
 public:
-	bool Create(uint32_t window_width, uint32_t window_height, uint32_t frame_limit = 60, uint32_t style = 0, std::string window_name = "");
-	ImGuiContext* GetImGuiContext();
+	ENGINE_API bool Create(uint32_t window_width, uint32_t window_height, uint32_t frame_limit = 60, uint32_t style = 0, std::string window_name = "");
+	ENGINE_API ImGuiContext* GetImGuiContext();
 
-	void RecreateImGuiContext();
-	static void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style, std::function<void()> ui = DefaultViewportUI);
+	ENGINE_API void RecreateImGuiContext();
+	ENGINE_API static void AddViewport(const sf::VideoMode& mode, std::string_view title, uint32_t style, std::function<void()> ui = DefaultViewportUI);
 
-	static void UpdateViewports(const FEVENT_CALLBACK& callback);
+	ENGINE_API static void UpdateViewports(const FEVENT_CALLBACK& callback);
 
-	static std::queue<std::filesystem::path>& GetDroppedFilesQueue();
+	ENGINE_API static std::queue<std::filesystem::path>& GetDroppedFilesQueue();
 
-    static void CleanUpViewports();
+	ENGINE_API static void CleanUpViewports();
 
 #ifdef _WIN32
 	static inline LONG_PTR orginal_wnd_proc = NULL;

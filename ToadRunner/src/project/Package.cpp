@@ -365,7 +365,7 @@ namespace Toad
 #ifdef _WIN32
 				for (const auto& entry2 : fs::directory_iterator(entry.path() / "bin"))
 				{
-					if (params.is_debug) 
+					if (params.build_cfg == Package::BuildConfig::DEBUG) 
 					{
 						if (entry2.path().filename().string().find("-d-2") != std::string::npos)
 						{
