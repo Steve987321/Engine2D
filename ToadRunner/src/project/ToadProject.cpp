@@ -304,20 +304,18 @@ namespace project {
         const fs::path& engine_path_fs = settings.engine_path;
 		const fs::path generate_game_lua = engine_path_fs / "scripts" / "generate_game_project.lua";
 
-		// #TODO: CHANGE 
-#ifdef _WIN32
-		const std::string premake5 = "premake5.exe";
-		const std::string full_path_to_premake5 = project_path_forwardslash + '/' + premake5;
-#else
 		std::string premake5 = "premake5";
-		const std::string& full_path_to_premake5 = premake5;
-#endif
-	
+		premake5 += EXE_FILE_EXT;
+
+#ifdef _WIN32
 #ifdef TOAD_DISTRO
-		const fs::path bin_path = engine_path_fs / "bin/" / premake5;
+		const fs::path premake_bin_path = engine_path_fs / "bin" / premake5;
 #else
-		const fs::path bin_path = engine_path_fs / "vendor" / "bin" / premake5;
+		const fs::path premake_bin_path = engine_path_fs / "vendor" / "bin" / premake5;
 #endif
+#endif 
+
+		premake5 = premake_bin_path.string();
 
 		CREATE_PROJECT_RES_INFO ri;
 
@@ -329,17 +327,6 @@ namespace project {
 
         // copy project premake file 
 		fs::copy_file(generate_game_lua, settings.project_path / "premake5.lua", fs::copy_options::overwrite_existing);
-		
-		// copy premake executable, only needed for windows
-#ifdef _WIN32
-		if (!fs::copy_file(bin_path, settings.project_path / premake5))
-		{
-			return {
-				CREATE_PROJECT_RES::ERROR,
-				Toad::format_str("Failed to copy {} to {}", premake5, settings.project_path)
-			};
-		}
-#endif // _WIN32
 
 		// create/copy default game/engine files 
 
@@ -429,6 +416,8 @@ namespace project {
         args.use_own_libs = settings.use_own_libs;
 #ifndef TOAD_DISTRO 
         args.use_src = true; 
+#else 
+		args.use_src = false; 
 #endif 
 
         DoPremakeCommand(args);
@@ -568,6 +557,7 @@ namespace project {
 
 	project::PROJECT_TYPE DetectProjectType(const fs::path& proj_dir)
 	{
+		LOGDEBUG("Detecting project type");
 		for (const auto& entry : fs::directory_iterator(proj_dir))
 		{
 			if (fs::is_directory(entry.path()))
@@ -680,10 +670,12 @@ namespace project {
         args.engine_path = settings.engine_path;
         args.script_dir = scripts_dir_arg;
         args.use_own_libs = settings.use_own_libs;
-
 #ifndef TOAD_DISTRO 
         args.use_src = true; 
+#else 
+		args.use_src = false;
 #endif 
+
         return DoPremakeCommand(args);
 
 		return true;

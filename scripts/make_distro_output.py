@@ -41,7 +41,6 @@ game_templates = [
 files = [
     (("bin", f"Distro-{platform_as_str}-x86_64", f"{dlib_prefix}Engine{dlib_ext}"), (""), ""),
     (("bin", f"Distro-{platform_as_str}-x86_64", f"ToadRunner{exe_ext}"), (""), ""),
-    (("bin", f"Distro-{platform_as_str}-x86_64", "Engine.lib"), ("libs",), ""),
     (("bin", f"ReleaseNoEditor-{platform_as_str}-x86_64", f"ToadRunner{exe_ext}"), ("bin",), f"ToadRunnerNoEditor{exe_ext}"),
     (("bin", f"ReleaseNoEditor-{platform_as_str}-x86_64", f"{dlib_prefix}Engine{dlib_ext}"), ("bin",), ""),
     (("bin", f"DebugNoEditor-{platform_as_str}-x86_64", f"ToadRunner{exe_ext}"), ("bin", "debug"), f"ToadRunnerNoEditorDebug{exe_ext}"),
@@ -74,23 +73,21 @@ files = [
     (("vendor", "sfml-imgui"), ("game_templates", "vendor", "sfml-imgui"), ""),
 ]
 
+if sys.platform == "windows":
+    files.append(("bin", f"Distro-{platform_as_str}-x86_64", f"Engine.lib"), (""), ""))
+
 # folders to ignore 
 ignore_folders = [
+    ".github",
     "examples",
     "cmake",
     "docs",
     "doc",
     "misc",
+    "vulkan",
+    "sdlgpu3",
+    "example",
 ]
-
-# ignore_files = [
-#     "imgui_impl_allegro5.cpp",
-#     "imgui_impl_allegro5.h",
-# ]
-
-if sys.platform == "darwin":
-    ignore_folders.append("vulkan")
-    ignore_folders.append("sdlgpu3")
 
 # not needed but should be copied if possible
 optional_files = [
@@ -117,26 +114,10 @@ def should_skip_macos(entry):
     if file.endswith(".lib"):
         return True
 
-    print(entry)
-
     # premake5 binary not given for macos system
     if file == "premake5":
         return True
     
-    # TODO: make this work 
-    imgui_backends_to_use = [
-        "imgui_impl_metal.mm",
-        "imgui_impl_metal.h",
-        "imgui_impl_opengl2.cpp",
-        "imgui_impl_opengl2.h",
-        "imgui_impl_osx.mm",
-        "imgui_impl_osx.h",
-    ]
-    
-    if "imgui_impl" in file: 
-        if file not in imgui_backends_to_use:
-            return False 
-
     return False 
 
 # sfml uses symlinks
@@ -148,7 +129,6 @@ def create_sfml_symlinks(dir):
         "window",
         "network"
     ]
-
 
     for m in sfml_modules: 
         real_name = os.path.join(dir, f"libsfml-{m}.3.0.0.dylib")
@@ -192,19 +172,16 @@ os.makedirs(os.path.join(dir_out, "script_api"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "scripts"), exist_ok=True)
 os.path.join(proj_dir, "bin", f"Release-{platform_as_str}-x86_64")
 
-if sys.platform == "win32":
-    os.makedirs(os.path.join(dir_out, "libs"), exist_ok=True)
-
-
 for relative, relative_dest, rename in files: 
 
     path_src = os.path.join(proj_dir, *relative)
     path_dst = os.path.join(dir_out, *relative_dest)
 
-    if should_skip_macos(path_src):
-        continue 
-
     skip = False 
+
+    if sys.platform == "darwin":
+        if should_skip_macos(path_src):
+            skip = True  
 
     # skip optional files if they don't exist
     if not os.path.exists(path_src):
@@ -234,8 +211,8 @@ for relative, relative_dest, rename in files:
 
     print(f"Copy: {path_src} to {path_dst}")
 
-    if os.path.isdir(path_src): 
-        shutil.copytree(path_src, os.path.join(path_dst, rename), dirs_exist_ok=True, ignore=shutil.ignore_patterns(*ignore_folders))
+    if os.path.isdir(path_src):       
+         shutil.copytree(path_src, os.path.join(path_dst, rename), dirs_exist_ok=True, ignore=shutil.ignore_patterns(*ignore_folders))
     else: 
         shutil.copy2(path_src, os.path.join(path_dst, rename))
 

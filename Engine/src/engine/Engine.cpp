@@ -459,8 +459,12 @@ void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bi
 {
     LOGDEBUGF("Update game binary paths: '{}' '{}'", game_bin_file_name, bin_path);
 
+	if (bin_path.empty() || game_bin_file_name.empty())
+		return;
+
     game_bin_directory = bin_path;
     game_bin_file = game_bin_file_name;
+
     
     if (!game_bin_directory.ends_with(PATH_SEPARATOR))
     {
@@ -469,6 +473,9 @@ void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bi
     
     if (game_bin_directory.find("bin") == std::string::npos)
         return;
+
+	if (!std::filesystem::exists(game_bin_directory))
+		return; 
     
 #ifdef _WIN32
     std::wstring ws(game_bin_directory.size(), ' ');

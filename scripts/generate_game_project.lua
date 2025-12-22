@@ -159,6 +159,8 @@ project(game_project_name)
     language "C++"
     cppdialect "C++23"
 
+    flags {"MultiProcessorCompile"}
+
     targetdir("bin/" ..output_dir .. "/")
     objdir("bin-intermediate/" ..output_dir .. "/")
 

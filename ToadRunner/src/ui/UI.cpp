@@ -1226,9 +1226,6 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
 	if (!fs::is_directory(p)) 
 		p = p.parent_path();
 
-	if (!fs::exists(p))
-		return "";
-
     // used if we couldn't find the output dir in the bin dir 
     // (usually when we created a new project and didn't build anything yet)
     const fs::path fallback_bin_path{ p / "bin" / Toad::format_str("{}-{}-x86_64", PROJECT_BIN_SEARCH_FOR, PLATFORM_AS_STRING)};
