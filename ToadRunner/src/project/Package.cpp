@@ -139,16 +139,23 @@ namespace Toad
 			fs::remove(proj_dir / "buildlog.txt");
 		}
 
-		LOGDEBUGF("[Package] Running build for {}", project_file_path);
+		LOGDEBUGF("[Package] Running build for '{}' with build system: '{}'", project_file_path, params.build_system_file_path);
 		if (!RunBuildSystemWithArgs(params.build_system_file_path, format_str("{} /build {} /out buildlog.txt", project_file_path.string(), build_config_arg)))
 		{
 			LOGERROR("Failed to run build system");
 			return false;
 		}
 
+		size_t tries = 0;
 		while (!fs::exists(proj_dir / "buildlog.txt"))
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			tries++;
+			if (tries > 10)
+			{
+				LOGERROR("Build system failed to build");
+				return false; 
+			}
 		}
 
 		std::ifstream buildlog(proj_dir / "buildlog.txt");
@@ -295,7 +302,7 @@ namespace Toad
         fs::path sfml_bin_dir;
         fs::path runner_bin_dir;
         const fs::path debug_bin_dir = proj_engine_dir / "bin" / "debug";
-        const fs::path bin_dir = proj_engine_dir / "bin";
+        const fs::path bin_dir = proj_engine_dir;
 
         if (!fs::exists(debug_bin_dir))
         {
@@ -304,7 +311,7 @@ namespace Toad
         }
         if (!fs::exists(bin_dir))
         {
-            LOGERRORF("bin/ doesn't exist in '{}'", proj_engine_dir);
+            LOGERRORF("'{}' doesn't exist", proj_engine_dir);
             return false; 
         }
 
