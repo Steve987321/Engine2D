@@ -54,7 +54,6 @@ files = [
     (("", "imgui.ini"), ("",), ""),
     (("vendor", "bin", f"premake5{exe_ext}"), ("bin",), ""),
     (("vendor", "bin", "LICENSE.txt"), ("bin",), ""),
-    (("vendor", "imgui"), ("game_templates", "vendor", "imgui"), ""),
     (("vendor", "json"), ("game_templates", "vendor", "json"), ""),
     (("vendor", "magic_enum"), ("game_templates", "vendor", "magic_enum"), ""),
     (("vendor", "implot"), ("game_templates", "vendor", "implot"), ""),
@@ -73,8 +72,8 @@ files = [
     (("vendor", "sfml-imgui"), ("game_templates", "vendor", "sfml-imgui"), ""),
 ]
 
-if sys.platform == "windows":
-    files.append(("bin", f"Distro-{platform_as_str}-x86_64", f"Engine.lib"), (""), ""))
+if sys.platform == "win32":
+    files.append((("bin", f"Distro-{platform_as_str}-x86_64", f"Engine.lib"), (""), ""))
 
 # folders to ignore 
 ignore_folders = [
@@ -96,7 +95,40 @@ optional_files = [
     "imgui.ini",
     "thumbnail.png",
 ]
+print(sys.platform)
+if sys.platform == "win32": 
+    imgui_backend_files = [
+        "imgui_impl_opengl2.cpp",
+        "imgui_impl_opengl2.h",
+        "imgui_impl_win32.cpp",
+        "imgui_impl_win32.h",
+    ]
+elif sys.platform == "darwin":
+    imgui_backend_files = [
+        "imgui_impl_opengl2.cpp",
+        "imgui_impl_opengl2.h",
+        "imgui_impl_osx.cpp",
+        "imgui_impl_osx.h",
+    ]
 
+# add imgui
+
+os.makedirs(os.path.join(dir_out, "game_templates", "vendor", "imgui", "backends"), exist_ok=True)
+
+for file in os.listdir(os.path.join(proj_dir, "vendor", "imgui", "backends")):
+    if file in imgui_backend_files:
+        relative_path = os.path.relpath(os.path.join(proj_dir, "vendor", "imgui", "backends", file), proj_dir)
+
+        files.append((tuple(relative_path.split(os.sep)), ("game_templates", "vendor", "imgui", "backends"), ""))
+
+for file in os.listdir(os.path.join(proj_dir, "vendor", "imgui")):
+    file_path = os.path.join(proj_dir, "vendor", "imgui", file)
+
+    if file.endswith(".cpp") or file.endswith(".h"):
+        relative_path = os.path.relpath(file_path, proj_dir)
+        files.append((tuple(relative_path.split(os.sep)), ("game_templates", "vendor", "imgui"), ""))
+
+print(files)
 # add game templates
 for gt in game_templates:
     files.append((("GameTemplates", gt, "src"), ("game_templates", gt, "src"), ""))
@@ -166,11 +198,9 @@ if not is_valid:
 os.makedirs(os.path.join(dir_out, "bin"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "bin/debug"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "game_templates"), exist_ok=True)
-os.makedirs(os.path.join(dir_out, "game_templates/src"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "game_templates/vendor"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "script_api"), exist_ok=True)
 os.makedirs(os.path.join(dir_out, "scripts"), exist_ok=True)
-os.path.join(proj_dir, "bin", f"Release-{platform_as_str}-x86_64")
 
 for relative, relative_dest, rename in files: 
 
