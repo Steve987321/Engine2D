@@ -207,12 +207,22 @@ void ui::engine_ui(ImGuiContext* ctx)
 				if (!project::Update(settings))
 					LOGERRORF("Failed to update project {}", project::current_project.project_path);
 			}
-            if (ImGui::MenuItem("Generate Project Files (CMAKELISTS)"))
+            if (ImGui::MenuItem("Generate Project Files (CMakeLists)"))
             {
                 if (settings.engine_path.empty())
 					settings.engine_path = GetEngineDirectory().string();
                 
                 settings.project_gen_type = project::PROJECT_TYPE::CMake;
+
+                if (!project::Update(settings, false))
+                    LOGERRORF("Failed to update project {}", project::current_project.project_path);
+            }
+            if (ImGui::MenuItem("Generate Project Files (Makefile)"))
+            {
+                if (settings.engine_path.empty())
+					settings.engine_path = GetEngineDirectory().string();
+                
+                settings.project_gen_type = project::PROJECT_TYPE::Makefile;
 
                 if (!project::Update(settings, false))
                     LOGERRORF("Failed to update project {}", project::current_project.project_path);
@@ -421,7 +431,15 @@ void ui::engine_ui(ImGuiContext* ctx)
 			if (ImGui::InputText("name", name, 30))
 				settings.name = name;
 
-            const char* project_types[] = {"Visual Studio 2022", "Visual Studio 2019", "Visual Studio 2015", "Makefile", "Codelite", "Xcode", "CMake"};
+            const char* project_types[] = {
+                "Visual Studio 2022", 
+                "Visual Studio 2019",
+                "Visual Studio 2015", 
+                "Makefile", 
+                "CMake",
+                "Codelite", 
+                "Xcode", 
+            };
 
 #ifdef _WIN32
             static const char* current_type_preview = "Visual Studio 2022";
@@ -443,6 +461,8 @@ void ui::engine_ui(ImGuiContext* ctx)
             }
 
             ImGui::Checkbox("Copy libs", &settings.use_own_libs);
+            ImGui::SameLine();
+            HelpMarker("Enable if you want to customize any third-party libraries for your project");
 
 			ImGui::Text("Selected Path %s", settings.project_path.empty() ? "?" : settings.project_path.string().c_str());
 
@@ -528,7 +548,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 					else
 					{
 						LOGDEBUGF("{} {}", cpri.res, cpri.description);
-						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_GAME") / "src" / "assets").string());
+						asset_browser.SetAssetPath((std::filesystem::path(settings.project_path) / (settings.name + "_Game") / "src" / "assets").string());
 					}
 
 					if (!std::filesystem::exists(project::current_project.engine_path))
@@ -1200,29 +1220,39 @@ std::filesystem::path GetEngineDirectory()
 
 std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings)
 {
-	std::filesystem::path p = settings.project_path;
-	if (!std::filesystem::is_directory(p)) 
+    namespace fs = std::filesystem; 
+
+	fs::path p = settings.project_path;
+	if (!fs::is_directory(p)) 
 		p = p.parent_path();
 
-	if (!std::filesystem::exists(p))
+	if (!fs::exists(p))
 		return "";
 
-    for (const auto& entry : std::filesystem::directory_iterator(p))
+    // used if we couldn't find the output dir in the bin dir 
+    // (usually when we created a new project and didn't build anything yet)
+    const fs::path fallback_bin_path{ p / "bin" / Toad::format_str("{}-{}-x86_64", PROJECT_BIN_SEARCH_FOR, PLATFORM_AS_STRING)};
+
+    for (const auto& entry : fs::directory_iterator(p))
     {
         if (entry.path().filename().string().find("bin") != std::string::npos)
         {
-            for (const auto& entry2 : std::filesystem::directory_iterator(entry.path()))
+            fs::path bin_path = entry.path();
+
+            for (const auto& entry2 : fs::directory_iterator(bin_path))
             {
                 if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
-                {
                     return entry2.path();
-                }
             }
+
+            // couldn't find anything, give what is expected output dir 
+            return bin_path / Toad::format_str("{}-{}-x86_64", PROJECT_BIN_SEARCH_FOR, PLATFORM_AS_STRING);
         }
     }
 
-    LOGWARNF("Can't find binary directory in {}, looking for a binary compiled with the '{}' configuration", settings.project_path, PROJECT_BIN_SEARCH_FOR);
-    return "";
+    LOGWARNF("Can't find binary directory in '{}', using fallback: '{}'", settings.project_path, fallback_bin_path);
+
+    return fallback_bin_path;
 }
 
 bool ImGui::SliderVec2(std::string_view label, float* x, float* y, float min, float max)

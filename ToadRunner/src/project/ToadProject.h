@@ -22,7 +22,8 @@ namespace project {
 		OK,
 		PATH_NOT_EXIST,
 		INVALID_PROJECT_SETTINGS,
-		ERROR
+		ERROR,
+        _count,
 	};
 
 	inline std::ostream& operator<<(std::ostream& os, CREATE_PROJECT_RES& r)
@@ -40,6 +41,8 @@ namespace project {
 		case CREATE_PROJECT_RES::ERROR:
 			os << "ERROR";
 			break;
+        default:
+            break;
 		}
 
 		return os;
@@ -124,6 +127,9 @@ namespace project {
 	bool OpenSln(const std::filesystem::path& settings, const misc::Editor& editor = misc::current_editor);
 #endif
 
+	// very minimal checking 
+	bool VerifyEnginePathContents(const std::filesystem::path& path, CREATE_PROJECT_RES_INFO& ri);
+
     std::string ProjectTypeAsStr(PROJECT_TYPE r);
 
 	CREATE_PROJECT_RES_INFO Create(const ProjectSettings& settings, const std::string& selected_template);
@@ -135,7 +141,8 @@ namespace project {
 	PROJECT_TYPE DetectProjectType(const std::filesystem::path& proj_dir);
 
 	// rerun premake path=projectpath
-	bool Update(const ProjectSettings& settings, bool detect_proj_type = true);
+    // if there are problems it will edit settings to fix them 
+	bool Update(ProjectSettings& settings, bool detect_proj_type = true);
 
     bool ResetPremakeFile(const ProjectSettings& settings);
 

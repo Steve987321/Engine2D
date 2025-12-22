@@ -41,7 +41,7 @@ GameAssetsBrowser::~GameAssetsBrowser()
 
 std::filesystem::path GameAssetsBrowser::FindAssetPath(const project::ProjectSettings& project)
 {
-	return project.project_path / (project.name + "_GAME") / "src" / "assets";
+	return project.project_path / (project.name + "_Game") / "src" / "assets";
 }
 
 void list_dir_contents(const fs::path& path)
@@ -424,9 +424,11 @@ void GameAssetsBrowser::Show()
 			{
 				m_current_path_contents.clear();
 
-				for (const auto& entry : fs::directory_iterator(GetCurrentPath()))
-					m_current_path_contents.emplace_back(entry.path());
-
+                if (fs::exists(GetCurrentPath()))
+                    for (const auto& entry : fs::directory_iterator(GetCurrentPath()))
+                        m_current_path_contents.emplace_back(entry.path());
+                else 
+                    LOGERRORF("No asset folder found in: '{}'", GetCurrentPath().string());
 				refresh = false;
 			}
 

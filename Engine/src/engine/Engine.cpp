@@ -129,6 +129,7 @@ void SetInteractingCamera(Camera* cam)
 
 void SetProjectPath(const std::filesystem::path& path)
 {
+    LOGDEBUGF("Setting project path: {}", path.string());
 	project_path = path;	
 }
 
@@ -456,6 +457,8 @@ std::filesystem::path GetAssetPath()
 
 void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
 {
+    LOGDEBUGF("Update game binary paths: '{}' '{}'", game_bin_file_name, bin_path);
+
     game_bin_directory = bin_path;
     game_bin_file = game_bin_file_name;
     
@@ -522,6 +525,7 @@ void SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback)
 {
 	on_dll_change_callback = callback;
 
+    LOGDEBUGF("Setting DLL Watcher callback. game bin dir: '{}'", game_bin_directory);
 	if (!std::filesystem::exists(game_bin_directory))
 	{
 		LOGERRORF("Can't add game dll watcher to non existing file: {}", game_bin_directory);

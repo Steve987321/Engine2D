@@ -51,6 +51,12 @@ namespace Toad
 			return false;
 		}
 
+        if (project::CREATE_PROJECT_RES_INFO _; !project::VerifyEnginePathContents(proj_engine_dir, _))
+        {
+            LOGERROR("Missing files found in engine directory");
+            return false; 
+        }
+
 		// get assets path 
 		fs::path proj_assets_path;
 		for (const auto& entry : fs::directory_iterator(proj_dir))
@@ -60,7 +66,7 @@ namespace Toad
 				proj_assets_path = entry.path() / "src" / "assets";
 				if (!fs::exists(proj_assets_path))
 				{
-					LOGERROR("[Package] No assets or src folder found in {}", proj_assets_path);
+					LOGERRORF("[Package] No assets or src folder found in {}", proj_assets_path);
 					return false;
 				}
 
@@ -212,12 +218,16 @@ namespace Toad
 			return false;
 		}
 #endif 
-		// check output binaries 
+		
+        // check output binaries 
+
 		bool has_dll = false;
+        fs::path dl_path;
 		for (const auto& entry : fs::directory_iterator(proj_bin_path))
 		{
 			if (entry.path().extension() == LIB_FILE_EXT)
 			{
+                dl_path = entry.path();
 				has_dll = true;
 				break;
 			}
@@ -237,6 +247,8 @@ namespace Toad
 
 		fs::create_directory(out_dir);
 
+        fs::copy_file(dl_path, out_dir / dl_path.filename(), fs::copy_options::overwrite_existing);
+
 		// #TODO add compression
 		// copy assets (no scripts)
 
@@ -249,6 +261,7 @@ namespace Toad
             ".hpp",
             ".hh",
         };
+
 		for (const auto& entry : fs::recursive_directory_iterator(proj_assets_path))
 		{
 			// skip source script files 
@@ -273,45 +286,61 @@ namespace Toad
 				}
 			}
 		}
-		for (const auto& entry : fs::directory_iterator(proj_bin_path))
-		{
-			if (entry.path().extension() == LIB_FILE_EXT)
-			{
-				fs::copy_file(entry.path(), out_dir / entry.path().filename(), fs::copy_options::overwrite_existing);
 
-            #ifdef __APPLE__
-                // on mac we need to adjust the dependency reference of libEngine.dylib to be relative
-                std::string command = Toad::format_str("cd {} && install_name_tool -change /usr/local/lib/libEngine.dylib @loader_path/libEngine.dylib {}", out_dir.string(), entry.path().string());
-                system(command.c_str());
-            #endif 
-			}
-		}
+        fs::path runner_output;
 
 #ifdef TOAD_DISTRO
-        
         bool copy_debug_sfml = params.build_cfg == Package::BuildConfig::DEBUG;
+        bool copy_debug_runner = params.build_cfg != Package::BuildConfig::RELEASE;
         fs::path sfml_bin_dir;
+        fs::path runner_bin_dir;
+        const fs::path debug_bin_dir = proj_engine_dir / "bin" / "debug";
+        const fs::path bin_dir = proj_engine_dir / "bin";
+
+        if (!fs::exists(debug_bin_dir))
+        {
+            LOGERRORF("bin/debug doesn't exist in '{}'", proj_engine_dir);
+            return false; 
+        }
+        if (!fs::exists(bin_dir))
+        {
+            LOGERRORF("bin/ doesn't exist in '{}'", proj_engine_dir);
+            return false; 
+        }
+
         if (copy_debug_sfml)
-            sfml_bin_dir = proj_engine_dir / "bin" / "debug";
+            sfml_bin_dir = debug_bin_dir;
         else 
-            sfml_bin_dir = proj_engine_dir / "bin";
+            sfml_bin_dir = bin_dir;
+        if (copy_debug_runner)
+            runner_bin_dir = debug_bin_dir;
+        else 
+            runner_bin_dir = bin_dir;
 
-		fs::path bin = proj_engine_dir / "bin" ;
+#ifdef __APPLE__
+        copy_debug_sfml = false; 
+        sfml_bin_dir = proj_engine_dir; 
+#endif 
+
+
+        std::string_view lib_engine_suffix = params.build_cfg == BuildConfig::RELEASE ? "" : build_config_arg; 
+
 		std::string runner = Toad::format_str("ToadRunnerNoEditor{}{}", build_config_arg, EXE_FILE_EXT);
+		std::string lib_engine = Toad::format_str("{}Engine{}{}", LIB_FILE_PREFIX, lib_engine_suffix, LIB_FILE_EXT);
+		std::string lib_engine_default_name = Toad::format_str("{}Engine{}{}", LIB_FILE_PREFIX, "", LIB_FILE_EXT);
 
-		// others in bin (Engine) 
-		for (const auto& entry : fs::directory_iterator(proj_engine_dir / "bin"))
-		{
-			if (entry.path().extension() == ".dll")
-			{
-				fs::copy_file(entry.path(), out_dir / entry.path().filename());
-			}
-		}
+        if (!fs::exists(runner_bin_dir / lib_engine))
+        {
+            LOGERRORF("'{}' doesn't exist", runner_bin_dir / lib_engine);
+            return false;
+        }
 
+        fs::copy_file(runner_bin_dir / lib_engine, out_dir / lib_engine_default_name, fs::copy_options::overwrite_existing);
+      
 		// sfml 
 		for (const auto& entry : fs::directory_iterator(sfml_bin_dir))
 		{
-			if (entry.path().string().find("sfml") != std::string::npos && entry.path().extension() == ".dll")
+			if (entry.path().string().find("sfml") != std::string::npos && entry.path().extension() == LIB_FILE_EXT)
 			{
 				fs::copy_file(entry.path(), out_dir / entry.path().filename());
 			}
@@ -322,25 +351,16 @@ namespace Toad
 		try {
 			json data = json::parse(proj_file_f);
 			std::string gamename = data["name"];
-			fs::copy_file(bin / runner, out_dir / (gamename + EXE_FILE_EXT));
+            runner_output = out_dir / (gamename + EXE_FILE_EXT);
+			fs::copy_file(runner_bin_dir / runner, runner_output);
 		}
 		catch (json::parse_error& e)
 		{
 			LOGWARNF("Failed to read project file {}", params.project_file_path);
-			fs::copy_file(bin / runner, out_dir / runner);
+            runner_output = out_dir / runner;
+			fs::copy_file(runner_bin_dir / runner, runner_output);
 		}
 
-		// sfml
-		//for (const auto& entry : fs::directory_iterator(proj_engine_dir))
-		//{
-		//	if (entry.path().filename().extension() == ".dll")
-		//	{
-		//		if (entry.path().filename().string().find("GameCurrent") != std::string::npos)
-		//			continue;
-
-		//		fs::copy_file(entry.path(), out_dir / entry.path().filename(), fs::copy_options::skip_existing);
-		//	}
-		//}
 #else 
 		fs::path bin = proj_engine_dir / "bin" / format_str("{}NoEditor-{}-x86_64", build_config_arg, PLATFORM_AS_STRING);
 
@@ -349,7 +369,7 @@ namespace Toad
 		fs::path runner = bin / runner_name;
 		fs::path enginedll = bin / engine_dl_name;
 
-		if (!fs::exists(bin))
+        if (!fs::exists(bin))
 		{
 			LOGERRORF("[Package] Path doesn't exist: {}", bin);
 			return false;
@@ -366,6 +386,8 @@ namespace Toad
 		}
 
 		// #TODO rename runner to game project name
+
+        runner_output = out_dir / runner_name;
 		fs::copy_file(runner, out_dir / runner_name, fs::copy_options::overwrite_existing);
 		fs::copy_file(enginedll, out_dir / engine_dl_name, fs::copy_options::overwrite_existing);
 
@@ -405,13 +427,12 @@ namespace Toad
 			}
 		}
 
-		for (const auto& entry : fs::recursive_directory_iterator(out_dir))
-		{
-			if (entry.path().extension() == ".h" || entry.path().extension() == ".cpp")
-			{
-				fs::remove(entry.path());
-			}
-		}
+#endif 
+
+#ifdef __APPLE__
+        // on mac we need to adjust the dependency reference of libEngine.dylib to be relative
+        std::string command = Toad::format_str("cd {} && install_name_tool -change /usr/local/lib/libEngine.dylib @loader_path/libEngine.dylib {}", out_dir.string(), runner_output.filename());
+        system(command.c_str());
 #endif 
 
         LOGDEBUG("Done packaging");
