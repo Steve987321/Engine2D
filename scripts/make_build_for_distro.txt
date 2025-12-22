@@ -1,0 +1,1 @@
+make config=distro -j && make config=releasenoeditor -j && make config=debugnoeditor -j && make config=testnoeditor -j
