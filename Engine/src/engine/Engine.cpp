@@ -476,6 +476,8 @@ void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bi
 
 	if (!std::filesystem::exists(game_bin_directory))
 		return; 
+
+	LOGDEBUG("Setting dll watcher");
     
 #ifdef _WIN32
     std::wstring ws(game_bin_directory.size(), ' ');

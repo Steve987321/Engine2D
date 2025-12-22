@@ -344,7 +344,7 @@ namespace project {
         // copy template 
         
 		// create a bin folder so filewatcher can start watching
-		fs::create_directory(fs::path(game_path).parent_path() / "bin");
+		fs::create_directory(settings.project_path / "bin");
 
 #ifdef TOAD_DISTRO
 		fs::copy(engine_path_fs / "game_templates" / selected_template / "src", game_path, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
