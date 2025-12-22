@@ -101,7 +101,7 @@ else -- distro
         }
         lib_dirs = 
         {
-            engine_path .. "/libs",
+            engine_path,
             "vendor/SFML-3.0.0/lib",
         }
         sources = 
@@ -127,7 +127,7 @@ else -- distro
         }
         lib_dirs = 
         {
-            engine_path .. "/libs",
+            engine_path,
             engine_path .. "/game_templates/vendor/SFML-3.0.0/lib",
         }
         sources = 
