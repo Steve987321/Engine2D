@@ -56,8 +56,6 @@ namespace Compiler
 		uint32_t line;
 	};
 
-	bool TokenIsDigit(const Token& t);
-
 	void LexerInit(std::string_view src);
 
 	bool LexerScan(std::vector<Token>& tokens);

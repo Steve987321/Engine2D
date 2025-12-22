@@ -1,6 +1,11 @@
 #pragma once 
 
-inline const char* CarControllerScript = 
+namespace SimEnvironments
+{
+
+// #TODO: serialize environments in config files 
+
+inline const char* car_controller_script = 
 R"(// Car controller script
 // Use A and D to rotate the wheels
 // Space is crouch?
@@ -57,3 +62,5 @@ CEApplyGas(gas);
 void CarEnvironmentLoad();
 void CarEnvironmentUpdate(float gas);
 void CarEnvironmentImGui();
+
+}

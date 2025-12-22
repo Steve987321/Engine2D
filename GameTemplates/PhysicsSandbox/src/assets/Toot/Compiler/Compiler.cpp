@@ -11,6 +11,9 @@ namespace Compiler
 CompileResult CompileString(std::string_view str, std::vector<VM::Instruction>& res, VM* vm)
 {
 	error_msgs.clear();
+	for (void* p : strings)
+		free(p);
+	strings.clear();
 	
 	std::cout << str << std::endl;
 	LexerInit(str);

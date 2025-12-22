@@ -15,24 +15,24 @@ static size_t pos = 0;
 static Token* token = nullptr;
 static std::vector<Token> current_tokens;
 static std::vector<std::string> errors;
+static int unique_label_counter = 0;
 
 static size_t register_pos = 0;
 static std::set<std::string> function_sigs;
 static std::vector<std::unordered_map<std::string_view, VMRegister>> vars;
-static bool once = false;
+
+// when true added instructions should be run once 
+static bool once = false; 
 
 static std::vector<VM::Instruction> parse_res;
 
-extern VMRegister Expression();
+static VMRegister Expression();
 static VMRegister PlusMinus();
 
 template<typename ...TArgs> 
 static void AddError(std::string_view format, TArgs... args)
 {
-	char buf[128]{};
-	snprintf(buf, sizeof(buf), format.data(), args...);
-    std::cout << buf << std::endl;
-	errors.emplace_back(buf);
+	errors.emplace_back(std::vformat(format, std::make_format_args(args...)));
 }
 
 static bool VarExists(std::string_view id)
@@ -67,11 +67,10 @@ static VMRegister* GetVarRegister(const std::string& id)
 
 static VMRegister CreateUniqueLabelRegister()
 {
-	static int counter = 0;
 	VMRegister reg;
 	reg.type = VMRegisterType::INT;
-	reg.value.num = counter;
-	counter++;
+	reg.value.num = unique_label_counter;
+	unique_label_counter++;
     return reg;
 }
 
@@ -305,12 +304,12 @@ static bool GetFunctionArgs(const std::string& func_name, std::vector<VMRegister
 
 static void CallFunctionEx(std::string_view sig, std::vector<VMRegister>& args_as_registers, const VMRegister& dst)
 {
-	// #tood: temp leak for now 
 	VMRegister function_arg{};
 	function_arg.type = VMRegisterType::STRING;
 	void* p = malloc(sig.size());
 	assert(p);
 	memcpy(p, sig.data(), sig.size() + 1);
+	strings.emplace_back(p);
 	function_arg.value.str = (char*)p;
 	args_as_registers.insert(args_as_registers.begin(), function_arg);
 	
@@ -331,8 +330,7 @@ static VMRegister Unary()
 {
 	VMRegister res {};
 	res.type = VMRegisterType::INT;
-	res.value.num = -1; // burr use invalid type
-//    res.type = VMRegisterType::INVALID;
+	res.value.num = -1; 
 
 	const bool is_unary_min = token->type == TOKEN_TYPE::MINUS;
 	const bool is_not = token->type == TOKEN_TYPE::NOT;
@@ -469,10 +467,7 @@ static VMRegister Factor()
 {
 	VMRegister a = Unary();
 	if (a.value.num == -1)
-	{
         return a;
-//		AddError("Unexpected token after: %s", token->str.c_str());
-	}
 
 	VMRegister dst = a;
 
@@ -509,10 +504,7 @@ static VMRegister PlusMinus()
 {
 	VMRegister a = Factor();
 	if (a.value.num == -1)
-	{
         return a;
-//		AddError("Unexpected token after: {}", token->str.c_str());
-	}
 
 	VMRegister dst = a;
 
@@ -640,10 +632,10 @@ static VMRegister IfStatement()
         
 		// get first argument
         a = PlusMinus();
-
-		// get comparison
-		IncrementToken();
-	
+        
+        // get comparison
+        IncrementToken();
+        
 		if (!token)
 		{
 			AddError("unexpected end");
@@ -877,7 +869,7 @@ static void Return()
     AddInstruction(OP_CODE::OP_RETURN, {arg});
 }
 
-VMRegister Expression()
+static VMRegister Expression()
 {
 	VMRegister res{};
 
@@ -958,6 +950,7 @@ void AddLibToParserCtx(const CPPLib& lib)
 bool Parse(const std::vector<Token>& tokens, std::vector<VM::Instruction>& op_codes_res, VM* vm)
 {
     register_pos = 0;
+	unique_label_counter = 0;
     
     vars.clear();
     function_sigs.clear();

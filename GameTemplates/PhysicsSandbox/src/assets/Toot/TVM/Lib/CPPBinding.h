@@ -3,6 +3,7 @@
 #include <functional>
 #include <unordered_map>
 #include <vector>
+#include <string>
 #include <string_view>
 
 #define REGISTER_LIBFUNC(lib, function, args)                                \

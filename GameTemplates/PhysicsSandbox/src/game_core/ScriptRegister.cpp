@@ -1,7 +1,6 @@
 #include "ScriptRegister.h"
 #include "engine/Engine.h"
 
-#include "assets/scripts/Thruster.h"
 #include "assets/scripts/Sim.h"
 
 namespace Toad
@@ -13,7 +12,6 @@ void register_scripts()
 {
 	scripts.clear();
 
-	SCRIPT_REGISTER(Thruster);
 	SCRIPT_REGISTER(Sim);
 }
 
