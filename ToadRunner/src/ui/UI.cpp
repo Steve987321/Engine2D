@@ -938,7 +938,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
 				if (ImGui::IsItemClicked())
 				{
-					Mouse::ShouldCaptureMouse(true);
+					Mouse::SetCaptureMouse(true);
 
 					if (!mouse_visible_prev)
 						Mouse::SetVisible(false);
@@ -947,7 +947,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 				{
 					Mouse::SetVisible(true);
 
-					Mouse::ShouldCaptureMouse(false);
+					Mouse::SetCaptureMouse(false);
 					mouse_visible_prev = true;
 				}
 				if (ImGui::IsWindowHovered())
@@ -1230,22 +1230,26 @@ std::filesystem::path GetProjectBinPath(const project::ProjectSettings& settings
     // (usually when we created a new project and didn't build anything yet)
     const fs::path fallback_bin_path{ p / "bin" };
 
-    for (const auto& entry : fs::directory_iterator(p))
+    if (fs::exists(p))
     {
-        if (entry.path().filename().string().find("bin") != std::string::npos)
+        for (const auto& entry : fs::directory_iterator(p))
         {
-            fs::path bin_path = entry.path();
-
-            for (const auto& entry2 : fs::directory_iterator(bin_path))
+            if (entry.path().filename().string().find("bin") != std::string::npos)
             {
-                if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
-                    return entry2.path();
-            }
+                fs::path bin_path = entry.path();
 
-            // couldn't find anything, give bin path
-			return bin_path;
+                for (const auto& entry2 : fs::directory_iterator(bin_path))
+                {
+                    if (entry2.path().filename().string().find(PROJECT_BIN_SEARCH_FOR) != std::string::npos)
+                        return entry2.path();
+                }
+
+                // couldn't find anything, give bin path
+                return bin_path;
+            }
         }
     }
+     
 
     LOGWARNF("Can't find binary directory in '{}', using fallback: '{}'", settings.project_path, fallback_bin_path);
 

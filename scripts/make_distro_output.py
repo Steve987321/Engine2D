@@ -107,7 +107,6 @@ elif sys.platform == "darwin":
     imgui_backend_files = [
         "imgui_impl_opengl2.cpp",
         "imgui_impl_opengl2.h",
-        "imgui_impl_osx.cpp",
         "imgui_impl_osx.h",
     ]
 

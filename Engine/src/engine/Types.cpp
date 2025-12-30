@@ -221,9 +221,14 @@ const Vec2i& GetRelativeMousePosition()
     return relative_mouse_pos;
 }
 
-void ShouldCaptureMouse(bool capture)
+void SetCaptureMouse(bool capture)
 {
     capture_mouse = capture;
+}
+
+bool IsCapturingMouse()
+{
+    return capture_mouse;
 }
 
 }

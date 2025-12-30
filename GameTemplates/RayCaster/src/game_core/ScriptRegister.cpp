@@ -32,7 +32,7 @@ void register_script(void* instance, size_t size)
 
 Scripts get_registered_scripts()
 {
-	return { scripts.data(), scripts.size() };
+	return {scripts.data(), scripts.size()};
 }
 
 }

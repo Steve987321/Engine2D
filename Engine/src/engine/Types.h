@@ -114,7 +114,8 @@ namespace Mouse
     ENGINE_API void SetRelativeMousePosition(const Vec2i& pos);
     ENGINE_API const Vec2i& GetRelativeMousePosition();
 
-    ENGINE_API void ShouldCaptureMouse(bool capture);
+    ENGINE_API void SetCaptureMouse(bool capture);
+    ENGINE_API bool IsCapturingMouse();
 };
 
 struct AudioSource

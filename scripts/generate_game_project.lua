@@ -62,7 +62,7 @@ if _OPTIONS["usesrc"] then
         -- use paths from the engine 
         include_dirs = 
         {
-            engine_path .. "/engine/src",
+            engine_path .. "/Engine/src",
             engine_path .. "/vendor",
             engine_path .. "/vendor/magic_enum/include",
             engine_path .. "/vendor/imgui",
@@ -75,16 +75,22 @@ if _OPTIONS["usesrc"] then
         lib_dirs = 
         {
             engine_path .. "/bin/Release-%{cfg.system}-x86_64",
-            "vendor/SFML-3.0.0/lib",
+            engine_path .. "/vendor/SFML-3.0.0/lib",
         }
         sources = 
         {
             "%{prj.name}/src/**.cpp",
             "%{prj.name}/src/**.h",
-            engine_path .. "/vendor/imgui/**.cpp",
+            engine_path .. "/vendor/imgui/*.cpp",
             engine_path .. "/vendor/sfml-imgui/imgui-SFML.cpp",
             engine_path .. "/vendor/implot/**.cpp",
         }
+        if os.target() == "windows" then
+            sources[#sources + 1] = engine_path .. "/vendor/imgui/backends/imgui_impl_opengl2.cpp"
+            sources[#sources + 1] = engine_path .. "/vendor/imgui/backends/imgui_impl_win32.cpp" 
+        elseif os.target() == "macosx" then 
+            sources[#sources + 1] = engine_path .. "/vendor/imgui/backends/imgui_impl_opengl2.cpp"
+        end
     end 
 else -- distro 
     if _OPTIONS["ownlibs"] then

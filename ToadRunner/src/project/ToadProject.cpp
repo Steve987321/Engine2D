@@ -315,8 +315,6 @@ namespace project {
 #endif
 #endif 
 
-		premake5 = premake_bin_path.string();
-
 		CREATE_PROJECT_RES_INFO ri;
 
         if (!VerifySettingsPaths(settings, ri))

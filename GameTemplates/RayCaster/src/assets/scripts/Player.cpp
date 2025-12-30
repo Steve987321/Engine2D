@@ -22,8 +22,8 @@ std::ostream& operator<<(std::ostream& o, const Vec2i& v)
 
 void Player::UpdateMouseLook(Object* obj)
 {
-	static bool prev_capture_mouse = Mouse::capture_mouse;
-	if (!Mouse::capture_mouse)
+	static bool prev_capture_mouse = Mouse::IsCapturingMouse();
+	if (!Mouse::IsCapturingMouse())
 	{
 		prev_capture_mouse = false;
 		return; 
@@ -34,11 +34,11 @@ void Player::UpdateMouseLook(Object* obj)
 	static Vec2i locked_mouse_pos = {0, 0};
 
 #ifdef TOAD_EDITOR 
-	if (prev_capture_mouse != Mouse::capture_mouse)
+	if (prev_capture_mouse != Mouse::IsCapturingMouse())
 	{
 		// update locked cursor pos 
 		locked_mouse_pos = mouse_pos;
-		prev_capture_mouse = Mouse::capture_mouse;
+		prev_capture_mouse = Mouse::IsCapturingMouse();
 	}
 #else 
 	locked_mouse_pos = Vec2i{ 
@@ -62,7 +62,7 @@ void Player::UpdateMouseLook(Object* obj)
 		Mouse::SetPosition(locked_mouse_pos);
 	}
 
-	prev_capture_mouse = Mouse::capture_mouse;
+	prev_capture_mouse = Mouse::IsCapturingMouse();
 }
 
 // Called on scene begin 
