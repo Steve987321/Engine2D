@@ -20,8 +20,12 @@
 #include "imgui-SFML.h"
 #endif
 
+#include "fx/FXVignette.h"
+
 namespace Toad
 {
+
+// static Toad::VignetteFX vignette;
 
 using json = nlohmann::ordered_json;
 
@@ -283,6 +287,8 @@ bool Init()
 
 	editor_cam.OnCreate();
 #else
+    Screen::SetScreenContentInfoProvider(std::bind(&AppWindow::GetScreenDimensions, &window));
+
 	if (starting_scene)
 		Scene::SetScene(starting_scene);
 	else
@@ -295,6 +301,8 @@ bool Init()
     ui_ctx.imgui_ctx = ImGui::GetCurrentContext();
     ui_ctx.implot_ctx = ImPlot::GetCurrentContext();
 #endif 
+
+    // vignette.Init(GetEditorCameraTexture().getSize());
 
 	return true;
 }
@@ -350,7 +358,7 @@ void Render(AppWindow& window)
 {
 	window.clear(sf::Color::Black); // window bg
 
-	Camera* cam = Camera::GetActiveCamera();
+	Camera* cam = Camera::GetActiveSceneCamera();
 
 #if defined(TOAD_EDITOR)
 	sf::RenderTexture& window_texture = GetWindowTexture();
@@ -373,6 +381,10 @@ void Render(AppWindow& window)
 	{
 		editor_texture_draw_callback(editor_cam_texture);
 	}
+    // sf::RenderTexture t(editor_cam_texture.getSize());
+    // vignette.Apply(editor_cam_texture, t);
+    // sf::Sprite pt(t.getTexture());
+    // editor_cam_texture.draw(pt);
 
 	editor_cam_texture.setView(editor_cam.GetView());
 	editor_cam_texture.display();

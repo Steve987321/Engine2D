@@ -87,6 +87,7 @@ static void UpdateVarsOnScript(Script* new_script, Reflection& reflection, const
     const auto& items = script.items();
     (std::for_each(items.begin(), items.end(), 
     [&](auto& e){
+        LOGDEBUGF("Value script reflection: {}, iterator type: {}", e.value(), type_name<Ts>());
         if (!e.value().contains(type_name<Ts>()))
             return; 
 
@@ -142,6 +143,7 @@ void Scene::Update()
 	static float fdt = Time::GetFixedDeltaTime();
 	static float time_acc = fdt;
 	time_acc += Time::GetDeltaTime();
+    time_acc = std::min(time_acc, fdt * 5);
 	while (time_acc >= fdt)
 	{
 		for (auto& obj : objects_all)

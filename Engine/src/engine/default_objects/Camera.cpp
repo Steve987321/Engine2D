@@ -61,25 +61,39 @@ Camera* Camera::GetActiveCamera()
 {
 #ifdef TOAD_EDITOR
 	if (m_activeCam)
+    {
+        Camera* interacting_cam = GetInteractingCamera();
+
+        // prioritze interacting camera over an active camera that isn't being interacted with when in editor
+        if (m_activeCam != interacting_cam)
+            return interacting_cam;
+
         return m_activeCam;
+    }
     else
+    {
         return GetInteractingCamera();
+    }
 #else
     return m_activeCam;
 #endif
 }
 
-void Camera::OnCreate()
+Camera* Camera::GetActiveSceneCamera() 
 {
-	m_cameras.push_back(this);
-    Vec2u size = GetWindow().getSize();
+    return m_activeCam;
+}
 
-    SetPosition(m_view.getCenter());
+void Camera::OnCreate() {
+  m_cameras.push_back(this);
+  Vec2u size = GetWindow().getSize();
 
-	m_view.setSize({(float)size.x, (float)size.y});
-    last_size = Vec2f{(float)size.x, (float)size.y};
+  SetPosition(m_view.getCenter());
 
-    original_size = m_view.getSize();
+  m_view.setSize({(float)size.x, (float)size.y});
+  last_size = Vec2f{(float)size.x, (float)size.y};
+
+  original_size = m_view.getSize();
 }
 
 void Camera::Start()

@@ -23,8 +23,6 @@
       "Engine/src/engine/Logger.h"
       "Engine/src/engine/PlaySession.cpp"
       "Engine/src/engine/PlaySession.h"
-      "Engine/src/engine/PostFXShader.cpp"
-      "Engine/src/engine/PostFXShader.h"
       "Engine/src/engine/Screen.cpp"
       "Engine/src/engine/Screen.h"
       "Engine/src/engine/Settings.h"
@@ -46,6 +44,10 @@
           "Engine/src/engine/default_objects/UI/Text.h"
         "Engine/src/engine/default_scripts/Script.cpp"
         "Engine/src/engine/default_scripts/Script.h"
+        "Engine/src/engine/fx/FXVignette.cpp"
+        "Engine/src/engine/fx/FXVignette.h"
+        "Engine/src/engine/fx/PostFXShader.cpp"
+        "Engine/src/engine/fx/PostFXShader.h"
         "Engine/src/engine/systems/Animation.cpp"
         "Engine/src/engine/systems/Animation.h"
         "Engine/src/engine/systems/Flow.cpp"
@@ -134,11 +136,11 @@ target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-O0>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
   $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-g>
-  $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:Debug>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   set_target_properties("Engine" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE True
@@ -196,11 +198,11 @@ target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-O2>
   $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
-  $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:Release>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL Release)
   set_target_properties("Engine" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE True
@@ -257,11 +259,11 @@ target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O2>
   $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
-  $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:ReleaseNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL ReleaseNoEditor)
   set_target_properties("Engine" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE True
@@ -321,11 +323,11 @@ target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O0>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
   $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
-  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:DebugNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL DebugNoEditor)
   set_target_properties("Engine" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE True
@@ -384,11 +386,11 @@ target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-O2>
   $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
   $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-g>
-  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:TestNoEditor>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL TestNoEditor)
   set_target_properties("Engine" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE True
@@ -447,11 +449,11 @@ target_compile_options("Engine" PRIVATE
   $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-m64>
   $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-O2>
   $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-fPIC>
-  $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-std=c++20>
+  $<$<AND:$<CONFIG:Distro>,$<COMPILE_LANGUAGE:CXX>>:-std=c++23>
 )
 if(CMAKE_BUILD_TYPE STREQUAL Distro)
   set_target_properties("Engine" PROPERTIES
-    CXX_STANDARD 20
+    CXX_STANDARD 23
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
     POSITION_INDEPENDENT_CODE True

@@ -16,7 +16,12 @@ public:
 	json Serialize() override;
 
 public:
+    // returns the active camera in the scene or interacting camera when in the editor 
+    // scripts should prefer using this instead of GetActiveSceneCamera() to get the active camera
 	static Camera* GetActiveCamera();
+
+    // returns tha active camera in the scene 
+    static Camera* GetActiveSceneCamera();
 
 public:
 	void OnCreate() override;

@@ -69,6 +69,7 @@ public:
     ENGINE_API void operator*=(float scalar);
     ENGINE_API void operator/=(float scalar);
     
+    ENGINE_API static Vec2f Lerp(const Vec2f& a, const Vec2f& b, float t);
     ENGINE_API float Length() const;
 	ENGINE_API float LengthSquared() const;
     ENGINE_API Vec2f Normalize() const;
@@ -124,6 +125,12 @@ struct AudioSource
 	std::filesystem::path relative_path;
 	sf::SoundBuffer sound_buffer;
 	bool has_valid_buffer;
+};
+
+struct ScreenDimensions
+{
+    Vec2f content_size;
+    Vec2f content_pos;
 };
 
 template <typename T>

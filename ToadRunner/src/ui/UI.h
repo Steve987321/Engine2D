@@ -6,6 +6,10 @@
 namespace Toad
 {
 	class GameAssetsBrowser;
+    namespace Screen
+    {
+        struct ScreenDimensions;
+    }
 }
 
 namespace ui
@@ -24,8 +28,10 @@ namespace ui
 	const static ImGuiID save_scene_popup_id = ImHashStr("SaveScene");
 	const static ImGuiID scene_modify_popup_id = ImHashStr("SceneModifyPopup");
 
-	// editor viewport size
-	inline Toad::Vec2i viewport_size = {};
+	// active editor viewport 
+    inline Toad::ScreenDimensions active_viewport_content_info{};
+
+    inline bool is_game_view_opened = false;
 
 	// imgui ini formatted main tabs status buffers
 	inline std::string ini_main_buf;

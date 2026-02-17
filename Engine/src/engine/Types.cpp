@@ -99,10 +99,15 @@ void Vec2f::operator/=(float scalar)
     y /= scalar;
 }
 
-float Vec2f::Length() const
+Vec2f Vec2f::Lerp(const Vec2f &a, const Vec2f &b, float t)
 {
-    return std::sqrt(LengthSquared());
+  return {
+        std::lerp(a.x, b.x, t),
+        std::lerp(a.y, b.y, t)
+    }; 
 }
+
+float Vec2f::Length() const { return std::sqrt(LengthSquared()); }
 
 float Vec2f::LengthSquared() const
 {

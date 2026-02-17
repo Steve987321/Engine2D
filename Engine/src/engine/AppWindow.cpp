@@ -165,6 +165,15 @@ void AppWindow::CleanUpViewports()
     viewports.clear();
 }
 
+ScreenDimensions AppWindow::GetScreenDimensions() const
+{
+    return
+    {
+        .content_size = { (float)getSize().x, (float)getSize().y },
+        .content_pos = { (float)getPosition().x, (float)getPosition().y }
+    };
+}
+
 #ifdef _WIN32
 LRESULT CALLBACK AppWindow::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
 {

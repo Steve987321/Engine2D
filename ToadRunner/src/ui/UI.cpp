@@ -88,6 +88,11 @@ static void GameDLLOnChangeCallback(const TFILEWATCH_STRTYPE& path, const filewa
 	LOGDEBUGF("WATCHER EVENT: {}", filewatch::event_to_string(e));
 }
 
+static const ScreenDimensions& ViewportInfoProvider()
+{
+    return ui::active_viewport_content_info;
+}
+
 static void ScriptReload()
 {
 	if (!should_reload)
@@ -154,6 +159,7 @@ void ui::engine_ui(ImGuiContext* ctx)
         settings.project_gen_type = project::PROJECT_TYPE::Makefile;
 #endif
 		Toad::SetGameDLLWatcherCallback(GameDLLOnChangeCallback);
+        Toad::Screen::SetScreenContentInfoProvider(ViewportInfoProvider);
 		browser = &asset_browser;
         once = false;
     }
@@ -864,7 +870,8 @@ void ui::engine_ui(ImGuiContext* ctx)
 			ImGui::End();
 		}
 
-		ImGui::Begin("Game view", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+        is_game_view_opened = ImGui::Begin("Game view", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+		if (is_game_view_opened)
 		{	
 			// button from viewport 
 			static fs::path last_scene_path;
@@ -899,7 +906,7 @@ void ui::engine_ui(ImGuiContext* ctx)
 			float image_width = content_size.x;
 			float image_height = content_size.x / ar;
 		
-			Camera* cam = Camera::GetActiveCamera();
+			Camera* cam = Camera::GetActiveSceneCamera();
 
 			if (cam == nullptr)
 			{
@@ -950,29 +957,25 @@ void ui::engine_ui(ImGuiContext* ctx)
 					Mouse::SetCaptureMouse(false);
 					mouse_visible_prev = true;
 				}
-				if (ImGui::IsWindowHovered())
-				{
-					viewport_size = { (int)image_width, (int)image_height };
-
-					if (cam)
-					{
-						SetInteractingCamera(cam);
-						SetInteractingTexture(&window_texture);
-						float f_x = cam->GetSize().x / image_width;
-						float f_y = cam->GetSize().y / image_height;
-						
-						Mouse::SetRelativeMousePosition({
-						(int)((ImGui::GetMousePos().x - pos.x) * f_x),
-						(int)((ImGui::GetMousePos().y - pos.y) * f_y)});
-					}
-					else
-						SetInteractingCamera(&Toad::GetEditorCamera());
-				}
+				
+                active_viewport_content_info.content_size = Vec2f{ (float)image_width, (float)image_height };
+                active_viewport_content_info.content_pos = Vec2f{ (float)pos.x, (float)pos.y };
+                
+                if (!IsViewportShown() || (IsViewportShown() && ImGui::IsWindowHovered()))
+                { 
+                    SetInteractingCamera(cam);
+                    SetInteractingTexture(&window_texture);
+                    float f_x = cam->GetSize().x / image_width;
+                    float f_y = cam->GetSize().y / image_height;
+                    
+                    Mouse::SetRelativeMousePosition({
+                    (int)((ImGui::GetMousePos().x - pos.x) * f_x),
+                    (int)((ImGui::GetMousePos().y - pos.y) * f_y)});
+                }
 			}
-
-			ImGui::End();
 		}
-		
+        ImGui::End();
+
 		ui::ShowViewport(asset_browser);
 
 		if (ImGui::Begin("File Browser"))
