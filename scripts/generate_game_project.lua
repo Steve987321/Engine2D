@@ -82,7 +82,7 @@ if _OPTIONS["usesrc"] then
         lib_dirs = 
         {
             engine_path .. "/bin/Release-%{cfg.system}-x86_64",
-            "vendor/SFML-3.0.0/lib",
+            engine_path .. "/vendor/SFML-3.0.0/lib",
         }
         sources = 
         {
