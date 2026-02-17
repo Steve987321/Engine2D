@@ -58,11 +58,18 @@ if _OPTIONS["usesrc"] then
             "vendor/implot/**.cpp",
             "vendor/sfml-imgui/imgui-SFML.cpp",
         }
+        remove_sources = 
+        {
+            "vendor/imgui/examples/**",
+            "vendor/imgui/misc/**",
+            "vendor/imgui/backends/**",
+            "vendor/implot/examples/**",
+        }
     else 
         -- use paths from the engine 
         include_dirs = 
         {
-            engine_path .. "/Engine/src",
+            engine_path .. "/engine/src",
             engine_path .. "/vendor",
             engine_path .. "/vendor/magic_enum/include",
             engine_path .. "/vendor/imgui",
@@ -75,22 +82,23 @@ if _OPTIONS["usesrc"] then
         lib_dirs = 
         {
             engine_path .. "/bin/Release-%{cfg.system}-x86_64",
-            engine_path .. "/vendor/SFML-3.0.0/lib",
+            "vendor/SFML-3.0.0/lib",
         }
         sources = 
         {
             "%{prj.name}/src/**.cpp",
             "%{prj.name}/src/**.h",
-            engine_path .. "/vendor/imgui/*.cpp",
+            engine_path .. "/vendor/imgui/**.cpp",
             engine_path .. "/vendor/sfml-imgui/imgui-SFML.cpp",
             engine_path .. "/vendor/implot/**.cpp",
         }
-        if os.target() == "windows" then
-            sources[#sources + 1] = engine_path .. "/vendor/imgui/backends/imgui_impl_opengl2.cpp"
-            sources[#sources + 1] = engine_path .. "/vendor/imgui/backends/imgui_impl_win32.cpp" 
-        elseif os.target() == "macosx" then 
-            sources[#sources + 1] = engine_path .. "/vendor/imgui/backends/imgui_impl_opengl2.cpp"
-        end
+        remove_sources = 
+        {
+            engine_path .. "/vendor/imgui/examples/**",
+            engine_path .. "/vendor/imgui/misc/**",
+            engine_path .. "/vendor/imgui/backends/**",
+            engine_path .. "/vendor/implot/examples/**",
+        }
     end 
 else -- distro 
     if _OPTIONS["ownlibs"] then
@@ -118,6 +126,13 @@ else -- distro
             "vendor/sfml-imgui/imgui-SFML.cpp",
             "vendor/implot/**.cpp",
         }
+        remove_sources = 
+        {
+            "vendor/imgui/examples/**",
+            "vendor/imgui/misc/**",
+            "vendor/imgui/backends/**",
+            "vendor/implot/examples/**",
+        }
     else 
         include_dirs = 
         {
@@ -143,6 +158,13 @@ else -- distro
             engine_path .. "/game_templates/vendor/imgui/**.cpp",
             engine_path .. "/game_templates/vendor/sfml-imgui/imgui-SFML.cpp",
             engine_path .. "/game_templates/vendor/implot/**.cpp",
+        }
+        remove_sources = 
+        {
+            engine_path .. "/game_templates/imgui/examples/**",
+            engine_path .. "/game_templates/imgui/misc/**",
+            engine_path .. "/game_templates/imgui/backends/**",
+            engine_path .. "/game_templates/implot/examples/**",
         }
     end 
 end
@@ -175,10 +197,7 @@ project(game_project_name)
     }
 
     removefiles {
-        "vendor/imgui/examples/**",
-        "vendor/imgui/misc/**",
-        "vendor/imgui/backends/**",
-        "vendor/implot/examples/**",
+        remove_sources
     }
     
     includedirs{
