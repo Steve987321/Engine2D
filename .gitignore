@@ -60,3 +60,4 @@ bin-intermediate/
 # Mac
 *.DS_Store
 
+.cache
