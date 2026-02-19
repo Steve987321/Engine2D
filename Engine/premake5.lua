@@ -15,6 +15,7 @@ project "Engine"
         "../vendor/imgui/**.cpp",
         "../vendor/implot/**.cpp",
         "../vendor/sfml-imgui/imgui-SFML.cpp",
+        "../vendor/glad/src/glad.c",
     }
 
     removefiles {
@@ -34,6 +35,7 @@ project "Engine"
         "../vendor/SFML-3.0.0/include",
         "../vendor/json/include",
         "../vendor/magic_enum/include",
+        "../vendor/glad/include",
     }
 
 if _ACTION == "xcode4" then
@@ -71,7 +73,7 @@ end
         pchheader "pch.h"
         pchsource "src/pch.cpp"
 
-    filter "files:../vendor/**.cpp"
+    filter "files:../vendor/**.cpp or files:../vendor/**.c"
         flags {"NoPCH"}
 
     filter "system:windows"
