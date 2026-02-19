@@ -15,17 +15,18 @@
 
 #ifdef USE_IMGUI
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui/imgui.h" 
+#include "imgui/imgui.h"
 #include "implot/implot.h"
 #include "imgui-SFML.h"
 #endif
 
-#include "fx/FXVignette.h"
+#include "engine/render/HDRPipeline.h"
+#include "engine/render/fx/FXVignette.h"
 
 namespace Toad
 {
 
-// static Toad::VignetteFX vignette;
+static VignetteFX vignette;
 
 using json = nlohmann::ordered_json;
 
@@ -38,7 +39,7 @@ static FONDLLCHANGE_CALLBACK on_dll_change_callback = nullptr;
 
 static std::unique_ptr<filewatch::FileWatch<TFILEWATCH_STRTYPE>> dll_file_watch = nullptr;
 
-static Camera editor_cam{ "EditorCamera" };
+static Camera editor_cam{"EditorCamera"};
 // multiple windows
 
 static std::filesystem::path current_path;
@@ -51,17 +52,17 @@ static Camera* interacting_camera = nullptr;
 
 #ifdef USE_IMGUI
 static UICtx ui_ctx;
-#endif 
+#endif
 
 void Render(AppWindow& window);
 void CleanUp();
 
-// finds settings.json and loads them 
+// finds settings.json and loads them
 // void LoadEngineSettings();
 
 static void EventHandler(AppWindow& window)
 {
-    while (auto e = window.pollEvent())
+	while (auto e = window.pollEvent())
 	{
 #ifdef USE_IMGUI
 		ImGui::SFML::ProcessEvent(window, *e);
@@ -114,7 +115,7 @@ static void EventHandler(AppWindow& window)
 	}
 }
 
-#ifdef TOAD_EDITOR 
+#ifdef TOAD_EDITOR
 void SetInteractingTexture(sf::RenderTexture* texture)
 {
 	interacting_texture = texture;
@@ -129,12 +130,12 @@ void SetInteractingCamera(Camera* cam)
 {
 	interacting_camera = cam;
 }
-#endif 
+#endif
 
 void SetProjectPath(const std::filesystem::path& path)
 {
-    LOGDEBUGF("Setting project path: {}", path.string());
-	project_path = path;	
+	LOGDEBUGF("Setting project path: {}", path.string());
+	project_path = path;
 }
 
 const std::filesystem::path& GetCurrentPath()
@@ -159,14 +160,14 @@ bool Init()
 	int height = 500;
 	GetDesktopDimensions(width, height);
 
-	width = (int)((float)width * 0.7f);
-	height = (int)((float)height * 0.7f);
+	width = (int) ((float) width * 0.7f);
+	height = (int) ((float) height * 0.7f);
 
-	editor_cam.SetPosition({ 0, 0 });
-	editor_cam.SetSize({ (float)width, (float)height });
+	editor_cam.SetPosition({0, 0});
+	editor_cam.SetSize({(float) width, (float) height});
 
 	current_path = GetExePath().parent_path();
-	
+
 	ResourceManager::Init();
 
 	for (const auto& e : std::filesystem::recursive_directory_iterator(current_path))
@@ -185,7 +186,6 @@ bool Init()
 	{
 		if (e.path().filename() == "settings" && e.path().extension() == ".json")
 		{
-			
 		}
 	}
 
@@ -239,26 +239,26 @@ bool Init()
 #endif
 
 #ifdef __APPLE__
-    Input::AddKeyPressCallback(InputMac::MacKeyPressCallback);
-    Input::AddKeyReleaseCallback(InputMac::MacKeyReleaseCallback);
-#endif 
+	Input::AddKeyPressCallback(InputMac::MacKeyPressCallback);
+	Input::AddKeyReleaseCallback(InputMac::MacKeyReleaseCallback);
+#endif
 
 	// #TODO: change to a .ini or .json
 	::AppSettings gsettings;
 
-    DllHandle curr_dll = ScriptManager::GetDLLHandle();
+	DllHandle curr_dll = ScriptManager::GetDLLHandle();
 
-    LOGDEBUGF("curr_dll: {}", (void*)(curr_dll));
+	LOGDEBUGF("curr_dll: {}", (void*) (curr_dll));
 
 	if (curr_dll != nullptr)
 	{
-        auto get_game_settings = reinterpret_cast<get_game_settings_t*>(DLibGetAddress(curr_dll, "get_game_settings"));
-        LOGDEBUGF("DLGetError: {}", DLGetError());
-		LOGDEBUGF("get_game_settings: {}", (void*)(get_game_settings));
-        if (!get_game_settings)
-            LOGERROR("Couldn't get game settings");
-        else 
-            gsettings = get_game_settings();
+		auto get_game_settings = reinterpret_cast<get_game_settings_t*>(DLibGetAddress(curr_dll, "get_game_settings"));
+		LOGDEBUGF("DLGetError: {}", DLGetError());
+		LOGDEBUGF("get_game_settings: {}", (void*) (get_game_settings));
+		if (!get_game_settings)
+			LOGERROR("Couldn't get game settings");
+		else
+			gsettings = get_game_settings();
 	}
 
 #ifdef TOAD_EDITOR
@@ -267,14 +267,14 @@ bool Init()
 	gsettings.window_width = width;
 	gsettings.window_height = height;
 	gsettings.window_name = "Engine 2D";
-#endif 
+#endif
 	AppWindow& window = GetWindow();
 
-    LOGDEBUGF("Creating window ({})", gsettings.window_name);
+	LOGDEBUGF("Creating window ({})", gsettings.window_name);
 
 	if (!window.Create(gsettings.window_width, gsettings.window_height, gsettings.frame_limit, gsettings.style, gsettings.window_name))
 		return false;
-	//window.Create({ (uint32_t)gsettings.window_width, (uint32_t)gsettings.window_height }, "abc", gsettings.style);
+	// window.Create({ (uint32_t)gsettings.window_width, (uint32_t)gsettings.window_height }, "abc", gsettings.style);
 
 #ifdef TOAD_EDITOR
 	LOGDEBUG("[Engine] Setting up views & textures");
@@ -287,22 +287,27 @@ bool Init()
 
 	editor_cam.OnCreate();
 #else
-    Screen::SetScreenContentInfoProvider(std::bind(&AppWindow::GetScreenDimensions, &window));
+	Screen::SetScreenContentInfoProvider(std::bind(&AppWindow::GetScreenDimensions, &window));
 
 	if (starting_scene)
 		Scene::SetScene(starting_scene);
 	else
 		Scene::SetScene(&Scene::scenes[0]);
-		
+
 	StartGameSession();
 #endif
 
 #ifdef USE_IMGUI
-    ui_ctx.imgui_ctx = ImGui::GetCurrentContext();
-    ui_ctx.implot_ctx = ImPlot::GetCurrentContext();
-#endif 
+	ui_ctx.imgui_ctx = ImGui::GetCurrentContext();
+	ui_ctx.implot_ctx = ImPlot::GetCurrentContext();
+#endif
 
-    // vignette.Init(GetEditorCameraTexture().getSize());
+    window.setActive(true);
+
+    HDRPipeline::Init(window.getSize().x, window.getSize().y);
+
+	if (vignette.Init())
+        HDRPipeline::AddPostFXShader(&vignette);
 
 	return true;
 }
@@ -312,18 +317,18 @@ void Run()
 	AppWindow& window = GetWindow();
 
 	while (window.isOpen())
-	{ 
+	{
 #ifdef TOAD_EDITOR
 		if (!window.hasFocus())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(250));
 		}
-#else 
+#else
 		Mouse::SetRelativeMousePosition(sf::Mouse::getPosition(window));
 #endif
 		Time::UpdateDeltaTime();
 
-		// handle events 
+		// handle events
 		EventHandler(window);
 
 #ifdef USE_IMGUI
@@ -332,9 +337,9 @@ void Run()
 
 		// update imgui sfml
 		ImGui::SFML::Update(window, Time::GetDeltaTimeRaw());
-#endif 
+#endif
 #ifdef TOAD_EDITOR
-		// update objects 
+		// update objects
 		if (IsBeginPlay())
 		{
 			Scene::current_scene.Update();
@@ -374,17 +379,20 @@ void Render(AppWindow& window)
 	}
 	window_texture.display();
 
+    window.resetGLStates();
+    HDRPipeline::Render(window_texture);
+
 	Scene::current_scene.Render(editor_cam_texture);
-    DrawingCanvas::ClearDrawBuffers();
+	DrawingCanvas::ClearDrawBuffers();
 
 	if (editor_texture_draw_callback)
 	{
 		editor_texture_draw_callback(editor_cam_texture);
 	}
-    // sf::RenderTexture t(editor_cam_texture.getSize());
-    // vignette.Apply(editor_cam_texture, t);
-    // sf::Sprite pt(t.getTexture());
-    // editor_cam_texture.draw(pt);
+	// sf::RenderTexture t(editor_cam_texture.getSize());
+	// vignette.Apply(editor_cam_texture, t);
+	// sf::Sprite pt(t.getTexture());
+	// editor_cam_texture.draw(pt);
 
 	editor_cam_texture.setView(editor_cam.GetView());
 	editor_cam_texture.display();
@@ -400,15 +408,15 @@ void Render(AppWindow& window)
 	ImGui::SFML::Render(window);
 #else
 	Scene::current_scene.Render(window);
-    DrawingCanvas::ClearDrawBuffers();
+	DrawingCanvas::ClearDrawBuffers();
 
-    #ifdef USE_IMGUI
+#ifdef USE_IMGUI
 	for (auto& obj : Scene::current_scene.objects_all)
 		for (auto& [name, script] : obj->GetAttachedScripts())
 			script->OnImGui(obj.get(), ui_ctx);
 
 	ImGui::SFML::Render(window);
-#endif 
+#endif
 
 	if (cam != nullptr)
 	{
@@ -424,8 +432,8 @@ sf::RenderTexture& GetActiveRenderTexture()
 #ifdef TOAD_EDITOR
 	return *interacting_texture;
 #else
-	return GetWindowTexture(); 
-#endif 
+	return GetWindowTexture();
+#endif
 }
 
 sf::RenderTexture& GetEditorCameraTexture()
@@ -447,57 +455,56 @@ AppWindow& GetWindow()
 
 std::filesystem::path GetAssetPath()
 {
-    // use game bin directory
+	// use game bin directory
 #ifdef TOAD_EDITOR
-    std::filesystem::path p = project_path;
-    p = p.parent_path();
-    for (auto& e : std::filesystem::directory_iterator(p))
-    {
-        if (e.path().filename().string().find("Game") != std::string::npos)
-        {
-            p = e.path() / "src" / "assets";
-            assert(std::filesystem::exists(p) && "GetAssetPath() returned invalid path");
-            return p;
-        }
-    }
+	std::filesystem::path p = project_path;
+	p = p.parent_path();
+	for (auto& e : std::filesystem::directory_iterator(p))
+	{
+		if (e.path().filename().string().find("Game") != std::string::npos)
+		{
+			p = e.path() / "src" / "assets";
+			assert(std::filesystem::exists(p) && "GetAssetPath() returned invalid path");
+			return p;
+		}
+	}
 #else
-    return GetCurrentPath();
+	return GetCurrentPath();
 #endif
-    
-    return {};
+
+	return {};
 }
 
 void UpdateGameBinPaths(std::string_view game_bin_file_name, std::string_view bin_path)
 {
-    LOGDEBUGF("Update game binary paths: '{}' '{}'", game_bin_file_name, bin_path);
+	LOGDEBUGF("Update game binary paths: '{}' '{}'", game_bin_file_name, bin_path);
 
 	if (bin_path.empty() || game_bin_file_name.empty())
 		return;
 
-    game_bin_directory = bin_path;
-    game_bin_file = game_bin_file_name;
+	game_bin_directory = bin_path;
+	game_bin_file = game_bin_file_name;
 
-    
-    if (!game_bin_directory.ends_with(PATH_SEPARATOR))
-    {
-        game_bin_directory += PATH_SEPARATOR;
-    }
-    
-    if (game_bin_directory.find("bin") == std::string::npos)
-        return;
+	if (!game_bin_directory.ends_with(PATH_SEPARATOR))
+	{
+		game_bin_directory += PATH_SEPARATOR;
+	}
+
+	if (game_bin_directory.find("bin") == std::string::npos)
+		return;
 
 	if (!std::filesystem::exists(game_bin_directory))
-		return; 
+		return;
 
 	LOGDEBUG("Setting dll watcher");
-    
+
 #ifdef _WIN32
-    std::wstring ws(game_bin_directory.size(), ' ');
-    ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
-    
-    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(ws, on_dll_change_callback);
+	std::wstring ws(game_bin_directory.size(), ' ');
+	ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
+
+	dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(ws, on_dll_change_callback);
 #else
-    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
+	dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
 #endif
 }
 
@@ -505,7 +512,7 @@ void LoadGameScripts()
 {
 	auto& f = on_dll_change_callback;
 	ReleaseGameDLLWatcher();
-	
+
 	ScriptManager::LoadScripts();
 
 	if (f)
@@ -546,25 +553,25 @@ void SetGameDLLWatcherCallback(const FONDLLCHANGE_CALLBACK& callback)
 {
 	on_dll_change_callback = callback;
 
-    LOGDEBUGF("Setting DLL Watcher callback. game bin dir: '{}'", game_bin_directory);
+	LOGDEBUGF("Setting DLL Watcher callback. game bin dir: '{}'", game_bin_directory);
 	if (!std::filesystem::exists(game_bin_directory))
 	{
 		LOGERRORF("Can't add game dll watcher to non existing file: {}", game_bin_directory);
 		return;
 	}
-    
-    if (game_bin_directory.find("bin") == std::string::npos)
-        return;
+
+	if (game_bin_directory.find("bin") == std::string::npos)
+		return;
 
 #ifdef _WIN32
-    std::wstring ws(game_bin_directory.size(), ' ');
-    ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
-    
-    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(ws, on_dll_change_callback);
+	std::wstring ws(game_bin_directory.size(), ' ');
+	ws.resize(std::mbstowcs(&ws[0], game_bin_directory.c_str(), game_bin_directory.size()));
+
+	dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(ws, on_dll_change_callback);
 #else
-    dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
+	dll_file_watch = std::make_unique<filewatch::FileWatch<TFILEWATCH_STRTYPE>>(game_bin_directory, on_dll_change_callback);
 #endif
-    
+
 	LOGDEBUG("Dll watch {}", game_bin_directory.string());
 }
 
@@ -586,13 +593,13 @@ void CleanUp()
 #ifdef USE_IMGUI
 	LOGDEBUG("shutting down imgui");
 	ImGui::SFML::Shutdown();
-    ImPlot::DestroyContext();
+	ImPlot::DestroyContext();
 #endif
 
 	LOGDEBUG("closing window");
 	GetWindow().close();
 
-    AppWindow::CleanUpViewports();
+	AppWindow::CleanUpViewports();
 }
 
 Camera& GetEditorCamera()
@@ -604,9 +611,9 @@ Camera& GetEditorCamera()
 
 const UICtx& GetUIContext()
 {
-    return ui_ctx;
+	return ui_ctx;
 }
 
-#endif 
+#endif
 
 } // namespace Toad

@@ -33,7 +33,7 @@ project "Engine"
         "../vendor/sfml-imgui",
         "../vendor/SFML-3.0.0/include",
         "../vendor/json/include",
-        "../vendor/magic_enum/include"
+        "../vendor/magic_enum/include",
     }
 
 if _ACTION == "xcode4" then

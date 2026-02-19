@@ -26,6 +26,7 @@
 #include "engine/systems/Animation.h"
 #include "engine/Types.h"
 #include "engine/PlaySession.h"
+#include "engine/render/HDRPipeline.h"
 
 #include "project/Package.h"
 #include "project/ToadProject.h"
@@ -861,6 +862,37 @@ void ui::engine_ui(ImGuiContext* ctx)
 
 		ImGui::Begin("Inspector", nullptr);
 		{
+            // temp fr 
+            ImGui::Text("HDR pipeline settings (EXPERIMENTAL)");
+            HDRPipeline::Settings hdr_settings = Toad::HDRPipeline::GetSettings();
+
+            bool changed = false;
+            
+            changed |= ImGui::Checkbox("Bloom", &hdr_settings.bloom);
+            changed |= ImGui::SliderFloat("Bloom threshold", &hdr_settings.bloom_threshold, 0.0f, 5.f);
+            changed |= ImGui::SliderFloat("Bloom intensity", &hdr_settings.bloom_intensity, 0.0f, 5.f);
+            changed |= ImGui::SliderFloat("Exposure", &hdr_settings.exposure, 0.1f, 5.f);  
+            changed |= ImGui::SliderFloat("Bloom blur spread", &hdr_settings.bloom_spread, 0.1f, 5.f);
+            changed |= ImGui::SliderInt("Bloom blur iterations", (int*)(&hdr_settings.bloom_blur_passes), 1, 10);
+
+            if (changed)
+                Toad::HDRPipeline::ApplySettings(hdr_settings);
+
+            ImGui::Text("Attached Post processing effects:");
+            auto& postfx = HDRPipeline::GetPostFX();
+            for (auto& fx : postfx)
+            {
+                std::string name {fx->GetName()};
+                ImGui::Separator();
+                ImGui::Text("PostFX: %s", name.c_str());
+                if (ImGui::TreeNode(name.c_str()))
+                {
+                    fx->ShowUI();
+                    ImGui::TreePop();
+                }
+            }
+
+
 			if (hierarchy_clicked_object)
 				inspector_ui = std::bind(&ui::object_inspector, std::ref(selected_obj), std::ref(asset_browser));
 
@@ -942,7 +974,11 @@ void ui::engine_ui(ImGuiContext* ctx)
 				static bool mouse_visible_prev = false;
 
 				const ImVec2 pos = ImGui::GetCursorScreenPos();
-				ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
+                
+                ImTextureID hdrTex = (ImTextureID)(intptr_t)Toad::HDRPipeline::GetFinalHDRTextureID();
+                ImGui::Image(hdrTex, ImVec2(image_width, image_height), ImVec2(0, 1), ImVec2(1, 0));
+                                
+				// ImGui::Image(window_texture, { image_width, image_height }, sf::Color::White);
 				if (ImGui::IsItemClicked())
 				{
 					Mouse::SetCaptureMouse(true);

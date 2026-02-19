@@ -18,7 +18,24 @@ bool AppWindow::Create(uint32_t window_width, uint32_t window_height, uint32_t f
 #if defined(TOAD_EDITOR)
 	LOGDEBUGF("[Engine] Loading editor window {}x{}", window_width, window_height);
 
-	create(sf::VideoMode({window_width, window_height}), "Engine 2D", sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::State::Windowed, sf::ContextSettings());
+    sf::ContextSettings settings;
+    settings.depthBits = 24;
+    settings.stencilBits = 8;
+    // settings.majorVersion = 4;
+    // settings.minorVersion = 1;
+    // settings.attributeFlags = sf::ContextSettings::Default;
+
+	create(
+        sf::VideoMode({window_width, window_height}), 
+        "Engine 2D", 
+        sf::Style::Titlebar | sf::Style::Close | sf::Style::Resize, sf::State::Windowed,
+        settings
+    );
+
+    auto window_settings = getSettings();
+
+    LOGDEBUGF("GL Version: {}.{}", window_settings.majorVersion, window_settings.minorVersion);
+
 	setFramerateLimit(30);
 #ifdef _WIN32
 	// drag drop 

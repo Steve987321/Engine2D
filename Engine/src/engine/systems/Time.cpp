@@ -4,6 +4,7 @@
 namespace Toad
 {
 
+static sf::Clock startup_clock;
 static sf::Clock delta_clock;
 static sf::Time delta_time;
 static float time_scale = 1.f;
@@ -27,6 +28,11 @@ void Time::SetFixedDeltaTime(float fdt)
 float Time::GetFixedDeltaTime()
 {
 	return fixed_delta_time;
+}
+
+float Time::GetTime()
+{
+	return startup_clock.getElapsedTime().asSeconds();
 }
 
 void Time::SetTimeScale(float scale)

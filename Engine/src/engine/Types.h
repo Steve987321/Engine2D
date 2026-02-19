@@ -43,6 +43,7 @@ using Vec3f = sf::Vector3f;
 using IntRect = sf::IntRect;
 using Texture = sf::Texture;
 using Color = sf::Color;
+using Shader = sf::Shader;
 
 class Vec2f : public sf::Vector2f
 {
